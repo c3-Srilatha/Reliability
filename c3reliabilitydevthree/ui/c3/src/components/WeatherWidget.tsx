@@ -61,6 +61,16 @@ interface Location {
 }
 
 /**
+ * Cached weather data with expiration
+ */
+interface CachedWeather {
+  data: WeatherData
+  location: Location
+  timestamp: number
+  ttl: number
+}
+
+/**
  * Get weather icon for condition
  */
 const getWeatherIcon = (condition: WeatherCondition): string => {
@@ -145,11 +155,77 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
   const closeMenu = () => setAnchorEl(null)
 
   /**
+   * Get cached weather data if valid
+   */
+  const getCachedWeather = (locationId: string): WeatherData | null => {
+    try {
+      const cached = localStorage.getItem(`weather_cache_${locationId}`)
+      if (!cached) return null
+      
+      const data: CachedWeather = JSON.parse(cached)
+      const now = Date.now()
+      
+      // Check if cache is still valid
+      if (now - data.timestamp < data.ttl) {
+        return { ...data.data, lastUpdated: new Date(data.data.lastUpdated) }
+      }
+      
+      // Clean up expired cache
+      localStorage.removeItem(`weather_cache_${locationId}`)
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Cache weather data
+   */
+  const cacheWeather = (location: Location, weather: WeatherData) => {
+    try {
+      const cached: CachedWeather = {
+        data: weather,
+        location,
+        timestamp: Date.now(),
+        ttl: refreshMinutes * 60 * 1000, // Match refresh interval
+      }
+      localStorage.setItem(`weather_cache_${location.id}`, JSON.stringify(cached))
+    } catch {
+      // Silently fail if localStorage is full
+    }
+  }
+
+  /**
+   * Detect location via IP geolocation API
+   */
+  const detectLocationByIP = async (): Promise<Location | null> => {
+    try {
+      const response = await fetch('https://ipapi.co/json/')
+      const data = await response.json()
+      
+      if (data.city && data.latitude && data.longitude) {
+        return {
+          id: 'ip-location',
+          name: 'Your Location',
+          city: data.city,
+          state: data.region_code || data.region || '',
+          lat: data.latitude,
+          lng: data.longitude,
+        }
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  /**
    * Initialize with default location on mount
    */
   useEffect(() => {
     // Attempt geolocation to auto-detect default location
     const detect = async () => {
+      // Try browser geolocation first (GPS/WiFi)
       if (typeof navigator !== 'undefined' && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -165,15 +241,29 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
             setCurrentLocation(loc)
             fetchWeather(loc)
           },
-          () => {
-            // Fallback to first default facility
-            fetchWeather(DEFAULT_LOCATIONS[0])
+          async () => {
+            // Fallback to IP geolocation
+            const ipLoc = await detectLocationByIP()
+            if (ipLoc) {
+              setCurrentLocation(ipLoc)
+              fetchWeather(ipLoc)
+            } else {
+              // Final fallback to first default facility
+              fetchWeather(DEFAULT_LOCATIONS[0])
+            }
           },
           { enableHighAccuracy: true, timeout: 8000 }
         )
       } else {
-        // Geolocation not supported; fallback
-        fetchWeather(DEFAULT_LOCATIONS[0])
+        // Browser geolocation not supported, try IP
+        const ipLoc = await detectLocationByIP()
+        if (ipLoc) {
+          setCurrentLocation(ipLoc)
+          fetchWeather(ipLoc)
+        } else {
+          // Final fallback
+          fetchWeather(DEFAULT_LOCATIONS[0])
+        }
       }
     }
     detect()
@@ -196,6 +286,17 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
     setLoading(true)
     setError(null)
     try {
+      // Check cache first
+      const cached = getCachedWeather(location.id)
+      if (cached) {
+        setSelectedLocation(location)
+        setWeatherData(cached)
+        setLoading(false)
+        closeMenu()
+        return
+      }
+
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       const mockWeatherData: WeatherData = {
@@ -207,6 +308,9 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
         description: 'Partly cloudy conditions',
         lastUpdated: new Date(),
       }
+
+      // Cache the new data
+      cacheWeather(location, mockWeatherData)
 
       setSelectedLocation(location)
       setWeatherData(mockWeatherData)
