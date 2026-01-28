@@ -17,10 +17,7 @@ import {
   InputLabel,
   Grid,
   Chip,
-  Stack,
   TextField,
-  InputAdornment,
-  IconButton,
   Menu,
   Dialog,
   DialogTitle,
@@ -105,18 +102,24 @@ const DEFAULT_LOCATIONS: Location[] = [
     name: 'San Francisco',
     city: 'San Francisco',
     state: 'CA',
+    lat: 37.7749,
+    lng: -122.4194,
   },
   {
     id: '2',
     name: 'New York',
     city: 'New York',
     state: 'NY',
+    lat: 40.7128,
+    lng: -74.006,
   },
   {
     id: '3',
     name: 'Chicago',
     city: 'Chicago',
     state: 'IL',
+    lat: 41.8781,
+    lng: -87.6298,
   },
 ]
 
@@ -154,12 +157,21 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
   }
   const closeMenu = () => setAnchorEl(null)
 
+  const buildCacheKey = (location: Location): string => {
+    if (location.lat != null && location.lng != null) {
+      const lat = Math.round(location.lat * 100) / 100
+      const lng = Math.round(location.lng * 100) / 100
+      return `weather_cache_v2_${location.id}_${lat}_${lng}`
+    }
+    return `weather_cache_v2_${location.id}`
+  }
+
   /**
    * Get cached weather data if valid
    */
-  const getCachedWeather = (locationId: string): WeatherData | null => {
+  const getCachedWeather = (location: Location): WeatherData | null => {
     try {
-      const cached = localStorage.getItem(`weather_cache_${locationId}`)
+      const cached = localStorage.getItem(buildCacheKey(location))
       if (!cached) return null
       
       const data: CachedWeather = JSON.parse(cached)
@@ -171,7 +183,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
       }
       
       // Clean up expired cache
-      localStorage.removeItem(`weather_cache_${locationId}`)
+      localStorage.removeItem(buildCacheKey(location))
       return null
     } catch {
       return null
@@ -189,7 +201,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
         timestamp: Date.now(),
         ttl: refreshMinutes * 60 * 1000, // Match refresh interval
       }
-      localStorage.setItem(`weather_cache_${location.id}`, JSON.stringify(cached))
+      localStorage.setItem(buildCacheKey(location), JSON.stringify(cached))
     } catch {
       // Silently fail if localStorage is full
     }
@@ -209,11 +221,34 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
           name: 'Your Location',
           city: data.city,
           state: data.region_code || data.region || '',
-          lat: data.latitude,
-          lng: data.longitude,
+          lat: Number(data.latitude),
+          lng: Number(data.longitude),
         }
       }
       return null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Geocode city/zip to coordinates
+   */
+  const geocodeLocation = async (query: string): Promise<Location | null> => {
+    try {
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`
+      const response = await fetch(url)
+      const data = await response.json()
+      const result = data?.results?.[0]
+      if (!result) return null
+      return {
+        id: `geo-${result.latitude}-${result.longitude}`,
+        name: result.name,
+        city: result.name,
+        state: result.admin1 || result.country_code || '',
+        lat: result.latitude,
+        lng: result.longitude,
+      }
     } catch {
       return null
     }
@@ -225,7 +260,7 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
   useEffect(() => {
     // Attempt geolocation to auto-detect default location
     const detect = async () => {
-      // Try browser geolocation first (GPS/WiFi)
+      
       if (typeof navigator !== 'undefined' && navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -286,8 +321,16 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
     setLoading(true)
     setError(null)
     try {
+      if (location.lat == null || location.lng == null) {
+        const geo = await geocodeLocation(`${location.city}${location.state ? `, ${location.state}` : ''}`)
+        if (!geo) {
+          setError('Unable to determine location coordinates')
+          return
+        }
+        location = geo
+      }
       // Check cache first
-      const cached = getCachedWeather(location.id)
+      const cached = getCachedWeather(location)
       if (cached) {
         setSelectedLocation(location)
         setWeatherData(cached)
@@ -296,24 +339,65 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
         return
       }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.lat}&longitude=${location.lng}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,weather_code&temperature_unit=fahrenheit&wind_speed_unit=mph`
+      const response = await fetch(weatherUrl)
+      const data = await response.json()
+      const current = data?.current
+      if (!current) {
+        throw new Error('No weather data')
+      }
 
-      const mockWeatherData: WeatherData = {
-        temperature: Math.round(Math.random() * 40 + 50),
-        condition: 'partly-cloudy',
-        humidity: Math.round(Math.random() * 40 + 40),
-        windSpeed: Math.round(Math.random() * 15 + 5),
-        feelsLike: Math.round(Math.random() * 40 + 48),
-        description: 'Partly cloudy conditions',
-        lastUpdated: new Date(),
+      const conditionMap: Record<number, { condition: WeatherCondition; description: string }> = {
+        0: { condition: 'sunny', description: 'Clear sky' },
+        1: { condition: 'partly-cloudy', description: 'Mainly clear' },
+        2: { condition: 'partly-cloudy', description: 'Partly cloudy' },
+        3: { condition: 'cloudy', description: 'Overcast' },
+        45: { condition: 'foggy', description: 'Fog' },
+        48: { condition: 'foggy', description: 'Depositing rime fog' },
+        71: { condition: 'snowy', description: 'Slight snow' },
+        73: { condition: 'snowy', description: 'Moderate snow' },
+        75: { condition: 'snowy', description: 'Heavy snow' },
+        77: { condition: 'snowy', description: 'Snow grains' },
+        85: { condition: 'snowy', description: 'Slight snow showers' },
+        86: { condition: 'snowy', description: 'Heavy snow showers' },
+        95: { condition: 'stormy', description: 'Thunderstorm' },
+        96: { condition: 'stormy', description: 'Thunderstorm with hail' },
+        99: { condition: 'stormy', description: 'Thunderstorm with heavy hail' },
+        51: { condition: 'rainy', description: 'Light drizzle' },
+        53: { condition: 'rainy', description: 'Moderate drizzle' },
+        55: { condition: 'rainy', description: 'Dense drizzle' },
+        56: { condition: 'rainy', description: 'Light freezing drizzle' },
+        57: { condition: 'rainy', description: 'Dense freezing drizzle' },
+        61: { condition: 'rainy', description: 'Slight rain' },
+        63: { condition: 'rainy', description: 'Moderate rain' },
+        65: { condition: 'rainy', description: 'Heavy rain' },
+        66: { condition: 'rainy', description: 'Light freezing rain' },
+        67: { condition: 'rainy', description: 'Heavy freezing rain' },
+        80: { condition: 'rainy', description: 'Slight rain showers' },
+        81: { condition: 'rainy', description: 'Moderate rain showers' },
+        82: { condition: 'rainy', description: 'Violent rain showers' },
+      }
+
+      const code = Number(current.weather_code)
+      const mapped = conditionMap[code] || { condition: 'cloudy', description: 'Cloudy' }
+      const isWindy = Number(current.wind_speed_10m) >= 20
+      const resolved = isWindy ? { condition: 'windy' as WeatherCondition, description: 'Windy' } : mapped
+
+      const liveWeatherData: WeatherData = {
+        temperature: Math.round(current.temperature_2m),
+        condition: resolved.condition,
+        humidity: current.relative_humidity_2m,
+        windSpeed: Math.round(current.wind_speed_10m),
+        feelsLike: Math.round(current.apparent_temperature),
+        description: resolved.description,
+        lastUpdated: current.time ? new Date(current.time) : new Date(),
       }
 
       // Cache the new data
-      cacheWeather(location, mockWeatherData)
+      cacheWeather(location, liveWeatherData)
 
       setSelectedLocation(location)
-      setWeatherData(mockWeatherData)
+      setWeatherData(liveWeatherData)
       // Close dropdown if open
       closeMenu()
     } catch (err) {
@@ -341,151 +425,155 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({ compact = true, refreshIn
   }
 
   // Create a location from search input (city or zip)
-  const handleSearchSubmit = () => {
+  const handleSearchSubmit = async () => {
     const q = searchQuery.trim()
     if (!q) return
-    const isZip = /^\d{5}$/.test(q)
-    const newLoc: Location = {
-      id: `custom-${q}`,
-      name: isZip ? `ZIP ${q}` : q,
-      city: isZip ? `ZIP ${q}` : q,
-      state: '',
+    setLoading(true)
+    setError(null)
+    try {
+      const geo = await geocodeLocation(q)
+      if (geo) {
+        handleSelectLocation(geo)
+      } else {
+        setError('Location not found')
+      }
+    } finally {
+      setLoading(false)
+      setSearchQuery('')
     }
-    handleSelectLocation(newLoc)
-    setSearchQuery('')
   }
 
   // Compact header view
   if (compact) {
     return (
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Button
-          onClick={openMenu}
-          disabled={loading}
-          sx={{
-            textTransform: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 0.5,
-            color: 'text.primary',
-            '&:hover': {
-              backgroundColor: 'action.hover',
-            },
-          }}
-          aria-label="Open location weather dropdown"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') setAnchorEl(e.currentTarget as unknown as HTMLElement)
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Typography variant="body2" sx={{ color: 'text.secondary' }}>Weather:</Typography>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {selectedLocation?.id === 'current' ? 'Your Location' : (selectedLocation?.name || 'Select')}
-            </Typography>
-            <span aria-hidden>▾</span>
-            {loading ? (
-              <CircularProgress size={18} />
-            ) : weatherData ? (
-              <>
-                <span style={{ fontSize: '1.1rem' }}>{getWeatherIcon(weatherData.condition)}</span>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                  {formatTemperature(weatherData.temperature, showFahrenheit)}
-                </Typography>
-              </>
-            ) : (
-              <span aria-hidden>☁️</span>
-            )}
-          </Box>
-        </Button>
-
-        {/* Refresh Button */}
-        {weatherData && (
           <Button
-            size="small"
-            onClick={handleRefresh}
+            onClick={openMenu}
             disabled={loading}
-            sx={{ minWidth: 'auto', p: 0.5 }}
-            aria-label="Refresh weather"
+            sx={{
+              textTransform: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.5,
+              color: 'text.primary',
+              '&:hover': {
+                backgroundColor: 'action.hover',
+              },
+            }}
+            aria-label="Open location weather dropdown"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') setAnchorEl(e.currentTarget as unknown as HTMLElement)
+            }}
           >
-            <span aria-hidden>🔄</span>
-          </Button>
-        )}
-
-        {/* Location Dropdown Menu anchored to button */}
-        <Menu
-          anchorEl={anchorEl}
-          open={menuOpen}
-          onClose={closeMenu}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          MenuListProps={{ 'aria-label': 'Select location' }}
-        >
-          {currentLocation && (
-            <MenuItem
-              onClick={() => { handleSelectLocation(currentLocation); closeMenu(); }}
-              disabled={loading}
-              selected={selectedLocation?.id === currentLocation.id}
-            >
-              {selectedLocation?.id === currentLocation.id && (
-                <ListItemIcon sx={{ minWidth: 28 }}><span aria-hidden>✓</span></ListItemIcon>
-              )}
-              <Typography variant="body2" sx={{ fontWeight: selectedLocation?.id === currentLocation.id ? 600 : 400 }}>
-                Your Location (Auto)
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>Weather:</Typography>
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                {selectedLocation?.id === 'current' ? 'Your Location' : (selectedLocation?.name || 'Select')}
               </Typography>
-            </MenuItem>
-          )}
-          <Divider />
-          <Box sx={{ px: 2, py: 1 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-              CURRENTLY VIEWING ({DEFAULT_LOCATIONS.length})
-            </Typography>
-          </Box>
-          {DEFAULT_LOCATIONS.map((location) => (
-            <MenuItem
-              key={location.id}
-              onClick={() => { handleSelectLocation(location); closeMenu(); }}
-              disabled={loading}
-              selected={selectedLocation?.id === location.id}
-            >
-              {selectedLocation?.id === location.id && (
-                <ListItemIcon sx={{ minWidth: 28 }}><span aria-hidden>✓</span></ListItemIcon>
+              <span aria-hidden>▾</span>
+              {loading ? (
+                <CircularProgress size={18} />
+              ) : weatherData ? (
+                <>
+                  <span style={{ fontSize: '1.1rem' }}>{getWeatherIcon(weatherData.condition)}</span>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {formatTemperature(weatherData.temperature, showFahrenheit)}
+                  </Typography>
+                </>
+              ) : (
+                <span aria-hidden>☁️</span>
               )}
-              <Box>
-                <Typography variant="body2">{location.city}, {location.state}</Typography>
-              </Box>
-            </MenuItem>
-          ))}
-          <Divider />
-          <MenuItem onClick={() => { closeMenu(); setCustomDialogOpen(true) }}>
-            <Typography variant="body2" sx={{ color: 'primary.main' }}>Custom Location...</Typography>
-          </MenuItem>
-        </Menu>
+            </Box>
+          </Button>
 
-        {/* Custom Location Dialog */}
-        <Dialog open={customDialogOpen} onClose={() => setCustomDialogOpen(false)}>
-          <DialogTitle>Custom Location</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="City or ZIP"
-              fullWidth
-              variant="outlined"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearchSubmit()
-                  setCustomDialogOpen(false)
-                }
-              }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCustomDialogOpen(false)}>Cancel</Button>
-            <Button onClick={() => { handleSearchSubmit(); setCustomDialogOpen(false) }} variant="contained">Add</Button>
-          </DialogActions>
-        </Dialog>
+          {/* Refresh Button */}
+          {weatherData && (
+            <Button
+              size="small"
+              onClick={handleRefresh}
+              disabled={loading}
+              sx={{ minWidth: 'auto', p: 0.5 }}
+              aria-label="Refresh weather"
+            >
+              <span aria-hidden>🔄</span>
+            </Button>
+          )}
+
+          {/* Location Dropdown Menu anchored to button */}
+          <Menu
+            anchorEl={anchorEl}
+            open={menuOpen}
+            onClose={closeMenu}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            MenuListProps={{ 'aria-label': 'Select location' }}
+          >
+            {currentLocation && (
+              <MenuItem
+                onClick={() => { handleSelectLocation(currentLocation); closeMenu(); }}
+                disabled={loading}
+                selected={selectedLocation?.id === currentLocation.id}
+              >
+                {selectedLocation?.id === currentLocation.id && (
+                  <ListItemIcon sx={{ minWidth: 28 }}><span aria-hidden>✓</span></ListItemIcon>
+                )}
+                <Typography variant="body2" sx={{ fontWeight: selectedLocation?.id === currentLocation.id ? 600 : 400 }}>
+                  Your Location (Auto)
+                </Typography>
+              </MenuItem>
+            )}
+            <Divider />
+            <Box sx={{ px: 2, py: 1 }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                CURRENTLY VIEWING ({DEFAULT_LOCATIONS.length})
+              </Typography>
+            </Box>
+            {DEFAULT_LOCATIONS.map((location) => (
+              <MenuItem
+                key={location.id}
+                onClick={() => { handleSelectLocation(location); closeMenu(); }}
+                disabled={loading}
+                selected={selectedLocation?.id === location.id}
+              >
+                {selectedLocation?.id === location.id && (
+                  <ListItemIcon sx={{ minWidth: 28 }}><span aria-hidden>✓</span></ListItemIcon>
+                )}
+                <Box>
+                  <Typography variant="body2">{location.city}, {location.state}</Typography>
+                </Box>
+              </MenuItem>
+            ))}
+            <Divider />
+            <MenuItem onClick={() => { closeMenu(); setCustomDialogOpen(true) }}>
+              <Typography variant="body2" sx={{ color: 'primary.main' }}>Custom Location...</Typography>
+            </MenuItem>
+          </Menu>
+
+          {/* Custom Location Dialog */}
+          <Dialog open={customDialogOpen} onClose={() => setCustomDialogOpen(false)}>
+            <DialogTitle>Custom Location</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="City or ZIP"
+                fullWidth
+                variant="outlined"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit()
+                    setCustomDialogOpen(false)
+                  }
+                }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setCustomDialogOpen(false)}>Cancel</Button>
+              <Button onClick={() => { handleSearchSubmit(); setCustomDialogOpen(false) }} variant="contained">Add</Button>
+            </DialogActions>
+          </Dialog>
       </Box>
     )
   }
