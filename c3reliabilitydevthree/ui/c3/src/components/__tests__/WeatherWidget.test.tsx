@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import WeatherWidget from '../WeatherWidget';
 
 // Minimal Jest global declarations for this workspace
@@ -65,15 +65,17 @@ beforeEach(() => {
 
 afterEach(() => {
   jest.resetAllMocks();
+  localStorage.clear();
+  jest.useRealTimers();
 });
 
-it('loads weather from browser geolocation', async () => {
+const mockGeoSuccess = (lat = 37.5, lng = -122.3) => {
   const geo = global.navigator.geolocation as Geolocation;
   (geo.getCurrentPosition as any).mockImplementation((success: PositionCallback) => {
     success({
       coords: {
-        latitude: 37.5,
-        longitude: -122.3,
+        latitude: lat,
+        longitude: lng,
         accuracy: 1,
         altitude: null,
         altitudeAccuracy: null,
@@ -83,6 +85,21 @@ it('loads weather from browser geolocation', async () => {
       timestamp: Date.now(),
     } as GeolocationPosition);
   });
+};
+
+const mockGeoFailure = () => {
+  const geo = global.navigator.geolocation as Geolocation;
+  (geo.getCurrentPosition as any).mockImplementation(
+    (_success: PositionCallback, error?: PositionErrorCallback) => {
+      if (error) {
+        error({ code: 1, message: 'Denied', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError);
+      }
+    }
+  );
+};
+
+it('loads weather from browser geolocation', async () => {
+  mockGeoSuccess(37.5, -122.3);
 
   render(<WeatherWidget compact={false} />);
 
@@ -93,14 +110,7 @@ it('loads weather from browser geolocation', async () => {
 });
 
 it('falls back to IP geolocation when browser geolocation fails', async () => {
-  const geo = global.navigator.geolocation as Geolocation;
-  (geo.getCurrentPosition as any).mockImplementation(
-    (_success: PositionCallback, error?: PositionErrorCallback) => {
-      if (error) {
-        error({ code: 1, message: 'Denied', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError);
-      }
-    }
-  );
+  mockGeoFailure();
 
   render(<WeatherWidget compact={false} />);
 
@@ -111,14 +121,7 @@ it('falls back to IP geolocation when browser geolocation fails', async () => {
 });
 
 it('uses default location coordinates when selecting from dropdown', async () => {
-  const geo = global.navigator.geolocation as Geolocation;
-  (geo.getCurrentPosition as any).mockImplementation(
-    (_success: PositionCallback, error?: PositionErrorCallback) => {
-      if (error) {
-        error({ code: 1, message: 'Denied', PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3 } as GeolocationPositionError);
-      }
-    }
-  );
+  mockGeoFailure();
 
   render(<WeatherWidget compact />);
 
@@ -131,6 +134,127 @@ it('uses default location coordinates when selecting from dropdown', async () =>
   await waitFor(() => {
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining('latitude=37.7749&longitude=-122.4194')
+    );
+  });
+});
+
+it('refreshes weather every 60 minutes', async () => {
+  jest.useFakeTimers();
+  jest.setSystemTime(new Date('2026-01-28T00:00:00Z'));
+  mockGeoSuccess(37.5, -122.3);
+
+  render(<WeatherWidget compact={false} refreshIntervalMinutes={60} />);
+
+  await screen.findByText(/70°F/);
+
+  act(() => {
+    jest.advanceTimersByTime(60 * 60 * 1000 + 1);
+  });
+
+  await waitFor(() => {
+    const calls = (global.fetch as any).mock.calls
+      .map((c: any[]) => c[0])
+      .filter((u: string) => u.includes('api.open-meteo.com'));
+    expect(calls.length).toBeGreaterThanOrEqual(2);
+  });
+});
+
+it('supports custom location search by city/zip', async () => {
+  mockGeoFailure();
+
+  render(<WeatherWidget compact />);
+
+  fireEvent.click(await screen.findByLabelText('Open location weather dropdown'));
+  fireEvent.click(await screen.findByText('Custom Location...'));
+
+  const input = screen.getByRole('textbox');
+  fireEvent.change(input, { target: { value: 'Dallas' } });
+  fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+  await waitFor(() => {
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('geocoding-api.open-meteo.com')
+    );
+  });
+});
+
+it('shows loading state while fetching weather', async () => {
+  mockGeoSuccess(37.5, -122.3);
+  (global as any).fetch = jest.fn(() => new Promise(() => {}));
+
+  render(<WeatherWidget compact={false} />);
+
+  expect(await screen.findByText('Fetching weather...')).toBeInTheDocument();
+});
+
+it('shows error state when weather fetch fails', async () => {
+  mockGeoSuccess(37.5, -122.3);
+  (global as any).fetch = jest.fn((url: string) => {
+    if (url.startsWith('https://api.open-meteo.com/')) {
+      return Promise.reject(new Error('Failed'));
+    }
+    return mockWeatherResponse();
+  });
+
+  render(<WeatherWidget compact={false} />);
+
+  expect(await screen.findByText('Failed to fetch weather data')).toBeInTheDocument();
+});
+
+it('toggles temperature units from °F to °C', async () => {
+  mockGeoSuccess(37.5, -122.3);
+
+  render(<WeatherWidget compact={false} />);
+
+  expect(await screen.findByText(/70°F/)).toBeInTheDocument();
+
+  const toggleInput = screen.getByRole('checkbox');
+  fireEvent.click(toggleInput);
+
+  expect(await screen.findByText(/21°C/)).toBeInTheDocument();
+});
+
+it('uses cached weather data when available', async () => {
+  const lat = 37.5;
+  const lng = -122.3;
+  mockGeoSuccess(lat, lng);
+
+  const cached = {
+    data: {
+      temperature: 80,
+      condition: 'sunny',
+      lastUpdated: new Date().toISOString(),
+    },
+    location: { id: 'current', name: 'Your Location', city: 'Your Location', state: '', lat, lng },
+    timestamp: Date.now(),
+    ttl: 60 * 60 * 1000,
+  };
+  const key = `weather_cache_v2_current_${lat}_${lng}`;
+  localStorage.setItem(key, JSON.stringify(cached));
+
+  render(<WeatherWidget compact={false} />);
+
+  expect(await screen.findByText(/80°F/)).toBeInTheDocument();
+  const calls = (global.fetch as any).mock.calls
+    .map((c: any[]) => c[0])
+    .filter((u: string) => u.includes('api.open-meteo.com'));
+  expect(calls.length).toBe(0);
+});
+
+it('supports keyboard navigation to open dropdown and select location', async () => {
+  mockGeoFailure();
+
+  render(<WeatherWidget compact />);
+
+  const dropdown = await screen.findByLabelText('Open location weather dropdown');
+  fireEvent.keyDown(dropdown, { key: 'Enter', code: 'Enter' });
+
+  const nyOption = await screen.findByText('New York, NY');
+  fireEvent.click(nyOption);
+
+  await waitFor(() => {
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('latitude=40.7128&longitude=-74.006')
     );
   });
 });

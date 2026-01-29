@@ -11,7 +11,8 @@ export const FormControl = passthrough('div');
 export const Box = passthrough('div');
 export const Button = passthrough('button');
 export const Divider = passthrough('hr');
-export const Switch = passthrough('input');
+export const Switch = ({ children, ...props }: Props) =>
+  React.createElement('input', { type: 'checkbox', ...props }, children);
 export const Select = passthrough('select');
 export const Card = passthrough('div');
 export const CardContent = passthrough('div');
