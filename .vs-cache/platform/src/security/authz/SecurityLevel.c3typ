@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Platform security levels
+ */
+enum type SecurityLevel {
+
+  /**
+   * Level of access defined by C3.ClusterAdmin
+   */
+  ONE = 1
+
+  /**
+   * Level of access defined by C3.EnvAdmin
+   */
+  TWO = 2
+
+  /**
+   * Level of access defined by C3.AppAdmin
+   */
+  THREE = 3
+
+  /**
+   * Level of access defined by C3.Developer that is the default role used by background processes
+   */
+  SEVEN = 7
+
+  /**
+   * Level of access for all non-security level Roles. Equivalent to Java's Integer.MAX_VALUE.
+   */
+  MAX = 2147483647
+
+  /**
+   * Returns the security level of the provided action group.
+   */
+  forActionGroup: cached inline function(actionGroup: !?string serialized Action.Group, failIfInvalid: boolean): int
+}

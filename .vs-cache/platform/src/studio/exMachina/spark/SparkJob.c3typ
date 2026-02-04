@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A spark job is the handler for all In Memory Analytics Server job management,
+ * including status, cancellation, result retrieval and error checking.
+ */
+entity type SparkJob mixes AclEnabled schema name 'IMA_SPKJOB' {
+
+  /**
+   * This field stores the "SparkJobSpec" used to submit the job.
+   * We cannot have the valueType of this field be "SparkJobSpec" since its not a stored type and
+   * the instance is going to be that of a type that extends "SparkJobSpec".
+   */
+  spec: Obj
+
+  /**
+   * Start time of current job.
+   */
+  start: !datetime
+
+  /**
+   * End time of current job.
+   */
+  end: datetime
+
+  /**
+   * Status of current job.
+   */
+  status: !SparkJobStatus
+
+  /**
+   * Export information of current job.
+   */
+  s3Export: SparkS3Export
+
+  /**
+   * Results of current job.
+   */
+  results: [SparkJobResult](job)
+
+  /**
+   * History of state transitions that the job has undergone.
+   */
+  stateTransitions: [SparkJobStateTransition] schema name 'ST'
+
+  /**
+   * Elapsed seconds between 'start' and 'end' time of the job.
+   * If the job hasn't ended, it returns elapsed seconds since 'start'.
+   */
+  elapsedSeconds: inline function(obj: SparkJob): double js
+}

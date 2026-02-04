@@ -1,0 +1,81 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized {@link Workflow.Vertex} that represents an {@link ActionRef}. Notably, this vertex differs from
+ * {@link Workflow.Action} in that it specifically represents an asynchronous action, implemented with an underlying
+ * (i.e. nested) {@link Workflow}. This vertex will take the action output, which is usually a reference to the
+ * underlying {@link Workflow.Run}, wait on it, and extract the output to set as the result for the action.
+ * This vertex differs from {@link Workflow.Nested} in that it specifies how to extract a result from the underlying
+ * {@link Workflow.Run} output. Additionally, the underlying {@link Workflow} is dynamically generated (by the action)
+ * and not statically defined.
+ * Every {@link Workflow.Nested.Action} has multiple input ports: a port "$start" and a number of ports whose names
+ * match the arguments to the configured {@link #action}.
+ * Every {@link Workflow.Nested.Action} has three output ports: an optional port "out", a port "$success", and a port
+ * "error".
+ * The "out" output represents the result of the {@link Workflow.Run} that is spawned by the {@link #action}, if any.
+ * See {@link Workflow} for more details on the ports "$start", "$success", and "error".
+ *
+ * -------------------                            ----------------------------
+ * | Workflow.Action | $success --------> $start  |                          | $success --------> ...
+ * -------------------                            |                          |
+ *                                                |  Workflow.Nested.Action  | error -----------> ...
+ * -------------------                            |                          |                       -------------------
+ * | Workflow.Input  | out -------------> arg1    |                          | out -------------> in | Workflow.Output |
+ * -------------------                            ----------------------------                       -------------------
+ */
+type Workflow.Nested.Action mixes Workflow.ActionBase {
+
+  /**
+   * Handler that contains functions for mapping the {@link #action}'s output to a {@link Workflow.Run} and for extracting
+   * the "result" of the {@link #action} from the {@link Workflow.Run}.
+   * If unspecified, then the output of the {@link #action} is assumed to be a {@link Workflow.Run}, and there will
+   * be no result output for this vertex. Note that this matches the output behavior of {@link Workflow.Nested}.
+   */
+  handlerType: Type<<Workflow.Nested.Action.Handler>>
+
+  /**
+   * Suggested constructor for creating a {@link Workflow.Nested.Action}.
+   *
+   * @param action
+   *           action that this vertex represents.
+   * @param handlerType
+   *           see {@link #handlerType}.
+   * @param name
+   *           (optional) name for this vertex.
+   * @param inNames
+   *           names of input ports that the new vertex will have. These should correspond to the names of the action
+   *           method parameters.
+   * @param outNames
+   *           names of output ports that the new vertex will have. This corresponds to the return value of an action, in which
+   *           case the name is only for user reference. The only exception is if a return type has named fields (e.g. `Obj`, `Map`).
+   *           In this case, the output port names can represent field paths in the scope of the target method return value and will
+   *           be extracted properly for subsequent steps. Example for machine learning, where a native library may return
+   *           two conceptual outputs that need to be routed differently in subsequent steps. Note the dot-notation
+   *           field path syntax which signals a multi-output.
+   *           ```
+   *           outNames = ["out.images", "out.boundingBoxes"]
+   *           // get output from action
+   *           out = action.call(...)
+   *           // if `out` return is a `Map`
+   *           outImages = out["images"]
+   *           outBoundingBoxes = out["boundingBoxes"]
+   *           // if `out` return is an `Obj`
+   *           outImages = out.images
+   *           outBoundingBoxes = out.boundingBoxes
+   *           ```
+   * @return a constructed instance of {@link Workflow.Nested.Action}.
+   */
+  fromAction: function(action: !ActionRef,
+                       handlerType: Type<<Workflow.Nested.Action.Handler>>,
+                       name: string,
+                       inNames: [string],
+                       outNames: [string]): !mixing Workflow.Nested.Action
+
+  requiresPolling: ~
+}

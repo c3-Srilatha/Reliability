@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to hold the GCP event notification. All the commonly used fields have been extracted in this type
+ */
+type GcpBucketEvent mixes FileSystemEvent, CloudInboundMessage<json> {
+
+  /**
+   * Region in which the event occurred. E.g. `us-east-1`
+   */
+  region: string
+
+  /**
+   * The time, in ISO-8601 format, for example, 1970-01-01T00:00:00.000Z, when file system finished processing the request
+   */
+  eventTime: datetime
+
+  /**
+   * Event-type causing the trigger. E.g. Object_Finalized
+   */
+  eventName: string
+
+  /**
+   * The object on which the event happens. E.g., test1/db.txt
+   */
+  name: string
+
+  /**
+   * Name of the bucket. E.g. `mybucket`
+   */
+  bucket: !string
+
+  /**
+   * Size of the change object
+   */
+  size: int
+
+  /**
+   * Construct an event from GcpSubscriptionMessage
+   *
+   * @param message
+   *        GcpSubscriptionMessage
+   */
+  eventFromMessage: function(message: GcpSubscriptionMessage): GcpBucketEvent
+
+  /**
+   * Construct an event from Json
+   *
+   * @param obj
+   *        json object
+   */
+  eventFromJson: function(obj: json): GcpBucketEvent
+}

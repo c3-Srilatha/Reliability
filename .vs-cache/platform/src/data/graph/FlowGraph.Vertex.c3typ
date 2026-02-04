@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Vertex of a {@link FlowGraph}. Contains typed input and output ports.
+ */
+abstract type FlowGraph.Vertex mixes Identifiable {
+
+  DEFAULT_OUT_PORT_NAME: const string = "out"
+  DEFAULT_IN_PORT_NAME:  const string = "in"
+
+  /**
+   * Optional name locally unique to the parent {@link FlowGraph}. Useful for user-facing APIs such as visualization.
+   */
+  name: string
+
+  /**
+   * key - port name
+   * value - information about type associated with this port. This is useful for {@link FlowGraph.Edge} validation.
+   */
+  inTypes: map<string, ValueType>
+
+  /**
+   * key - port name
+   * value - information about type associated with this port. This is useful for {@link FlowGraph.Edge} validation.
+   */
+  outTypes: map<string, ValueType>
+
+  /**
+   * @param graph
+   *         the graph containing this vertex.
+   * @return whether this is a source vertex in the parent graph.
+   */
+  isSource: member function(graph: !FlowGraph): boolean java | py
+
+  /**
+   * @param graph
+   *         the graph containing this vertex.
+   * @return whether this is a sink vertex in the parent graph.
+   */
+  isSink: member function(graph: !FlowGraph): boolean java | py
+
+  /**
+   * @return all ports on this vertex. The key is the port name.
+   */
+  ports: property(): map<string, FlowGraph.Port> java | py
+
+  /**
+   * @return all input ports on this vertex. The key is the port name.
+   */
+  inputs: property(): map<string, FlowGraph.Port> java | py
+
+  /**
+   * @return all output ports on this vertex. The key is the port name.
+   */
+  outputs: property(): map<string, FlowGraph.Port> java | py
+
+  /**
+   * Instantiate a port with the given name associated with this vertex.
+   * @param name
+   *         name for the new port.
+   * @return port with given name associated with this vertex.
+   */
+  @java(returnWildcardVarBindings=true)
+  port: member function(name: !string): !FlowGraph.Port<mixing FlowGraph.Vertex> java | py
+
+  /**
+   * @return type for port on this vertex.
+   */
+  portType: cached function(): !Type<FlowGraph.Port>
+
+  /**
+   * Generates a name for an existing vertex.
+   * @param existingNames
+   *           list of existing vertex names in the graph, to help avoid conflict.
+   * @param prefix
+   *           optional prefix for auto-generated name.
+   * @return this vertex with a new auto-generated name.
+   */
+  autoName: member function(existingNames: [string], prefix: string): mixing FlowGraph.Vertex
+
+  /**
+   * Helper function that returns whether the vertex is an {@link MlPipeline.PipeVertex}.
+   */
+  is_pipe: private member function(): !boolean py
+
+  /**
+   * Helper function that returns whether the vertex represents an {@link MlPipeline}.
+   */
+  is_mlpipeline: private member function(): !boolean py
+}

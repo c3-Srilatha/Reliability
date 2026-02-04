@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Any object can provide a custom renderer within the Console or UI by extending the {@link HtmlRenderable} interface
+ * and implementing the {@link HtmlRenderable#renderer renderer} method.
+ *
+ * @see HtmlRenderable
+ */
+type HtmlRenderer mixes Value {
+
+  /**
+   * Return the title to be displayed in menus to enable this renderer.
+   */
+  menuTitle: abstract function(): string
+
+  /**
+   * Return the title to be displayed for a specific renderer instance.
+   */
+  title: optional member function(): string
+
+  /**
+   * Return an appropriate instance of a React component (class or function) which can be called to produce the
+   * React component instance or HTML element that provides the visualization. This must be callable from the browser
+   * (typically with `js client`).
+   */
+  component: optional member function(): native
+
+  /**
+   * Return a raw HTML string to be displayed within the calling context. This may be implemented anywhere as the
+   * string is naturally serializable.
+   */
+  toHtml: optional member function(): string serialized Html
+
+  /**
+   * Return an image, such as a chart, that represents the instance. Ideally this will be an SVG image so that it
+   * doesn't suffer from degradation when zooming.
+   */
+  toImage: optional member function(): Content
+
+  /**
+   * Build the HTML that renders the object into the specified jQuery div.
+   * The specified div is a jQuery object `$('<div>')` which should not be itself changed,
+   * although the renderer is expected to fill it with the rendered content.
+   *
+   * Note that the renderer may be called more than one for different divs.
+   */
+  render: optional member function(div: !json)
+
+  /**
+   * Discard any cached state for this renderer for the rendering in the specified div.
+   *
+   * Note that this may not always be called, but will be called if the same renderer
+   * is re-rendered into the same div.
+   */
+  dispose: optional member function(div: !json)
+}

@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@annotation(appliesTo=['type'])
+type Ann.Cache mixes Annotation {
+
+  /**
+   * The maximum number of entries in MRU caches.
+   */
+  maxSize: int
+
+  /**
+   * Time to Live: the maximum amount of time cached value will live. Value will automatically be refreshed on access
+   * synchronously if this time expires.
+   *
+   * @see #ttr
+   */
+  ttl: string serialized Duration
+
+  /**
+   * Time to Refresh: amount of time after which cached value will be refreshed _after_ access. Difference from #ttl is
+   * fact that value is refreshed asynchronously vs synchronously on access in case of #ttl. Note that both #ttl and
+   * #ttr can be set but #ttr should be less than #ttl. What this allows is that value access is not blocked by refresh
+   * most of the time and there is a guarantee that value will always be up to date within #ttl time.
+   *
+   * @see #ttl
+   */
+  ttr: string serialized Duration
+
+  /**
+   * If set cache will be primed on App.Node start and will refresh itself periodically.
+   */
+  refresh: string serialized Period
+
+  /**
+   * List of C3 types that this cache is depending on.
+   *    If a dependency type is invalidated, then this cache will be invalidated.
+   */
+  dependencies: [string]
+
+  /**
+   * If `true` then will not cache the fact that that `Cache#produce` returned `null` for a `cache key`.
+   */
+  doNotCacheNulls: boolean
+
+  @deprecated(finalVersion="8.9", details="Use 'doNotCacheNulls' instead")
+  cacheNulls: boolean
+
+  /**
+   * Include spec for persistable cached C3 types.
+   */
+  include: string
+
+  /**
+   * If true, then 'populateAll' will be called for any find operation where the cache is empty.
+   */
+  all: boolean
+
+  /**
+   * If true, then cached static methods will be cached on the type itself during code-gen
+   */
+  compile: boolean
+
+  /**
+   * If `true`, then cached values will be held using soft references, allowing them to be garbage collected
+   * when memory pressure is high. This is useful for caches that hold large objects or when memory efficiency
+   * is more important than cache hit rate.
+   *
+   * Note: When a soft-referenced value is garbage collected and subsequently re-computed, TTL/TTR timers
+   * reset based on re-computation time, treating the value as freshly cached.
+   */
+  @beta
+  softRef: boolean
+
+  /**
+   * If `true`, then the cache instance type must be from the Jvm's `platform` package singleton instance. This ensures
+   * that cache does not hold reference to any of the potentially transient application packages and types.
+   * When a cached method or property is called, the returned instance will be remade using `Ctx.platPkg()`.
+   */
+  platPkg: private boolean
+}

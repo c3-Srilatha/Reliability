@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.management.compute.OSProfile', runtimeFieldMapper='JavaC3StyleFieldMapper')
+type AzureVmOSProfile {
+
+  customData:                  @java(runtimeClassName='java.lang.String') string
+  windowsConfiguration:        @java(runtimeClassName='com.microsoft.azure.management.compute.WindowsConfiguration') AzureWindowsConfiguration
+  requireGuestProvisionSignal: @java(runtimeClassName='java.lang.Boolean') boolean
+  secrets:                     @java(runtimeClassName='java.util.List') [AzureVaultSecretGroup]
+  adminUsername:               @java(runtimeClassName='java.lang.String') string
+  allowExtensionOperations:    @java(runtimeClassName='java.lang.Boolean') boolean
+  computerName:                @java(runtimeClassName='java.lang.String') string
+  linuxConfiguration:          @java(runtimeClassName='com.microsoft.azure.management.compute.LinuxConfiguration') AzureLinuxConfiguration
+  adminPassword:               @java(runtimeClassName='java.lang.String') string
+  fromJava:                    function(javaObj: @java(class="java.lang.Object") !?native): AzureVmOSProfile
+  toJava:                      member function(): native
+}

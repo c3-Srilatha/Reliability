@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that performs CRUD operations on Gcp IAM users.
+ */
+type GcpIdp mixes IdentityProvider<GcpIdpConfig> {
+
+  /**
+   *  Provisions key pair on the Gcs service account, see {@link GcpIdpConfig}, for the given user.
+   *
+   *  @return Map<String, String> consisting of the {@link GcpCredentials} fields needed to access Gcs resources
+   * through the service account.
+   */
+  provisionForUser: function(): map<string, string>
+
+  /**
+   * Revokes Gcp access keys for the user specified by the given email if an email is supplied,
+   * otherwise revokes from the user invoking the action.
+   */
+  @action(group+='cluster-admin')
+  revokeFromUser: function(email: string)
+}

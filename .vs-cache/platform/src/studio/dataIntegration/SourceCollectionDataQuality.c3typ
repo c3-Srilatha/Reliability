@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generates and returns the data to pass to the {@link UiSdlTimeGraph}.
+ */
+type SourceCollectionDataQuality {
+
+  /**
+   * Unique Identifier of the data Quality. Contains the name of the SourceCollection + timestamp
+   */
+  id: string
+
+  /**
+   * Id of the entity type. the object structure is
+   * from { id: <Name of the SourceCollection> }
+   */
+  from: map<string, string>
+
+  /**
+   * The Opacity to show on {@link UiSdlTimeGraph}
+   */
+  opacity: double
+
+  /**
+   * Status of the data
+   */
+  status: string enum SourceCollectionDataQualityStatus
+
+  /**
+   * The range for the timestamp
+   * The object structure is
+   * timeRange: { start: <start timestamp>, end: <end timestamp> }
+   */
+  timeRange: map<string, datetime>
+
+  /**
+   * Returns the heatmap data for last 30 days
+   */
+  fetch: function(spec: FetchSpec, clientTimeZoneOffset: string): FetchResult<SourceCollectionDataQuality> py-data_312
+}

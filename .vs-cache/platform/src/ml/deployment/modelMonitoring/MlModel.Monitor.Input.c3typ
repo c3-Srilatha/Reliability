@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for holding individual data group produced by {@link MlModel.Monitor.Data#dataGroupsFromSpec}.
+ */
+type MlModel.Monitor.Input {
+
+  /**
+   * {@link MlModel} that needs to be monitored.
+   */
+  model: MlModel
+
+  /**
+   * The group value that at least the {@link #predictions} are grouped by.
+   */
+  groupByValue: [any]
+
+  /**
+   * The predictions from this {@link #model}, and if present, for this
+   * {@link #groupByValue}. If only a single prediction is fetched in {@link MlModel.Monitor.Data#dataGroupsFromSpec},
+   * recommended format is {@link Data}. If multiple predictions (in case of a multi-output model)
+   * are fetched, {@link Map} is used. Suggested key name is one of {@link MlModel#pipeline#outNames}.
+   */
+  predictions: Data | map<string, Data>
+
+  /**
+   * The corresponding labels for the predictions from this {@link #model}, and if present, for this
+   * {@link #groupByValue}. If only a single label is fetched in {@link MlModel.Monitor.Data#dataGroupsFromSpec},
+   * recommended format is {@link Data}. If multiple labels (in case of a multi-output model)
+   * are fetched, {@link Map} is used. Suggested key name is one of {@link MlModel#pipeline#outNames}.
+   */
+  labels: Data | map<string, Data>
+
+  /**
+   * Scoring context to be passed to the {@link MlScoringMetric} that will consume {@link #predictions} and
+   * {@link #labels}.
+   */
+  contexts: map<string, Data>
+}

@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Temporary strongly typed access for test file system-related environmental configuration elements. It was introduced
+ * to expose the location of the shared file system that can be used by tests to share files between C3 nodes and the
+ * Selenium pod, in a multi-node cluster topology.
+ */
+// TODO: MIG8-2327
+@beta
+type TestFileSystemConfig mixes Config, Singleton {
+
+  /**
+   * The local file system mount point for the shared file system accessible across the entire C3 cluster *AND*
+   * auxiliary dependency runtimes, such as Selenium. A file placed in this folder is guaranteed to be accessible from
+   * all nodes in the cluster as well as from auxiliary dependency runtimes appropriately configured.
+   */
+  clusterSharedFolder: string = '/tmp'
+
+  /**
+   * Returns the download folder path for browsers running within the cluster
+   */
+  downloadPath: function(): string
+}

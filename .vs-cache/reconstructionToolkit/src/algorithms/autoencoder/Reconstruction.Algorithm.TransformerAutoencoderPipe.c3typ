@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipe} template for a Pytorch-based Transformer Autoencoder, based on the paper
+ * "TranAD: Deep Transformer Networks for Anomaly Detection in Multivariate Time Series Data" by Tuli et al. This pipe
+ * will build and train a transformer-based autoencoder on 2D timeseries data based on the user-specified
+ * hyperparameters. In particular, the size of this model solely depends on the number of input features
+ * {@link #numFeatures} The outputs will be the reconstructed input and the residual between the reconstruction and the
+ * original input.
+ */
+extendable entity type Reconstruction.Algorithm.TransformerAutoencoderPipe extends Reconstruction.Algorithm.TimeseriesAutoencoder<{ reconstructions: Data, residuals: Data }> type key 'RCATFA'{
+
+  generatePipe: ~ py-huggingface-server-py4j
+  doTrain: ~ py-huggingface-server-py4j
+  doProcess: ~ py-huggingface-server-py4j
+  saveModel: ~ py-huggingface-server-py4j
+  loadModel: ~ py-huggingface-server-py4j
+}

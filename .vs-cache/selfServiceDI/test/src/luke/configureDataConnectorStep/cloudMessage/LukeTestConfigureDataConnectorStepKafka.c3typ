@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The connector type for Cloud Message connectors which holds shared items of all Cloud Message connectors
+ */
+type LukeTestConfigureDataConnectorStepKafka mixes LukeTestConfigureDataConnectorStepCloudMessageConnector {
+
+  getCredentials: ~ js
+
+  /**
+   * Verifies the form for a failed connection
+   * @param credentials
+   *           The inputted credentials to be given in the form for the connector
+   *            streamName
+   *              The topic name to be given in the form for the connector
+   *            endpoint
+   *              The endpoint to be given in the form for the connector
+   *            apiKey
+   *              The api key to be given in the form for the connector
+   *            apiSecret
+   *              The api secret to be given in the form for the connector
+   * @param errorMessageKey
+   *           The error message key to be given in the form for the connector
+   * @param assertionDescription
+   *           The description to be given if the assertion fails
+   */
+  verifyFormError: ~(credentials: ApacheCredentials, errorMessageKey: string, assertionDescription: string) js
+
+  /**
+   * Verifies the form for a successful connection
+   * @param streamName
+   *           The topic name to be given in the form for the connector
+   * @param endpoint
+   *           The endpoint to be given in the form for the connector
+   * @param apiKey
+   *           The api key to be given in the form for the connector
+   * @param apiSecret
+   *           The api secret to be given in the form for the connector
+   */
+  verifyFormSuccess: ~ js
+
+  additionalCredentialFormErrors: ~ = [ { invalidCredentialFields: [ 'streamName', 'endpoint', 'apiKey', 'apiSecret'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.genericError.text', assertionDescription: 'Inline error message not found for invalid credentials for all fields' }, { invalidCredentialFields: ['endpoint'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.genericError.text', assertionDescription: 'Inline error message not found for invalid credentials for endpoint' }, { invalidCredentialFields: [ 'apiKey'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.genericError.text', assertionDescription: 'Inline error message not found for invalid credentials for apiKey' }, { invalidCredentialFields: ['apiSecret'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.genericError.text', assertionDescription: 'Inline error message not found for invalid credentials for apiSecret' } ]
+}

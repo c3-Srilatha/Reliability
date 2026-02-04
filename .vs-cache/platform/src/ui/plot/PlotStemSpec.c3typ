@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Create a stem plot.
+ *
+ * # Example: Simple Stem Chart
+ * ```JavaScript
+ * PlotAxes.make()
+ *         .stem({
+ *           y: C3.Array.patternOfDbl(10, n => 10 + Math.random() * 40),
+ *           lineFmt: ':',
+ *           markerFmt: 'C0D',
+ *           bottom: 25
+ *         }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.stem.html
+ */
+type PlotStemSpec mixes PlotElementSpec {
+
+  /**
+   * The x-positions of the stems. Default: (0, 1, ..., len(y) - 1).
+   *
+   * Python: array-like
+   */
+  x: [any]
+
+  /**
+   * The y-values of the stem heads.
+   *
+   * Python: array-like
+   */
+  y: [any]
+
+  data: any
+
+  /**
+   * A string defining the properties of the vertical lines. Usually, this will be a color or a color and a linestyle:
+   * (matplotlib linefmt)
+   */
+  lineFmt: string
+
+  /**
+   * A string defining the properties of the markers at the stem heads. Default: 'C0o', i.e. filled circles with the first color of the color cycle.
+   * (matplotlib markerfmt)
+   */
+  markerFmt: string
+
+  /**
+   * A format string defining the properties of the baseline.
+   * (matplotlib basefmt)
+   */
+  baseFmt: string
+
+  /**
+   * The y-position of the baseline.
+   */
+  bottom: double = 0
+
+  /**
+   * The label to use for the stems in legends.
+   */
+  label: string
+}

@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents minimal requirements for running computation.
+ */
+type HardwareConstraint mixes BaseHardwareResourceRequirements {
+
+  minimum: HardwareSpec
+
+  /**
+   * Aggregate hardware constraints of an input list into a single hardware constraint
+   * that meets all requirements of the input.
+   *
+   * @param list
+   *           List of {@link HardwareConstraint} we need to satisfy in aggregate.
+   * @return a new instance of {@link HardwareConstraint} that satisfies all requirements of
+   *         the constraints in the input list or `None` in case there are no constraints.
+   */
+  max: function(list: [HardwareConstraint]): HardwareConstraint
+
+  /**
+   * Returns {@link #minimum#acceleratorKind} if {@link #minimum} is specified, or null otherwise.
+   */
+  minAcceleratorKind: property(): string
+
+  /**
+   * Returns {@link #minimum#acceleratorCount} if {@link #minimum} is specified, or 0 otherwise.
+   */
+  minAcceleratorCount: property(): !int
+
+  /**
+   * Represent minimum constraints for running C3 Server's JVM.
+   */
+  jvmMin: cached function(): !HardwareConstraint
+
+  /**
+   * Resolves {@link HardwareConstraint constraint} to deployable {@link HardwareProfile}.
+   *
+   * @param available
+   *           List of configs to search from [temporarily]
+   * @return a new instance of {@link HardwareProfile} that satisfies {@link HardwareConstraint constraint}.
+   *         `null` will be returned if no hardware {@link CloudCluster.NodePool#checkAvailable available}.
+   */
+  // Using `private` to ensure this API not used widely before settling down on interface.
+  resolve: private member function(available: [CloudCluster.NodePool.Config]): HardwareProfile
+}

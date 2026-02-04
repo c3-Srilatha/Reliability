@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This helper will is used to get the statuses of the parsing job.
+ * It accounts for checking the parsing status of {@link ParsableDiagram} and {@link SourceParsableDiagram}.
+ */
+type ParsingJobStatusHelper {
+  /**
+   * The method will fetch {@link UploadedFileCollection} and {@link UploadedParsableDiagramCollection}
+   * and return the combined result.
+   */
+  fetch: function(spec: FetchSpec): FetchResult js-rhino
+
+  /**
+   * The reference to the underlying collection
+   * which can either be a {@link UploadedFileCollection} or {@link UploadedParsableDiagramCollection}.
+   */
+  collectionObj: UploadedParsableDiagramCollection | UploadedFileCollection
+
+  /**
+   * The number of {@link SourceParsableDiagram}s or {@link ParsableDiagram}s being tracked
+   */
+  numFiles: int
+
+  /**
+   * The current status of the parsing job.
+   */
+  parsingStatus: string
+
+  /**
+   * The timestamp of which the underlying collection type was created.
+   */
+  uploadedOn: datetime
+
+  /**
+   * The collection of {@link ParsableDiagram}s associated with this collection.
+   */
+  parsableDiagrams: [ParsableDiagram]
+
+  /**
+   * The collection of {@link SourceParsableDiagram}s associated with this collection.
+   */
+  sourceParsableDiagrams: [SourceParsableDiagram]
+
+  /**
+    * Function to remove the files from UploadedFileCollection that are more than one week old and
+    * are stuck in the pipeline
+    * This is used to clean up old files that are no longer relevant.
+    *
+  */
+  dailyParsingJobRefresh: function(): json js-rhino
+}

@@ -1,0 +1,118 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Each type declares a set of APIs (functions) and/or data fields. These declarations can be consumed by external
+ * systems to expose types to their consumers in other API declaration forms.
+ *
+ * Where the API declaration languages are lower-fidelity than C3 types, broader declarations are generated. Thus some
+ * values allowed by the produced declarations may not actually be valid when executed against the type. For example,
+ * C3 has many different kinds of numbers, but JavaScript has only "number". So if a method is declared with an `int`
+ * parameter, it can only be represented as `number`.
+ */
+abstract type ApiGenerator {
+
+  /**
+   * The type for which the API is being generated, if created through #forType.
+   */
+  sourceType: !TypeMeta
+
+  /**
+   * Return the content (MIME) type for this API declaration.
+   */
+  contentType: abstract member function(spec: ApiGeneratorSpec): !string serialized ContentType
+
+  /**
+   * Return the natural file name for this API declaration.
+   */
+  fileName: abstract member function(spec: ApiGeneratorSpec): !string
+
+  /**
+   * Generate the declaration for #sourceType.
+   */
+  generate: abstract member function(spec: ApiGeneratorSpec): !string
+
+  /**
+   * Generate the declarations for the specified types. This can also expand beyond just the specified types if
+   * {@link ApiGeneratorSpec#addReferenced} is specified.
+   *
+   * @param the types to generate. If any of the types do not exist, an error it thrown.
+   * @return a map of type names to generated declarations. This may include more declarations than requested.
+   */
+  generateBatch: member function(types: ![Type], spec: ApiGeneratorSpec): !map<string, string>
+
+  /**
+   * Generate the declarations for the specified types. This can also expand beyond just the specified types if
+   * {@link ApiGeneratorSpec#addReferenced} is specified.
+   *
+   * @param the type names to generate. If any of the types do not exist, an error it thrown.
+   * @return a map of type names to generated declarations. This may include more declarations than requested.
+   */
+  generateBatchByName: member function(typeNames: ![string], spec: ApiGeneratorSpec): !map<string, string>
+
+  /**
+   * Generate just the preamble (whatever precedes the type declaration) for the #sourceType. This may be empty.
+   */
+  preamble: private member function(spec: ApiGeneratorSpec): string
+
+  /**
+   * Generate just the preamble (whatever precedes the type declaration) for the specified type. This may be empty.
+   *
+   * Note that this is included by #generate and #generateBatch unless {@link ApiGeneratorSpec#noPrePostamble} is true.
+   */
+  preamble: private abstract function(sourceType: !TypeMeta, spec: ApiGeneratorSpec): string
+
+  /**
+   * Generate just the postamble (whatever follows the type declaration) for the #sourceType. This may be empty.
+   */
+  postamble: private member function(spec: ApiGeneratorSpec): string
+
+  /**
+   * Generate just the postamble (whatever follows the type declaration) for the specified type This may be empty.
+   *
+   * Note that this is included by #generate and #generateBatch unless {@link ApiGeneratorSpec#noPrePostamble} is true.
+   */
+  postamble: private abstract function(sourceType: !TypeMeta, spec: ApiGeneratorSpec): string
+
+  /**
+   * Test whether or not the named language is supported by this generator type.
+   */
+  supports: abstract function(language: !string): boolean
+
+  /**
+   * Instantiate a generator for the specified language. If not supported by any sub-type, this returns null.
+   *
+   * @param language the API declaration language (sub type)
+   * @param failIfNone if true and the language is not supported, throw an error
+   *
+   * @see #supports
+   */
+  forLanguage: function(language: !string, failIfNone: boolean): ApiGenerator
+
+  /**
+   * Instantiate a generator for the specified type and language. If the requested language is not supported by
+   * any sub-type, this returns null.
+   *
+   * @param type the C3 type for which the API is to be generated
+   * @param language the API declaration language (sub type); required if method is called on base ApiGenerator
+   * @param failIfNone if true and the type does not exist or the language is not supported, throw an error
+   *
+   * @see #supports
+   */
+  forType: function(type: !TypeMeta, language: string, failIfNone: boolean): mixing ApiGenerator
+
+  /**
+   * Collect all references to other types in value types we would emit for this type.
+   */
+  collectReferences: private function(meta: !TypeMeta, spec: ApiGeneratorSpec): set<TypeMeta>
+
+  /**
+   * Generate the API module for a source type.
+   */
+  generateOne: private abstract member function(spec: ApiGeneratorSpec): !string
+}

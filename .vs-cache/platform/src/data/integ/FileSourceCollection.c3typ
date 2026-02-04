@@ -1,0 +1,130 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that represents a collection of files in {@FileSourceSystem} e.g. a folder, a S3 bucket or an Azure container.
+ * Files should be dropped by the customer or user for processing (data-loading) in the #inboxUrl.
+ * if #external is false
+ *   #inboxUrl is managed by C3 and files will be moved out of this location at the end of processing to prevent the
+ *   from growing large in size and make it manageable.
+ *   {@see SourceCollection for how files/content is managed once they are processed}
+ * if #external is true
+ *   #inboxUrl is not managed by C3 and files will not be moved. The user has to manually manage inboxUrl location.
+ */
+@cache(dependencies=['SourceCollection'])
+type FileSourceCollection mixes SourceCollection<SourceCollection.Config>, FileInfoOverride, FileSystemListener {
+
+  /**
+   * Files should be dropped by the customer or user for processing (data-loading) here.
+   * @return inbox url for a file source collection
+   */
+  inboxUrl: inline member function(): !string
+
+  /**
+   * Files should be dropped by the customer or user for processing (data-loading) here.
+   * @return root url for a file source collection
+   */
+  @deprecated(finalVersion='8.0', details='Use inboxUrl')
+  rootUrl: inline member function(): !string
+
+  /**
+   * @return the files associated with the FileSourceCollection
+   */
+  listFiles: member function(spec: FileOperationSpec, limit: int): stream<File>
+
+  /**
+   * Determines if the files for this SourceCollection are out of sync with the {@link SourceFile}s associated with it
+   */
+  inboxUrlInSync: private member function(): boolean
+
+  /**
+   * Determines if the files for all SourceCollection are out of sync with the {@link SourceFile}s associated with it
+   */
+  inboxUrlsInSync: function(): boolean
+
+  /**
+   * Create PersistableObjDigestBatchJob to store PersistableObjDigest in Cassandra which
+   * summarizes all data in the FileSourceCollection.
+   * Example:
+   *    job = fsc.summarize() //this will use default values for spec
+   *    job.start()
+   *    results = job.fetchResults()
+   *    c3Viz(results)
+   * This will summarize all files in the FileSourceCollection fsc and give a PersistableObjDigest to interpret results.
+   * See PersistableObjDigest for more documentation on how to interpret results.
+   */
+  summarize: member function(spec: PersistableObjDigestBatchJobSpec): PersistableObjDigestBatchJob
+
+  /**
+   * @return a file source collection for urlOrEncodedPath
+   */
+  forUrlOrEncodedPath: function(urlOrEncodedPath: !string, failIfMissing: boolean): FileSourceCollection
+
+  /**
+   * @return a file source collection for file
+   */
+  forFile: function(file: !File, failIfMissing: boolean): FileSourceCollection
+
+  /**
+   * This feature is used to create the SourceFileInfo specific for a FileSourceCollection
+   * see {@link FileInfoOverride #fileInfoOverride}
+   * ```
+   * var fsc  = FileSourceCollection.get(<MyFileSourceCollection>);
+   * fsc.putField('fileInfoOverride', overrideLambda).upsert();
+   * ```
+   * This lambda will be then applied to all files being processed for this FileSourceCollection
+   * if fileInfoOverride is not set here it will check for {@link FileSourceSystem} lambda.
+   * see {@link Lambda} to create a Lambda object
+   */
+  fileInfoOverride: ~
+
+  /**
+   * Return file info in by using features in the below priority.
+   * 1) fileInfoOverride in {@link #fileInfoOverride}
+   * 2) fileInfoOverride in {@link FileSourceSystem#fileInfoOverride}
+   * 3) fileInfo specified in DataIntegConfig.
+   *
+   * @param: file
+   * @return the fileInfo for a file in a FileSourceSystem
+   */
+  fileInfo: member function(file: File): SourceFileInfo
+
+  /**
+   * Filter a line content in a file
+   */
+  lineFilter: lambda(file: !File, line: !string): string
+
+  /**
+   * @return the Cloud Service Provider of the FileSourceSystem
+   */
+  cloudProvider: member function(): !CloudProvider
+
+  sourceIdentifier:          ~
+  sourceSystemDataStoreKind: ~
+
+  /**
+   * @return {@link Url} instance from the inboxUrl for the source collection
+   */
+  parseInboxUrl: private member function(): !Url
+
+  process:            ~
+  startOnArrivalMode: ~
+  stopOnArrivalMode:  ~
+  stage:              ~
+
+  /**
+   * // TODO: PLAT-34041 enable with declaration here or on Metadata
+   * beforeCreate:       ~
+   *
+   * @dependency(include='inboxUrlOverride, archiveUrlOverride')
+   * beforeUpdate: ~
+   */
+  notificationConfig: ~
+
+  validateUrls: private member function(failIfInvalid: boolean): boolean
+}

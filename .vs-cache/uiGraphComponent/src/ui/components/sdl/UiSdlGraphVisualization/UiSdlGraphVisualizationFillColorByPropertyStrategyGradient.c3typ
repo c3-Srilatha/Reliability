@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Color the node, edge or GeoJSON region based on a specified field's value in the data. The color of the item will be
+ * assigned by where its field value falls along a gradient set by the option values of this type. One of
+ * {@link UiSdlGraphVisualizationFillColorByPropertyStrategyGradient#fillColorSteps} or
+ * {@link UiSdlGraphVisualizationFillColorByPropertyStrategyGradient#fillColorGradientMin} and
+ * {@link UiSdlGraphVisualizationFillColorByPropertyStrategyGradient#fillColorGradientMax} must be provided for the
+ * component to accurately determine the color gradient scale.
+ */
+type UiSdlGraphVisualizationFillColorByPropertyStrategyGradient mixes UiSdlFieldBasedDataSpecSetting {
+
+  /**
+   * The number of steps used to bucket the gradient color values.
+   * If not specified, the number of steps are calculated using the following equation:
+   * {@link #fillColorGradientMax} - {@link #fillColorGradientMin} + 1.
+   */
+  fillColorSteps: int
+
+  /**
+   * The min value to map to the min gradient color.
+   */
+  fillColorGradientMin: int = 1
+
+  /**
+   * The max value to map to the max gradient color.
+   */
+  fillColorGradientMax: int = 100
+
+  /**
+   * The color associated with the min gradient value.
+   */
+  fillColorGradientMinColor: !string serialized Color
+
+  /**
+   * The color associated with the max gradient value.
+   */
+  fillColorGradientMaxColor: !string serialized Color
+}

@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines access to the object itself, and a path to reference users, roles, or groups.
+ * These privileges determine what ACL entries are created via {@link AclEnabled.populateAcl}. If there is an
+ * {@link EnableAclPrivilege} object that enables ACL for the specified Type, then ACL entries automatically refresh
+ * when any of the ACL expressions dependencies changes. Note that only dependencies that exist in the same tenant/tag
+ * are considered for automatic refresh (e.g. not dependencies from facaded tenant/tags). See also:
+ * @see AclEnabled
+ * @see EnableAclPrivilege
+ * @see AclEntry
+ * @see AclEnabledTypes
+ */
+@db(archive=true, versionHistory=true)
+entity type AclPrivilege mixes PrivilegeBase<AclPrivilege> schema name 'ADMIN_ACLPRIV' {
+
+  /**
+   * If true, entries created via this privilege will allow updates.  If false, they will not.  If 'fromSource'
+   * the 'canUpdate' for created entries will be set to the value of the ACL returned from the 'ACL' expression.
+   */
+  canUpdate: string enum('true', 'false', 'fromSource') = 'fromSource'
+
+  /**
+   * If true, entries created via this privilege will allow removes.  If false, they will not.  If 'fromSource'
+   * the 'canRemove' for created entries will be set to the value of the ACL returned from the 'ACL' expression.
+   */
+  canRemove: string enum('true', 'false', 'fromSource') = 'fromSource'
+
+  /**
+   * If true, entries created via this privilege will allow modifying ACL.  If false, they will not.  If 'fromSource'
+   * the 'canModifyAcl' for created entries will be set to the value of the ACL returned from the 'ACL' expression.
+   */
+  canModifyAcl: string enum('true', 'false', 'fromSource') = 'fromSource'
+
+  /**
+   * Expression that should return a member/member id, array of members/member ids, {@link AclEntry} or array of
+   * {@link AclEntry}
+   */
+  acl: !OldExpr<AclEntry> schema suffix 'A'
+
+  afterCreate: ~
+  afterUpdate: ~
+  afterRemove: ~
+}

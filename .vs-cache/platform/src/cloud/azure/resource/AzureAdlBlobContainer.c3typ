@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This represents Azure Datalake Storage  container for Blob (for gen2 and beyond)
+ */
+@azure(cloudFunc='azadlblb',
+       hasResourceArn=false,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasTags=false,
+       identityRoleOptions=OPTIONAL)
+@beta
+type AzureAdlBlobContainer mixes AzureGenericResource, AzureStorageAccountMember {
+
+  /**
+   * return rest client to access this container
+   */
+  api: private member function(): AzureAdlApi
+
+  /**
+   * return the name of storage account that the blob container is part of.
+   */
+  storageAccountName: member function(): string
+
+  /**
+   * return the endpoint of storage account that the blob container is part of.
+   */
+  storageAccountEndpoint: member function(): string
+
+  /**
+   * create an empty blob with given key in the container.
+   */
+  createBlob: member function(key: !string)
+
+  /**
+   * create or update the content of  the blob for key in this container
+   */
+  upsertBlob: member function(key: !string, content: binary, contentType: string, contentEncoding: string)
+
+  /**
+   * update the content of  the blob for key in this container
+   */
+  updateBlob: member function(key: !string, content: !binary, contentType: string, contentEncoding: string)
+
+  /**
+   * remove the blob for key in this container
+   */
+  removeBlob: member function(key: !string)
+
+  /**
+   * return pair with metadata of blob as AdlFile and content as stream.
+   */
+  readBlobStream: member function(key: !string): Pair<AdlFile, ByteStream>
+
+  /**
+   * return list of blobs available in this container.
+   */
+  listBlobs: member function(blobKeyPrefix: string,
+                             limit: int,
+                             nextMarker: string,
+                             readMetadata: boolean): ListFilesResult
+
+  /**
+   * return AdlFile with metadata
+   */
+  blobMetadata: member function(key: !string): AdlFile
+
+  /**
+   * update the content-Type and Content-Encoding of the blob.
+   */
+  updateBlobContentTypeAndEncoding: member function(key: !string,
+                                                    contentType: string,
+                                                    contentEncoding: string): !AdlFile
+
+  upsertResource:  ~
+  getResource:     ~
+  destroyResource: ~
+  listResources:   ~
+}

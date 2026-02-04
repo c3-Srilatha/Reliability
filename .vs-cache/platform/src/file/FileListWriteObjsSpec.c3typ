@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for holding information about how objects need to be written on {@link FileList#writeObjs}
+ */
+type FileListWriteObjsSpec mixes Spec {
+
+  /**
+   * If objects need to be written at a specific path, it can be specified via this field. By default the objects will be written at:
+   * The default base file system path + <object-typename> + "/" + <partitionKey> (if {@link doNotGroupByPartitionKey} is not set) + "/" + <random-filename>.<file-ext> (determined by content type & content encoding)
+   * If this field is provided then the url will be:
+   * {@link urlOrEncodedPathPrefix} + <random-filename>.<file-ext> (determined by content type & content encoding)
+   */
+  urlOrEncodedPathPrefix: string
+
+  /**
+   * Max no of objects in one file. If specified, then {@link fileSizeTargetMb} will be ignored. If set to -1, then
+   * batching will not be enforced
+   */
+  batchSize: int
+
+  /**
+   * Approx max file size (in mega bytes)
+   */
+  fileSizeTargetMb: int = 5
+
+  /**
+   * If set, objects will not be grouped by partition key for the files - only valid for types that define @db(partitionKey)
+   */
+  doNotGroupByPartitionKey: boolean
+
+  /**
+   * Content type for the files to be created during {@see FileList#writeObjs}
+   */
+  contentType: string = 'application/json'
+
+  /**
+   * Content encoding for the files to be created during {@see FileList#writeObjs}
+   */
+  contentEncoding: string = 'gzip'
+
+  /**
+   * csvHeader is a comma separated list of fields that need to be written and is required when contentType is
+   * text/csv. Leave this field as null for all other content types.
+   */
+  csvHeader: string
+}

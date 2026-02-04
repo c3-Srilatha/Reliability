@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Describes artifacts managed by {@link ArtifactHub}.
+ * The {@link #content} of the artifact can be stored in any file system and format supported by the C3
+ * {@link FileSystem}.
+ */
+type ArtifactHub.Artifact mixes Identified, Nameable, WithResolvableDependencies {
+
+  /**
+   * <name>:<version>
+   */
+  // TODO: TOOLS-13636 Enforce structured ids
+  id: ~
+
+  name:                          ~
+  semanticVersion:               ~
+  sortableSemanticVersion:       ~
+  backwardsCompatibleTo:         ~
+  sortableBackwardsCompatibleTo: ~
+  dependencies:                  ~
+
+  /**
+   * Content for the artifact.
+   */
+  content: ArtifactHub.Artifact.Content
+
+  /**
+   * Optional descriptor used to categorize the artifact.
+   * Examples include, but are not limited to, {@link ArtifactHub.ArtifactKind}.
+   */
+  kind: string
+
+  /**
+   * The date at which the artifact expires.
+   */
+  expiresAt: datetime
+
+  /**
+   * Whether to keep the artifact forever.
+   */
+  keepForever: boolean
+
+  /**
+   * The flattened list of dependencies calculated during artifact registration. The {@link #dependencies} are
+   * are flattened to improve the performance of dependency resolution.
+   * When resolving dependencies, {@link #flattenDependencies} can be used to reduce the number of iterations required
+   * when recursively finding all of the required dependencies.
+   * Ex:
+   * ```
+   * {
+   *   "dep1": ">=8.1.0 <8.2.0",
+   *   "dep2": ">=5.1.0 <5.2.0",
+   *   "nestedDep": ">=4.4.0 <4.5.0",
+   * }
+   * ```
+   */
+  flattenedDependencies: map<string, string serialized SemanticVersionRange>
+
+  /**
+   * The exact resolved set of dependency versions included in {@link #content} if any.
+   * Ex:
+   * ```
+   * {
+   *   "dep1": "8.1.2-1",
+   *   "dep2": "5.1.4-1",
+   *   "nestedDep": "4.4.3-1",
+   * }
+   * ```
+   */
+  resolvedDependencies: map<string, string serialized SemanticVersion>
+
+  /**
+   * The parent artifact of this artifact.
+   */
+  parent: ArtifactHub.Artifact
+
+  /**
+   * All of the artifacts that are children of this artifact.
+   */
+  children: [ArtifactHub.Artifact]
+
+  /**
+   * Miscellaneous data associated with the artifact that may need to be tracked, but not queried on.
+   */
+  data: string
+
+  /**
+   * Indicates whether the artifact is currently in use.
+   */
+  active: boolean
+
+  /**
+   * If set to true, the artifact's {@link #content} can be used by anybody,
+   * even if the client is not entitled to it.
+   */
+  isPublic: boolean
+
+  /**
+   * Gets a value from {@link #data}.
+   */
+  dataMap: member function(): map<string, string>
+
+  /**
+   * Registers the artifact in {@link ArtifactHub}.
+   *
+   * @return The registered artifact, with a full {@link #id}, {@link #semanticVersion} and {@link #content}.
+   */
+  register: member function(): ArtifactHub.Artifact
+
+  /**
+   * Registers a batch of artifacts in {@link ArtifactHub}.
+   *
+   * @return The registered artifacts, with full {@link #id}, {@link #semanticVersion} and {@link #content} fields.
+   */
+  registerBatch: function(artifacts: [ArtifactHub.Artifact]): [ArtifactHub.Artifact]
+}

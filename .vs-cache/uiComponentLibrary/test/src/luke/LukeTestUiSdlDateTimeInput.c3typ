@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlDateTimeInput} component for testing purposes.
+ */
+type LukeTestUiSdlDateTimeInput mixes LukeTestUiSdlTextInput {
+
+  parentSelector: ~ = '.page-content .c3-sdl-datetime'
+
+  /**
+   * Selector for the time picker dropdown
+   */
+  timePickerSelector: string = '.dt-time-header .dt-label'
+  
+  /**
+   * Selector for the month picker dropdown
+   */
+  monthSelector: string = '.dt-date-month'
+
+  /**
+   * Selector for the year picker dropdown
+   */
+  yearSelector: string = '.dt-date-year'
+
+  /**
+   * Selector an option item in the {@link monthSelector}
+   */
+  monthOptionSelector: string = '.dt-month-option'
+
+  /**
+   * Selector an option item in the {@link yearSelector}
+   */
+  yearOptionSelector: string = '.dt-year-option'
+
+  /**
+   * Selector for the time items in the date time picker that correspond to the current time.
+   */
+  timeOptionSelector: string = '.dt-time-list .dt-time-option'
+
+  /**
+   * Selector for the date items in the calendar that correspond to the current month (not the filler
+   * cells for the previous or next month).
+   */
+  dateOptionSelector: string = '.rc-calendar-cell:not(.rc-calendar-last-month-cell):not(.rc-calendar-next-month-btn-day) .rc-calendar-date'
+
+  /**
+   * The time dropdown which allows you to pick a time
+   */
+  timeDropdown: string = '.dt-time-selector'
+
+  /**
+   * The calendar dropdown which allows you to pick a day, year and month
+   */
+  calendarDropdown: string = '.dt-calendar'
+
+  /**
+   * The dropdown that allows you to pick a year
+   */
+  yearDropdown: string = '.dt-year-selector'
+
+  /**
+   * The dropdown that allows you to pick a month
+   */
+  monthDropdown: string = '.dt-month-selector'
+
+  /**
+   * The dropdown that allows you to select a date
+   */
+  dateDropdown: string = '.dt-date-selector'
+
+  /**
+   * Function to set the date in the datetime input. This will use the date picker
+   * @param year
+   *        The year of the date
+   *        Example, in 1st June 1998, year would be '1998'.
+   * @param month
+   *        The month of the date specified in as 'Jan', 'Feb' 'Mar' etc..
+   *        Example, in 1st June 1998, month would be 'Jun'.
+   * @param day
+   *        The day of the date. Example, in 1st June 1998, day would be 1.
+   * @return the LukeAsyncQueueNode instance
+   */
+  setDate: inline member function(year: string, month: string, day: string): LukeAsyncQueueNode js
+
+  /**
+   * Function to set the time in the datetime input. This will use the time picker
+   * @param time
+   *        The time the date
+   *        Example, in 1st June 1998 17:35, time would be '5:35 PM'.
+   * @param openDateDropdown
+   *        Whether to open the date dropdown before setting the time
+   *        Default is true since most times we'll find the date dropdown closed
+   * @return the LukeAsyncQueueNode instance
+   */
+  setTime: inline member function(time: string, openDateDropdown: boolean): LukeAsyncQueueNode js
+
+  /**
+   * Function to open the calendar dropdown.  This is for selecting the year, month, and date
+   * @return the LukeAsyncQueueNode instance
+   */
+  openDropdown: inline member function(): LukeAsyncQueueNode js
+}

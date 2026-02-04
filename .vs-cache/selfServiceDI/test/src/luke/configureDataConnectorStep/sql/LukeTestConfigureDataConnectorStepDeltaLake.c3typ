@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The connector type for Delta Lake connectors
+ */
+type LukeTestConfigureDataConnectorStepDeltaLake mixes LukeTestConfigureDataConnectorStepSqlConnector {
+
+  getCredentials: ~ js
+
+  /**
+   * Verifies the form for a failed connection
+   * @param credentials
+   *           The inputted credentials to be given in the form for the connector
+   *           port
+   *           serverEndpoint
+   *           password
+   *           httpPath
+   *           database
+   * @param errorMessageKey
+   *           The error message key to be given in the form for the connector
+   * @param assertionDescription
+   *           The description to be given if the assertion fails
+   */
+  verifyFormError: ~(credentials: databricks, errorMessageKey: string, assertionDescription: string) js
+
+  /**
+   * Verifies the form for a successful connection
+   * @param credentials
+   *           port
+   *           serverEndpoint
+   *           password
+   *           httpPath
+   *           database
+   */
+  verifyFormSuccess: ~ js
+
+  generateInvalidInput:           ~(key: string) js
+  additionalCredentialFormErrors: ~ = [ { invalidCredentialFields: [ 'database'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.invalidDatabaseName.text', assertionDescription:'Inline error message not found for invalid database' }, { invalidCredentialFields: [ 'serverEndpoint'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.invalidHostOrPort.text', assertionDescription:'Inline error message not found for invalid serverEnpoint' }, { invalidCredentialFields: [ 'password'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.invalidPassword.text', assertionDescription:'Inline error message not found for invalid password' }, { invalidCredentialFields: [ 'httpPath'], errorMessageKey: 'SelfServiceDI.DataConnectorForm.currentConnectStatus.invalidPath.text', assertionDescription:'Inline error message not found for invalid httpPath' }, ]
+}

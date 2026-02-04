@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides common functionality to all pre- and post- processors in this toolkit for connecting two
+ * pipelines together (e.g. a pre-processing pipeline to a central reconstruction pipeline).
+ *
+ * @see Reconstruction.Pre.Preprocessor
+ * @see Reconstruction.Post.Postprocessor
+ */
+type Reconstruction.Processor {
+
+    /**
+     * @param center
+     *         A pipe to wrap in a pipeline.
+     * @return a new {@link MlPipeline} that contains the `center` pipe.
+     */
+    generateCenterPipeline: private function(center: !MlPipe, useVar: boolean): !MlPipeline py
+
+    /**
+     * Merge the `first` and `second` pipes into a single pipeline. This method is useful if you want to connect
+     * outputs of the `first` pipeline to the inputs of the `second` pipeline without using `_var` APIs. Note that
+     * this method cannot be used if the outputs of the `first` pipeline are used for either training or inference
+     * of the `second`  pipeline.
+     *
+     * @param first
+     *        The first pipeline that will precede the `second` pipe.
+     * @param second
+     *        The second pipe that will succeed the `first` pipe.
+     * @param outputToInput
+     *        A map of `first` output name to `second` input name.
+     * @param keepFirstOutputs
+     *        If set, the merged pipeline will preserve the output vertex of the `first` pipeline. Otherwise, the
+     *        output names specified in `outputToInput` will be removed.
+     */
+    mergePipelines: private function(first: !MlPipeline,
+                                     second: !MlPipe,
+                                     outputToInput: !map<string, string>,
+                                     keepFirstOutputs: boolean): !MlPipeline py
+
+    /**
+     * Make a new instance of {@link MlPipeline} which connects the first pipeline to the second. This method primarily
+     * generates the new type bindings and {@link MlPipeline#scoreNames}, and prunes any unused vertices.
+     * @param first
+     *         The first sub-pipeline of the merged pipeline
+     * @param second
+     *         The second sub-pipeline of the merged pipeline
+     * @param newVertices
+     *         A list of vertices that contains the first and second pipeline's vertices
+     * @param newEdges
+     *         A list of edges that contains the first and second pipeline's edges, and the edges that connect the
+     *         first and second pipeline.
+     */
+    makePipeline: private function(first: !MlPipeline,
+                                   second: !MlPipeline,
+                                   newVertices: ![MlPipeline.Vertex],
+                                   newEdges: ![FlowGraph.Edge<MlPipeline.Vertex>]): !MlPipeline py
+}

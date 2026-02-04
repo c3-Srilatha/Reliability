@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for running Jupyter notebook {@link JupyterNotebook.Cell cells} via the {@link JupyterLab.Session#run} method.
+ */
+private type JupyterLab.Session.CellExecutionSpec mixes Spec {
+
+  /**
+   * Timeout for execution of each cell.
+   *
+   * Can be overridden individually by specifying {@link JupyterNotebook.Cell.ExecSpec#executionTimeout} for cell.
+   * If the cell has not finished executing when the timeout expires, the kernel will be interrupted and InterruptedException will be recorded as the cell execution result.
+   */
+  executionTimeout: string serialized Duration = "30min"
+
+  /**
+   * Web socket connection timeout.
+   */
+  connectionTimeout: string serialized Duration = "6min"
+
+  /**
+   * How many seconds to wait after a session is {@link JupyterLab.Session#interrupt interrupted} due to {@link #executionTimeout timeout} before raising an exception. This additional time is used collect cell outputs.
+   */
+  gracefulInterruptTimeout: string serialized Duration = "10sec"
+}

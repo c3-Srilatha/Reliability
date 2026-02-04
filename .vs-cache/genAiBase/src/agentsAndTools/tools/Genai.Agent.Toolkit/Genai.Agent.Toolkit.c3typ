@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/** Non-persistable type with information about the sub-tools or sub-toolkits available to the {@link Genai.Agent} */
+type Genai.Agent.Toolkit mixes Named, Config {
+  /**
+   * Brief, human-readable description of the toolkit
+   */
+  description: string
+
+  /**
+   * Generate string representation of the toolkit by concatenating descriptions of individual tools.
+   */
+  descriptionForAgent: member function(): [Genai.Agent.Tool.Description] js | py
+
+  /**
+   * The {@link Genai.Agent.Tool} that are available as part of this toolkit.
+   */
+  tools: ![Genai.Agent.Tool]
+
+  /**
+   * The child toolkits part of this toolkit. Including a toolkit makes all of that toolkits tools
+   * available to this toolkit.
+   */
+  toolkits: [Genai.Agent.Toolkit]
+
+  /**
+   * A flattened list of all {@link Genai.Agent.Tool} from the tools and toolkits in #tools.
+   */
+  allTools: member function(): ![Genai.Agent.Tool] js | py
+
+  /**
+   * Returns whether this toolkit contains a {@link Genai.Agent.Tool.UnstructuredDataQuery}.
+   */
+  hasUnstructuredQueryTool: member function(): boolean js
+
+  /**
+   * Returns the ToolKit for the specified name
+   */
+  forName: ~ js
+
+  // TODO: GENAI-1959 figure out if examples live on tools or the tool kit
+  // /**
+  //  * A flattened list of all {@link Genai.Agent.Tool.Example}s from this kit and its toolkits.
+  //  */
+  // examples: member function(): ![Genai.Agent.Tool.Example] js | py
+}

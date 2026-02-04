@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for streaming {@link Data}.
+ * See {@link Data#stream}.
+ */
+// TODO: PLAT-61130, Data.Stream mixes Stream<Data>
+@beta
+abstract type Data.Stream {
+
+  /**
+   * The spec used to instantiate this stream.
+   */
+  spec: Data.StreamSpec
+
+  /**
+   * @return true iff there is at least one more element to be consumed in the stream.
+   */
+  hasNext: abstract member function(): !boolean
+
+  /**
+   * @return the next element in the stream. Throws exception if all elements of the stream have been consumed.
+   * NOTE: the output can be customized upon stream instantiation through {@link Data.StreamSpec#streamOutput}.
+   */
+  // TODO: PLAT-60965 - Python SDK could not handle correctly if the return type is (Data | native)
+  next: abstract member function(): !Data
+
+  /**
+   * Deallocates any potential resource(s) used in this stream.
+   */
+  close: abstract member function()
+
+  /**
+   * Reset the current stream, so that it can be iterated over again.
+   * This API is recommended for users that want to iterate over the full data multiple times, e.g. epoch-based
+   * machine learning training.
+   */
+  reset: abstract member function()
+}

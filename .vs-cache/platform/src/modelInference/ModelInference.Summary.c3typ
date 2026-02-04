@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represent per deployment summary of {@link ModelInference}.
+ */
+@beta
+type ModelInference.Summary {
+
+  /**
+   * Name of the route(s), if any, this deployment serves.
+   */
+  routes: [string]
+
+  /**
+   * Name of this deployment.
+   */
+  deployment: string
+
+  /**
+   * URI of deployed {@link ModelRegistry.Entry}.
+   */
+  uri: string
+
+  /**
+   * Version of deployed {@link ModelRegistry.Entry}.
+   */
+  version: int32
+
+  /**
+   * List of {@link App.NodePool node pools} that are used by this deployment.
+   */
+  nodePools: [string serialized App.NodePool]
+
+  /**
+   * Names of the {@link HardwareProfile hardware profiles} used by this deployment.
+   */
+  hardwareProfiles: [string serialized HardwareProfile]
+
+  /**
+   * Type of {@link MLPipe} for which deployment is started.
+   */
+  pipeType: string
+
+  /**
+   * Type of {@link Engine engine} that is configured for this deployment.
+   */
+  engineType: string
+
+  /**
+   * Number of {@link App.Node nodes} that will be used by the deployment.
+   */
+  targetNodes: int
+
+  /**
+   * Number of {@link App.Node nodes} that are ready to serve requests for this deployment.
+   */
+  readyNodes: int
+
+  /**
+   * Number of ready threads for this deployment.
+   */
+  readyThreads: int
+
+  /**
+   * Average queue size for this deployment.
+   */
+  avgQueueSize: double
+
+  /**
+   * Errors corresponding to this deployment.
+   */
+  errors: [string]
+}

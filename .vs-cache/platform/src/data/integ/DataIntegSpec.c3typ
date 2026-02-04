@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// TODO: PLAT-89516: Remove deprecated SourceQueueContext#runtimeSpec and make DataIntegSpec not mix StringSerializable
+
+/**
+ * Type that encapsulates all the options for processing (data-loading) Source content into the C3 type system.
+ */
+type DataIntegSpec mixes DataIntegFields, StringSerializable, BatchFileOperationSpec, FileOperationSpec, FetchFilterSpec, Spec {
+
+  /**
+   * If set then metadata about the source content is read and stored in {@see SourceCollection#statsUrl}
+   * no downstream processing(data-loading) takes place
+   */
+  synchronous: boolean
+
+  /**
+   * if set to true, the pipeline will not transform and persist the sources.
+   * if #Sources#shouldChunk is true the chunks will be created and the status will be updated to completed
+   * after chunking is successful.
+   * These chunks are stored in Cassandra and could cause it to run out of disk space
+   * so kindly note that they will have to be manually deleted by calling Sources#cleanUpChunks
+   */
+  doNotTransformAndPersist: private boolean
+
+  /**
+   * if true then processes files that have not yet been processed.
+   */
+  process: boolean
+
+  /**
+   * Batch size determines number of source files that will be processed together in {@link SourceFile#processAll}
+   */
+  sourceFilesBatchSize: int
+
+  /**
+   * The specification of fields get from Database when syncing SourceFiles
+   * See {@link CollectionUpdate#forArray} and {@link CollectionUpdate#persist}
+   */
+  include: string
+
+  /**
+   * Uses Config to create DataIntegSpec to be used at runtime if {@link DataIntegSpec#_isMerged} is false.
+   * Fields in spec argument will override SourceCollection.Config values
+   * @param config
+   *        SourceCollection Config to be merged to current DataIntegSpec.
+   * @return
+   *        The merged DataIntegSpec
+   */
+  mergeConfig: private member function(config: SourceCollection.Config): DataIntegSpec
+
+  /**
+   * Uses Config to create DataIntegSpec to be used at runtime if {@link DataIntegSpec#_isMerged} is false.
+   * Fields in spec argument will override SourceCollection.Config values
+   * @param supplier
+   *        Lambda for the SourceCollection Config to be merged to current DataIntegSpec.
+   * @return
+   *        The merged DataIntegSpec
+   */
+  mergeConfig: private member function(supplier: lambda(): SourceCollection.Config): DataIntegSpec
+
+  /**
+   * if true then DataIntegSpec is created from SourceCollection.Config at runtime.
+   */
+  _isMerged: private boolean
+
+  /**
+   * The index of the first object from a stream that needs to be read.
+   */
+  @beta
+  offset: int
+}

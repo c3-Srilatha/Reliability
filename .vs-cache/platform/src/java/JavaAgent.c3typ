@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Api for controlling the attached java-agent
+ */
+type JavaAgent mixes Singleton {
+
+  /**
+   * Enable/disable method stats collection based on polling threads.
+   * This is typically enabled in conjunction with reporting (see enableReporting).
+   */
+  enableThreadStackPolling: member function(enable: !boolean, pollingIntervalMillis: !int = 1): boolean
+
+  /**
+   * Enable/disable method stats collection based on method entry/exit hooks.
+   * This is typically enabled in conjunction with reporting (see enableReporting).
+   *
+   * WARNING: Enabling this *severely* impacts overall JVM performance
+   */
+  enableMethodEntryExitHooks: member function(enable: !boolean): boolean
+
+  /**
+   * Enable/disable periodic logging.  Logs the immediate state of all thread stacks as well as
+   * any method performance stats (see enableThreadStackPolling, enableMethodEntryExitHooks)
+   */
+  enableStatLogging: member function(enable: !boolean, loggingIntervalSecs: !int = 30): boolean
+
+  inst: ~
+}

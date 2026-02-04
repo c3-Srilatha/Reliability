@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Side panel component for the search results feed.
+ */
+@typeScript
+type GenAiUiSidePanel mixes UiSdlComponent<BasicDataSpec> {
+  @uiSdlDataSpec(dataDestinationField='projects')
+  dataSpec: ~
+
+  /**
+   * The projects to display in the dropdown.
+   */
+  projects: [Genai.Project]
+
+  /**
+   * The user settings for the application
+   */
+  userSettings: Genai.App.UserSettings
+
+  /**
+   * The current app state on {@link Genai.App.State}
+   */
+  appState: Genai.App.State
+
+  /**
+   * All {@link Genai.Conversation} to show in side panel for renaming, deleting, or navigation
+   */
+  conversationHistory: [Genai.Conversation]
+
+  /**
+   * The application state id for storing the conversation history
+   */
+  applicationStateId: string
+
+   /**
+   * The application state id for interacting with the feed.
+   */
+  feedApplicationStateId: string
+
+  /**
+   * The modal to show for confirmation of conversation history deletion
+   */
+  deleteConversationConfirmationModalId: string
+
+  /**
+   * The route to redirect to when a conversation is selected
+   */
+  conversationsPath: string
+
+  /**
+   * The route to the feed page
+   */
+  feedPagePath: string
+
+  /**
+   * The ids of the {@link Genai.Query.Result.GetForUiResult}s sorted in the order in which they should be displayed in the feed.
+   * Order is ascending, with older results at the beginning of the array and the last user interaction at the end.
+   */
+  genAiResultsOrder: [string] = []
+}

@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstraction for UI data models that need to be "fetchable", generally for integration with ui framework data grids.
+ */
+abstract type FetchableUi {
+
+  /**
+   * Exact same behavior and API as {@link Fetchable#fetch}
+   */
+  fetch: optional function(spec: FetchSpec): !FetchResult<mixing FetchableUi>
+
+  /**
+   * Exact same behavior and API as {@link Fetchable#fetchCount}
+   */
+  fetchCount: optional function(spec: FetchFilterSpec): !int
+
+  /**
+   * Translates the {@link FetchSpec} for {@link FetchableUi} into one that can be applied to its corresponding backend model.
+   */
+  translateFetchSpec: private optional function(spec: FetchSpec): TranslatedFetchSpec
+
+  /**
+   * Translates the {@link FetchSpec#filter} for {@link FetchableUi} into one that can be applied to its corresponding backend model.
+   */
+  translateFilter: private optional function(filter: string): TranslatedFilter
+
+  /**
+   * Translates the {@link FetchSpec#include} for {@link FetchableUi} into one that can be applied to its corresponding backend model.
+   */
+  translateInclude: private optional function(include: string): TranslatedInclude
+}

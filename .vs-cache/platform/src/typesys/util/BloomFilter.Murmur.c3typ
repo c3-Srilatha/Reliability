@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A complete implementation of a Bloom filter using Murmur3 32-bit hash function, with a different seed chosen for
+ * each of the hash functions (_k_).
+ *
+ * It also supports serializing and deserializing as a string. The string contains the value tyoe, _m_, _k_, and the
+ * bits encoded in Base64.
+ */
+type BloomFilter.Murmur<V> mixes BloomFilter<V> {
+
+  /**
+   * Return a string representing the value type, _m_, _k_ and the bit values. This assumes the standard hash functions
+   * are being used.
+   *
+   * @see #createHashFunctions
+   */
+  toString: ~ java | js | py
+
+  /**
+   * Build an instance with the standard hash functions from the string representation produced by #toString.
+   */
+  fromString: ~ java | js | py
+
+  /**
+   * Construct an instance of this Bloom filter for the specified values.
+   *
+   * Currently only `string` and `binary` are supported types.
+   *
+   * @param vt value type of the values
+   * @param m the number of bits (must be positive)
+   * @param k the number hash functions (must be positive)
+   */
+  create: function<R: ValueType>(vt: !R, m: !int, k: !int): !BloomFilter.Murmur<R: ValueType> java | js | py
+
+  /**
+   * Construct an instance of this type choosing parameters for the expected number of entries (_n_) and desired false
+   * positive probability (_ε_).
+   *
+   * Currently only `string` and `binary` are supported types.
+   *
+   * @param n the expected number of entries (must be positive)
+   * @param ε desired false positive probability in (0..1)
+   */
+  createForN: function<R: ValueType>(vt: !R, n: !int, ε: !double): !BloomFilter.Murmur<R: ValueType> java | js | py
+
+  _hash: ~ java | js | py
+
+  /**
+   * Lambda that produces an integer hash of the value using a specified seed.
+   */
+  _hasher: private @java(class="java.util.function.BiFunction<Object, Integer, Long>") native
+
+  /**
+   * Internal creation function with parameters and raw bit data.
+   */
+  _create: private function(vt: !ValueType, m: !int, k: !int, bitData: binary): !BloomFilter.Murmur java | js | py
+}

@@ -1,0 +1,116 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification type used in functions that deal with C3 values.
+ */
+type ValueSpec mixes Spec {
+
+  /**
+   * If `true` then consider all empty values as well. I.e. empty collections and references, `false` values for boolean
+   * etc.
+   *
+   * @see #forIncludeEmpty
+   */
+  includeEmpty: boolean
+
+  /**
+   * If `true` then consider all empty collections.
+   *
+   * @see #forIncludeEmptyCollections
+   */
+  includeEmptyCollections: boolean
+
+  /**
+   * If `true` then consider all references, i.e. instanced of other referenced types even if no fields of such
+   * references are set.
+   *
+   * @see #forIncludeEmptyRefs
+   */
+  includeEmptyRefs: boolean
+
+  /**
+   * If `true` then consider all `false` values as well.
+   *
+   * @see #forIncludeFalses
+   */
+  includeFalses: boolean
+
+  /**
+   * If `true`, then skip non key fields. Key fields are `Identifiable.id`, `Nameable.name` and `WithKey.keyFieldType()`.
+   *
+   * @see #forSkipNonKeyFields
+   */
+  skipNonKeyFields: boolean
+
+  /**
+   * If `true`, then skip references that are in traversedRefs parameter.
+   *
+   * @see forSkipTraversedRefs
+   */
+  skipTraversedRefs: boolean
+
+  /**
+   * If `true`, then skip fields that have a foreign key reference.
+   */
+  skipFkeyRefs: boolean
+
+  /**
+   * If provided then this set builder is updated with traversed references including references in collections.
+   *
+   * Note that you don't need to initialize this with an empty set - you would only provide it if you have references
+   * that you want to be skipped.
+   */
+  traversedRefs: SetBuilder<Obj>
+
+  /**
+   * @return `true` if given enumeration should include empty values for provided ValueType.
+   */
+  includeEmptyFor: member function(valueType: !ValueType): boolean
+
+  /**
+   * @return `true` if given field should be skipped based on current spec.
+   */
+  skipField: member function(field: !FieldType): boolean
+
+  /**
+   * @return spec with #includeEmpty set to `true`.
+   */
+  forIncludeEmpty: cached function(): !ValueSpec
+
+  /**
+   * @return spec with #includeEmptyCollections set to `true`.
+   */
+  forIncludeEmptyCollections: cached function(): !ValueSpec
+
+  /**
+   * @return spec with #includeEmptyRefs set to `true`.
+   */
+  forIncludeEmptyRefs: cached function(): !ValueSpec
+
+  /**
+   * @return spec with #skipNonKeyFields set to `true`.
+   */
+  forSkipNonKeyFields: cached function(): !ValueSpec
+
+  /**
+   * @return spec with #skipTraversedRefs set to `true` and #traversedRefs to an empty set.
+   */
+  forSkipTraversedRefs: function(): !ValueSpec
+
+  /**
+   * @return spec with #skipFkeyRefs set to `true`.
+   */
+  forSkipFkeyRefs: function(): !ValueSpec
+
+  /**
+   * Make sure that this ValueSpec is setup to skip traversed references by enabling {@link ValueSpec#skipTraversedRefs}
+   * and ensuring {@link ValueSpec#traversedRefs} is populated.
+   */
+  ensureSkipTraversedRefs: member function(): !mixing ValueSpec
+}

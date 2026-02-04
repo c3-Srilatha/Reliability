@@ -1,0 +1,213 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type representing https://arrow.apache.org/docs/index.html
+ */
+private type Arrow mixes Value {
+
+  /**
+   * Type of this buffer
+   */
+  type: property(): !(Type | TupleType)
+
+  /**
+   * String representation of Arrow schema for this buffer
+   */
+  arrowSchema: property(): !string
+
+  /**
+   * Java native schema of this Arrow buffer
+   */
+  javaSchema: property(): @java(class='org.apache.arrow.vector.types.pojo.Schema') !native
+
+  /**
+   * Vector for field values in this Arrow value
+   */
+  vector: member function(field: !string): !Arrow.Vector
+
+  /**
+   * Returns the number of rows in this Arrow batch
+   */
+  rowCount: member function(): !int32
+
+  /**
+   * Binary representation of this Arrow buffer
+   */
+  serialize: member function(): binary
+
+  /**
+   * Converts this Arrow value to an array
+   */
+  toArray: member function(): [any]
+
+  /**
+   * Converts this Arrow value to tuple
+   */
+  toTuple: member function(): tuple
+
+  /**
+   * Converts this Arrow value to array of instances of #type
+   */
+  toObjs: member function<O: Obj>(): [O]
+
+  /**
+   * Converts this Arrow value to iterator of instances of #type
+   */
+  toRows: member function<O: any>(): Iterator<O>
+
+  /**
+   * Converts this Arrow value to batches of instances of #type
+   */
+  batchObjs: member function<O: Obj>(batchSize: !int, action: !lambda(objs: ![O])): !int
+
+  /**
+   * Writes binary representation of this Arrow buffer into provided content
+   */
+  write: member function<C: !?Content>(content: !C): !C
+
+  /**
+   * Writes binary representation of this Arrow buffer into provided byte push stream
+   */
+  write: member function(stream: !?push stream<byte>)
+
+  /**
+   * Releases all memory used by Arrow
+   */
+  close: member function()
+
+  /**
+   * Reads instance of of Arrow from content such as file
+   */
+  read: function(type: !(Type | TupleType), arrow: !?Content, failIfInvalid: boolean): mixing Arrow
+
+  /**
+   * Reads instance of of Arrow from binary value
+   */
+  read: function(type: !(Type | TupleType), arrow: !?binary, failIfInvalid: boolean): mixing Arrow
+
+  /**
+   * Reads instance of Arrow from binary stream
+   */
+  read: function(type: !(Type | TupleType), arrow: !?ByteStream, failIfInvalid: boolean): mixing Arrow
+
+  /**
+   * Reads instance of Arrow from binary stream
+   */
+  read: function(type: !(Type | TupleType), arrow: !?stream<byte>, failIfInvalid: boolean): mixing Arrow
+
+  /**
+   * Reads local file arrow file and processes it in batches
+   */
+  @beta
+  readLocalBatches: private function(type: !(Type | TupleType),
+                                     localFile: !string,
+                                     action: !lambda(batch: Arrow)): !int
+
+  /**
+   * Makes an instance of Arrow from an array
+   */
+  from: function(value: !?[any]): mixing Arrow
+
+  /**
+   * Makes instance of Arrow from a sequence of columns represented as tuple of arrays.
+   */
+  fromColumns: function(value: !?tuple): mixing Arrow
+
+  /**
+   * Converts feature set columns into stream of Arrow column batches with given batch size.
+   */
+  fromDataColumns: function(data: !Stream<Pair<string, Array<Data.Column>>>,
+                            schema: TupleType,
+                            batchSize: !int32): !stream<Arrow>
+
+  /**
+   * Converts stream of tuples into stream of Arrow column batches with given batch size.
+   */
+  fromTuples: function(rows: !Stream<Tuple>, schema: !TupleType, batchSize: !int32): !stream<Arrow>
+
+  /**
+   * Converts stream of objects into stream of Arrow column batches with given batch size.
+   * Column batches contain columns specified by include in standard fetch include format.
+   */
+  streamFromObjs: function(rows: !?stream<Obj>, include: string serialized Include, batchSize: !int32): !stream<Arrow>
+
+  /**
+   * Converts iterator of cell tuples into stream of Arrow column batches with given batch size.
+   * Column batches contain columns specified by schema.
+   */
+  streamFromTuples: function(source: Iterator<Obj>, schema: TupleType, batchSize: !int32): !Stream<Arrow>
+
+  /**
+   * Converts iceberg generic records into arrow iterator with given batch size.
+   */
+  arrowIteratorFromRecords: function(records: native, schema: native, batchSize: !int32): ArrowIterator
+
+  /**
+   * Converts a Tuple with each field representing a column (i.e an {@link Array}) into ArrowIterator.
+   * @see ArrowIterator
+   */
+  arrowIteratorFromColumns: function(tuple: !Tuple): ArrowIterator
+
+  /**
+   * Converts array of strings into arrow iterator with given batch size.
+   */
+  @beta
+  @deprecated(finalVersion='8.8', details='No longer needed for a single array.')
+  arrowIteratorFromStrArray: private function(array: [string]): ArrowIterator
+
+  /**
+   * @return new Arrow buffer for a given C3 type
+   */
+  makeBuffer: function(type: !(Type | TupleType), initialRowCount: int32 = 0): !Arrow.Buffer
+
+  /**
+   * @return string representation of Arrow schema for a given C3 type
+   */
+  schemaFromC3Type: function(type: !(Type | TupleType)): !string
+
+  /**
+   * @return java native representation of Arrow schema for a given C3 type
+   * @param strict
+   *            If true, except for {@link PrimitiveType#ofDateTimeNanos}, all other precisions map to ArrowType.Timestamp(TimeUnit.MICROSECOND, null).
+   */
+  javaSchemaFromC3Type: function(type: !(Type | TupleType),
+                                 include: string,
+                                 notStrict: boolean): @java(class='org.apache.arrow.vector.types.pojo.Schema') !native
+
+  /**
+   * @return string representation of Arrow type for a given C3 value type
+   */
+  typeFromC3ValueType: function(valueType: !ValueType): !string
+
+  /**
+   * @return java native representation of Arrow type for a given C3 value type
+   * @param notStrict
+   *            If true, except for {@link PrimitiveType#ofDateTimeNanos}, all other precisions map to ArrowType.Timestamp(TimeUnit.MICROSECOND, null).
+   */
+  javaTypeFromC3ValueType: function(valueType: !ValueType,
+                                    notStrict: boolean)
+                             : @java(class='org.apache.arrow.vector.types.pojo.ArrowType') !native
+
+  /**
+   *  @return a C3 **ValueType** from a given Arrow.Field. Please note that since C3 may not support all ArrowType(s)
+   * or vice versa, so we may get an empty value if the conversion is not possible.
+   */
+  c3ValueTypeFromArrowField: function(field: @java(class='org.apache.arrow.vector.types.pojo.Field') !native)
+                               : ValueType
+
+  /**
+   * @return a Arrow.Field from a given  C3 **ValueType** and field name.
+   * @param notStrict
+   *            If true, except for {@link PrimitiveType#ofDateTimeNanos}, all other precisions map to ArrowType.Timestamp(TimeUnit.MICROSECOND, null).
+   */
+  arrowFieldFromC3ValueType: function(name: !string,
+                                      valueType: !ValueType,
+                                      notStrict: boolean)
+                               : @java(class='org.apache.arrow.vector.types.pojo.Field') !native
+}

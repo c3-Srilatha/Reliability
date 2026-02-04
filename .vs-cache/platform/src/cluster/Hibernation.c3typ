@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type acts as a config to specify what to hibernate.
+ */
+@deprecated(finalVersion="8.5", details="Functionalities are moved to Studio")
+@config(minOverride=CLUSTER, maxOverride=CLUSTER)
+@action(group+='cluster-admin')
+type Hibernation mixes Config, Singleton {
+
+  /**
+   * List of all {@link ExclusionTarget}s to exclude for hibernation.
+   */
+  exclusionList: [ExclusionTarget]
+
+  /**
+   * Adds the objects that opt out of hibernation, to the exclusionList.
+   *
+   * @param  numDays
+   *                An optional parameter indicating when the passed-in exclusion target should expire, should be a positive number or -1.
+   *                When set to a specific value, exclusion targets without an expirationTime will be set to expire in numDays days.
+   *                When set to -1, exclusion targets without an expirationTime will be interpreted as having
+   *                no expiration time, effectively meaning infinite.
+   *                If both ExclusionTarget#expirationTime and numDays are not provided, exclusion targets without an expirationTime will be set to expire in 7 days
+   *                by default.
+   *                Providing both ExclusionTarget#expirationTime and numDays is not allowed.
+   * @return updated list of all {@link ExclusionTarget}s.
+   */
+  exclude: member function(exclusionTarget: !ExclusionTarget, numDays: int32): [ExclusionTarget]
+
+  /**
+   * Removes the objects from the exclusion list, to re-opt-in for hibernation
+   * Including is based on appId and envId. A target will be opt-in even if users did not pass in the same expiration time as the one in the exclusionList.
+   *
+   * @return updated list of all {@link ExclusionTarget}s.
+   */
+  include: member function(exclusionTarget: !ExclusionTarget): [ExclusionTarget]
+
+  /**
+   * Adds the objects that opt out of hibernation, to the exclusionList.
+   *
+   * @return updated list of all {@link ExclusionTarget}s.
+   */
+  excludeBatch: member function(exclusionTargets: ![ExclusionTarget]): [ExclusionTarget]
+
+  /**
+   * Removes the objects from the exclusion list, to re-opt-in for hibernation
+   * Including is based on appId and envId. A target will be opt-in even if users did not pass in the same expiration time as the one in the exclusionList.
+   *
+   * @return updated list of all {@link ExclusionTarget}s.
+   */
+  includeBatch: member function(exclusionTargets: ![ExclusionTarget]): [ExclusionTarget]
+
+  /**
+   * List of candidates to be hibernated.
+   *
+   * @return list of candidates to be hibernated, where candidates are the appIds and EnvIds
+   */
+  candidates: member function(): map<string, [string]>
+
+  /**
+   * schedule a {@link cronJob} to execute cluster level hibernation APIs.
+   *
+   * @return {@link cronJob} that is created
+   */
+  scheduleCron: function(cronSchedule: !CronSchedule, action: !string enum('stop', 'resume')): !CronJob
+
+  /**
+   * remove a {@link cronJob} to execute cluster level hibernation APIs.
+   *
+   * @return {@link cronJob} that is being removed
+   */
+  cancelCron: function(action: !string enum('stop', 'resume')): !CronJob
+
+  /**
+   * Fetches unexpired {ExclusionTarget}s that currently have no corresponding apps matching to them.
+   *
+   * @return List of all unexpired {@link ExclusionTarget}s that currently have no corresponding apps matching to them.
+   */
+  fetchUnmatchedTargets: function(): ![ExclusionTarget]
+}

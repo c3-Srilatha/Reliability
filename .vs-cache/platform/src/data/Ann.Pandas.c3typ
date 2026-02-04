@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Annotations which provide functionality surrounding {@link Data} or {@link Data.Series} APIs
+ */
+@annotation(appliesTo=['function', 'valueType'])
+type Ann.Pandas mixes Annotation {
+
+  /**
+   * Indicates that a generated Pandas method can possibly return a DataImpl subtype.
+   * Useful in the case when the return type of a function is `any` and one of the possible
+   * return types is a {@link Data} or {@link Data.Series}
+   */
+  canReturnData: boolean
+
+  /**
+   * Indicates that this function is not a native pandas function and should be dispatched with c3 instead
+   */
+  isNotPandasDispatchable: boolean
+
+  /**
+   * Indicates that this function mutates the underlying data
+   */
+  isMutable: boolean
+}

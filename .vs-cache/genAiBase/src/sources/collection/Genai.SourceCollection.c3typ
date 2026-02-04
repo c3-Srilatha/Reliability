@@ -1,0 +1,229 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Genai.SourceCollection defines a corpus of sources that can be parsed to serve a Generative AI search application.
+ */
+entity type Genai.SourceCollection mixes Configurable<Genai.SourceCollection.Metadata.Config>, Genai.ProjectAware, Genai.Source.WithPassages, WithName, AclEnabled {
+    beforeRemove: ~ js-rhino
+
+    /**
+     * An optional description of this source collection
+     */
+    description: string
+
+    /**
+     * The url of the root folder for this collection. All files within this folder (including subfolders) will be
+     * treated as part of the collection.
+     */
+    rootUrl: !string
+
+    /**
+     * The url of the root folder where all files for embeddings, passages, etc for this collection should be stored.
+     */
+    targetUrl: !string
+
+    /**
+     * All files that come from this collection.
+     */
+    files: [Genai.SourceFile](collection)
+
+    /**
+     * Count of all files for this collection.
+     */
+    fileCount: int calc count(files)
+
+    /**
+     * The external source system this collection is a part of, if any.
+     */
+     // TODO GENAI-570: Seed the supported {@link SourceSystem}s for the application.
+    system: Genai.SourceSystem
+
+    /**
+     * A single file containing the passages for all files in this collection. Effectively the concatenation/merge
+     * of each file's passagesFile (which is a representation of all of the Genai.SourcePassages for the
+     * SourceFile).
+     *
+     * For SourceCollections that will be loaded into the Genai.Retriever in their entirety, this file should be used to
+     * load the vector store instead of parsing each file.
+     *
+     * This field should be accessed via `mergedPassages`
+     */
+    combinedPassagesFile: private File
+
+    /**
+     * A flag to indicate when SourceFiles in this Collection have been added, removed, or updated since
+     * combinedPassagesFile was last created.
+     */
+    combinedPassagesFileIsStale: private boolean
+
+    /**
+     * The {@link User#email} who synced the source collection.
+     */
+    lastSyncedBy: string
+
+    /**
+     * Information about the user who synced the source collection formatted for display in the UI
+     */
+    displayLastSyncedBy: string calc lastSyncedBy == 'worker@c3' ? 'Batch Job' : lastSyncedBy
+
+    /**
+     * Returns a file that has all passages for this collection merged into a single file.
+     * This will just return the existing `combinedPassagesFile` unless:
+     *    1. The `combinedPassagesFile` does not yet exist
+     *    2. combinedPassagesFileIsStale is `true` and `refresh` is true
+     *    3. `forceRefresh` is true
+     *
+     * If the passagesFile is written out, SourceCollection.combinedPassagesFile will also be updated.
+     *
+     * @param refresh
+     *           If true and combinedPassagesFileIsStale is also true, will refresh the combinedPassagesFile
+     * @param forceRefresh
+     *           If true, will refresh the combinedPassagesFile (whether or not combinedPassagesFileIsStale is true)
+     */
+    mergedPassages: member function(refresh: boolean, forceRefresh: boolean): !File js-rhino
+
+    /**
+     * Gets the {@link Genai.SourceFile}s present in the collection and
+     * calls {@link Genai.SourceFile#process} on the files whose {@link Genai.SourceFile#status} is
+     * either `NOT_INDEXED` or `NEEDS_REINDEXING`. If the status of the source files is `NEEDS_REMOVAL` then it calls {@link Genai.SourceFile#unprocess}.
+     */
+    processUnprocessSourceFiles: member function() js-rhino
+
+    readPassages: ~ js-rhino | py
+
+    /**
+     * Hook for the collection which overrides the default behavior for how {@link Genai.SourceFile.Metadata} is
+     * embedded into a passage when it is indexed into the {@link Genai.Retriever}. Will only be called if the
+     * {@link Genai.SourceCollection.Metadata.Config#embedMetadata} is set to true for this collection.
+     * Also the contents of the Genai.SourcePassage can be added to the lambda and can be indexed.
+     */
+    indexedContentProvider: lambda(passageContent: !string, sourceFile: !Genai.SourceFile, sourcePassage: Genai.SourcePassage): !string
+
+    /**
+     * Syncs a {@link Genai.SourceCollection} and creates {@link Genai.SourceFile}s for the corresponding user documents.
+     *
+     * @param syncSpec
+     *          Spec to control the behavior of #sync.
+     * @param chunkerSpec
+     *          If the `chunkerSpec` is provided then the {@link Genai.SourceFile}s are chunked into {@link Genai.SourcePassage}s, else the {@link Genai.SourceFile}s will be created, but not chunked.
+     *          By default, the {@link Genai.SourceFile.Chunker.UniversalChunker} is used, which selects the most appropriate chunker implementation based on the file extension of the document.
+     *          It is also possible to override the default configuration of the universal chunker to use a specific chunker for specific file extensions.
+     * @return
+     *          return the kicked off sync job instance
+     */
+    sync: member function(syncSpec: Genai.SourceCollection.SyncSpec,
+                          chunkerSpec: Genai.SourceFile.Chunker.UniversalChunker.Spec): !Genai.SourceCollection.SyncJobs js-rhino
+
+    /**
+     * Sync a subset of {@link Genai.SourceFile}s in this source collection. The list of files will be checked by default to see if they
+     * have been modified since the {@link Genai.SourceFile}s have been created and will not be updated if they have not been changed.
+     *
+     * @param sourceFiles
+     *          List of {@link Genai.SourceFile}s to be synced
+     * @param chunkerSpec
+     *          If `chunkerSpec` is not provided, the {@link Genai.SourceFile}s will not be chunked into {@link Genai.SourcePassage}s.
+     */
+    syncFiles: member function(sourceFiles: ![Genai.SourceFile],
+                               chunkerSpec: Genai.SourceFile.Chunker.UniversalChunker.Spec) js-rhino
+
+    /**
+     * Sets the configuration for this collection.
+     * Updates all indexed {@link Genai.SourceFile#status} to {@link Genai.SourceFile.StatusEnum#NEEDS_REINDEXING} if {@link Genai.SourceCollection.Metadata.Config#embedMetadata} is set to true.
+     */
+    setMetadataConfig: member function(config: !Genai.SourceCollection.Metadata.Config) js-rhino
+
+    /**
+     * Lambda to override what {@link Genai.SourceFile.Metadata} is saved for a {@link Genai.SourceFile}
+     * during the file syncing process
+     */
+    syncMetadataLambda: lambda(sourceFile: !Genai.SourceFile): !Genai.SourceFile.Metadata
+
+    /**
+     * Last sync metadata lambda function executed during sync (stringified)
+     */
+    lastExecutedSyncMetadataLambda: string
+
+    /**
+     * The **start** time of the last sync
+     */
+    lastSyncTime: datetime
+
+    /**
+     * Starts an {@link ObjBatchMapReduceJob} to archive all {@link Genai.SourceFile}s whose {@link Genai.SourceFile#originalFile} no longer
+     * exists within #rootUrl.
+     *
+     * @param filter
+     *          if provided, limits which SourceFiles within this collection will be checked
+     *
+     * @return the id of the started job
+     */
+    archiveStaleFiles: member function(filter: string): !string js-rhino
+
+    /**
+     * The groups with access to this collection.
+     */
+    groups: [Role] = ['Genai.Common', 'C3.ClusterAdmin', 'C3.EnvAdmin', 'C3.AppAdmin']
+
+    /**
+     * Uploads the files to the SourceCollection.
+     * It does not sync the files to the collection.
+     *
+     * @param files
+     *          files to be uploaded to the source collection
+     */
+    upload: member function(files: ![File]): ![Genai.SourceFile] js-rhino
+
+    /**
+     * Fetches the {@link Genai.SourceCollection}s for the active project of a given {@link User}
+     * If the user has no active project, all {@link Genai.SourceCollection}s are returned.
+     * @param spec
+     *         {@link FetchSpec} for fetching the source collections.
+     * @param user
+     *         {@link User}s for whom to fetch the source collections.
+     * @return filtered out {@link Genai.SourceCollection}s.
+     */
+    @action(group='read')
+    fetchForUser: function(spec: FetchSpec, user: User): FetchResult js-rhino
+
+
+    /**
+     * Fetches the count of {@link Genai.SourceCollection}s for the active project of a given {@link User}
+     * If the user has no active project, all {@link Genai.SourceCollection}s are counted.
+     * @param spec
+     *         {@link FetchSpec} for fetching the source collections.
+     * @param user
+     *         {@link User}s for whom to fetch the source collections.
+     * @return count of {@link Genai.SourceCollection}s.
+     */
+    @action(group='read')
+    fetchCountForUser: function(spec: FetchSpec, user: User): !int js-rhino
+
+    /**
+     * Uploads the file to the remote destination.
+     * @param sourceFilePath
+     *         Path of the local file
+     * @param destFilePath
+     *         Path of the destination file
+     */
+    uploadFileToRemote: private function(sourceFilePath: !string, destFilePath: !string) py
+
+    /**
+     * This function will be triggered after a {@link Genai.SourceCollection} instance is removed.
+     * It will remove the {@link Genai.SourceSystem} without any {@link Genai.SourceCollection} associated,
+     * preventing remaining instances without any reference.
+     */
+    afterRemove: ~ js-rhino
+
+    /**
+     * Sets the rootUrl/targetUrl and create source system for collection if fields not specified
+     */
+    beforeCreate: ~ js-rhino
+    beforeUpdate: ~ js-rhino
+}

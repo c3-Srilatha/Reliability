@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Zippable interface that can produce an {@link Iterable} from another Iterable and a merge function.
+ */
+abstract type Zippable<E> mixes Iterable<E>, Value {
+
+  /**
+   * Generates a Iterable from the result of applying a binary operator against elements of Iterable.
+   * The return type of the binary operator must match rt.
+   * @elementType
+   *        The return value type of the operator/ the element type of the returned Iterable
+   * @spec
+   *        Configures behavior of this method based on {@link OpSpec#repeatLast}
+   * @other
+   *        Other Iterable to apply operator on
+   * @merge
+   *        Binary operator to apply to elements of this and other Iterable at matching positions
+   * @return the generated Iterable with return type rt.
+   */
+  zip: abstract member function<T, R>(elementType: ValueType,
+                                      spec: !?OpSpec,
+                                      other: !?Iterable<T>,
+                                      merge: !lambda(a: E, aIdx: int, b: any, bIdx: int): R): !Iterable<R>
+}

@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type that get the chart configuration for making a preview of the new {@link ReliabilityMetric}, that is
+ * being created.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type CreateMetricConfigurationPreviewChartHelper {
+
+  /**
+   * Function that returns the json chart configuration for the preview of the new {@link ReliabilityMetric} that is
+   * is being configured.
+   *
+   * @param spec
+   *           The specification for the preview chart configuration. See more details in
+   *           the {@link CreateMetricConfigurationPreviewChartHelperSpec}.
+   *
+   * @return The json chart configuration for the preview of the new {@link ReliabilityMetric} and its dependencies.
+   */
+  getPreviewChartConfig: function(spec: CreateMetricConfigurationPreviewChartHelperSpec): json js-rhino
+
+  /**
+   * Returns a list of y-axis field configurations for timeseries evaluation.
+   * @param spec
+   *           The specification for the preview chart configuration.
+   * @return An array of JSON objects representing y-axis field configurations.
+   */
+  getYAxisFields: private inline function (spec: !CreateMetricConfigurationPreviewChartHelperSpec): [json] js-rhino
+
+  /**
+   * Based on the spec, get the right sensor and metric data. Used by the chart's `advancedDataSpec`.
+   * @param spec
+   *           The specification for the preview chart configuration.
+   * @param start
+   *           The start datetime for the chart data.
+   * @param end
+   *           The end datetime for the chart data.
+   * @param interval
+   *           The time interval for the chart data.
+   * @return An {@link EvalMetricsResult} containing the chart data.
+   */
+  getChartData: function (spec: !CreateMetricConfigurationPreviewChartHelperSpec, start: !DateTime, end: !DateTime, interval: !Interval): EvalMetricsResult js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

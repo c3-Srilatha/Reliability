@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec type to configure data validation for a {@link ReliabilityAsset} during the report generation.
+ */
+type ReliabilityAssetReportValidationSpec {
+
+  /**
+   * Flag to enable the validation of the model for the report generation.
+   */
+  enableModelValidation: boolean = true
+
+  /**
+   * Validates that the given model is correctly configured for the report generation using a list of steps retrieved
+   * from #getValidationSteps method.
+   *
+   * The validation steps can be configured by the flags in the type instance. (`enable*:`)
+   *
+   * **NOTE:** If any error is found, the validation process will stop and return the list of errors.
+   *
+   * @param asset
+   *        The asset to be validated.
+   * @param reportSpec
+   *        The report spec that is used to generate the report.
+   * @return The list of validation errors.
+   */
+  validateAsset: member function(asset: !ReliabilityAsset, reportSpec: !ReliabilityAssetReportSpec): [string] py
+
+  /**
+   * Retrieves the list of validation steps to be executed during the validation process.
+   *
+   * @return The list of lambda functions to be executed for the validation. (`native`)
+   */
+  getValidationSteps: member function(reportSpec: !ReliabilityAssetReportSpec): native py
+
+  /**
+   * Validates the related [models](ReliabilityRiskMlModel) has the correct configuration for the report generation.
+   *
+   * @param asset
+   *        The asset from which to validate the related models.
+   * @param reportSpec
+   *        The report spec that is used to generate the report.
+   * @return The list of validation errors.
+   */
+  validateAssetRelatedModels: private inline function(asset: !ReliabilityAsset, reportSpec: !ReliabilityAssetReportSpec): [string] py
+}

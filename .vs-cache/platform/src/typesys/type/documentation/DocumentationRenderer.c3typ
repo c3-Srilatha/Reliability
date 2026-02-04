@@ -1,0 +1,112 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is responsible for formatting documentation for display.
+ *
+ * For convenience, it can be called via GET in a RESTful way since all its methods are idempotent:
+ *   - /documentation/index
+ *   - /documentation/type/_name_
+ *   - /documentation/type/_name_/field/_name_
+ *
+ * Links within the documentation can be generated using this format, see {@link DocumentationRenderSpec#docLinks}.
+ *
+ * Rendering can be one to several formats, but the most canonical one is HTML. For HTML, we produce a document
+ * fragment (no `head` or `body` tags) which is meant to be embedded in some context that provides styles and
+ * script support. For example, the {@link server:/documentation/editor documentation micro site} hosts it within
+ * an application that provides the navigation structure.
+ *
+ * A more complete presentation can be obtained by specifying the {@link DocumentationRenderSpec#includeCss} and
+ * {@link DocumentationRenderSpec#includeJs includeJs} options to add basic CSS styles and JavaScript.
+ * To create a stand-alone HTML page, use the {@link DocumentationRenderSpec#standAlone standAlone} option.
+ *
+ * Additional CSS and JavaScript is needed for the following features:
+ *  - [PrismJs](https://prismjs.com/) CSS and JavaScript
+ *  - [MathJax](https://www.mathjax.org/) JavaScript
+ *  - [Mermaid](https://mermaid.js.org/) JavaScript
+ *
+ * Features like callouts and tables use standard HTML, but need CSS to look good. Other features like cards require
+ * it. The HTML produced is tagged with classes for targeting CSS and JavaScript additions.
+ *
+ * @see DocumentationRenderSpec
+ */
+type DocumentationRenderer mixes Value {
+
+  /**
+   * Render type documentation for display.
+   *
+   * @param typeName
+   *           the name of the type
+   * @return rendered documentation
+   */
+  renderType: function(typeName: !string, spec: DocumentationRenderSpec): DocumentationRenderResult
+
+  /**
+   * Render type field documentation for display.
+   *
+   * @param typeName
+   *           the name of the type
+   * @param fieldName
+   *           the name of the field
+   * @return rendered documentation
+   */
+  renderTypeField: function(typeName: !string,
+                            fieldName: !string,
+                            spec: DocumentationRenderSpec): DocumentationRenderResult
+
+  /**
+   * Render type method documentation for display.
+   *
+   * @param typeName
+   *           the name of the type
+   * @param methodName
+   *           the name of the method
+   * @return rendered documentation
+   */
+  renderTypeMethod: function(typeName: !string,
+                             methodName: !string,
+                             spec: DocumentationRenderSpec): DocumentationRenderResult
+
+  /**
+   * Render topic documentation for display.
+   *
+   * @param topicName
+   *           the name of the topic
+   * @return rendered documentation
+   */
+  renderTopic: function(topicName: !string, spec: DocumentationRenderSpec): DocumentationRenderResult
+
+  /**
+   * Render topic documentation for display given then topic file.
+   *
+   * @param file
+   *            the {@link File} representing the topic
+   * @param spec
+   *            the specifications for rendering the topic
+   * @return rendered documentation
+   */
+  renderTopic: function(file: Pkg.File, spec: DocumentationRenderSpec): DocumentationRenderResult
+
+  /**
+   * Render a search result for display.
+   *
+   * @param q
+   *           search query
+   * @return rendered documentation
+   */
+  renderSearch: function(q: !string, spec: DocumentationRenderSearchSpec): DocumentationRenderResult
+
+  /**
+   * Render a Markdown block for display.
+   *
+   * @param input
+   *           Markdown text
+   * @return rendered documentation
+   */
+  renderMarkdown: function(input: !string, spec: DocumentationRenderSpec): DocumentationRenderResult
+}

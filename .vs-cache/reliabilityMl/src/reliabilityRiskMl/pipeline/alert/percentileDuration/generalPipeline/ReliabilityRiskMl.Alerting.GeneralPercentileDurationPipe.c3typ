@@ -1,0 +1,119 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipe} template for the {@link ReliabilityRiskMl.Pipeline} which outputs an `alert`
+ * based on a dataset of riskScores as input.
+ * The pipe checks if the `riskScore` surpasses certain thresholds for a duration of time and then raises an alert.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Alerting.GeneralPercentileDurationPipe extends ReliabilityRiskMl.Alerting.Pipe<{features: Data, riskScore: Data, riskScoreNormalized: Data, alertContext: Data}, {alert: Data}> type key 'GPDP' {
+
+  /**
+   * The name of the column representing the risk score in the dataset.
+   * This is the column that will be used to determine whether to raise an alert.
+   */
+  riskScoreColumnName: !string = 'riskScore'
+
+  /**
+   * The parameter to compute the percentile for the risk scores. The computed alert threshold is based on the
+   * specified percentile of risk scores. The `alertThreshold` will override this if it's set.
+   *
+   * range [0, 100]
+   */
+  @ML(hyperparameter=true)
+  alertPercentile: double = 99
+
+  /**
+   * A specific risk score threshold above which a risk score is considered "high" and an alert may be triggered.
+   * This parameter is used when `alertThreshold` is set and will override the `alertPercentile` value.
+   */
+  @ML(hyperparameter=true)
+  @inferenceTypeDoc(isInferenceOnly=true)
+  alertThreshold: double
+
+  /**
+   * The duration of time (in seconds) that the `riskScore` must remain above the {@link alertThreshold}
+   * before it is considered as a candidate for raising an alert. This helps to filter out transient spikes.
+   */
+  @ML(hyperparameter=true)
+  @inferenceTypeDoc(isInferenceOnly=true)
+  ignoreSpan: int = 14400
+
+  /**
+   * If an alert has been triggered within the last {@link reminderSpan} seconds, no new alert will be raised
+   * even if the `riskScore` remains above the {@link alertThreshold} for a duration longer than the {@link ignoreSpan}.
+   */
+  @ML(hyperparameter=true)
+  reminderSpan: int = 604800
+
+  /**
+   * If two alert candidates are more than {@link mergeSpan} seconds apart (with {@link mergeSpan} < {@link reminderSpan}),
+   * and are from different high-risk score periods, then both alerts will be raised even if they fall within the same
+   * {@link reminderSpan} period. This prevents false merges of different events.
+   *
+   * range mergeSpan <= reminderSpan
+   */
+  @ML(hyperparameter=true)
+  @inferenceTypeDoc(isInferenceOnly=true)
+  mergeSpan: int = 86400
+
+  /**
+   * The minimum time interval (in seconds) inferred from the data that the alerting pipe is trained on.
+   * For example, if the pipe is trained on hourly data, {@link interval} should be 3600.
+   */
+  interval: private int
+
+  /**
+   * Boolean field to specify whether the {@link mergeSpan} should be applied to the actual alert or to the alert candidate.
+   * When set to `false`, the logic applies to the alert candidate, which is consistent with the behavior in earlier versions of the system (V7).
+   * If set to `true`, the logic will apply to the actual alert.
+   *
+   * Default is `false`.
+   */
+  mergeOnActualAlert: private boolean = false
+
+  /**
+   * Function to train the model. This uses Python to implement the training process.
+   */
+  doTrain: ~ py-data
+
+  /**
+   * Function executed after the training process completes.
+   * This allows for post-processing after model training.
+   */
+  afterTrain: ~ py
+
+  /**
+   * Function to check if the pipe is trainable.
+   * Determines whether the model can be trained based on the current configuration.
+   */
+  isTrainable: ~ py
+
+  /**
+   * Determines if the {@link ReliabilityRiskMl.Alerting.GeneralPercentileDurationPipe} is trained.
+   * The pipe is considered trained when both {@link alertThreshold} and {@link interval} are set.
+   */
+  isTrained: ~ py
+
+  /**
+   * Function to process the data using the trained model.
+   * This function uses Python to implement the actual alert generation logic.
+   */
+  doProcess: ~ py-data
+
+  /**
+   * Function executed before the entity is created, allowing for pre-processing steps.
+   * This function can be customized for any pre-creation logic.
+   */
+  beforeCreate: ~ py
+}

@@ -1,0 +1,115 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Basic test data for Reliability.
+ *
+ * As with other C3 applications, it is recommended to
+ * increase java memory and cassandra heap size on your
+ * local server when loading this data:
+ * ```
+ * export VM_MIN_MEM=15G
+ * export VM_MAX_MEM=20G
+ * export MAX_HEAP_SIZE=5G
+ * export HEAP_NEWSIZE=5G
+ * ```
+ */
+remix type ReliabilityTestData {
+
+  /**
+   * Helper method to retrieve a dummy reliabilityRisk MlPipeline
+   */
+  createDummyReliabilityRiskPipeline: function(): MlPipeline py-ml
+
+  /**
+   * Helper method to retrieve a dummy reliability MlPipeline for testing purposes only
+   */
+  createDummyReliabilityMlPipeline: function(): MlPipeline py-ml
+
+  /**
+   * Helper method to retrieve a reliabilityRisk MlPipeline
+   */
+  createReliabilityRiskPipeline: function(numFeatures: !int): MlPipeline py-ml
+
+  /**
+   * Helper method to retrieve a reliability MlPipeline
+   */
+  createReliabilityMlPipeline: function(): MlPipeline py-ml
+
+  /**
+   * Helper method to populate Reliability types
+   */
+  removeMdfConcepts: function() js-rhino
+
+  /**
+   * Helper method to remove Reliability types related to {@link ReliabilityMlModel}
+   * with residual diagnostics as the default project.
+   */
+  removeAgnosticMdfConcepts: function(projectId: string) js-rhino
+
+  /**
+   * Calls `removeNormalized` on all entities of given type.
+   */
+  removeNormalizedTimeseriesData: function(typeName: !string) js-rhino
+
+ /**
+   * Helper method to populate Reliability types.
+   * If `trainPeriod` is given, will use a real pipeline and train it; otherwise, will use a dummy pipeline.
+   * `dummyModelFields` allows specification of fields to add to create model. Only used if trainPeriod is undefined.
+   */
+  createReliabilityRiskModels: function(
+    assetFilter: !Filter,
+    modelStatus: string enum MlModel.Route.Status.Label,
+    features: [string],
+    trainPeriod: TimeRange,
+    featureSetKey: string = '',
+    dummyModelFields: map<string, any>
+  ): map<string, MlModel> js-rhino
+
+  /**
+   * Helper method to populate Reliability types.
+   * If `trainPeriod` is given, will use a real pipeline and train it; otherwise, will use a dummy pipeline.
+   * `dummyModelFields` allows specification of fields to add to create model. Only used if trainPeriod is undefined.
+   */
+  createReliabilityMlModels: function(
+    assetFilter: !Filter,
+    modelStatus: string enum MlModel.Route.Status.Label,
+    features: [string],
+    trainPeriod: TimeRange,
+    featureSetKey: string = '',
+    dummyModelFields: map<string, any>
+  ): map<string, MlModel> js-rhino
+
+  /**
+   * Creates a {@link ReliabilityMlModel} by validating inputs and outputs. It sets up a new model for the specified project and
+   * pipeline and prepares the dataset for training. The method also includes model configuration and setup based on
+   * the provided training data and associated parameters.
+   *
+   * @param project The machine learning project under which the model is being created.
+   * @param pipeline The pipeline used for training the model.
+   * @param x The features (input data) for training.
+   * @param y The target labels (output data) for training.
+   * @param id The unique identifier for the model.
+   * @param name The name of the model.
+   * @param datasetPreparationRun The dataset preparation run used to prepare the data for training.
+   * @param template The template used to define the structure of the model.
+   *
+   * @returns A new {@link ReliabilityMlModel} instance.
+   */
+  createMlModel: function(
+    project: !MlProject,
+    pipeline: !MlPipeline,
+    x: map<string, Feature.Set> | Feature.Set,
+    y: map<string, Feature.Set> | Feature.Set,
+    id: string,
+    name: string,
+    datasetPreparationRun: ReliabilityMlDatasetPreparationRun,
+    template: ModelTemplate
+  ): !ReliabilityMlModel py
+}

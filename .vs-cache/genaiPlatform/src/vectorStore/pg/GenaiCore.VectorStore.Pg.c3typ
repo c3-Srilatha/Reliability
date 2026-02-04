@@ -1,0 +1,124 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type integrates the C3 platform support for pgvector with the general {@link GenaiCore.VectorStore} interface.
+ * The C3 support for pgvector is through `entity` types. At least one field
+ * must be designated as the indexed vector info. One field represents
+ * the pre-embedded content (e.g. document as a string).
+ * For example, consider the following type:
+ * ```
+ * entity type MyVectorType {
+ *
+ *   @vector(dimension=768)
+ *   embedding: !string
+ *
+ *   docText: !string
+ *
+ *   docAuthor: string
+ *
+ *   docYear: string
+ * }
+ * ```
+ * In this example, {@link #entityType} would be `MyVectorType`. {@link #embeddingPath} would
+ * be "embedding". {@link #contentPath} would be "docText". {@link #similaritySearchSpec} would have
+ * ["docAuthor", "docYear"] as `metadataPaths`.
+ * NOTE: if there are multiple embeddings for the document, then simply create more `@vector`
+ * fields, one per embedding, and instantiate a {@link GenaiCore.VectorStore.Pg} for each possible
+ * {@link #embeddingPath}.
+ */
+entity type GenaiCore.VectorStore.Pg extends GenaiCore.VectorStore type key 'VSPG' {
+
+  /**
+   * The entity type that should be queried for this vector store.
+   */
+  entityType: !Type<<Persistable>>
+
+  /**
+   * The name of the field in {@link #entityType} that should be considered
+   * as the embedding for {@link #similaritySearch}.
+   */
+  embeddingPath: string
+
+  /**
+   * The name of the field/path in {@link #entityType} that contains the pre-embedded
+   * content.
+   */
+  contentPath: string
+
+  /**
+   * The distance metric to use with pgvector.
+   */
+  distanceMetric: string enum GenaiCore.VectorStore.Pg.DistanceMetric = GenaiCore.VectorStore.Pg.DistanceMetric.COSINE
+
+  /**
+   * @return the canonical file name used for the file containing metadata for
+   *          the file export. This will contain information about the vector
+   *          store instance that was exported.
+   */
+  importExportMetadataFileName: private cached function(): !string py
+
+  /**
+   * @return the canonical file name used for the file containing vector stats for
+   *         the file export. This will contain information about the vectors that are exported.
+   */
+  importExportVectorStatsFileName: private cached function(): !string py
+
+  /**
+   * @return the name of the directory to use for the {@link Export} or {@link Import} job that
+   *          implements {@link #exportToFiles} and {@link #importFromFiles}, respectively.
+   */
+  importExportBasePath: private member function(): !string py
+
+  /**
+   * Import the contents of the files at the specified directory path and create an instance of {@link GenaiCore.VectorStore.Pg} with the
+   * specified id.
+   * This method is intended to import directory structures created by {@link #exportToFiles}.
+   * For example, sub-directories are not supported.
+   *
+   * @param id
+   *          the id of the instance of the {@link GenaiCore.VectorStore.Pg} to be created.
+   *          NOTE: if an instance with this id already exists, then an error will be thrown.
+   * @param path
+   *          the path to the directory in the caller's local filesystem where the files
+   *          should be imported from.
+   * @param spec
+   *          spec for the import.
+   * @return the created instance of {@link GenaiCore.VectorStore.Pg} with all the files imported.
+   */
+  importFromFiles: function(id: !string, path: !string, spec: GenaiCore.VectorStore.Pg.ImportSpec): !mixing GenaiCore.VectorStore.Pg py
+
+  /**
+   * Export the contents of the vectors in this instance into files at the specified directory path.
+   *
+   * @param path
+   *          the path to the directory in the caller's local filesystem where the files should
+   *          be exported to.
+   * @param spec
+   *          spec for the export.
+   * @return the number of files that were exported.
+   */
+  exportToFiles: member function(path: !string, spec: GenaiCore.VectorStore.Pg.ExportSpec): !int py
+
+  /**
+   * @inheritdoc
+   *
+   * NOTE: pgvector supports pre-filtering for metadata and expects {@link GenaiCore.SimilaritySearchSpec#metadataFilter}
+   * to be specified as a string serialized {@link Filter}.
+   */
+  doSimilaritySearch: ~ py
+
+  /**
+   * @inheritdoc
+   *
+   * NOTE: this method supports an additional option of {@link UpsertSpec} with name `upsertSpec`,
+   * which will be passed to the {@link Upsertable#upsertBatch} call under the hood.
+   */
+  doAddVectors: ~ py
+}

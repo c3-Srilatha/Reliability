@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Input component type for slider.
+ */
+@typeScript
+@uiComponentCategorizer(name='Slider', category='Components')
+type UiSdlSlider mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * If used in a form, the field this component is associated with.
+   */
+  field: string
+
+  /**
+   * Whether or not to show inputs.
+   */
+  hideInput: boolean = false
+
+  /**
+   * Hide the tic marks on the slider. This will remove the tic marks from the slider display.
+   */
+  hideMarkers: boolean = false
+
+  /**
+   * Descriptive text to aid the user in interacting with this input.
+   */
+  hint: string | UiSdlDynamicValueSpec
+
+  /**
+   * Id to assist in generating a React key prop.
+   */
+  id: string
+
+  /**
+   * The size of the label.
+   */
+  labelSize: string enum('small', 'medium', 'large', 'extra-large')
+
+  /**
+   * The value to step by when adding interval marks to the slider.  Steps will be added starting at
+   * min by markStep up to and include min.
+   * Example min = 0; max = 100; markStep = 25 A mark will be located at each point [0 25 50 75 100].
+   * These are the visual tick marks along the bottom of the slider bar and have no functional implications
+   * on the slider.
+   */
+  markStep: double = 10
+
+  /**
+   * Value to be added or subtracted on each step the slider makes.  Must be greater than zero and max - min should
+   * be evenly divisible by the step value.
+   * This is the interval at which the slider increments and dictates the functional component of the slider.
+   * Example min = 0; max = 100; markStep = 25; step = 5.
+   * The minimum value will be 0.
+   * The maximum value will be 100.
+   * A mark will be located at each point [0 25 50 75 100].
+   * Eligible values for the slider to "land" on will be 0 5 10 ... 100.
+   */
+  step: double = 1
+
+  /**
+   * The maximum value for the slider.
+   */
+  max: double = 100
+
+  /**
+   * The maximum number of tic marks to show on the slider.  This is used
+   * for automatically generating the markStep size.  This includes a tic
+   * mark for the min and max values.
+   */
+  maxMarkers: int = 2
+
+  /**
+   * The minimum value for the slider.
+   */
+  min: double = 0
+
+  /**
+   * The initial value for the slider.
+   */
+  value: double = 0
+}

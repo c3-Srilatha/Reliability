@@ -1,0 +1,133 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface for a store of session state.
+ * Example usage:
+ * ```py
+ * store = c3.GenaiCore.SessionStore.Kv(id="my_store").upsert()
+ *
+ * session = store.initState("my_session")
+ * for i in range(10):
+ *   curr_state = store.getState(session) or {}
+ *   print(curr_state)
+ *   new_state = curr_state
+ *   new_state[f"iter{i}"] = i
+ *   # use the new returned Session object for the next `getState` call!
+ *   session = store.updateState(session, new_state)
+ * ```
+ */
+abstract type GenaiCore.SessionStore {
+
+  /**
+   * The serializer to use on each element of `state` in {@link #updateState}. The symmetric
+   * deserialization will be used on each element of `state` returned from {@link #getState} prior
+   * to returning to caller.
+   * If no serializer is provided, then a default serializer will be selected.
+   */
+  serializer: !GenaiCore.SessionStore.Serializer = { 'type': 'GenaiCore.SessionStore.Serializer.Default' }
+
+  /**
+   * The retention policy for {@link GenaiCore.SessionStore.Persistable#cleanUpSessions} that determines which sessions to
+   * retain and which to clean up via {@link #deleteStateBatch}.
+   * If no retention policy is provided, then a default simple time-to-live policy will be
+   * selected {@link GenaiCore.SessionStore.RetentionPolicy.Ttl}.
+   */
+  retentionPolicy: GenaiCore.SessionStore.RetentionPolicy
+
+  /**
+   * Whether to disable tracing instrumentation for this session store.
+   */
+  disableTracingInstrumentation: boolean
+
+  /**
+   * This API initializes a new session with corresponding empty state to be used with other
+   * APIs like {@link #updateState} and {@link #getState}.
+   *
+   * @param name
+   *          optional name for session creation. This name must be unique within the
+   *          scope of this session store. It will be combined with the unique session
+   *          store id to form a globally unique id for the session.
+   *          If unspecified, then a UUID will be generated.
+   * @return the newly initialized session with empty state.
+   */
+  initState: abstract inline member function(name: string): !GenaiCore.Session
+
+  /**
+   * @param session
+   *          the session to update the state for.
+   * @param state
+   *          the new state. This will replace the old state completely, **not merge**!
+   * @return the new session object after the update. This holds important version information, so
+   *          be sure to use the new one for the next `getState` operation!
+   */
+  updateState: inline member function(session: !GenaiCore.Session, state: !map<string, native>): !GenaiCore.Session py
+
+  /**
+   * This API is the same as {@link #updateState} and is called from the default implementation of {@link #updateState}.
+   * This function must be overridden by concrete implementations of {@link GenaiCore.SessionStore}, because {@link #updateState}
+   * has extra boiler-plate implementation that does, for example, logging.
+   *
+   * @param session
+   *          the session to update the state for.
+   * @param state
+   *          the new state. This will replace the old state completely, **not merge**!
+   * @return the new session object after the update. This holds important version information, so
+   *          be sure to use the new one for the next `getState` operation!
+   */
+  doUpdateState: inline member function(session: !GenaiCore.Session, state: !map<string, native>): !GenaiCore.Session py
+
+  /**
+   * @param session
+   *          the session to get the state for.
+   * @return the state associated with the session.
+   */
+  getState: inline member function(session: !GenaiCore.Session): map<string, native> py
+
+  /**
+   * This API is the same as {@link #getState} and is called from the default implementation of {@link #getState}.
+   * This function must be overridden by concrete implementations of {@link GenaiCore.SessionStore}, because {@link #getState}
+   * has extra boiler-plate implementation that does, for example, logging.
+   *
+   * @param session
+   *          the session to get the state for.
+   * @return the state associated with the session.
+   */
+  doGetState: inline member function(session: !GenaiCore.Session): map<string, native> py
+
+  /**
+   * @param sessions
+   *          the sessions to delete. The state corresponding to each session will also be deleted.
+   * @return the number of sessions deleted.
+   */
+  deleteStateBatch: abstract inline member function(sessions: ![GenaiCore.Session]): !int
+
+  /**
+   * Deletes all sessions and all associated state from this session store.
+   *
+   * @param confirm
+   *          user must specify `true` to delete all state for this session store.
+   * @return the number of sessions deleted.
+   */
+  deleteAllState: member function(confirm: !boolean): !int py
+
+  /**
+   * @param spec
+   *          optional parameters such as `offset` and `limit`.
+   * @return a map of session id to session instance for all sessions associated with this store.
+   */
+  sessions: abstract member function(spec: GenaiCore.SessionStore.SessionsSpec): map<string, GenaiCore.Session>
+
+  /**
+   * @param id
+   *          id of the session to return.
+   * @return the session instance with the provided id, or null if none are found.
+   */
+  sessionForId: abstract member function(id: !string): GenaiCore.Session
+}

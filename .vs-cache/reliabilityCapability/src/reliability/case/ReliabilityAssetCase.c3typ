@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Remixed to support logic for criticality:
+ * - added db order annotation to the alertRelations field
+ */
+remix type ReliabilityAssetCase {
+
+    /**
+     * All the {@link ReliabilityAssetAlertToCaseRelation}s related to this case, sorted by importance using the {@link ReliabilityAssetImportance#importanceLevel}.
+     */
+    @db(order='descending(from.parent.assetImportanceLevel.importanceLevel)')
+    alertRelations: ~
+
+    /**
+     * This method fetches the {@link ReliabilityAssetAlertSimilarity#comparableAlert}s that are similar to the {@link ReliabilityAssetAlert}s
+     * associated to a {@link ReliabilityAssetCase} based on the {@link ReliabilityAssetAlertToCaseRelation}s.
+     *
+     * @param spec
+     *   A {@link FetchSpec} to define the retrieval for the similar alerts.
+     *
+     * @returns {@link FetchResultWithTotalCount<ReliabilityAssetAlert>}
+     *   Result containing the similar {@link ReliabilityAssetAlert}s along with the total count excluding for limit and offset.
+     */
+    fetchSimilarAlerts: member function(spec: FetchSpec): FetchResultWithTotalCount<ReliabilityAssetAlert> js-rhino
+
+    /**
+     * Helper function for {@link fetchFailureModeRelations} and {@link fetchFailureRecommendationRelations}.
+     */
+    doFetchFailureModeRelations: private member function(spec: !FetchSpec,
+                                                                baseType: !Type,
+                                                                alertType: !Type)
+                                                        : !FetchResult<FailureModeRelation | FailureRecommendationRelation> js-rhino
+
+    /**
+     * Retrieves all {@link FailureModeRelation}s for the case, including those for all linked alerts.
+     * The given {@link FetchSpec#include} argument should be populated but not include `from` to avoid issues with fetching on an `anyof` field.
+     */
+    fetchFailureModeRelations: member function(spec: FetchSpec): !FetchResult<FailureModeRelation> js-rhino
+
+    /**
+     * Helper function for count {@link fetchFailureModeRelations} and {@link fetchFailureRecommendationRelations}.
+     */
+    doFetchCountFailureModeRelations: private member function(spec: !FetchSpec,
+                                                                alertType: !Type)
+                                                        : !int js-rhino
+
+    /**
+     * Retrieves the total count fetchFailureModeRelations
+     */
+    fetchCountFailureModeRelations: member function(spec: FetchSpec): !int js-rhino
+
+    /**
+     * Retrieves all {@link FailureRecommendationRelation}s for the case, including those for all linked alerts.
+     * The given {@link FetchSpec#include} argument should be populated but not include `from` to avoid issues with fetching on an `anyof` field.
+     */
+    fetchFailureRecommendationRelations: member function(spec: FetchSpec): !FetchResult<FailureRecommendationRelation> js-rhino
+
+    /**
+    * Reopen the case and transition alerts back to case.
+    */
+    reopenCaseAndTransitionAlerts: member function(spec: !ReopenAndTransitionAlertsSpec) js-rhino
+
+    /**
+     * Fetches the failure mode details for the {@link ReliabilityAssetAlert}s associated with a {@link ReliabilityAssetCase}.
+     * The fetch result includes the `failureModeId`, `failureModeName`, `alertId`, `alertName`, `latestFeedbackText`,
+     * `alertFailureModeRelationId`, `numRecommendations`, and `numSensorBehaviours` fields.
+     * This custom fetch supports pagination, and searching and sorting on the `Failure Mode` and `Alert Name` fields.
+     *
+     * @param caseId
+     *   The ID of the {@link ReliabilityAssetCase} to fetch the failure modes for the associated {@link ReliabilityAssetAlert}.
+     * @param spec
+     *   A {@link FetchSpec} that contains the filters, pagination, and sorting options for the fetch.
+     *
+     * @returns {@link FetchResultWithTotalCount<json>}
+     *   Result containing the failure mode objects along with the total count.
+     */
+    fetchFailureModeDetails: function(caseId: !string, spec: FetchSpec): FetchResultWithTotalCount<json> js-rhino
+}

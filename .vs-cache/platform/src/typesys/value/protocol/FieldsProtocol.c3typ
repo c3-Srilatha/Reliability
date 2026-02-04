@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Marker type indicating support for implementation language attribute syntax e.g. accessor via `.`.
+ *
+ * Extends base FieldProtocol by introducing multi-field access
+ *
+ * Also see {@link FieldProtocol}.
+ */
+abstract type FieldsProtocol mixes FieldProtocol, Value {
+
+  /**
+   * Implements the square bracket `[]` syntactic sugar in js and py for key-type list of string.
+   * @param names
+   *         names associated with the desired attribute values.
+   * @return the attribute values associated with the given attribute names
+   */
+  _fields_: abstract member function(names: ![string]): [any]
+
+  /**
+   * Implements the `.` auto-complete syntax in js and py.
+   * @return list of all attribute names
+   */
+  _fieldNames_: abstract member function(): [string]
+}

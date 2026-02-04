@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for a single filter in the filter bar.
+ */
+@typeScript
+type UiApFilterBar.FilterConfig {
+
+  /**
+   * The type of filter to display.
+   * - "multiselect": Allows multiple selections with checkboxes
+   * - "singleselect": Allows single selection with dropdown
+   * - "number": Allows numeric filtering with comparison operators
+   */
+  filterType: string enum("multiselect", "singleselect" , "number")
+
+  /**
+   * The display label for the filter. Can be a translation key.
+   */
+  label: string
+
+  /**
+   * The data ID to fetch filter options from. This is the data ID for the data store with id
+   * {@link UiApFilterBar#dataStoreId}. It should correspond to an entry in the {@link UiApDataStore#actionMap}.
+   *
+   * Required for multiselect and singleselect filters. Ensure that the data store has an action
+   * specific for this data ID if pagination and searching are required. The action should either return
+   * a list of strings or utilize a {@link FetchSpec} to fetch the data. If strings are not returned and
+   * a {@link FetchSpec} is not used, the filter will not function as expected.
+   */
+  dataId: ?string
+
+  /**
+   * The path within the data to access the filter options.
+   * Defaults to the root data if not specified. Only applicable for multiselect and singleselect filters.
+   */
+  dataPath: ?string
+
+  /**
+   * The path to the field to use as the display label for each option.
+   * Defaults to the data item itself if not specified.
+   */
+  itemLabelPath: ?string
+
+  /**
+   * The path to the field to use as the unique identifier for each option.
+   * Defaults to the data item itself if not specified.
+   */
+  itemIdPath: ?string
+
+  /**
+   * The path to a secondary label field for additional display information.
+   */
+  itemSecondaryLabelPath: ?string
+
+}

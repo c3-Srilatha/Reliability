@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state for the settings page.
+ */
+type GenAiUiSettingsApplicationState mixes UiSdlApplicationState {
+
+  /**
+   * Whether the config detail is on read mode (JSON view), or edit mode.
+   */
+  configDetailMode: string enum ('read', 'edit') = 'read'
+
+  /**
+   * Action to toggle the read/edit mode on the config detail panel.
+   * @param id
+   *           The id of the {@link GenAiUiFeedApplicationState} for the action.
+   * @param configDetailMode
+   *           The mode to set the config detail panel to.
+   */
+  @uiSdlActionCreator(actionType='SET_CONFIG_DETAIL_MODE')
+  setConfigDetailModeAction: private function(id: !string, configDetailMode: !string enum ('read', 'edit')): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_CONFIG_DETAIL_MODE` and updates the config detail mode.
+   */
+  @uiSdlReducer(actionType='SET_CONFIG_DETAIL_MODE')
+  setConfigDetailModeReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+}

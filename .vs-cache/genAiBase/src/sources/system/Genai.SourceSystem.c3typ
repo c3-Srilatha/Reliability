@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the root of an external file system integrated into the application
+ */
+abstract extendable entity type Genai.SourceSystem<CS: Genai.SourceSystem.CreateSpec> {
+
+  /**
+   * Name of the source system
+   */
+  name: !string
+
+  /**
+   * The type of the source system
+   */
+  sourceType: !string enum Genai.SourceSystem.Scheme
+
+  /**
+   * The {@link Genai.SourceCollection}s created as a part of this source system
+   */
+  collections: [Genai.SourceCollection](system)
+
+  /**
+   * Description of the source system
+   */
+  description: string
+
+  /**
+   * The name of the mount in {@link FileSystem#mounts} for this source system
+   */
+  mountName: !string
+
+  /**
+   * The name of the bucket for the source system
+   */
+  bucketName: !string
+
+  /**
+   * Creates a {@link Genai.SourceSystem} with its mount into the {@link FileSystem}
+   * given a {@link Genai.SourceSystem.CreateSpec}.
+   *  @param spec
+   *         The {@link Genai.SourceSystem.CreateSpec} to use to create the source system
+   *  @param rootUrls
+   *         The rootUrls to use to create the {@link Genai.SourceCollection}s
+   */
+  createSourceSystem: function(spec: !CS, rootUrls: ![string]): !mixing Genai.SourceSystem
+
+  /**
+   * Returns the deduplicated rootUrls to create the new {@link Genai.SourceCollection}s
+   * For example: for rootUrls = ['/a', '/a/b', '/a/c', '/d/e'], it would return ['/a', '/d/e']
+   *  @param rootUrls
+   *         The rootUrls to use to create the {@link Genai.SourceCollection}s
+   */
+  dedupRootUrls: private function(rootUrls: ![string]): ![string] js-rhino
+
+  /**
+   * Validates the connection for the external source system. If {@link Genai.SourceSystem} is passed,
+   * then it copies the credentials from that source system and tries to validate the connection.
+   */
+  /*
+   * `json` is required as the UI passes in a native object when calling this function.
+   */
+  validateConnection: function(spec: !json | !Genai.SourceSystem.CreateSpec, sourceSystem: Genai.SourceSystem): any
+
+  /**
+   * Returns true if a source system has a unique name for a specific source type, false otherwise.
+   */
+  doesNameExist: function(sourceName: !string): boolean
+}

@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util functions for interacting with the global canvas
+ * WARNING: The nodeId arguments in these functions are not truly {@link GlobalCanvasGraphNode#id}! They are more like "instanceIdentifier".
+ */
+private type GlobalCanvasCommonUtil mixes Value {
+
+  /**
+   * Returns a TypeIdentifier.
+   * @param nodeCategory
+   *            The node category
+   * @param nodeId
+   *            The node id
+   * @return {@link TypeIdentifier}
+   */
+  getTypeIdentifierByNodeCategoryAndNodeId: function(nodeCategory: !string serialized GlobalCanvasGraphNodeCategory,
+                                                     nodeId: !string): TypeIdentifier js-server
+
+  /**
+   * Returns the type of record.
+   * @param nodeCategory
+   *            The node category
+   * @param nodeId
+   *            The node id
+   * @return {@link Type}
+   */
+  getRecordTypeByNodeCategoryAndNodeId: function(nodeCategory: !string serialized GlobalCanvasGraphNodeCategory,
+                                                 nodeId: !string): Type js-server
+
+  /**
+   * Returns type documentation.
+   * @param nodeCategory
+   *            The node category
+   * @param nodeId
+   *            The node id
+   * @return documentation
+   */
+  getTypeDocByNodeCategoryAndNodeId: function(nodeCategory: !string serialized GlobalCanvasGraphNodeCategory,
+                                              nodeId: !string): string js-server
+
+  /**
+   * Returns a filter based on given type identifier
+   * @param typeIdentifier
+   *            The typeIdentifier
+   * @return {@link Filter}
+   */
+  getFilterByTypeIdentifier: function(typeIdentifier: !TypeIdentifier): Filter js-server
+
+  /**
+   * Fetches the list of the current tag's accessible packages
+   * @return the list of {@link UiMetadataPackage}
+   */
+  rootPackageAndDependencies: function(): [UiMetadataPackage] js-server
+
+  /**
+   * Retrieves lists of all types information. Allows for further filtering on the {@link TypesByCategory}.
+   *
+   * @return An object containing {@link TypesByCategory} mapped to their respective lists of types
+   */
+  getFullTypesByCategory: function(): map<string, [TypesByCategory]> js-server
+
+  /**
+   * Returns the input params passed.
+   * This is workaround to load the dataSpec of a {@link UiSdlComponent}
+   * from {@link UiDataRedux} instead of an API.
+   * @return actionArgs
+   */
+  identity: function(actionArgs: json): json js-server
+
+  /**
+   * Fetches the instance of the type as json, which maybe necessary when the type is written as seed data.
+   * @param type
+   *            The type to fetch
+   * @param id
+   *            The id instance to fetch
+   * @param include
+   *            An optional include statement to execute on the get. If not specified, "this" will be used.
+   */
+  getAsJson: function(type: !Type, id: !string, include: string): json js-server
+
+  /**
+   * Get the path of the file related to the node based on its id and category.
+   * @param categoryMetadataIdentifier
+   *            The identifier of the metadata.
+   * @return Relative path of the metadata file. It won't start with '/'
+   */
+  getRelativeFilePathForMetadata: function(categoryMetadataIdentifier: !string): string js-server
+
+  /**
+   * Returns relative jupyter url using platform APIs.
+   */
+  getRelativeUrlForJupyter: function(): string js-server
+}

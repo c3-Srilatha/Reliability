@@ -1,0 +1,99 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for a badge to be displayed for a Marker on the map.
+ */
+type UiGeospatialAssetsMapBadgesSpec mixes Spec {
+
+  /**
+   * Position of the badge relative to the marker.
+   *
+   * ```
+   * ┌──────────────┐    ┌──────────────┐
+   * │              │    │              │
+   * │   top-left   │    │  top-right   │
+   * │       ┌──────────────────┐       │
+   * └───────│──────┘    └──────│───────┘
+   *         │                  │
+   *         │      Marker      │
+   *         │       icon       │
+   *         │                  │
+   * ┌───────│──────┐    ┌──────│───────┐
+   * │       └──────────────────┘       │
+   * │ bottom-left  │    │ bottom-right │
+   * │              │    │              │
+   * └──────────────┘    └──────────────┘
+   * ```
+   */
+  position: !string enum UiGeospatialAssetsMapBadgesPositionType
+
+  /**
+   * Badge background form.
+   */
+  form: string enum('circle', 'triangle') = 'circle'
+
+  /**
+   * Badge background color.
+   */
+  bgColor: string serialized Color
+
+  /**
+   * Badge #icon or #displayField color.
+   */
+  textColor: string serialized Color = "#FFFFFF"
+
+  /**
+   * Badge icon to display.
+   *
+   * When #icon is set, #displayField is ignored.
+   *
+   * **NOTE**: This is a `Font Awesome 6 Pro` icon.
+   */
+  icon: string
+
+  /**
+   * Entity field to display in the badge.
+   *
+   * Use when you want to display a number in a badge instead of an icon.
+   *
+   * **NOTE**: Whatever field is read from the entity, it will only show the first character, but if is a number
+   *           it will show `0-9` or `9+` if the number is greater than 9.
+   */
+  displayField: string
+
+  /**
+   * Used together with #condition to determine if the badge should be displayed.
+   */
+  fieldName: string
+
+  /**
+   * Javascript action (expression) to perform on the state information (`Entity.properties[<entityValue>]`).
+   * The output of the action is expected to be boolean. If not condition is provided, it will assume `fieldName`
+   * is a boolean.
+   *
+   * **NOTE**: The `entityValue` is the value of the field specified in #fieldName.
+   *
+   * **Example**
+   *
+   * ```json
+   * {
+   * ...
+   * "displayField": "openAlerts",
+   * "fieldName": "displayOpenAlertsBadge",
+   * "action": "displayOpenAlertsBadge === true"
+   * ...
+   * }
+   * ```
+   *
+   * On this example the badge will only be displayed if the `displayOpenAlertsBadge` is `true`.
+   * And the field `openAlerts` will be displayed on the badge.
+   */
+  condition: string = ''
+}

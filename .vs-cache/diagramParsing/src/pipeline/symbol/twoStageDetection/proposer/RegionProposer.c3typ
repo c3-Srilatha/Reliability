@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base region proposer type controlling the logic for selecting the potential
+ * regions that the detector should be run onto. For example, in P&ID diagram
+ * regions containing only white pixels can be filtered directly without being
+ * feed into the detector
+ */
+extendable entity type RegionProposer schema name "RPR" {
+
+  /**
+   * Backbone feature extractor
+   */
+  backbone: !Backbone schema name "BKBN"
+
+  /**
+   * Train the current instance of region proposer inplace
+   */
+  train: inline member function(
+    spec: !RegionProposerTrainingSpec
+  ): !RegionProposer
+
+  /**
+   * Propose bounding boxes coordinates that defines the regions that detector
+   * should be applied and filter out the unnecessary regions
+   *
+   * @param image in np.ndarray.
+   * @param features in [obj]. Used for avoid repeat feature extractions
+   * @return bboxes, bounding boxes coordinates [[xmin, ymin, xmax, ymax]]
+   */
+  propose: abstract inline member function(
+    image   : !native,
+    features: native
+  ): !native
+
+}

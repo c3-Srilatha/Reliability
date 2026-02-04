@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A batch job to roll up metrics.
+ *
+ * @see RollupMetricCacheConfig
+ */
+entity type RollupMetricBatchJob extends BatchJob<RollupMetricBatchJob, RollupMetricBatchJobOptions, RollupMetricBatchJobBatch> type key 'RMBJ' {
+
+  /**
+   * Create and start a job.
+   * @param options
+   *          The {@link RollupMetricBatchJobOptions} for the job.
+   * @param postCompleteAction
+   *          If any post-processing needs to occur once this job has completed, the action passed here will be called in sequence with the {@link RollupMetricBatchJob}.
+   * @returns The started {@link RollupMetricBatchJob}.
+   */
+  startJob: function(options: !RollupMetricBatchJobOptions, postCompleteAction: PartiallyAppliedAction): !RollupMetricBatchJob js-rhino
+
+  doStart: ~ js-rhino
+  processBatch: ~ js-rhino
+  allComplete: ~ js-rhino
+
+  /**
+   * If this field is populated, this action will be called with a `job` argument after the batch job is complete.
+   */
+  postCompleteAction: PartiallyAppliedAction schema suffix 'pca'
+
+  /**
+   * The number of records that are processed by this job.
+   * This number is used to calculate AVG rollupFunc.
+   */
+  count: private int
+
+  /**
+   * rollupMetrics result for each batch.
+   */
+  batchResult: [RollupMetricBatchJobBatchResult](parent)
+
+  /**
+   * Final results
+   */
+  finalResult: [RollupMetricBatchJobResult](parent)
+
+  /**
+   * Return the result of this job.
+   * @returns the mapping from the expressions to their {@link Timeseries}.
+   */
+  result: member function(): !map<string, Timeseries<double>> js-rhino
+}

@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Provides details for {@link ModelInference#terminate terminating} deployment.
+ */
+@beta
+type ModelInference.TerminateSpec mixes Spec {
+
+  /**
+   * Destruction will fail if this flag is not set to `true`.
+   */
+  confirm: boolean
+
+  /**
+   * If {@link ModelInference#listRoutes routes} exists for this deployment, they will be removed only if this flag is
+   * set to `true`.
+   * If {@link ModelInference#listRoutes routes} present but flag is set to `false`, an exception will be thrown.
+   *
+   * @see ModelInference#listRoutes
+   * @see ModelInference#setRoute
+   * @see ModelInference#removeRoute
+   */
+  removeRoutes: boolean
+
+  /**
+   * Duration to wait for queued tasks to be processed.
+   */
+  drainTimeout: string serialized Duration
+
+  /**
+   * If true, requests currently being processed will complete before terminating the deployment.
+   */
+  doNotInterrupt: boolean
+}

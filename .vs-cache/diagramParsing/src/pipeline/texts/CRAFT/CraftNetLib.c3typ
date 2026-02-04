@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Private Helper module type for CRAFT (Character-Region Awareness For Text detection).
+ * See {@link https://github.com/clovaai/CRAFT-pytorch} and {@link https://arxiv.org/pdf/1904.01941.pdf}
+ * for more information on CRAFT.
+ */
+@beta
+private type CraftNetLib {
+    /**
+     * CraftNet: Initialize and return the CRAFT (Character Region Awareness for Text detection) network model.
+     * This function creates the base CRAFT model and prepares it for text detection tasks.
+     */
+    CraftNet: inline function(): !native py-diagramparsing-torch
+
+    /**
+     * RefineNet: Initialize and return the RefineNet model used for refining text regions in the CRAFT-based architecture.
+     * This function applies additional post-processing to improve text boundary predictions.
+     */
+    RefineNet: inline function(): !native py-diagramparsing-torch
+
+    /**
+     * utils: Auxiliary utility functions for image preprocessing and postprocessing.
+     * This module provides helper functions for coordinate transformation, text detection, and result adjustments.
+     */
+    utils: inline function(): !native py-diagramparsing-torch
+
+
+    /**
+     * imgproc: Utilities for image loading, normalization, resizing, and heatmap generation.
+     * This module provides functions for common image processing tasks like loading, normalizing, resizing while preserving aspect ratio,
+     * and converting images to heatmap format.
+     */
+    imgproc: inline function(): !native py-diagramparsing-torch
+}

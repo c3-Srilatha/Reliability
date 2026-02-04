@@ -1,0 +1,395 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface to Java Virtual Machine
+ */
+@action(authz='always')
+type Jvm mixes DefaultInstance {
+
+  /**
+   * Retrieves JVM CPU utilization statistics.
+   */
+  cpu: abstract member function(): !JvmUsage
+
+  /**
+   * @return number of CPUs.
+   */
+  cpuThreads: abstract member function(): !int
+
+  /**
+   * Hint JVM to run garbage collection.
+   *
+   * @param force
+   *    if `true` will attempt to allocate large enough memory in hopes that JVM will be forced to run full garbage
+   *    collection. WARNING! may cause JVM or Thread death!
+   */
+  gc: abstract member function(force: boolean): !JvmUsage
+
+  /**
+   * Retrieves JVM memory consumption statistics.
+   *
+   * @param gc
+   *    if `true` will hint JVM to run garbage collection.
+   * @param force
+   *    if `true` will attempt to allocate large enough memory in hopes that JVM will be forced to run full garbage
+   *    collection. WARNING! may cause JVM or Thread death!
+   * @return memory consumption statistics.
+   */
+  memory: abstract member function(gc: boolean, force: boolean, unit: string enum JvmMemoryUnit = MB): !JvmMemUsage
+
+  /**
+   * Retrieves key usage statistics, such as #cpu and #memory.
+   */
+  usage: abstract member function(): !{ cpu: !JvmUsage, memory: !JvmMemUsage }
+
+  /**
+   * Retrieves JVM memory profile. I.e. statistics about current memory usage by java objects and/or C3 type instances.
+   *
+   * This operation is potentially very slow and may time out when requested through the client. If that happens,
+   * examine the server log for the results.
+   *
+   * This is an internal debugging function for the server.
+   */
+  profileMemory: abstract member function(spec: JvmProfileMemorySpec): !JvmMemProfile
+
+  /**
+   * Checkpoints memory allocated by caches and static fields.
+   *
+   * @see #clearMemoryCheckoint
+   * @see #diffMemory
+   */
+  checkpointMemory: abstract member function(spec: JvmProfileMemorySpec): !JvmUsage
+
+  /**
+   * Clears memory checkout.
+   *
+   * @see #checkpointMemory
+   */
+  clearMemoryCheckpoint: abstract member function(): boolean
+
+  /**
+   * Diffs memory allocated by caches and static fields against previous checkpoint.
+   *
+   * @see #checkpointMemory
+   * @see #clearMemoryCheckoint
+   */
+  diffMemory: abstract member function(depth: int, limit: int): !JvmMemProfile
+
+  /**
+   * Retrieves Java Threads (with call-stacks) in the current node's JVM.
+   *
+   * @param all
+   *        if true then all not just active threads will be retrieved.
+   * @param thread
+   *        if provided that will only include threads that contain this value in the name.
+   * @return information about threads in the current Jvm.
+   *
+   * @see #deadlocks
+   * @see #stuckThreads
+   */
+  threads: abstract member function(all: boolean, thread: string): [ThreadInfo]
+
+  /**
+   * Retrieves "dead-locked" Threads in the current node's JVM.
+   *
+   * @return information about "dead-locked" threads in the current Jvm.
+   *
+   * @see #threads
+   * @see #stuckThreads
+   */
+  deadlocks: abstract member function(): [ThreadInfo]
+
+  /**
+   * Retrieves possibly stuck threads in the current node's JVM, i.e. threads that have not changed a call-stack
+   * in a while.
+   *
+   * @param age
+   *        minimum duration to filter stuck threads by.
+   * @return information about possibly stuck or "dead-locked" threads in the current Jvm.
+   *
+   * @see #threads
+   * @see #deadlocks
+   */
+  stuckThreads: abstract member function(age: string serialized Duration): [ThreadInfo]
+
+  /**
+   * Retrieves Java Threads (with call-stacks) in the current node's JVM.
+   *
+   * @param all
+   *        if true then all not just active threads will be retrieved.
+   * @param thread
+   *        if provided that will only include threads that contain this value in the name.
+   * @return information about threads in the current Jvm.
+   */
+  dumpThreads: abstract member function(all: boolean, thread: string): string
+
+  /**
+   * Retrieves "dead-locked" Threads in the current node's JVM.
+   *
+   * @return information about "dead-locked" threads in the current Jvm.
+   */
+  dumpDeadlocks: abstract member function(): string
+
+  /**
+   * Retrieves possibly stuck threads in the current node's JVM, i.e. threads that have not changed a call-stack
+   * in a while.
+   *
+   * @param age
+   *        minimum duration to filter stuck threads by.
+   * @return information about possibly stuck or "dead-locked" threads in the current Jvm.
+   */
+  dumpStuckThreads: abstract member function(age: string serialized Duration): string
+
+  /**
+   * Retrieves Java Threads stacks for the current JVM using jstack utility.
+   *
+   * @return information about threads in the current Jvm.
+   */
+  dumpJstack: abstract member function(): string
+
+  /**
+   * @return JVM args
+   */
+  args: abstract member function(configured: boolean): [string]
+
+  /**
+   * Adds one or more JVM args; note you will have to {@link Jvm#restart} for args to take effect
+   * @param args
+   *    An array of strings that will appended as jvm args when the server is restarted
+   */
+  addArgs: abstract member function(args: string ...)
+
+  /**
+   * Removes one or more JVM args; note you will have to {@link Jvm#restart} for args to take effect
+   * @param args
+   *    An array of args that will be removed from the jvm args set via {@link Jvm#addArgs}
+   */
+  removeArgs: abstract member function(args: string ...)
+
+  /**
+   * Returns GC statistics for the specified time window.
+   *
+   * @param window
+   *        lookback window, e.g. '1m', '2m', '5m'. Max is 5 minutes. Default is '5m'.
+   * @return GC statistics for the window
+   */
+  gcStats: abstract member function(window: string serialized Duration = "5m"): !Jvm.GcStats
+
+  /**
+   * @return https://github.com/jvm-profiling-tools/async-profiler
+   *
+   * @see #Jvm.AsyncProfiler#start
+   */
+  asyncProfiler: abstract member function(): !Jvm.AsyncProfiler
+
+  /**
+   * Enables CPU and Memory profiling for this JVM (via Glowroot); note you will have to {@link Jvm#restart} for it to take effect
+   * @return URL using which the profiler can be accessed after the server has been restarted via {@link Server#restart}.
+   */
+  enableProfiler: abstract member function(): string serialized Url
+
+  /**
+   * Disables CPU and Memory profiling for this JVM; note you will have to {@link Jvm#restart} for it to take effect
+   */
+  disableProfiler: abstract member function()
+
+  /**
+   * Enables validation of assertion statement in the Java code at runtime; note you will have to {@link Jvm#restart} for it to take effect
+   */
+  enableAssertions: abstract member function()
+
+  /**
+   * Disables validation of assertion statement in the Java code at runtime; note you will have to {@link Jvm#restart} for it to take effect
+   */
+  disableAssertions: abstract member function()
+
+  /**
+   * Enables java debugging for this JVM; note you will have to {@link Jvm#restart} for it to take effect
+   * @param suspend
+   *    if `true`, enables suspend mode for the debugging session
+   */
+  enableDebug: abstract member function(suspend: boolean)
+
+  /**
+   * Disables Java debugging for this JVM; note you will have to {@link Jvm#restart} for it to take effect
+   */
+  disableDebug: abstract member function()
+
+  /**
+   * Fires off a Java System.exit() command with the given status code.
+   * @param exitCode
+   *    the exitCode used as an argument for the System.exit() command
+   */
+  exit: abstract member function(exitCode: int32, shutdownTimeout: Duration)
+
+  /**
+   * Restarts this node. Issues Jvm process graceful shutdown request (SIGTERM) and waits up to shutdownTimeout
+   * (defaults to 120 seconds) for all pending tasks to complete, then issues SIGKILL.
+   * @param shutdownTimeout
+   *    specifies the duration for which an initial SIGTERM will wait for the jvm to quit, otherwise will initiate a SIGKILL.
+   *    if set to 0, initiates a SIGKILL immediately.
+   */
+  restart: abstract member function(shutdownTimeout: Duration = {"microseconds": 120000000})
+
+  /**
+   * Returns a heap histogram showing memory usage by class.
+   *
+   * Uses JMX DiagnosticCommandMBean which is faster and always available compared to external jmap.
+   *
+   * @param limit
+   *        maximum number of entries to return. Use -1 for all entries. Default is 25.
+   * @param order
+   *        sort order for entries (e.g., "descending(bytes)", "descending(instances)"). Default is by bytes descending.
+   * @param filter
+   *        expression to filter entries by className (e.g., "startsWith(className, 'c3.')").
+   * @param all
+   *        if true, includes all objects (including unreachable). Default is false (live objects only).
+   * @return heap histogram with entries
+   *
+   * @see Jvm.HeapHisto
+   * @see Jvm.HeapHisto.Entry
+   */
+  heapHisto: abstract member function(limit: int = 25,
+                                      order: string serialized SortOrder,
+                                      filter: string serialized Expr,
+                                      all: boolean): !Jvm.HeapHisto
+
+  /**
+   * Generates a heap histogram using jmap for the current JVM and returns the output.
+   * @param include
+   *         {@link Java.JmapObjs} supplied as flag to jmap operation
+   * @return
+   *         string containing the contents of the heap histogram
+   */
+  @deprecated(finalVersion='8.9', details='Use heapHisto instead which uses in-process JMX and is faster')
+  heapHistogram: abstract member function(include: !Java.JmapObjs = all): string
+
+  /**
+   * Dumps a heap histogram using jmap and uploads it to the telemetry FS mount.
+   * @param include
+   *         {@link Java.JmapObjs} supplied as flag to jmap operation
+   * @return
+   *         string containing the path to the uploaded histogram file
+   */
+  dumpHeapHistogram: abstract member function(include: !Java.JmapObjs = all): string
+
+  /**
+   * Generates a heap dump using jmap for the current JVM, and uploads it to the telemetry FS mount.
+   * @param include
+   *         {@link Java.JmapObjs} supplied as flag to jmap operation
+   * @return
+   *         string containing the path to the uploaded dump file
+   */
+  dumpHeap: abstract member function(include: !Java.JmapObjs = all): string
+
+  /**
+   * Enables GC logging for this JVM; note you will have to {@link Jvm#restart} for it to take effect
+   */
+  enableGcLogging: abstract member function()
+
+  /**
+   * Disables GC logging for this JVM; note you will have to {@link Jvm#restart} for it to take effect
+   */
+  disableGcLogging: abstract member function()
+
+  /**
+   * @return server version for this JVM
+   */
+  serverVersion: abstract member function(): string
+
+  /**
+   * Retrieves key usage statistics, such as #cpu and #memory, for the current JVM instance.
+   *
+   * @see #usage
+   */
+  currentUsage: function(): !{ cpu: !JvmUsage, memory: !JvmMemUsage }
+
+  /**
+   * List loggers in this JVM
+   * @return a map of logger name to log level
+   */
+  listLoggers: abstract member function(): map<string, !string enum Logger.Level>
+
+  /**
+   * Set logLevel for the given logger for this Server
+   * @param logger
+   *        logger name. If not specified the log level for all the registered loggers will be changed
+   * @param level
+   *        Logger.Level to set
+   * @param timeout
+   *        the amount of time to wait before reverting back to the original log level
+   */
+  setLogLevel: private abstract member function(logger: string,
+                                                logLevel: !string enum Logger.Level,
+                                                timeout: string serialized Duration = "15m")
+
+  /**
+   * Get log level for the given logger in this JVM
+   */
+  logLevel: private abstract member function(logger: !string): !string enum Logger.Level
+
+  /**
+   * User can only check the dirs which the java process has access to.
+   * localDir can be a local OS path, either absolute or relative.
+   * If relative, it is interpreted relative to the current working directory, which is typically /home/c3.
+   * @param localDirs
+   *          Directories for which usage need to be computed.
+   * @param timeoutSecs
+   *          After timeoutSecs, if the computation of directory usages is not completed, the du operation for that specific directory will timeout.
+   *          This timeout is applied on a per-directory basis, meaning each directory has its own independent timeoutSecs limit for the computation.
+   *          The default value is 10 seconds.
+   * @return the map between the dir path and the dir size in bytes.
+   */
+  computeDirUsages: abstract member function(localDirs: ![string], timeoutSecs: double = 10.0): map<string, int>
+
+  /**
+   * Retrieves the used size and available size for the mounted storage device which is backing the dir in bytes, and stores those in {@link StorageStats}.
+   * User can only check the dir which `c3` user have access to.
+   * @param path
+   *           a dir path on which a volume is mounted.
+   * @param timeoutSecs
+   *        after timeoutSecs, if dir usages computation is not finished yet, the underlying `df` operation will timeout.
+   * @param failIfMissing
+   *           defines whether the function will throw out an error if path does not exist.
+   * @return the used size and available size for the mounted storage device which is backing the dir in bytes, and stores those in {@link StorageStats}.
+   */
+  calculateStorageStatsForMountForDir: abstract member function(path: !string,
+                                                                timeoutSecs: double = 10.0,
+                                                                failIfMissing: boolean): StorageStats
+
+  /**
+   * @returns the readiness of the server as a key-value pair.
+   * The key indicates whether jvm is ready to serve network requests and the value provides additional details.
+   */
+  readiness: abstract inline member function(): Pair<boolean, string>
+
+  /**
+   * Overrides the readiness probe for the JVM.
+   * By default the value is true
+   *
+   * @param value
+   *        the value to be set for the Jvm's readiness override flag.
+   */
+  @action(group+='cluster-admin')
+  overrideReadiness: abstract member function(value: boolean)
+
+  /**
+   * Gets the action logging threshold in seconds. Actions faster than this threshold will not be logged.
+   * Default is 0.025 (25ms).
+   */
+  actionLogThresholdSeconds: abstract member function(): !double
+
+  /**
+   * Sets the action logging threshold in seconds. Actions faster than this threshold will not be logged.
+   * Default is 0.025 (25ms).
+   * @param threshold
+   *        the threshold in seconds
+   */
+  setActionLogThresholdSeconds: abstract member function(threshold: !double)
+}

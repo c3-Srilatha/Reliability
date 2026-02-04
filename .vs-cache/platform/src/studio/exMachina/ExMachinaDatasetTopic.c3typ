@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type representing metadata about datasets stored in blob storage
+ */
+extendable entity type ExMachinaDatasetTopic mixes AclEnabled, ExMachinaUserGroupShareable<ExMachinaDatasetTopic, ExMachinaDatasetTopicOwnership, ExMachinaDatasetTopicShareHistory> schema name 'EXM_DATASET_TOPC' {
+  
+  /**
+   * Dataset Topic name
+   */
+  name: !string
+
+  /**
+   * Dataset Topic description
+   */
+  description: string
+
+  /**
+   * The most recently saved configuration for the dataset topic
+   */
+  latestMetadata: ExMachinaDatasetMetadata stored calc datasetMetadataHistory[0]
+
+  /**
+   * All previously saved configurations of the dataset topic
+   */
+  @db(order='descending(meta.created)')
+  datasetMetadataHistory: [ExMachinaDatasetMetadata](topic)
+
+  /**
+   * Creates a new {@link ExMachinaDatasetTopic} for the given name
+   * @param name
+   *            Dataset Topic name
+   * @return {@link ExMachinaDatasetTopic}
+   */
+  createDatasetTopic: function(name: !string): ExMachinaDatasetTopic js-server
+
+  /**
+   * The last user to modify the dataset topic by creating a new {@link ExMachinaDatasetMetadata}. For a publicly
+   * available dataset, uses "C3 AI" as the updater.
+   */
+  lastUpdatedBy: ~ stored calc isPubliclyAccessible ? 'C3 AI' : latestMetadata.meta.updatedBy
+
+  /**
+   * When the last user modified the dataset topic by creating a new {@link ExMachinaDatasetMetadata}
+   */
+  lastUpdatedDate: datetime stored calc latestMetadata.meta.updated
+
+  /**
+   * TODO: VAD-16871 - Add a common afterCreate for all shareable types after PLAT-51996 fix
+   * Common logic to run after creation of any types that mixin {@link ExMachinaUserGroupShareable}
+   */
+  @dependency(include='isPubliclyAccessible, meta.createdBy, acl.member.id')
+  afterCreate: ~ js-server
+}

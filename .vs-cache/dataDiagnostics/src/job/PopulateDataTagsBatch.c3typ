@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A single batch of entities to tag or single batch of {@link DataTag}s to run tagging logic for.
+ * If {@link PopulateDataTagsBatch#entityIds} is specified then only one {@link DataTag} should be specified unless
+ * {@link PopulateDataTagsBatch#isBatchingExpressions} is set to true in which case a single scan of the table for
+ * a type is bering performed for all expressions.
+ */
+@constraint(condition='exists(dataTags) || exists(baseDataTags)')
+type PopulateDataTagsBatch {
+
+  /**
+   * The list of {@link DataTag}s to run tagging logic for.
+   */
+  dataTags: [DataTag]
+
+  /**
+   * The list of {@link DataTagBase} instances to run tagging logic for.
+   */
+  baseDataTags: [DataTagBase]
+
+  /**
+   * The list of entities to tag.
+   */
+  entityIds: [string]
+
+  /**
+   * Whether or not the batch is batching all {@link DataTag}s/{@link DataTagBase} instances with the
+   * same srcType at once.
+   */
+  isBatchingExpressions: boolean
+}

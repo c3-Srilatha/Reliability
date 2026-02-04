@@ -1,0 +1,98 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Status for a single Cron.Processor instance
+ */
+type Cron.Processor.Status {
+
+  /**
+   * Time status request was made
+   */
+  currentTime: !datetime
+
+  /**
+   * Appid for the processor
+   */
+  appId: string
+
+  /**
+   * Node id
+   */
+  serverNodeId: string
+
+  /**
+   * Processor is currently running
+   */
+  isProcessing: boolean
+
+  /**
+   * Server is currently processing
+   */
+  isServerRunning: boolean
+
+  /**
+   * Db.Engine instance is currently running
+   */
+  isDbeRunning: boolean
+
+  /**
+   * Db.Engine instance is terminated
+   */
+  isDbeTerminated: boolean
+
+  /**
+   * Processor is for current instance of {@link Db.Engine}
+   */
+  isCurrentProcessor: boolean
+
+  /**
+   * Timestamp when main processing loop was started
+   */
+  processingStarted: datetime
+
+  /**
+   * Timestamp when main processing loop terminated
+   */
+  processingTerminated: datetime
+
+  /**
+   * What caused the processing to be terminated
+   */
+  processingTerminatedCause: string
+
+  /**
+   * Timestamp of last pass through main processing loop
+   */
+  lastProcessed: datetime
+
+  /**
+   * Last error message encountered by processing loop
+   */
+  lastErrorMsg: string
+
+  /**
+   * Stack trace of last reported error
+   */
+  lastErrorStackTrace: string
+
+  /**
+   * Timestamp when last error was reported
+   */
+  lastErrorReportedAt: datetime
+
+  /**
+   * All cron jobs that are active
+   */
+  activeJobs: [CronJob]
+
+  /**
+   * All cron jobs that active and are to be run  in a leader node, rather than a task node.
+   */
+  runOnLeaderJobs: [CronJob]
+}

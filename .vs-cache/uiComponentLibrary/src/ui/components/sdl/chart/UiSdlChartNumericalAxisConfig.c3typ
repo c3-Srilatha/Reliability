@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to represent the configuration of a numerical axis of a chart.
+ */
+type UiSdlChartNumericalAxisConfig {
+
+  /**
+   * The minimum value to show on the axis.
+   */
+  min: double
+
+  /**
+   * The maximum value to show on the axis.
+   */
+  max: double
+
+  /**
+   * Specifies whether not to contain zero position of axis compulsively.
+   * Useful when trying to discern small differences in series data.
+   * i.e. If data values are in the range of [9990, 10100].
+   * This configuration item is unavailable when the 'min' and 'max' are set.
+   */
+  scale: boolean = false
+
+  /**
+   * The decimal precision for values shown on the axis.
+   * Manually added to yAxis in SDLLineBarChart if no decimalPrecision is present.
+   */
+  decimalPrecision: int = 0
+
+  /**
+   * Rotation degree of axis labels. Rotation degree is from -90 to 90.
+   */
+  rotate: int = 0
+
+  /**
+   * Location of the axis name.
+   * 'end' is default and is used to render the name at the top.
+   * 'middle' is used to render the name at the middle of the axis.
+   */
+  nameLocation: string enum('middle', 'end') = 'end'
+
+  /**
+   * Rotation degree of axis title regardless of its location. Rotation degree is from -90 to 90.
+   */
+  nameRotate: int
+
+  /**
+   * Gap between axis name and axis line.
+   */
+  nameGap: int
+
+  /**
+   * The type of axis displayed. Value represents a numerical axis for continuous data. Log represents
+   */
+  axisType: string enum('value', 'log') = 'value'
+
+  /**
+   * The Log base for the axis. This value only affects the chart if axisType is log
+   */
+  @constraint(condition='axisType = "log"')
+  logBase: int = 10
+
+  /**
+   * Number of segments that the axis is split into. Note that this number serves only as a recommendation, and the true segments may be adjusted based on readability.
+   */
+  splitNumber: int
+
+  /**
+   * Minimum gap between split lines.
+   */
+  minInterval: int
+
+  /**
+   * Maximum gap between split lines.
+   */
+  maxInterval: int
+}

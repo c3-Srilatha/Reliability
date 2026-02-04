@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of an action call history. The {@link Nameable name} is the logical action (_type_ `.` _method_).
+ * The {@link Identifiable id} is the action id.
+ *
+ * The width should be based on one of the standard action stats, typically `time`. Possible stats are:
+ *   - time: total execution time
+ *   - io: total database time
+ *   - sql: RDBMS time
+ *   - kv: key/value store time
+ * See {@link LogActionStat}. These should also appear in the {@link StackTree#attrs attrs map} for presentation in
+ * the visualization.
+ */
+type ActionStackTree mixes StackTree, Identifiable {
+
+  /**
+   * Starting time of the action.
+   */
+  start: !datetime
+
+  /**
+   * Ending time of the action (if complete).
+   */
+  end: datetime
+
+  /**
+   * Status of the action (if complete).
+   */
+  status: string
+
+  /**
+   * True if this represents a root action.
+   */
+  isRoot: boolean
+
+  /**
+   * Cluster name.
+   */
+  cluster: string
+
+  /**
+   * Host name within the cluster
+   */
+  hostname: string
+
+  /**
+   * Thread identifier within the host.
+   */
+  threadId: string
+
+  /**
+   * env within the cluster.
+   */
+  env: string
+
+  /**
+   * App within the env.
+   */
+  app: string
+
+  /**
+   * Name of the action (_type_ `.` _method_).
+   */
+  action: !string
+}

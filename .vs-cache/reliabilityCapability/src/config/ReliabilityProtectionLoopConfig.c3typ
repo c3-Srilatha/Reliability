@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configurations for Reliability Protection Loop logic.
+ */
+type ReliabilityProtectionLoopConfig mixes Config, Singleton {
+
+  /**
+   * Specifies the percentage of {@link Sensor}s greater than this value in a {@link ProtectionLoop} that need
+   * an issue for a {@link ProtectionLoop} to be at medium risk. Value should be between 0 and 1 and less than
+   * the high or equal to the {@link #highRiskPercentage}.
+   */
+  mediumRiskPercentage: double = 0
+
+  /**
+   * Specifies the percentage of {@link Sensor}s greater than this value in a {@link ProtectionLoop} that need
+   * an issue for a {@link ProtectionLoop} to be at high risk. Value should be between 0 and 1.
+   */
+  highRiskPercentage: double = 0.33
+
+  /**
+   * The lookback period for evaluating sensor protection loop low-low and high-high threshold logic.
+   */
+  highLowLookbackPeriod: Period = '30m'
+
+  /**
+   * The amount of time that needs to have passed for {@link ProtectionLoopAlert}s to be automatically closed.
+   */
+  protectionLoopAlertClosePeriod: Period = '1d'
+}

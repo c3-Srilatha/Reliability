@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents single key value store row
+ */
+type KvRow mixes KvRowMeta {
+
+  /**
+   * Kv row id
+   */
+  id: !string
+
+  /**
+   * column values for the given row
+   */
+  cols: [KvCol]
+
+  /**
+   * Tracing / debugging info regarding this queried row
+   */
+  plan: KvRowExplainPlan
+
+  /**
+   * Get column value for the given column
+   */
+  col: inline member function(name: !string): any
+
+  /**
+   * @return cols in the KvRow by name
+   */
+  colsByName: inline member function(): map<string, any>
+
+  /**
+   * Construct KvRow from id and columns by name
+   */
+  fromIdAndColsByName: inline function(id: !string, colsByName: map<string, any>): !KvRow
+
+  /**
+   * @return an array of KvContent instances from this KvRow, of which each KvContent is from each KvCol.
+   */
+  toContents: member function(): [KvContent]
+}

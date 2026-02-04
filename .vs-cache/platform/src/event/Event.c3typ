@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines a generic event.
+ *
+ * Events can be fired using Logger#event or #fire
+ */
+abstract type Event {
+
+  /**
+   * @return true if this event type has listeners
+   */
+  hasListeners: function(): boolean
+
+  /**
+   * Fires event of a specific subtype; note that if there are no listeners event is simply discarded.
+   */
+  fire: function(b: !lambda(b: ObjBuilder<mixing Event>))
+
+  /**
+   * Fires a generic event; should only be called on Event type and not on any of its sub-types; also note that if
+   * there are no listeners event is simply discarded.
+   */
+  fire: function(event: !string, data: !lambda(b: !MapBuilder<string, any>))
+
+  /**
+   * Listen to events of this type.
+   *
+   * IMPORTANT: this action has a potential of putting significant load on cluster so listener needs to be as fast as
+   * possible and filter as precise as possible. Additionally listener should be stopped as soon as possible. And
+   * finally Cluster Admin or Resource Governor may pause or stop the listener so this method should not be used for
+   * critical business logic.
+   *
+   * @see EventListener
+   */
+  listen: function(filter: !?string serialized Expr,
+                   listener: !lambda(e: !mixing Event, el: !EventAdHocListener)): !EventAdHocListener
+}

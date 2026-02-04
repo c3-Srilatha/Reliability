@@ -1,0 +1,198 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The UI component that handles showing model experiment preview data in a chart.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type ModelExperimentPreviewChart mixes UiSdlTimeseriesLineBarChart {
+
+  /**
+   * The id of the component to show when there is no data.
+   */
+  noDataComponentId: string
+
+  /**
+   * The ids of the series that are currently plotted on the chart.
+   */
+  selectedFeatureId: string
+
+  /**
+   * The start of the zoom range.
+   */
+  zoomRangeStart: datetime
+
+  /**
+   * The end of the zoom range.
+   */
+  zoomRangeEnd: datetime
+
+  /**
+   * The risk score threshold to plot.
+   */
+  riskScoreThreshold: double
+
+  /**
+   * The range of data that the `data` field contains.
+   * Has two keys, start and end.
+   */
+  dataRange: map<string, datetime>
+
+  /**
+   * The chart data to display.
+   */
+  chartData: private ExperimentalPreviewHelper.ChartData
+
+  /**
+   * The feature output data to display when a feature is selected from the grid.
+   */
+  featureOutputData: EvalMetricsResult
+
+  /**
+   * Fetches the data to display on the chart.
+   *
+   * @param componentId
+   *        The id of the component to affect.
+   * @param modelId
+   *        The id of the model to fetch data for.
+   */
+  @uiSdlActionCreator(actionType='GET_DATA')
+  getDataAction: function(componentId: !string, modelId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * When the `GET_DATA` action is triggered, this epic will check if the request is from the chart component's `INITIAL_RENDER` action,
+   * then it will read the date from the state, {@link ModelExperimentApplicationState}, and will set the `data` field.
+   * Else it will set the `data` field with the returned data from {@link ExperimentalPreviewHelper#getData}.
+   * It will also set the `plottedSeries` field to show the training.
+   */
+  @uiSdlEpic(actionType='GET_DATA')
+  getDataEpic: private  function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * Plots the feature with the given featureId on the chart.
+   *
+   * @param componentId
+   *        The id of the component to affect.
+   * @param featureId
+   *        The id of the features to plot.
+   */
+  @uiSdlActionCreator(actionType='PLOT_FEATURE')
+  plotFeatureAction: function(componentId: !string, featureId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * When the `PLOT_FEATURE` action is triggered, this reducer will add the the series with the ids
+   * "<featureId>-actual" and "<featureId>-reconstruction" to `plottedSeries`.
+   */
+  @uiSdlReducer(actionType='PLOT_FEATURE')
+  plotFeatureReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * When the `PLOT_FEATURE` action is triggered, this epic will fetch the feature output data from
+   * {@link ExperimentalPreviewHelper#getFeatureOutputData} and set it in the `featureOutputData` field.
+   *
+   * @param actionStream
+   *        The stream of actions.
+   * @param stateStream
+   *        The stream of states.
+   */
+  @uiSdlEpic(actionType='PLOT_FEATURE')
+  getFeatureOutputDataEpic: private  function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * Resets the chart to its state after `GET_DATA` action w as called.
+   * @param componentId
+   *        The id of the component to affect.
+   */
+  @uiSdlActionCreator(actionType='RESET_CHART')
+  resetChartAction: function(componentId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * When the `RESET_CHART` action is triggered, this reducer will reset the chart to its state after
+   * `GET_DATA` action was called.
+   */
+  @uiSdlReducer(actionType='RESET_CHART')
+  resetChartReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Clears the chart of all data.
+   * @param componentId
+   *        The id of the component to affect.
+   */
+  @uiSdlActionCreator(actionType='CLEAR_CHART')
+  clearChartAction: function(componentId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * When the `CLEAR_CHART` action is triggered, this reducer will clear the chart of all data.
+   */
+  @uiSdlReducer(actionType='CLEAR_CHART')
+  clearChartReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * @param componentId
+   *        The id of the component to affect.
+   * @param pathToValue
+   *        Map of path in component that should be set, to value that should be set.
+   */
+  @uiSdlActionCreator(actionType='SET_FIELDS')
+  setFieldsAction: function(componentId: !string, pathToValue: map<string ,any>): !UiSdlReduxAction ts-client
+
+  /**
+   * When the `SET_FIELDS` action is triggered, this reducer will update the state by setting the specified fields in the component.
+   */
+  @uiSdlReducer(actionType='SET_FIELDS')
+  setFieldsReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered to update the interval selector in the chart.
+   *
+   * @param id
+   *           Id of the component.
+   * @param start
+   *           Start date for the filter spec {@link EvalMetricSpec}.
+   * @param end
+   *           End date for the filter spec.
+   * @param interval
+   *           interval for the filter spec.
+   */
+  @uiSdlActionCreator(actionType='DISPLAY_DATE_UPDATE')
+  updateDisplayDateAction: function(id: string,
+                                    start: string,
+                                    end: string,
+                                    interval: string): UiSdlDisplayDateUpdateAction ts-client
+
+  /**
+   * Triggered to update the filter for the time series and get the data.
+   *
+   * @param id
+   *           Id of the component.
+   * @param start
+   *           Start date for the filter spec {@link EvalMetricSpec}.
+   * @param end
+   *           End date for the filter spec.
+   * @param interval
+   *           interval for the filter spec.
+   */
+  @uiSdlActionCreator(actionType='GET_DATA')
+  getDataFromIntervalChangeAction: function(id: string,
+                                   start: string,
+                                   end: string,
+                                   interval: string): UiSdlReduxAction ts-client
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

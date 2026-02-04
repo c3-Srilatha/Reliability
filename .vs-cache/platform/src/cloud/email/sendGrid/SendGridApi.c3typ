@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * REST type for SendGrid APIs. To use the API, generate the API token within SendGrid.
+ * @see https://sendgrid.com/docs/API_Reference/api_getting_started.html
+ *
+ * Once the token is created, you can use the script below in static console to configure the API url and auth token:
+ * ```
+ * SendGridApi.setApiUrlAndAuth(
+ *   'https://api.sendgrid.com/v3', // The API url
+ *   'Bearer <token>', // The API token generated in SendGrid
+ *   ConfigOverride.CLUSTER
+ * )
+ * ```
+ *
+ * Note that for email address validation, there is another {@link SendGridEmailAddressValidationApi} API type
+ * because SendGrid requires users to generate a separate API token to validate email addresses.
+ */
+type SendGridApi mixes REST {
+
+  /**
+   * Send an email
+   * @see https://sendgrid.api-docs.io/v3.0/mail-send/v3-mail-send
+   */
+  @rest(method='POST', uri='mail/send', contentType='application/json')
+  mailSend: abstract function(personalizations: ![SendGridMailPersonalization],
+                              from: !SendGridMailIdentity,
+                              subject: !string,
+                              content: ![json],
+                              attachments: any,
+                              template_id: string,
+                              reply_to: SendGridMailIdentity,
+                              headers: json,
+                              categories: any,
+                              custom_args: string,
+                              send_at: int,
+                              batch_id: string,
+                              asm: json,
+                              ip_pool_name: string,
+                              mail_settings: json,
+                              tracking_settings: json): json
+}

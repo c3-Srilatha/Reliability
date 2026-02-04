@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the contribution of individual factors or variables to a forecasted value in the context of
+ * reliability and time-to-event (TTE) predictions. This entity captures the contribution of different
+ * features or components for the forecasted value, along with upper and lower bounds to track the uncertainty
+ * or range for each contribution.
+ *
+ * The `ReliabilityTteForecastContribution` entity is used to understand and track how each variable contributes
+ * to the model's forecast, which is essential for reliability engineering, predictive maintenance, and risk analysis.
+ * The entity also records the timestamp for which the forecast is valid, ensuring that the contributions are linked
+ * to specific forecast periods.
+ *
+ * For more details on each field, refer to the documentation below.
+ */
+@db(datastore='cassandra',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    compactType=true,
+    shortIdReservationRange=100000,
+    columnarStorage=false)
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityTteForecastContribution mixes TimedDataPoint<ReliabilityTteForecastContributionHeader> schema name 'REL_TTEFC' {
+  /**
+   * The timestamp for which the forecast is generated.
+   * This field records the specific time period when the forecast is valid.
+   * It is important to know when a forecast was generated to track the evolution
+   * of the predictions over time, especially in time-sensitive applications such as
+   * predictive maintenance or reliability analysis.
+   */
+  forecastTimestamp: !datetime
+  /**
+   * Represents the contribution value of the forecast, typically a numerical value
+   * indicating how much a particular factor or variable contributes to the forecasted outcome.
+   * The contribution value is essential for understanding how individual features or
+   * components impact the forecast. For example, this could represent how a specific
+   * environmental condition, asset usage, or operational parameter contributes to the
+   * time-to-event prediction.
+   * `@ts(treatmentPath='parent.treatment')` - Ensures that any transformations or adjustments
+   * to the treatment value in the parent entity are reflected in this contribution value.
+   */
+  @ts(treatmentPath='parent.treatment')
+  contribution: !double  // Required field for the main contribution value.
+  /**
+   * The upper bound for the contribution value. This defines the maximum possible contribution
+   * from the feature or variable, setting a threshold that ensures the contribution does not exceed
+   * a certain level in the forecast model.
+   * This field helps track the upper limit of each factor's impact and provides a range within which
+   * the contribution value can vary. It can be useful for validation and for understanding the model's
+   * confidence in the predicted outcome.
+   */
+  contributionUpperBound: double
+  /**
+   * The lower bound for the contribution value. This defines the minimum possible contribution
+   * that a feature or variable can have in the forecast. It sets a threshold to prevent contributions
+   * from being too low and outside the expected range for model accuracy.
+   * This lower bound provides further validation by ensuring that contributions do not fall
+   * below a certain threshold, thus maintaining consistency and stability in the forecasted values.
+   */
+  contributionLowerBound: double
+}

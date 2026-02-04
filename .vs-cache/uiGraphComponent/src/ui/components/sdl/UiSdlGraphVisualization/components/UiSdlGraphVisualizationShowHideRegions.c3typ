@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that displays data in a graph.
+ */
+@typeScript
+type UiSdlGraphVisualizationShowHideRegions {
+
+  /**
+   * A list of hidden region ids.
+   */
+  hiddenRegions: [string]
+
+  /**
+   * Triggered to update chart hidden regions.
+   *
+   * @param id
+   *            Id of the component.
+   * @param hiddenRegionIds
+   *            Array of region ids to hide.
+   *
+   * @return A `SHOW_HIDE_REGIONS` action for this instance with the following properties:
+   * - payload {string} The id's of the regions.
+   */
+  @uiSdlActionCreator(actionType='SHOW_HIDE_REGIONS')
+  showHideRegionsAction: function(id: !string,
+                                     hiddenRegionIds: ![string]): UiSdlGraphVisualizationShowHideRegionsAction ts-client
+
+  /**
+   * Listens for actions of type `SHOW_HIDE_REGIONS` and updates internal field {@link hiddenRegions}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SHOW_HIDE_REGIONS')
+  showHideRegionsReducer: function(state: UiSdlReduxState,
+                                                    action: UiSdlGraphVisualizationShowHideRegionsAction): UiSdlReduxState ts-client
+}

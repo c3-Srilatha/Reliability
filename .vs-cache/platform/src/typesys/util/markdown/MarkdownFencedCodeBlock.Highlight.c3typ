@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A single highlighted line and/or column range. Lines are 1-based and ranges are inclusive:
+ *  - `3` just the third line
+ *  - `2-4` highlights lines 2, 3, and 4 (inclusive)
+ *
+ * It is also possible to specify a span within a line using a period to separate the line number and character
+ * number (also 1-based). For example, `2.12-2.16` specifies 5 characters on the second line starting at the 12th
+ * character.
+ *
+ * @see MarkdownFencedCodeBlock#highlights
+ */
+type MarkdownFencedCodeBlock.Highlight mixes StringSerializable {
+
+  /**
+   * The starting line, 1-based. This must always be specified.
+   */
+  startLine: !int32
+
+  /**
+   * The starting column, 1-based. This will be null if both column numbers are unspecified.
+   */
+  startCol: int32
+
+  /**
+   * The ending line, 1-based, inclusive. If specified, this must be ≥ #startLine, If not specified, the highlight is
+   * of a single line.
+   */
+  endLine: !int32
+
+  /**
+   * The ending column, 1-based, inclusive. If specified, this must be ≥ #startCol if on the same line.
+   * If not specified, the highlight goes to the end of #endLine.
+   */
+  endCol: int32
+
+  /**
+   * The starting column, 1-based. This will be 1 if #startCol is null.
+   */
+  safeStartCol: member function(): !int32
+
+  /**
+   * Whether the highlighting starts at the beginning of #startLine.
+   */
+  isFromStartOfLine: member function(): boolean
+
+  /**
+   * Whether the highlighting continues to the end of #endLine (or #startLine if end line is unspecified).
+   */
+  isToEndOfLine: member function(): boolean
+
+  /**
+   * Whether more than one line is involved in the range (whether #endLine is greater than #startLine).
+   */
+  isMultiLine: member function(): boolean
+
+  /**
+   * Whether the highlighting starts at the beginning and continues to the end of the line.
+   */
+  isFullLine: member function(): boolean
+
+  /**
+   * Remove columns and simplify to whole lines.
+   */
+  linesOnly: member function(): !mixing MarkdownFencedCodeBlock.Highlight
+}

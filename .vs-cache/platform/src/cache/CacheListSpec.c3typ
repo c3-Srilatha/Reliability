@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type CacheListSpec mixes Spec {
+
+  /**
+   * Include empty caches for Cache.list() and null values for cache.entries().
+   */
+  empty: boolean
+
+  /**
+   * Include disabled caches (i.e., caches with enabled=false). By default, disabled caches are excluded.
+   */
+  disabled: boolean
+
+  /**
+   * Include memory size in API results. This is an expensive operation for large caches.
+   */
+  memory: boolean
+
+  /**
+   * Limit the number of items returned: caches for Cache.list() and entries for Cache.entries().
+   */
+  limit: int
+
+  /**
+   * Only used by Cache.entries() API. Determines how much data to return for the cache values.
+   * Defaults to 250 characters.
+   */
+  valueSize: int = 250
+
+  /**
+   * Sort the results by size (memory if known, number of keys otherwise), then by name. Otherwise always sort by name.
+   */
+  sortBySize: boolean
+}

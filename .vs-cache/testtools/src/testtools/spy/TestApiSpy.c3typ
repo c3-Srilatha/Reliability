@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used for the spy creation for actions
+ * Example usage:
+ * - Mock the action only with specified input arguments
+ * ```
+ * TestApi.spyOn(ctx, "FakeType", "fakeAction")
+ *           .withArgs('1', '2')
+ *           .returnValue("fake")
+ *           .register()
+ * ```
+ * `FakeType.fakeAction(1, 2) => 'fake'`
+ *
+ * - Mock the action only when the claim function returns true
+ * ```
+ * TestApi.spyOn(ctx, "FakeType", "fakeAction")
+ *           .withClaim(function(action, input) { return input.firstArg === 10; })
+ *           .callFake(function(firstArg, secondArg) { return 100; })
+ *           .register()
+ * ```
+ * `FakeType.fakeAction(10, 12345) => 100`
+ *
+ * Note that you cannot spy on Python stayInEngine calls -- calls between actions that claim the same
+ * action requirement or where there is a runtime inheritance relationship between the claims. This is
+ * because the Action Dispatcher will call the python function directly for stayInEngine calls
+ * rather than go through the usual dispatching logic. This significantly reduces the latency of such calls.
+ * See {@link understanding-action-engines.c3doc.md Understanding Action Engines} for details.
+ */
+type TestApiSpy {
+
+  /**
+   * The id of the Action.Spy
+   */
+  actionMockId: !string
+
+  /**
+   * Get the instance of the Action.Spy for this spy
+   */
+  getActionMock: member function(): Action.Spy js-server
+
+  /**
+   * Register the action mock for the spied action
+   */
+  register: member function(): !TestApiSpy js-server
+
+  /**
+   * Unregister the action mock for the spied action
+   */
+  unregister: member function(): !TestApiSpy js-server
+
+  /**
+   * The created spy will only be called when the received arguments match those passed to `withArgs`
+   */
+  withArgs: member function(args: any ...): !TestApiSpy js-server
+
+  /**
+   * The return value for the spied action
+   */
+  returnValue: member function(value: any): !TestApiSpy js-server
+
+  /**
+   * The created spy will only be called when the lambda function returns true
+   */
+  withClaim: member function(lambda: lambda(action: Action.Spy, input: map<string, any>): any): !TestApiSpy js-server
+
+  /**
+   * All calls to the spied action will delegate to the supplied function
+   */
+  callFake: member function(lambda: lambda(action: Action.Spy, input: map<string, any>): any): !TestApiSpy js-server
+
+  /**
+   * All calls to the spied action will call the real action.
+   */
+  callThrough: member function(): !TestApiSpy js-server
+
+  /**
+   * Returns true if the spied action has been called with the provided input, false otherwise.
+   */
+  toHaveBeenCalledWith: inline member function(input: map<string, any>): boolean js-server
+
+  /**
+   * Returns true if the spied action has been called, false otherwise.
+   */
+  toHaveBeenCalled: member function(): boolean js-server
+
+  /**
+   * Returns true if the spied action has been called exact amount of times, false otherwise.
+   */
+  toHaveBeenCalledTimes: member function(num: int): boolean js-server
+
+  /**
+   * Internal function that will unregister and remove the current spy and construct a new one for the given type.
+   *
+   * @param type
+   *           The new type of {@link Action.Spy.Claim} that should be used internally
+   * @return An un-persisted instance of the new {@link Action.Spy.Claim} with {@link Action.Spy.Claim#claims} preserved
+   */
+  convertMockTo: private member function(mockType: !Type): any js-server
+
+  /**
+   * Internal function that returns the arguments for the mocked function.
+   *
+   * @param mock
+   *           The instance of the {@link Action.Spy} for the current spy
+   * @return An array of {@link FunctionParam}
+   */
+  getActionArgs: private function(mock: !Action.Spy): [FunctionParam] js-server
+
+  /**
+   * Internally calls {@link ActionMock.callCount} to return the call count.
+   * This is a utility method meant to make retrieval of call count less verbose.
+   */
+  callCount: member function(): int js-server
+}

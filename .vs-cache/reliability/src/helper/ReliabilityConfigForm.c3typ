@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type for forms based on application-wide configurations, e.g. {@link ReliabilityMLConfig}.
+ */
+type ReliabilityConfigForm mixes Value {
+
+  /**
+   * The fields to hide in the form for the given config type.
+   * The key is the name of the config type, and the value is an array of field names to hide.
+   */
+  CONFIG_FIELDS_TO_HIDE: const map<string, [string]> = {
+    'ReliabilityMLConfig': [
+      'reliabilityRiskMLProjectId',
+      'reliabilityRiskControlValveMLProjectId',
+      'reliabilityTimeToEventMLProjectId',
+    ],
+    'ReliabilityConfig': [
+      'modelName'
+    ]
+  }
+
+  /**
+   * Function to dynamically generate a pre-filled form based on the fields of the given {@link Config} type.
+   * @param configTypeName
+   *           Name of config type for which form needs to be displayed
+   * @return UI component for Form based on configTypeName
+   */
+  getFormConfig: function(configTypeName: !string): json js-rhino
+
+  /**
+   * Function to get the config. This is just a wrapper to {@link Singleton#inst} but necessary because we need to
+   * add the name of the config type to the object.
+   *
+   * @param configTypeName
+   *           The name of the config type to retrieve
+   * @return The configuration object for the specified type
+   */
+  getConfig: function(configTypeName: !string): json js-rhino
+
+  /**
+   * Function to get the value of an array field in the config as a fetch result.
+   * Used by the form grid components to pre-populate their values.
+   * @param configTypeName The name of the config type.
+   * @param path The path to the array field in the config.
+   * @param spec This field is ignored, and is only present to work around form grid dataspec limitations.
+   * @returns The field value wrapped into a fetch result.
+   */
+  getConfigAsFetchResult: function(configTypeName: !string, path: !string, spec: json): FetchResult<json> js-rhino
+
+  /**
+   * Function called upon form submit.
+   *
+   * @param formObject
+   *           The form data object to be saved
+   */
+  saveConfig: function(formObject: !json) js-rhino
+}

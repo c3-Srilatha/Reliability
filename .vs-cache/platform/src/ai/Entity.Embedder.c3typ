@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base interface type for an entity field embedder. I.e. embedder referenced in the context of @vector annotation on
+ * an entity type fields and in `similarity` expression engine function.
+ *
+ * Expectation is that implementation with a known `id` field is seeded in a package. Specific Embedders are referenced
+ * and looked by id, e.g. using `Entity.Embedder.forId('all-MiniLM-L6-v2')`.
+ */
+@db(createOnly=true)
+abstract extendable entity type Entity.Embedder mixes SeedData type key 'EMB' {
+
+  /**
+   * Dimension of embeddings
+   */
+  dimension: !int
+
+  /**
+   * Encodes a list of texts into their corresponding embeddings for a source field value / passage
+   */
+  encodeSource: abstract member function(texts: ![!string]): ![![!float]]
+
+  /**
+   * Encodes a list of text into its corresponding embedding
+   */
+  encodeQuery: abstract member function(texts: ![!string]): ![![!float]]
+}

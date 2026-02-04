@@ -1,0 +1,239 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * HTTP request
+ */
+inline type HttpRequest mixes WithHttpHeaders {
+
+  /**
+   * Parent HTTP client
+   */
+  // TODO: PLAT-40533 - revisit need for HttpClient
+  client: HttpClient
+
+  /**
+   * The HTTP method to use.
+   */
+  method: !string
+
+  /**
+   * The URL to send the request.
+   * Always required.
+   */
+  url: !string serialized Url
+
+  /**
+   * The entity body as {@link Content} for the request. Required for POST and PUT; ignored by GET.
+   * For usage examples, see {@link HttpRequest.c3poly.md#body}.
+   */
+  body: cached property(): !Content
+
+  /**
+   * Whether any body is present (regardless of status code).
+   */
+  hasBody: member function(): boolean java | js
+
+  /**
+   * Read the entity body as String.
+   */
+  readBodyString: member function(failIfNotText: boolean): ?string java | js
+
+  /**
+   * Adds a body from the {@link Content} to this HTTP request. This sets the #encodedBody field to a {@link ByteStream}.
+   * This also sets the `Content-Type` and `Content-Encoding` headers from the values in the content.
+   */
+  withBody: member function(body: !?Content): !mixing HttpRequest java | js
+
+  /**
+   * Adds a body from the encodedBody to this HTTP request. This sets the #encodedBody field to a binary value.
+   * This also sets the `Content-Type` and `Content-Encoding` headers from the values in the content.
+   */
+  withBody: member function(encodedBody: !?binary,
+                            contentType: string serialized ContentType,
+                            contentEncoding: string serialized ContentEncoding): !mixing HttpRequest java | js
+
+  /**
+   * Adds a body from the string value, content type, and encoding. This sets the #encodedBody field as well as the
+   * `Content-Type` and `Content-Encoding` headers to the specified values.
+   */
+  withBodyString: member function(body: !?string,
+                                  contentType: string serialized ContentType,
+                                  contentEncoding: string serialized ContentEncoding): !mixing HttpRequest java | js
+
+  /**
+   * The encoded body as either binary or {@Link ByteStream} for the request.
+   */
+  encodedBody: private binary | ByteStream
+
+  /**
+   * Return the query string for a GET request. This will not include the leading `?` and will be null if there is none
+   * at all.
+   */
+  queryString: member function(): ?string
+
+  /**
+   * Return all values for one single query parameter, one value for each time the param is used or assigned. If the
+   * usage is without an equal sign, it will have a null value in the array.
+   */
+  queryParam: member function(param: !string): [?string]
+
+  /**
+   * Recover valid client URL after load balancer/proxy forward. This needs to recover the scheme in case the load
+   * balancer does SSL termination and forwards over HTTP as well as the hostname valid to the client.
+   */
+  clientUrl: member function(): !string serialized Url
+
+  /**
+   * Return all values for one single POST parameter, one value for each time the param is used or assigned.
+   * This supports the content types `application/x-www-form-urlencoded` and `multipart/form-data` only.
+   *
+   * For `application/x-www-form-urlencoded`, if the usage is without an equal sign, it will have a null value in the
+   * array.
+   *
+   * This method returns the {@link Content} instances, which preserve the content type specified in the
+   * `multipart/form-data` chunks.
+   */
+  postParamContent: member function(param: !string): [Content]
+
+  /**
+   * Return all values for one single POST parameter, one value for each time the param is used or assigned.
+   * This supports the content types `application/x-www-form-urlencoded` and `multipart/form-data` only.
+   *
+   * For `application/x-www-form-urlencoded`, if the usage is without an equal sign, it will have a null value in the
+   * array. If the content type is needed, use #postParamContent instead.
+   *
+   * For `multipart/form-data`, the values will be binary if the individual chunk's Content-Type is non-text.
+   */
+  postParamData: member function(param: !string): [?string | ?binary]
+
+  /**
+   * Sends this HTTP request to target URI asynchronously.
+   * @param spec
+   *          you can opt in to streaming by adding a {@Link HttpRequest.SendSpec} and set streaming to true.
+   *          Please take a look at the instruction and implication of streaming in {@Link HttpRequest.SendSpec}.
+   *          Use HttpRequest.SendSpec.timeoutSeconds(seconds) if you want to set timeout.
+   */
+  sendAsync: member function(spec: HttpRequest.SendSpec): !Promise<HttpResponse> java | js | py
+
+  /**
+   * Sends this HTTP request to target URI synchronously (if supported by the runtime environment).
+   * @param spec
+   *          you can opt in to streaming by adding a {@Link HttpRequest.SendSpec} and set streaming to true.
+   *          Please take a look at the instruction and implication of streaming in {@Link HttpRequest.SendSpec}.
+   *          Use HttpRequest.SendSpec.timeoutSeconds(seconds) if you want to set timeout.
+   */
+  sendSync: member function(spec: HttpRequest.SendSpec): HttpResponse java | js | py
+
+  /**
+   * Creates HttpResponse to this request based on provided C3 value
+   */
+  responseFromValue: member function(value: !?any, valueType: ValueType): !HttpResponse java | js
+
+  /**
+   * Creates HttpResponse to this request based on provided C3 stream
+   */
+  responseFromStream: member function(stream: !?Stream): !HttpResponse
+
+  /**
+   * Creates HttpResponse to this request based on provided C3 byte-stream
+   */
+  responseFromByteStream: member function(stream: !?ByteStream): !HttpResponse
+
+  /**
+   * Creates HttpResponse to this request based on provided C3 byte-stream
+   */
+  responseFromCharStream: member function(charStream: !?CharStream): !HttpResponse
+
+  /**
+   * Creates HttpResponse to this request based on provided content
+   */
+  responseFromContent: member function(content: !?Content): !HttpResponse java | js
+
+  /**
+   * Creates HttpResponse to this request based on provided plain text
+   */
+  responseFromText: member function(text: !?string): !HttpResponse
+
+  /**
+   * Creates HttpResponse to this request based on provided json
+   */
+  responseFromJson: member function(json: !?json): !HttpResponse
+
+  /**
+   * Creates an empty HttpResponse to this request
+   */
+  emptyResponse: member function(): !HttpResponse java | js
+
+  /**
+   * Creates 302 Found Redirect HttpResponse to this request
+   */
+  redirectResponse: member function(url: !string serialized Url): !HttpResponse java | js
+
+  /**
+   * Creates 404 Not Found HttpResponse to this request
+   */
+  notFoundResponse: member function(): !HttpResponse java | js
+
+  /**
+   * Creates an error {@link HttpResponse} to this request.
+   * If contentType is not provided, the default content-type will be application/json
+   */
+  errorResponse: member function(err: !Error): !HttpResponse java | js
+
+  /**
+   * @returns
+   *          The ideal Content-Type for the response based on Accept Header.
+   *          Return null when there's no accepted content-type supported. Return wildcard "* / *" when any content-type is acceptable
+   */
+  responseContentType: private member function(): string serialized ContentType
+
+  /**
+   * Creates {@link ContentMeta} from headers in this request
+   */
+  contentMeta: member function(contentLocation: string): !ContentMeta
+
+  toJava: private member function(): @java(class='org.apache.http.client.methods.HttpUriRequest') native
+
+  /**
+   * Construct an Obj from this request's query string, parsing values from the query string as fields of the specified
+   * type. Query parameters that don't correspond to fields are ignored and conversion failures are also ignored unless
+   * the `failIfInvalid` parameter is true.
+   *
+   * @param type the Obj type to construct
+   * @param failIfInvalid if true, throw an error if any conversions fail
+   */
+  toObj: member function<O>(type: !Type<<O>>, failIfInvalid: boolean): !O
+
+  /**
+   * Construct an Obj from the specified query string, parsing values from the query string as fields of the specified
+   * type. The query string should be standard format, without the leading `?`. Query parameters that don't correspond
+   * to fields are ignored and conversion failures are also ignored unless the `failIfInvalid` parameter is true.
+   *
+   * @param type the Obj type to construct
+   * @param query the query string to parse
+   * @param failIfInvalid if true, throw an error if any conversions fail
+   *
+   * @see #queryFromObj
+   */
+  queryToObj: function<O>(type: !Type<<O>>, query: !?string, failIfInvalid: boolean): !O
+
+  /**
+   * Construct a query string from the specified Obj instance. The query string is in standard format, without the
+   * leading `?`.
+   *
+   * @param inst the Obj inst as the source
+   * @return produced query string (may be empty, but not null)
+   *
+   * @see #queryToObj
+   */
+  queryFromObj: function(inst: !?Obj): ?string
+
+  // TODO: PLAT-39449: Explore Netty for replacement of Vert.x
+  fromJava: private function(@java(class='java.lang.Object') request: !native): !HttpRequest
+}

@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Map Reduce job to trigger hot/cold migration for NormalizedTimeseries
+ *
+ * {@see NormalizationConfig#partitionStrategy}
+ * {@see TimedDataFields#partitionStrategy}
+ * {@see NormalizationPartitionStrategy}
+ */
+@beta
+private entity type NormalizedTimeseriesHotColdMigrator extends MapReduce<Obj, int, int, int> type key 'NTHCM' {
+
+  /**
+   * Low priority to not interfere with user jobs
+   */
+  priority: ~ = 3000
+
+  /**
+   * If set, reads the entire NormalizedTimeseries object in memory and performs the hot/cold migration
+   */
+  force: boolean
+
+  /**
+   * Starts the NormalizedTimeseries hot/cold migrator job. If no dataPointType is specified, then it will trigger
+   * multiple map reduce jobs one for each data point type where hot/cold migration needs to be invoked
+   *
+   * @param dataPointType
+   *            Specific type for which
+   * @param options
+   *            Options for underlying map reduce job, e.g. setting nodePool, maxConcurrencyPerNode
+   * @param force
+   *            If set, reads the entire NormalizedTimeseries object in memory and performs the hot/cold migration
+   * @return job instances per data point type
+   */
+  trigger: function(dataPointType: Type, options: JobOptions, force: boolean): [NormalizedTimeseriesHotColdMigrator]
+
+  /**
+   * Perform hot/cold compaction for NormalizedTimeseries for a given Timeseries header. Optionally if the tsField is set,
+   * it will perform hot/cold migration only for the provided tsField
+   * @param header
+   *            Header on which the hot/cold migration needs to be performed
+   * @param tsField
+   *            If set, only performs hot/cold migration for the provided tsField
+   * @param force
+   *            If set, reads the entire NormalizedTimeseries object in memory and performs the hot/cold migration
+   */
+  compact: function(header: !TimedDataFields, tsField: string, force: boolean)
+}

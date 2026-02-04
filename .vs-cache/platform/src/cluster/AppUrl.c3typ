@@ -1,0 +1,271 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration of URL to access a given C3 Application, Environment or Cluster.
+ *
+ * #env and #app fields determine how final REST endpoint URL is formulated. E.g. assuming configured AppUrl id is
+ * `dev.c3.ai` and C3 server version is 8 then REST endpoint to `login` action should be constructed as follows:
+ *
+ * * if both `env` & `app` fields are empty i.e. if this is a Cluster URL then endpoint should be:
+ *     `https://dev.c3.ai/{$target-env}/{$target-app}/api/8/login`
+ * * if `app` field is empty i.e. if this is an Environment URL then:
+ *     `https://dev.c3.ai/{$target-app}/api/8/login`
+ * * if both `env` and `app` field is set i.e. if this is a vanity URL then:
+ *     `https://dev.c3.ai/api/8/login`
+ *
+ * Roles required to upsert and remove Vanity URLs, Env URLs, and Cluster URLs:
+ * * Vanity URLs: AppAdmin or higher
+ * * Env URLs: EnvAdmin or higher
+ * * Cluster URLs: ClusterAdmin
+ */
+@config(minOverride=CLUSTER)
+type AppUrl mixes Identified, Config {
+
+  /**
+   * The host of a URL (see host field of {@link Url#host}. This is what will be registered as a record in the
+   * DNS server in a K8s Environment within a cloud provider.
+   */
+  id: ~
+
+  /**
+   * Optional name of the C3 Environment
+   */
+  env: string
+
+  /**
+   * Optional name of the C3 Application
+   */
+  app: string
+
+  /**
+   * Scheme of URL, ex. host = 'https'
+   * Will be inferred from incoming HTTP Request and should not be configured
+   */
+  scheme: string
+
+  /**
+   * Port Number of URL, ex. port = 8888.
+   * Will be inferred from incoming HTTP Request and should not be configured
+   */
+  port: int32
+
+  /**
+   * Boolean that specifies whether a fetched AppUrl is one that actually exists or one that is returned implicitly
+   */
+  implicit: boolean = true
+
+  /**
+   * Boolean that specifies whether a fetched AppUrl is internal to the Cluster. Internal AppUrls should not be
+   * explicitly set into config.
+   */
+  internal: boolean
+
+  /**
+   * Optional HttpSecurityConfig can be added to the AppUrl. If set, this object override the global HttpSecurityConfig
+   */
+  httpSecurityConfigOverride: HttpSecurityConfig
+
+  /**
+   * Accessor that returns httpSecurityConfigOverride if set, otherwise returns default/global HttpSecurityConfig
+   */
+  httpSecurityConfig: member function(): !HttpSecurityConfig
+
+  /**
+   * The only kind of authentication protocol that should be used for this AppUrl
+   */
+  authenticationKind: string enum AuthenticationKind
+
+  /**
+   * The configuration of the identity provider used for authentication when accessing this AppUrl
+   *    that is defined by the authenticationKind. If one is set it will only respect that form of authentication,
+   *    otherwise it will check against all possible kinds for the host.
+   */
+  configuredIdpConfig: property(): !IdpConfig
+
+  // TODO: PLAT-115507 Remove idpConfig field when 8.9 is EOL
+  @deprecated(finalVersion=8.9, details='Use idpKind and configuredIdpConfig instead')
+  idpConfig: IdpConfig
+
+  /**
+   * @return Url instance for this App Url; not however it is recommended to use #endpoint method is most cases
+   */
+  url: cached property(): !Url java | js
+
+  /**
+   * Host of URL, ex. host = 'ftp.example.com'.
+   */
+  host: property(): !string
+
+  /**
+   * Domain of URL, ex. 'example.com'
+   */
+  domainName: property(): string
+
+  /**
+   * @return `true` if this AppUrl is for a specific C3 App
+   */
+  isVanity: member function(): boolean java | js
+
+  /**
+   * @return `true` if this AppUrl is for a specific C3 Env
+   */
+  isEnv: member function(): boolean java | js
+
+  /**
+   * @return `true` if this AppUrl is specific to a C3 Cluster
+   */
+  isCluster: member function(): boolean java | js
+
+  /**
+   * @return `true` if this AppUrl is registered in config
+   */
+  isConfigured: member function(): boolean
+
+  /**
+   * Checks if this AppUrl can be used to route to and access an {@link App}.
+   *
+   * @param app
+   *         Specification for what App this AppUrl is intended for.
+   *         Setting this field will set the corresponding env and app path for this App.
+   * @return `true` if pinging via this AppUrl returns HTTP status code 200
+   */
+  isHealthy: member function(app: App): boolean
+
+  /**
+   * Retrieves the endpoint.
+   * @param encodedSubPath
+   *         Remainder of path
+   * @return endpoint based on this AppUrl and sub-path.
+   */
+  endpoint: member function(encodedSubPath: string): !string java | js
+
+  /**
+   * Retrieves the endpoint path prefix.
+   *
+   * For Cluster URLs, it will return `env/app`
+   * For Environment URLs, it will return `app`
+   * For Vanity URLs, it will return an empty string
+   * @param endpointUrl
+   *         The URL for which to find the endpoint path
+   * @return The endpoint path
+   */
+  endpointPathPrefix: function(endpointUrl: string): !string java
+
+  /**
+   * Produce a URL for specified Application. If this is an Environment URL, then the Environment name must match.
+   * If it's a Vanity URL, both the env and app names must match. Otherwise a URL will be produced which may not be
+   * valid if the env doesn't exist (Cluster URL) or app is not started (env and Cluster URLs).
+   *
+   * @param envName
+   *         Environment name
+   * @param appName
+   *         Application name
+   * @param encodedSubPath
+   *         Remainder of path
+   * @return The endpoint based on this AppUrl and sub-path for the specified Application.
+   */
+  appEndpoint: member function(envName: !string, appName: !string, encodedSubPath: string): !string java | js
+
+  /**
+   * Produce a URL for specified Application. If this is an Environment URL, then the Environment name must match.
+   * If it's a Vanity URL, both the env and app names must match. Otherwise a URL will be produced which may not be
+   * valid if the env doesn't exist (Cluster URL) or app is not started (env and Cluster URLs).
+   *
+   * @param app
+   *         Application instances
+   * @param encodedSubPath
+   *         Remainder of path
+   * @return endpoint based on this AppUrl and sub-path for the specified Application.
+   */
+  appEndpoint: member function(app: !App, encodedSubPath: string): !string java | js
+
+  /**
+   * @param endpoint
+   *         The endpoint to get the AppUrl from.
+   * @param failIfMissing
+   *         Boolean indicating whether the function should fail in case there is no AppUrl for the given endpoint.
+   * @return AppUrl identified with provided endpoint's host if it exists.
+   */
+  forEndpoint: function(endpoint: !string serialized Url, failIfMissing: boolean): AppUrl
+
+  /**
+   * @param endpoint
+   *         The endpoint to get the AppUrl from.
+   * @param failIfMissing
+   *         Boolean indicating whether the function should fail in case there is no AppUrl for the given endpoint.
+   * @return AppUrl identified with provided endpoint's host if it exists.
+   */
+  forEndpoint: function(endpoint: !Url, failIfMissing: boolean): AppUrl
+
+  /**
+   * Performs validation on the AppUrl, upserts the AppUrl at the appropriate override, and registers this AppUrl in the
+   * underlying cloud provider's DNS registry. If an AppUrl exists for the given id, then the existing AppUrl will be
+   * replaced if the user has the sufficient permissions.
+   *
+   * This API should be the only way to upsert / configure an AppUrl. Configuring an AppUrl via Config APIs is prone to
+   * operator error since there is no field / permission validation.
+   */
+  @action(group+='app-admin')
+  upsert: member function()
+
+  /**
+   * Removes this AppUrl from the underlying cloud provider's DNS registry and config framework.
+   *
+   * This API should be the only way to remove an AppUrl. Removing an AppUrl via Config APIs is prone to
+   * operator error there is no field / permission validation.
+   */
+  @action(group+='app-admin')
+  remove: member function()
+
+  /**
+   * Extracts the target {@link Env} and {@link App} using the provided encodedPath and the {@link #app} and
+   * {@link #env} fields on the AppUrl.
+   * Example:
+   * Assume a URL is a Cluster URL, then input '/env1/app1/console/' should produce the Triple <env1 | app1 | /console/>
+   *
+   * Assume a URL is an Env URL for env2, then input '/app1/console/' should produce the Triple <env2 | app1 | /console/>
+   *
+   * Assume a URL is an App URL for app1 belonging to env3, then input '/console/' should produce the Triple <env3 | app1 | /console/>
+   *
+   * @param encodedPath
+   *         The path from which to extract the Env, App, and decoded subPath.
+   * @return A triple containing: <envName, appName, subPath>.
+   */
+  // TODO
+  // extractEnvApp: member function(encodedPath: !?string): !{env: string, app: string, path: string}
+  extractEnvApp: member function(encodedPath: !?string): !Triple<string, string, string>
+
+  /**
+   * Determine if the path has an empty subPath, after the env/app on the AppUrl.
+   *
+   * For example: for Cluster URL "/c3/zoo/" is root (the subPath would be "/"), but "/c3/zoo/console/index.html" is
+   * not (the subPath would be "/console/index.html").
+   * @param encodedPath
+   *         The path to check.
+   * @return `true` if this AppUrl has an empty subPath.
+   *
+   * @see #extractEnvApp
+   */
+  isRootPath: member function(encodedPath: !?string): boolean
+
+  /**
+   * Check if we can add this AppUrl to the cloud provider's underlying DNS registry.
+   * @return `true` if this AppUrl can be added.
+   */
+  canRegisterUrl: private member function(): boolean
+
+  /**
+   * Get the hosted zone of this AppUrl.
+   * @param passIfNotManagedByCloud
+   *         When `true` and this AppUrl is not managed by host cloud an exception will not be thrown.
+   * @return Hosted zone for this AppUrl's endpoint; by default will throw an exception if not managed by host cloud
+   *         provider
+   */
+  hostedZone: private member function(passIfNotManagedByCloud: boolean): CloudHostedZone
+}

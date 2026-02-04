@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Custom rules to apply to a {@link Workflow.Vertex} for Common Subexpression Elimination.
+ */
+abstract type Workflow.Cse.Rule.VertexRule {
+
+  /**
+   * Rules specifying custom handling per port for the {@link Workflow.Vertex}.
+   * Key: port name
+   * Value: A {Workflow.Cse.Rule.PortRule} with custom logic for handling that specific port.
+   */
+  portRules: map<string, Workflow.Cse.Rule.PortRule>
+
+  /**
+   * Returns a key for the vertex. The key should be the same for all "similar" vertices (e.g. action vertices on the
+   * same type with the same action name).
+   * Note: The CSE algorithm uses this key to determine which vertices to check for equivalence.
+   *
+   * @param vertex
+   *         The {@link Workflow.Vertex} for which the key is generated.
+   * @param workflow
+   *         The {@link Workflow} which contains 'vertex'.
+   * @return a string key for the vertex
+   */
+  vertexKey: abstract member function(vertex: !Workflow.Vertex, workflow: !Workflow): !string
+
+  /**
+   * @param vertex
+   *         The {@link Workflow.Vertex} for which this rule may apply.
+   * @param workflow
+   *         The {@link Workflow} which contains 'vertex'.
+   * @return true if this rule applies to the vertex.
+   */
+  isApplicable: abstract member function(vertex: !Workflow.Vertex, workflow: !Workflow): !boolean
+
+  /**
+   * @param v1
+   *         The {@link Workflow.Vertex} which may potentially be redundant.
+   * @param v2
+   *         A previously computed {@link Workflow.Vertex} that is "similar" to 'v1'.
+   * @param workflow
+   *         The {@link Workflow} which contains 'v1' and 'v2'.
+   * @return true if 'v1' and 'v2' are "equivalent".
+   *
+   * Note: If 'v1' and 'v2' are equivalent, the CSE algorithm will remove 'v1' and will connect 'v2' to all of the next
+   * vertices of 'v1'.
+   */
+  areEquivalent: abstract member function(v1: !Workflow.Vertex, v2: !Workflow.Vertex, workflow: !Workflow): !boolean
+}

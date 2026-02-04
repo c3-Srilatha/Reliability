@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a generic interface for a vector store.
+ * To integrate a new vector store, extend this type and implement the abstract methods.
+ * For an example of a concrete instance, see {@link GenaiCore.VectorStore.Pg}.
+ *
+ * NOTE: this interface does not define any "retriever" pre-processing/post-processing capabilities,
+ * only the low-level interactions with a vector store.
+ */
+abstract extendable entity type GenaiCore.VectorStore mixes SeedData schema name 'GCVS' {
+
+  /**
+   * Reference to the embedder that should be used to generate the embeddings stored in
+   * this vector store. This should also be the embedder used to generate the `queryVector`
+   * input to {@link #similaritySearch}.
+   *
+   * NOTE: if there exists multiple embedders for a single document, then instantiate
+   * a separate instance of this type for each embedder.
+   */
+  // TODO: PLAT-100568
+  // embedder: !GenaiCore.Embedder
+
+  /**
+   * Default spec to use with {@link #similaritySearch}. The dynamically
+   * supplied spec to {@link #similaritySearch} will take precedence and do a field-by-field override
+   * of the values provided in the default spec.
+   */
+  similaritySearchSpec: GenaiCore.SimilaritySearchSpec
+
+  /**
+   * @param spec
+   *          user provided spec to {@link #similaritySearch}.
+   * @return spec merged with {@link #similaritySearchSpec} giving precedence to the former.
+   */
+  mergeDefaultSimilaritySearchSpec: private inline member function(spec: GenaiCore.SimilaritySearchSpec): !GenaiCore.SimilaritySearchSpec py
+
+  /**
+   * Searches the vector store for the top k approximately closest/nearest vectors to the
+   * query vector and returns the results.
+   *
+   * @param queryVector
+   *          the representation of the query as a vector.
+   * @param spec
+   *          optional parameters to customize the similarity search, e.g. the k for "top k".
+   * @return the list of k closest/nearest vectors. The list is sorted, with the closest/nearest
+   *          vectors first.
+   */
+  similaritySearch: member function(queryVector: ![number], spec: GenaiCore.SimilaritySearchSpec): !?[GenaiCore.VectorStore.SimilaritySearchResult] py
+
+  /**
+   * This API is the same as {@link #similaritySearch} and is called from the default implementation of
+   * {@link #similaritySearch}. This is the preferred function to override for concrete implementations
+   * of {@link GenaiCore.VectorStore}, because {@link #similaritySearch} has extra boiler-plate implementation
+   * that does, for example, logging.
+   *
+   * @param queryVector
+   *          the representation of the query as a vector.
+   * @param spec
+   *          optional parameters to customize the similarity search, e.g. the k for "top k".
+   * @return the list of k closest/nearest vectors. The list is sorted, with the closest/nearest
+   *          vectors first.
+   */
+  doSimilaritySearch: member function(queryVector: ![number], spec: GenaiCore.SimilaritySearchSpec): !?[GenaiCore.VectorStore.SimilaritySearchResult] py
+
+  /**
+   * Add (or update) vectors in the vector store.
+   *
+   * @param embeddings
+   *          embeddings to be added or updated
+   * @param metadata
+   *          metadata associated with the embeddings by index
+   * @param options
+   *          options that control various aspects of the operation of addVectors
+   * @return the count of successfully added or updated vectors
+   */
+  addVectors: inline member function(embeddings: ![[number]], metadata: [json], options: json): !int py
+
+  /**
+   * This API is the same as {@link #addVectors} and is called from the default implementation of
+   * {@link #addVectors}. This is the preferred function to override for concrete
+   * implementations of {@link GenaiCore.VectorStore}, because {@link #addVectors}
+   * has extra boiler-plate implementation that does, for example, logging.
+   *
+   * @param embeddings
+   *          embeddings to be added or updated
+   * @param metadata
+   *          metadata associated with the embeddings by index
+   * @param options
+   *          options that control various aspects of the operation of doAddVectors
+   * @return the count of successfully added or updated vectors
+   */
+  doAddVectors: inline member function(embeddings: ![[number]], metadata: [json], options: json): !int py
+}

@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The "model" encapsulates data access methods needed by a user interface to interact with the underlying data of a
+ * single logical object in some data repository. This may end up devolving into multiple related objects, perhaps
+ * even in different underlying data stores.
+ *
+ * A model maintains state locally about changes made which have not yet been saved to the server. The #set method
+ * changes data locally (applying simple validation), but does not send anything to the server and just marks the
+ * local model as dirty. When #save is called, all pending changes are bundled up and submitted to the server in a
+ * single request and if the server responds with a success status, the model becomes clean.
+ *
+ * Models support these {@link UiEventSource events}:
+ *  - `change`: a change to one or more fields of the model
+ *  - `save`: the model was successfully saved to the server
+ *  - `reload`: the model instance was reloaded from the server
+ *
+ * The model only manages the data of an object. The presentation is configured using a {@link UiView view}.
+ *
+ * It also doesn't act as a controller, that is done by defining a {@link ReactComponent component}. For example,
+ * {@link ModelForm} is a generic controller component for models that presents the contents as a form.
+ *
+ * Methods which delegate processing to the server are asynchronous and return a Promise.
+ *
+ * @see UiCollection
+ * @see UiView
+ */
+abstract type UiModel mixes UiModelBase {
+
+  /**
+   * Retrieve a single value from the model, using the name (or value) of a field declared in the underlying view.
+   * If no such field exists, no value is returned.
+   *
+   * Fields which are not part of the view associated with the model may not be available since they will not be
+   * fetched from the data store. Any fields the UI intends to use must be declared in the view.
+   *
+   * @param name underlying view field name
+   */
+  viewFieldValue: member function(name: !string): any js-client
+
+  /**
+   * Change a single value on the model, using the name of a field declared in the underlying view. If no such field
+   * exists, an error is thrown.
+   *
+   * Fields which are not part of the view associated with the model may not be set because they will not have been
+   * fetched initially which does not allow a consistent upsert to be generated.
+   *
+   * Furthermore, only view fields that are mutable and do not contain method calls are allowed to be set.
+   *
+   * @param name
+   *           underlying view field name
+   * @param value
+   *           updated value
+   * @param isGrouped
+   *           whether this setViewFieldValue is part of a group of calls which allows us to skip some of the validations
+   */
+  setViewFieldValue: member function(name: !string, value: !?any, isGrouped: boolean) js-client
+
+  /**
+   * Set multiple values on the model at once. This may reduce the number of events dispatched and can be useful when
+   * multiple fields are changed on the model at once.
+   *
+   * @see #setViewFieldValue
+   */
+  setViewFieldValues: member function(values: !map<string, any>) js-client
+
+  /**
+   * Whether a model field is unmodifiable on the server. This could be due to permissions, view configuration or the
+   * mode in which the object was loaded. A call to #set for this name should throw an exception.
+   */
+  isFieldReadOnly: member function(name: !string): boolean js-client
+
+  /**
+   * Call a named method within the server on the underlying data of the model. Note that this does _not_ call #save so
+   * only the in-memory values of the object are sent.
+   *
+   * @param name the name of the method to invoke
+   * @param args actual arguments (name-based calling)
+   */
+  dispatch: member function(method: !string, args: map<string, any>): Promise<any>
+
+  /**
+   * Current instance of the data/model.
+   */
+  instance: private !WithType
+
+  /**
+   * Original instance of the data/model before modifications.
+   */
+  original: private WithType
+
+  save:       abstract ~ js-client
+  reload:     ~ js-client
+  isDirty:    ~ js-client
+  isReadOnly: ~ js-client
+  afterMake:  ~ js-client
+}

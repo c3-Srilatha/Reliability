@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Loop with ID 2000B.
+ */
+type X12Subscriber {
+
+  /**
+   * HL segment, subscriber hierarchial level.
+   */
+  hierarchLevel: !X12HierarchicalLevel
+
+  /**
+   * SBR segment, subscriber information.
+   */
+  subscriberInformation: !X12SubscriberInformation
+
+  /**
+   * PAT segment, patient information.
+   */
+  patientInformation: X12PatientInformation
+
+  /**
+   * Nested loop with ID 2010BA, subscriber name.
+   */
+  subscriberDetails: !X12SubscriberDetails
+
+  /**
+   * Nested loop with ID 2010BB, payer name.
+   */
+  payer: !X12PayerDetails
+
+  /**
+   * Nested loop with ID 2300, claim information.
+   */
+  claimInformation: [X12Claim] schema suffix 'CLM'
+}

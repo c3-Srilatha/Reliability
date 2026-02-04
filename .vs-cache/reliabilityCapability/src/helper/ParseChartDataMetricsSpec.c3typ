@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type specifies the values used by {@link ModelPredictionChartHelper#parseChartDataMetrics}
+ * to hold the {@link EvalMetricsResult}s for the {@link ReliabilityMlModel model} outputs metric, {@link ReliabilityAsset asset}
+ * features metric and {@link Sensor sensor}s quantity metric.
+ */
+type ParseChartDataMetricsSpec mixes Spec {
+
+  /**
+   * The {@link ReliabilityMlModel#id} of the model to retrieve outputs for.
+   */
+  modelId: string serialized ReliabilityMlModel
+
+  /**
+   * The {@link ReliabilityAsset#id} of the asset on which the metric is evaluated.
+   */
+  assetId: string serialized ReliabilityAsset
+
+  /**
+   * The metric evaluation result of the {@link Sensor}s quantity metric.
+   */
+  sensorMetricResults: json
+
+  /**
+   * The metric evaluation result of the {@link ReliabilityMlModel} output metric.
+   */
+  outputMetricResults: json
+
+  /**
+   * The metric evaluation result of the {@link ReliabilityAsset} feature metric.
+   */
+  featureMetricResults: json
+}

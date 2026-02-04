@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Additional context to provide GenAi agent
+ */
+type StudioGenAiState.Context {
+
+  /**
+   * The key of the context
+   */
+  key: !string
+
+  /**
+   * Description of what the key / value pair means, should be structured such that the sentence
+   * `${description} is ${value}` makes sense
+   */
+  description: !string
+
+  /**
+   * The value the agent should use
+   */
+  value: any
+
+  /**
+   * Optional variable name. If provided, changes the sentence to `${description} is ${varName} = ${value}`
+   */
+  varName: string
+
+  /**
+   * Optional lambda function that gets the context value during runtime
+   * Once specified, the {@link StudioGenAiState.Context#value} will be overridden by the result of this function
+   */
+  getValue: lambda(state: UiSdlReduxState): any
+}

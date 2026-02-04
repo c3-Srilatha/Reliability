@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Settings to define a recurring day and optional window of time
+ * Allows multiple time windows for a day to support a restaurant that may close in
+ * the afternoon for a few hours or a business that takes a siesta
+ * May define normal work hours for a day of week Mon-Sun (i.e. when a facility is occupied)
+ * 00:00 to 00:00 means no hours  00:00 to null means all 24 hours of the day
+ * Business Key: all core attributes, not meaningful to enforce
+ */
+entity type ScheduleRecurringDayRule schema name 'SCHD_DAYRULE' {
+
+  /**
+   * recurring base calendar unit monthly, weekly, daily, annually
+   */
+  calendarUnit: !string enum('monthly', 'weekly', 'daily', 'annually')
+
+  /**
+   * repeat frequency i.e. every 2 months
+   */
+  calendarUnitFrequency: !int
+
+  isoDayOfWeek: int enum('1', '2', '3', '4', '5', '6', '7')
+
+  /**
+   * 1-31
+   */
+  dayOfMonth: int
+
+  /**
+   * Allows picking a day of week by month or year
+   * i.e. ON last Thursday of the month
+   */
+  onQualifier: string enum('first', 'second', 'third', 'fourth', 'last')
+
+  /**
+   * start window of time during the day described by the rule, inclusive
+   * 00:00 to 00:00 means no work hours  HH:MM - will change to time datatype
+   * HH:MM - will change to time datatype
+   */
+  startTime: !string
+
+  /**
+   * end window of time during the day described by the rule, exclusive
+   * null implies unbounded in context of the day (end of day)
+   * HH:MM - will change to time datatype
+   */
+  endTime: string
+
+  /**
+   * date range of when this rule is in effect for a schedule
+   * inclusive
+   */
+  effectiveDate: datetime
+
+  /**
+   * exclusive
+   */
+  effectiveEndDate: datetime
+
+  /**
+   * FK references FROM parents
+   */
+  scheduleCalendar: ScheduleCalendar
+
+  /**
+   * optional descriptor, i.e. every monday 9-5 or first monday of the month
+   */
+  name: ~
+}

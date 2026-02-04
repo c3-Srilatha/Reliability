@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Clusters a {@link Sensor} together with a {@link ReliabilityAsset} for ML modeling purposes.
+ * Represents a conceptual relation. Physical/hierarchical relations are represented with the {@link ReliabilityAssetSensorHierarchicalRelation} type.
+ *
+ * **Note**: Since this type mixes {@link TimedIntervalRelation}, it is important to specify an {@link id} when
+ * attempting to create a new instance if you want to guarantee a new instance is actually created. Otherwise, if you
+ * attempt to create a new instance with the same {@link from} as an existing instance, it may just be merged into the
+ * existing instance.
+ *
+ * For additional usage documentation, look to {@link Sensor} and the reliability dev guide topic titled
+ * "Tags and Sensors".
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+remix type ReliabilityAssetSensorRelation {
+
+  /**
+   * Header name for the reconstruction series associated with this asset-sensor pair.
+   */
+  reconstructionHeaderName: string stored calc getReconstructionHeaderName(to.id, from.id)
+
+  /**
+   * Create a {@link Feature} that is defined on the {@link ReliabilityAsset}
+   * and provides access to the time series data for the {@link to} Sensor.
+   * The {@link Feature} can be created by either using the {@link expectedSensor}
+   * so that it is more readable or it can be created by using {@link Sensor#metricSafeId}.
+   * There is a third (default) option which attempts to create a {@link Feature}
+   * based on {@link expectedSensor} and, if that doesn't work, tries to create the
+   * {@link Feature} based on {@link Sensor#metricSafeId}. The default option
+   * is the safest option for a new user who is not familiar with `reliabilityRisk`.
+   * If `start` and `end` arguments are not provided, then they are automatically
+   * inferred from {@link PointPhysicalMeasurementSeries#earliest} and
+   * {@link PointPhysicalMeasurementSeries#latest}, respectively. If the {@link Sensor}
+   * time series data is not normalized, then this function will raise an error.
+   * If such an error is raised, then normalize the time series data and rerun.
+   */
+  createSensorFeature: member function(
+    start: datetime,
+    end: datetime,
+    interval: string enum Interval = QUARTER_HOUR,
+    method: string enum ReliabilityMlFeatureCreationMethod = BEST
+  ): Feature py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

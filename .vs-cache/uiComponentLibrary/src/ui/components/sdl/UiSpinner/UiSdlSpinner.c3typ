@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type shows a loading spinner.
+ */
+@typeScript
+@uiComponentCategorizer(name='Spinner', aliases=['Loader'], category='Patterns')
+type UiSdlSpinner mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Text to place below the loading icon/spinner when {@link isDataLoading} is `true`.
+   */
+  loadingText: string
+
+  /**
+   * The size of the spinner.
+   */
+  size: string enum('sm', 'md', 'lg') = 'lg'
+
+  /**
+   * Boolean flag to check if data is still loading for the component.
+   * Can be checked during rendering to decide whether some loading classes or masks can be applied.
+   */
+  isDataLoading: boolean = false
+
+  /**
+   * Components that will be in the spinner.
+   */
+  children: [UiSdlComponentRef<UiSdlComponent<UiSdlNoData>>]
+
+  /**
+   * Triggered when the spinner needs to be either rendered or not.
+   *
+   * @param id
+   *            Id of the component.
+   * @param loading
+   *            Boolean value to indicate the desired spinner state: true to show spinner, false otherwise.
+   *
+   * @returns A `DATA_LOAD_CHANGE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='DATA_LOAD_CHANGE')
+  changeDataLoadingAction: function(id: string, loading: boolean): UiSdlDataLoadChangeAction ts-client
+
+  /**
+   * Listens for actions of type `DATA_LOAD_CHANGE` and sets {@link loading} accordingly.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='DATA_LOAD_CHANGE')
+  dataLoadingChangeEffect: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlDataLoadChangeAction): UiSdlReduxState ts-client
+}

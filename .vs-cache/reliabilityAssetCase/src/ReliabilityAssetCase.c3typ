@@ -1,0 +1,281 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a case entity used to investigate and log issues related to a {@link ReliabilityAsset}.
+ * A case acts as a hub for related {@link ReliabilityAssetAlert}s, {@link FailureMode}s, and {@link WorkOrder}s.
+ *
+ * Key actions within a case include assigning it to a user, setting priorities, and collaborating on
+ * resolution efforts through comments, failure mode reviews, and work orders. Cases help organize
+ * investigation workflows and ensure proper tracking of asset-related issues.
+ *
+ */
+entity extendable type ReliabilityAssetCase mixes StateMachine<CaseStateHistory, CaseState, CaseStateTransition>, FeatureEvaluatable, FilterableByFacility {
+
+  /**
+   * All the {@link ReliabilityAssetAlertToCaseRelation}s related to this case.
+   */
+  alertRelations: [ReliabilityAssetAlertToCaseRelation](to)
+
+  /**
+   * All the {@link ReliabilityAssetAlert}s related to this case.
+   * Represents alerts linked to this case through the alert relations.
+   */
+  alerts: [ReliabilityAssetAlert] stored calc alertRelations.from schema name 'ALRT'
+
+  /**
+   * Reference to the most critical {@link ReliabilityAssetAlert} linked to this case.
+   * This is the first alert in the sorted alert list.
+   */
+  firstAlert: ReliabilityAssetAlert stored calc alerts[0]
+
+  /**
+   * The estimated cost in dollars ($) of unplanned downtime due to this {@link ReliabilityAssetCase}.
+   */
+  estimatedCostOfUnplannedDowntime: double
+
+  /**
+   * The estimated cost in dollars ($) of unplanned maintenance for this {@link ReliabilityAssetCase}.
+   */
+  estimatedCostOfUnplannedMaintenance: double
+
+  /**
+   * A description of the case. Readiness sets this based on alert failure mode and {@link ReliabilityAsset#functionalLocation}
+   */
+  description: string
+
+  /**
+   * Total number of alerts associated with this case.
+   * Currently, only one alert is allowed per case.
+   */
+  numTotalAlerts: private int calc count(alerts)
+
+  /**
+   * Total number of assets directly linked to alerts in the case.
+   */
+  numTotalAssets: private int calc count(allAssets)
+
+  /**
+   * Total number of feedbacks associated with the failure modes in the case.
+   */
+  numFeedbacks: private int stored calc count(failureModeRelations.feedbacks)
+
+  /**
+   * The number of work orders created for this ReliabilityAssetCase.
+   */
+  numWorkOrders: private int stored calc count(workOrders)
+
+  /**
+   * The number of open work orders for this ReliabilityAssetCase that are not 'CLOSED'.
+   */
+  numOpenWorkOrders: private int stored calc count(workOrders.(!exists(status) || status != 'Closed'))
+
+  /**
+   * All the {@link ReliabilityAssetCaseToAssetRelation}s related to this case.
+   * These relations link assets to the case.
+   */
+  assetRelations: [ReliabilityAssetCaseToAssetRelation](from)
+
+  /**
+   * All directly linked {@link ReliabilityAsset}s associated with this ReliabilityAssetCase
+   */
+  directAssets: [ReliabilityAsset] stored calc assetRelations.to schema name 'D_ASSTS'
+
+  /**
+   * All {@link ReliabilityAsset}s associated with this ReliabilityAssetCase as calculated from
+   * this case's {@link ReliabilityAssetCase#alerts alerts}.
+   */
+  alertAssets: [ReliabilityAsset] stored calc unique(alerts.parent.id) schema name 'ALRT_ASSTS'
+
+  /**
+   * All associated {@link ReliabilityAsset}s associated with this ReliabilityAssetCase.
+   */
+  allAssets: [ReliabilityAsset] stored calc unique(`union(directAssets, alertAssets)) schema name 'ALL_ASSTS'
+
+  /**
+   * Subheader displaying case priority and its current state.
+   */
+  subHeaderText: string calc concat(priority.value, ' • ', currentState.displayName)
+
+  /**
+   * List of users who have commented or are tagged in a comment on this case.
+   */
+  collaborators: [string] stored calc unique(`union(comments.taggedUsers.id, comments.meta.createdBy)) schema suffix 'COLB'
+
+  /**
+   * All related work orders for the current case.
+   */
+  workOrders: [WorkOrder](assetCase)
+
+  /**
+   * The priority assigned to the current case.
+   * The priority value represents the case's criticality level.
+   */
+  @db(timedValueHistoryField='priorityHistory')
+  priority: ReliabilityPriorityTimedValue
+
+  /**
+   * The string value representing the priority of the case (P0, P1, P2).
+   */
+  priorityValue: private string stored calc priority.value
+
+  /**
+   * Timed history of priority changes for the case.
+   * The history is ordered by timestamp in descending order.
+   */
+  @db(order='descending(timestamp)')
+  priorityHistory: [CasePriorityHistory](parent)
+
+  /**
+   * The user assigned to this ReliabilityAssetCase.
+   */
+  @db(timedValueHistoryField='assigneeHistory')
+  assignee: ReliabilityAssigneeTimedValue
+
+  /**
+   * The full name or email of the user assigned to the case for UI display.
+   */
+  assigneeName: string stored calc (exists(assignee.value.firstName) || exists(assignee.value.lastName))
+                           ? trim(assignee.value.firstName + " " + assignee.value.lastName)
+                           : (exists(assignee.value.email) ? assignee.value.email : assignee.value.name)
+
+  /**
+   * Function to handle case creation on form submission.
+   * Invoked after submitting a new case creation form.
+   */
+  createCaseOnFormSubmit: function(formObject: !OpenCaseSpec): ReliabilityAssetCase js-rhino
+
+  /**
+   * List of comments associated with the current case.
+   * Comments are sorted by the most recently updated first.
+   */
+  @db(order='descending(meta.updated)')
+  comments: [CaseComment](parent)
+
+  /**
+   * Latest comment associated with the current case
+  */
+  latestComment: string stored calc exists(comments) ? comments[0].comment : null
+
+  /**
+   * History of user assignments to the case.
+   * This allows tracking the change in case ownership over time.
+   */
+  @db(order='descending(timestamp)')
+  assigneeHistory: [CaseAssigneeHistory](parent)
+
+  /**
+   * The top 3 feature contributors for the case based on alerts.
+   * Returns a string with names of the top 3 contributors.
+   */
+  topContributors: string calc getTopFeatureContributors(alerts, 3)
+
+  /**
+   * The timestamp of the latest comment added to the case.
+   * Used to track recent activity.
+   */
+  latestCommentCreationTime: private datetime stored calc exists(comments[0].meta.updated) ? comments[0].meta.updated : null
+
+  /**
+   * Timestamp of the latest state change for this case.
+   */
+  latestStateCreationTime: datetime stored calc exists(stateHistories[0].timestamp) ? stateHistories[0].timestamp : null
+
+  /**
+   * The timestamp for the most recent activity on this case.
+   * This combines the latest comment, state, priority, and assignee updates.
+   */
+  latestActivityTime: private datetime stored calc max(latestCommentCreationTime, assignee.timestamp, latestStateCreationTime, priority.timestamp)
+
+  /**
+   * A string representation of the latest activity on the case.
+   * It can be a comment, case assignment, or priority change.
+   */
+  latestActivity: string stored calc (latestActivityTime == latestCommentCreationTime) ? "CommentAdded" :
+                                     (latestActivityTime == assignee.timestamp) ? "CaseAssigned" :
+                                     (latestActivityTime == priority.timestamp ? "PriorityChanged": currentState.id)
+
+  /**
+   * Translates the {@link latestActivity} to a user-friendly format.
+   */
+  latestActivityDisplayName: string translate by latestActivity
+
+  /**
+   * Sends notifications to the assignees of work orders related to this case.
+   */
+  sendWorkOrderNotification: function(srcObj: any) js-rhino
+
+  /**
+   * Method invoked after submitting the "AddCommentForm" from the case detail page.
+   * This function creates a comment on the case.
+   */
+  createCommentOnFormSubmit: function(formObject: !AddCommentSpec): !CaseComment js-rhino
+
+  /**
+   * Method invoked after submitting the "AddFileForm" to attach multiple files to a case comment.
+   * Allows file uploads with the comment.
+   */
+  createCommentWithMultipleFileOnFormSubmit: function(formObject: !AddCommentSpec): !CaseComment js-rhino
+
+  /**
+   * Private helper function to replace placeholders with the current user's ID.
+   * Used in filtering when fetching data for the current user.
+   */
+  replaceCurrentUserPlaceholder: private function(filter: string): string js-rhino
+
+  /**
+   * Fetch method that adds the current {@link User#id} where required in the filter. This enables enhanced filtering on the Cases page.
+   * @param spec
+   *          {@link FetchSpec}, with eventually placeholders for the current user ID (with format `{{USERID}}`) in the {@link FetchSpec#filter}.
+   * @return the entities matching this query.
+   */
+  fetchForCurrentUser: function(spec: FetchSpec): !FetchResult<mixing ReliabilityAssetCase> js-rhino
+
+  /**
+   * FetchCount method that adds the current {@link User#id} where required in the filter. This enables enhanced filtering on the Cases page.
+   * @param spec
+   *          {@link FetchSpec}, with eventually placeholders for the current user ID (`{{USERID}}`) in the {@link FetchSpec#filter}.
+   * @return the number of entities matching this query.
+   */
+  fetchCountForCurrentUser: function(spec: FetchFilterSpec): !int js-rhino
+
+  /**
+   * Transition action for Closed to Open {@link CaseState} transition. When the case is reopened a {@link UserRecommendation} is created.
+   */
+  closedToOpenTransitionAction: member function() js-rhino
+
+  /**
+   * Transition {@link ReliabilityAssetAlert}s alerts related to this case to the closed state, if all cases for that alert are closed.
+   * Serves as the entry action for the Closed {@link CaseState}. Create {@link UserRecommendation} when the case closes.
+   */
+  closedStateEntryAction: member function() js-rhino
+
+  /**
+   * Add {@link ReliabilityAssetAlert}s to this case instance.
+   *
+   * @param alerts
+   *      a collection of {@link ReliabilityAssetAlert}s
+   */
+  addAlertsToCase: member function(alerts: ![ReliabilityAssetAlert]) js-rhino
+
+  /**
+   * Closing the case and add details to a {@link CaseStateHistory} history state.
+   */
+  closeWithDetails: member function(spec: !CloseWithDetailsSpec) js-rhino
+
+  /**
+   * The {@link Facility} associated with this {@link ReliabilityAssetCase}.
+   */
+  facility: Facility
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["facility"]
+}

@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The Type that contains utility functions for running code analysis summary Jarvis step.
+ */
+type JarvisBaseToolkit.CodeAnalysisSummary mixes Value, JarvisBaseToolkit.Step js-rhino {
+
+  /**
+   * Function to return the contents of a Jarvis stash for a given step and key as JSON.
+   *
+   * @param step
+   *           The step to get the stash from.
+   * @param key
+   *           The key of the stash to get contents for.
+    * @returns the contents of the stash as a json.
+   */
+  jarvisStashFor: private function(step: !Jarvis.Step, key: !string): json
+
+  /**
+   * The helper function to check if the Type of the given source control rest api is GitHubRestApi.
+   *
+   * @param restApi
+   *           The rest api to check
+   * @returns true if the given rest api is GitHubRestApi, false otherwise
+   */
+  isGitHubRestApi: private function(restApi: !SourceControlRestApi): boolean
+
+  /**
+   * The helper function to generate the customization results based on the passed in top-level customer package and
+   * the list of customer packages to perform customization analysis on.
+   *
+   * @param topLevelCustomerPackage
+   *           The top-level customer package ultimately deployed to prod
+   * @param customerPackages
+   *           The list of customer packages to perform customization analysis on
+   * @returns an object containing the customization analysis results
+   */
+  getCustomizationResults: private function(topLevelCustomerPackage: string, customerPackages: [string]): json
+
+  /**
+   * The helper function to store code analysis summary report in a Jarvis.Report.
+   * If the branch is configured to store the code analysis results on C3 AI Code Analytics Dashboard,
+   * the code analysis results will be pushed to the code analysis results to the centralized GitHub repo.
+   *
+   * @param spec
+   *           The spec containing information needed to store the code analysis summary report
+   */
+  storeCodeAnalysisSummaryReport: private function(spec: JarvisBaseToolkit.CodeAnalysisSummary.StoreReportSpec)
+
+  /**
+   * Function to fetch, summarize and merge code coverage summary results into the package-level results.
+   * If no code coverage results are found, the function will return the original package-level results.
+   *
+   * @param buildId
+    *           The build ID of the Jarvis build
+    * @param codeAnalysisResults
+    *           The package-level code analysis results
+   * @returns The updated package results with integrated coverage information.
+   */
+  mergeCodeCoverageSummary: private function(buildId: !string, codeAnalysisResults: json): json
+
+  /**
+   * The function to run code analysis summary in the Jarvis build.
+   * The step will collect the code analysis results in the Jarvis build and report the result to corresponding GitHub pull request or commit.
+   * If the branch is configured to store the code analysis results on C3 AI Code Analytics Dashboard,
+   * the code analysis results will be pushed to the code analysis results to the centralized GitHub repo.
+   */
+  runStep: ~
+}

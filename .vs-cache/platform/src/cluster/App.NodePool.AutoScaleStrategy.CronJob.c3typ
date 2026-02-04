@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all {@link CronJob} based {@link App.NodePool} scaling strategies
+ *
+ * During configuration, the {@link App.NodePool.AutoScaleStrategy.CronJob#doConfigure} will be called to setup a CronJob
+ * that will run the {@link scalingFunc} at a regular interval.
+ * Any strategy that extends this type will be responsible for implementing the {@link App.NodePool.AutoScaleStrategy.CronJob#doScalingFunc}
+ */
+abstract private type App.NodePool.AutoScaleStrategy.CronJob mixes App.NodePool.AutoScaleStrategy {
+
+  doConfigure: ~
+  doExists:    ~
+  doRunning:   ~
+
+  /**
+   * How often the scaling CronJob will run. This will directly affect the scaling CronJob's {@link CronSchedule}
+   */
+  runIntervalMins: int32 = 10
+
+  /**
+   * Max percentage difference allowed when scaling up the {link @App.NodePool#targetNodeCount}
+   */
+  maxPctChangeForScaleUp: double = 100
+
+  /**
+   * Max percentage difference allowed when scaling down the {link @App.NodePool#targetNodeCount}
+   */
+  maxPctChangeForScaleDown: double = 100
+
+  /**
+   * Returns the final target node count for the given {@link App.NodePool} using {@link App.NodePool.AutoScaleStrategy.CronJob#doScalingFunc}
+   * and subsequently applying the App.NodePool's {@link App.NodePool.Config#minNodeCount} and {@link App.NodePool.Config#maxNodeCount}.
+   * The final value returned is made sure to be within limits as per the defined
+   * {link App.NodePool.AutoScaleStrategy.CronJob#maxPctChangeForScaleUp} and {link App.NodePool.AutoScaleStrategy.CronJob#maxPctChangeForScaleDown}
+   */
+  scalingFunc: final member function(): !int32
+
+  /**
+   * Returns the suggested target node count for the defined {@link App.NodePool} based on this {@link App.NodePool.AutoScaleStrategy.CronJob} sub type
+   */
+  doScalingFunc: abstract member function(): !int32
+
+  /**
+   * Returns the id for the cron-job corresponding to the defined {@link App.NodePool} based on the {@link App.NodePool.AutoScaleStrategy.CronJob}
+   */
+  cronJobId: private final member function(): !string
+
+  /**
+   * Function to calculate the c3 nodes based on the autoScalePolicy on the {@link App.NodePool}
+   *
+   * @param recommendedTargetCount
+   *         This is the result of the {@link doScalingFunc} API. of the child Type
+   *         It is the actual number of c3 nodes required to compute the pending entries
+   * @return Returns the count to which the nodes of the nodePool is allowed to be updated based on the autoScaling
+   *         policy defined on the {@link App.NodePool}
+   */
+  applyScalingPolicy: final member function(recommendedTargetCount: !int32): !int32
+
+  /**
+   * Reconciles (upserts or deletes) the scaling CronJobs for all individual App.NodePools in the current App
+   */
+  @action(group="cluster-admin")
+  reconcileScalingCronJobs: final function(): !map<string, string>
+
+  /**
+   * Invoked as part of {@link App#upsertAllSeed} via a seeded cron job. Internally invokes
+   * {@link App.NodePool.AutoScaleStrategy.CronJob#reconcileScalingCronJobs} to upsert autoscaling cronjobs
+   * for all qualifying App.NodePools
+   */
+  seedScalingCronJobs: private final function(): !map<string, string>
+}

@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A series keeping track of the "time series" contributions made for a {@link MlSubject} by a {@link MlModel}
+ * for given feature name.
+ */
+@db(index=['parent'])
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityTteContributionHeader mixes TimedDataHeader<ReliabilityTteContribution> schema name 'REL_TTECH' {
+
+  /**
+   * The subject-model association related to this series header.
+   */
+  parent: !ReliabilityAssetToTteModelRelation
+
+  /**
+   * The treatment to use for the timeseries.
+   */
+  treatment: string enum AggOp = AggOp.PREVIOUS
+
+  /**
+   * {@link TimedDataFields#timeZone} gets overridden by this field. If not set, the default value is 'UTC'.
+   *
+   * The timezone to use for the timeseries.
+   */
+  timeZone: string = 'UTC'
+}

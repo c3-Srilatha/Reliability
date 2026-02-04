@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration / deployment of an {@link Engine} that C3 App will be running.
+ *
+ * {@link Engine.Deployment} restricted to have minimal override on {@link ConfigOverride#APP} level because
+ * {@link Engine} is deployed per {@link App}. However {@link Engine.Deployment deployments} may be create for a {@link Cluster} or an {@link Env}.
+ */
+@beta
+@config(minOverride=APP, doNotDefaultIfMissing=true)
+abstract type Engine.Deployment<E: Engine> mixes Engine.DeployBase, Named, Config {
+
+  forName: ~
+
+  /**
+   * Return the subtype of {@link Engine} to which this {@link Engine.Deployment} belongs.
+   */
+  engineType: private cached property(): Type<<E>>
+
+  /**
+   * Default implementation of {@link Engine.Deployment#fromDeploySpec} that translates a {@link Engine.DeploySpec} into an {@link Engine.Deployment}.
+   *
+   * Can be overridden by the specific {@link Engine.Deployment} type to provide additional validations or transformations.
+   */
+  fromDeploySpec: private function(spec: !Engine.DeploySpec): mixing Engine.Deployment<E>
+}

@@ -1,0 +1,164 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The type stores a template of pre-associated subsystem assets.
+ */
+@db(unique=['name'])
+entity type AssetHierarchyTemplate mixes ExemptFromFacilityFilter {
+
+  /**
+   * Name of the asset hierarchy template and the root asset's hierarchy id from this template.
+   */
+  name: !~
+
+  /**
+   * Translated {@link AssetHierarchyTemplate#name}, to be used in the UI.
+   */
+  displayName: string translate by name
+
+  /**
+   * The description of the @{AssetHierarchyTemplate}.
+   */
+  description: string
+
+  /**
+   * An optional field that maps {@link ReliabilityAsset} names to a group of fields. Determines what fields will initially be set on creation.
+   * Proper format of this json should be {hierarchyTemplateAssetId: {field: value}}.
+   *
+   * Note: 'root' is a reserved word that cannot be used in this property.
+   */
+  assetHierarchyTemplateAssetIdToFieldValues: json
+
+  /**
+   * The {@link ReliabilityAsset#hierarchyTemplateAssetId}s of all the non root assets in this template mapped to their parent {@link ReliabilityAsset#hierarchyTemplateAssetId}s.
+   * Each asset {@link ReliabilityAsset#hierarchyTemplateAssetId}s in this {@link Map} must be mapped to a valid parent.
+   *
+   * This field holds the hierarchical structure used in {@link AssetHierarchyTemplate#addAssetsFromHierarchy} to
+   * create and connect {@link ReliabilityAsset} entities.
+   *
+   * Note: 'root' is a reserved word for the map. It can only be used as a value.
+   */
+  childToParentMap: Map<string, string>
+
+  /**
+   * Function to ensure that this {@link AssetHierarchyTemplate} holds the structure for
+   * a valid {@link ReliabilityAsset} hierarchy.
+   *
+   * @return True if the template structure is valid, false otherwise.
+   */
+  validate: member function(): boolean js-rhino
+
+  /**
+   * Method to create and add {@link ReliabilityAsset}s from this {@link AssetHierarchyTemplate}
+   * to a {@link ReliabilityAsset} or {@link Facility}. Use {@link AssetHierarchyTemplate#makeHierarchy} or
+   * {@link AssetHierarchyTemplate#makeHierarchyAssets} to preview the assets that would be created without creating
+   * them.
+   *
+   * When `doNotWaitForDenorm` is true, the function will not wait for the ReliabilityAssetHierarchyDenorm to be updated
+   * before returning. This will lead to faulty results if the hierarchy is used immediately after this function is called.
+   *
+   * Note: 'root' is a reserved word in the #childToParentMap. If it exists, a relation between the parent and second
+   * level assets is created. It cannot be used in #assetHierarchyTemplateAssetIdToFieldValues.
+   *
+   * @param parent
+   *          The parent {@link ReliabilityAsset} or {@link Facility} to which the hierarchy should be added.
+   * @param namePrefix
+   *          The prefix to be added to the names of the assets created from this template.
+   * @param doNotWaitForDenorm
+   *          If true, the function will not wait for the ReliabilityAssetHierarchyDenorm to be updated before returning.
+   * @return List of created {@link ReliabilityAsset}s.
+   */
+  addAssetsFromHierarchy: member function(parent: !(ReliabilityAsset | Facility), namePrefix: string = '', doNotWaitForDenorm: boolean): [ReliabilityAsset] js-rhino
+
+  /**
+   * Makes all the entities that would be required to be created to create a new instance of this hierarchy
+   * under the given parent. This function does not create the entities. If you would like to create the hierarchy
+   * use the {@link AssetHierarchyTemplate#addAssetsFromHierarchy} function.
+   *
+   * @param parent
+   *          The parent {@link ReliabilityAsset} or {@link Facility} under which the hierarchy will be made.
+   * @param namePrefix
+   *          The prefix to be added to the names of the assets created from this template.
+   * @return The result containing information about the hierarchy that would be created.
+   */
+  makeHierarchy: inline member function(parent: !(ReliabilityAsset | Facility), namePrefix: string = ''): AssetHierarchyTemplateMakeHierarchyResult js-rhino
+
+  /**
+   * Makes the {@link ReliabilityAsset}s that would would eventually be created if `addAssetsFromHierarchy` was called
+   * with the given `parent`.
+   *
+   * Returns non-persisted assets with `parent` and `facility` fields set based on this hierarchy template's structure.
+   * These assets **cannot** be upserted directly to instantiate this hierarchy template. Use this function to preview
+   * the assets that would be created. Use `addAssetsFromHierarchy` to create the hierarchy.
+   *
+   * `facility` is only populated for root assets.
+   *
+   * @param parent
+   *         The parent {@link ReliabilityAsset} or {@link Facility} under which the hierarchy will be made.
+   * @param namePrefix
+   *        The prefix to be added to the names of the assets created from this template.
+   * @return A map of asset template IDs to the ReliabilityAsset objects that would be created.
+   */
+  makeHierarchyAssets: inline member function(parent: !(ReliabilityAsset | Facility), namePrefix: string)
+    : map<string serialized ReliabilityAsset, ReliabilityAsset> js-rhino
+
+
+  /**
+   * Creates and saves an asset hierarchy template based on the given graph data.
+   *
+   * This function takes a graph representation of assets and their relationships,
+   * starting from a specified root node, and generates an asset hierarchy template.
+   *
+   *
+   * @param graphData - The graph data containing two keys `nodes` and `edges`.
+   *                           - graphData.nodes is a list of asset/facility objects
+   *                           - graphData.edges is a list of objects with a `from` and `to` field
+   *                             each holding the ID of the asset/facility, representing the relation between two nodes
+   * @param rootNodeId - The ID of the root node in the hierarchy.
+   * @param templateName - The name of the template to be created. The name should be unique.
+   * @return The created {@link AssetHierarchyTemplate}.
+   *
+   * example:
+   *
+   * When saving hierarchy for a facility, it should return root pointing to each of the assets
+   * ```
+   * Input Graph:
+   * Facility (root) --> Asset 1
+   *              \
+   *               --> Asset 2
+   * ```
+   *
+   * Output Asset Hierarchy Template:
+   * ```
+   * {
+   *    name: "Facility Template",
+   *    assetHierarchyTemplateAssetIdToFieldValues: {
+   *      "<UUID for asset1>": { name: "Asset 1", assetClass: "Class A" },
+   *      "<UUID for asset2>": { name: "Asset 2", assetClass: "Class B" },
+   *    },
+   *    childToParentMap: {
+   *      "<UUID for asset1>": "root",
+   *      "<UUID for asset2>": "root"
+   * }
+   * ```
+   */
+  @action(group='asset-onboarding-write')
+  createHierarchyTemplate: function(
+    graphData: json,
+    rootNodeId: string,
+    templateName: string
+  ): AssetHierarchyTemplate js-rhino
+
+  /**
+   * @return The URL at which the {@link AssetHierarchyTemplate} can be downloaded
+   */
+  @action(group='asset-onboarding-read')
+  exportTemplate: member function(): string js-rhino
+}

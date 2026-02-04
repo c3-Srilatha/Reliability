@@ -1,0 +1,113 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the inference workflow that will be executed for a single {@link ReliabilityAsset} and for
+ * a specific {@link MlProject}.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+entity type ReliabilityOrchestrator.InferenceJobResult extends MlWorkflowCoordinatableResult type key 'REL_INF' {
+
+  name: ~ = 'Reliability_Inference'
+
+  /**
+   * The {@link ReliabilityAsset} for which inference is executed.
+   */
+  asset: !ReliabilityAsset
+
+  /**
+   * Specify the {@link MlProject} for which inference should be run.
+   */
+  project: !ReliabilityMl.Project
+
+  /**
+   * Specify the {@link TimeRange} for which inference should be run. Note that both
+   * `inferencePeriod.start` and `inferencePeriod.end` MUST be provided.
+   */
+  inferencePeriod: !TimeRange
+
+  /**
+   * Flag to indicate if the inference period provided should be overriden to account for
+   * incremental inference.
+   *
+   * This flag should be inherited from the {@link ReliabilityOrchestrator.InferenceJobSpec} used
+   * to create this result.
+   */
+  overrideInferencePeriodForInference: !boolean
+
+  /**
+   * Specify the statusLabel for which inference should be executed.
+   * NOTE: Inference can only be executed for `CHAMPION` or `CHALLENGER` models.
+   */
+  statusLabel: MlModel.Route.Status.Label = MlModel.Route.Status.Label.CHAMPION
+
+  /**
+   * Creates an inference workflow for a single {@link ReliabilityMlModel}.
+   * This workflow:
+   * 1) Executes `model.process()`, and `model.interpret()`.
+   * 2) Runs the output handler on the {@link MlModel.Route} associated with the model to persist model predictions
+   * and contributions to the database.
+   * 3) Normalizes the created prediction and contribution headers created for each model.
+   * 4) Generates alerts.
+   * @param project
+   *           The reliability ML project to use for inference.
+   * @param asset
+   *           The reliability asset to run inference on.
+   * @param model
+   *           The reliability ML model to run inference with.
+   * @param start
+   *           The start datetime for inference.
+   * @param end
+   *           The end datetime for inference.
+   * @param operationTimeout
+   *           The operation timeout string.
+   * @param statusLabel
+   *           The status label for the model.
+   * @return A {@link Workflow} object for the model inference.
+   */
+  createModelInferenceWorkflow: function(
+    project: !ReliabilityMl.Project,
+    asset: !ReliabilityAsset,
+    model: !ReliabilityMlModel,
+    start: !datetime,
+    end: !datetime,
+    operationTimeout: string,
+    statusLabel: MlModel.Route.Status.Label
+  ): Workflow py
+
+  /**
+   * This function is used to persist predictions or contributions to the database for the given {@link ReliabilityMlModel},
+   * using its corresponding {@link MlModel.Route}.
+   * @param model
+   *           The reliability ML model to process.
+   * @param asset
+   *           The reliability asset associated with the model.
+   * @param statusLabel
+   *           The status label for the model.
+   * @param outputs
+   *           Tuple containing the model outputs.
+   * @param forInterpretation
+   *           Whether the outputs are for interpretation.
+   */
+  processAndInterpretHandle: function(
+    model: !ReliabilityMlModel,
+    asset: !ReliabilityAsset,
+    statusLabel: !MlModel.Route.Status.Label,
+    outputs: Tuple,
+    forInterpretation: boolean
+  ) py
+
+  startWorkflow: ~ py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

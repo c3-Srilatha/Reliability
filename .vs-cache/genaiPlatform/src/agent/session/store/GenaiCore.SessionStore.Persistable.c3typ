@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Mixin type for {@link GenaiCore.SessionStore} subtypes that are {@link Persistable} entity types.
+ */
+abstract extendable entity type GenaiCore.SessionStore.Persistable mixes GenaiCore.SessionStore, SeedData {
+
+  /**
+   * Iterates over all persisted instances of {@link GenaiCore.SessionStore} and evaluates
+   * whether to keep each session in {@link #sessions} based on the store's {@link #retentionPolicy}.
+   * Any session that is not retained will be deleted using {@link #deleteStateBatch}.
+   *
+   * @param spec
+   *          optional customization for fetching the {@link GenaiCore.SessionStore} instances.
+   *          For example, limit and filters can be specified here.
+   * @return number of sessions deleted, as part of this clean up.
+   */
+  cleanUpSessions: function(spec: FetchSpec): !int py
+
+  /**
+   * Gets all of this store's sessions and decides whether to keep each session in
+   * {@link #sessions} based on the store's {@link #retentionPolicy}.
+   * Any session that is not retained will be deleted using {@link #deleteStateBatch}.
+   *
+   * @return the number of sessions deleted.
+   */
+  cleanUp: member function(): !int py
+
+  /**
+   * Internal helper method to get #serializer or the default
+   *
+   * @return the serializer to use with this session store.
+   */
+  safeSerializer: private cached member function(): !GenaiCore.SessionStore.Serializer py
+
+  /**
+   * @inheritdoc
+   *
+   * reclaimed to call #deleteAllState to clean up this store's sessions
+   */
+  beforeRemove: ~ js-rhino
+}

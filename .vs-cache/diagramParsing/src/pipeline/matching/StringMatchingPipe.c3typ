@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipe} template for string matching between texts
+ * extracted from diagrams (source) and the ids of sensors or assets (target).
+ *
+ * Here is an example of using this pipe:
+ *
+ * ```py
+ * # input data of source and target texts
+ * text_source = ["RDI 456J", "4-20 RAI 452J"]
+ * text_target = ["J_DI_0456", "J_AI_0452", "J_AI_0416"]
+ * source = c3.Data.from_pandas(pd.DataFrame({'subject':['0', '1'], 'text':text_source}))
+ * print(source)
+ *   subject           text
+ *         0       RDI 456J
+ *         1  4-20 RAI 452J
+ *
+ * target = c3.Data.from_pandas(pd.DataFrame({'subject':text_target, 'text':text_target}))
+ * print(target)
+ *     subject       text
+ *   J_DI_0456  J_DI_0456
+ *   J_AI_0452  J_AI_0452
+ *   J_AI_0416  J_AI_0416
+ *
+ * # create a new StringMatchingPipe and process the input data
+ * spec = c3.StringMatchingSpec().withDefaults()
+ * pipe = c3.StringMatchingPipe().create()
+ * run = pipe.process({'source':source, 'target':target}, spec)
+ * print(run.result())
+ *   subject           text     score matched_targets
+ *         0       RDI 456J  0.588235     [J_DI_0456]
+ *         1  4-20 RAI 452J  0.454545     [J_AI_0452]
+ * ```
+ */
+@beta
+extendable entity type StringMatchingPipe extends MlTemplate.AtomicPipe<{source: Data, target: Data}, void, Data> type key 'SMP' {
+
+  /**
+   * Name of the column that contains text for string matching in the input data.
+   */
+  textColumnName: !string
+
+  /**
+   * The type of algorithm to use: `sequence_matcher` means a simple [string matching algorithm](https://docs.python.org/3/library/difflib.html) and `transformer` means using
+   * [BERT](https://www.sbert.net/) to convert strings to vectors before computing
+   * similarity scores based on the metric specified in {@link #similarity}.
+   */
+  method: string enum('sequence_matcher', 'transformer') = 'sequence_matcher'
+
+  /**
+   * The type of similarity score to use
+   */
+  similarity: string enum('cosine', 'euclidean') = 'cosine'
+
+  /**
+   * The minimum similarity score to consider a match
+   */
+  minScore: double = 0.0
+
+  isTrainable: ~ py
+
+  generatePipe: ~ py
+
+  processSync: ~ from super py-sentence-transformers
+
+  doProcess: ~ py-sentence-transformers
+
+  /**
+   * Processes the input data in a workflow context and returns the results as persisted data.
+   * This method calls the underlying processing logic and ensures that the data is returned in a format suitable for persistence.
+   *
+   * @param x The input data, typically containing source and target datasets for string matching, as defined in the {@link MlPipe} template.
+   * @returns A {@link Data.Persisted} object containing the processed results, which includes the matching scores and matched targets.
+   */
+  processInWorkflow: private member function(x: !map<string, Data>): !Data.Persisted py
+}

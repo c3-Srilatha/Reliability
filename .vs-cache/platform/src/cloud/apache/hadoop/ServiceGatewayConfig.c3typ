@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ServiceGatewayConfig mixes Config, Singleton {
+
+  /**
+   * The uri to the directory where new plugin zip files are uploaded.
+   * By default, it becomes /usr/local/share/c3/fs/dflt/c3/c3/plugins.
+   */
+  pluginZipFolderUri: string
+
+  /**
+   * The path to the base folder on local file system, that contains
+   * exploded plugin files.
+   * By default, it becomes /usr/local/share/c3/server/plugins.
+   */
+  pluginRuntimeFolder: string
+
+  /**
+   * if set to true, plugins/<plugin-id>/target/classes is not searched for
+   * when locating a plugin
+   */
+  isProdOnlyMode: boolean
+
+  /**
+   * Default plugin ids by plugin name.
+   * for example, "cdh" -> "cdh5.14.4", "impala" -> "impala2.3.7"
+   */
+  defaultPluginVersions: map<string, string>
+}

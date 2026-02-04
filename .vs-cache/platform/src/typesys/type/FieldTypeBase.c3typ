@@ -1,0 +1,188 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A field type defines a single member of a {@link Type type}.
+ * The two key elements are the field's *name* and *value type*.
+ *
+ * Fields are not only data fields (member variables), such as primitives, collections and objects;
+ * fields can also be methods, which represent functions callable on the type.
+ * Methods are simply fields with a {@link MethodType method value type}.
+ *
+ * Fields declared on a type are automatically included in any type that mixes in that type.
+ * The sub-type can override the field declaration to a limited extent, generally only adding
+ * annotations or narrowing the scope.
+ *
+ * More common than overriding is using parametric references to define interfaces that
+ * don't fully specify the data type. (See {@link NormTimeseries}).
+ *
+ * ```c3typ
+ * type Point<C> {
+ *   x: !C
+ *   y: !C
+ *
+ *   magnitude: abstract member function(): C
+ * }
+ *
+ * type IntegerPoint mixes Point<int>
+ * ```
+ *
+ * In the example above, the value type of the x and y data fields in the Point type is an unbound parametric
+ * reference to the variable "C" ({@link VarReferenceType}).  IntegerPoint binds this variable to integer primitive,
+ * which makes the value type of x and y in the IntegerPoint type integer primitives ({@link PrimitiveType}).
+ *
+ * ```c3typ
+ * type IntegerPoint {
+ *   x: !int
+ *   y: !int
+ *
+ *   magnitude: abstract member function(): int
+ * }
+ * ```
+ *
+ * The implementation of IntegerPoint.magnitude in JavaScript might be:
+ *
+ * ```js
+ * function magnitude() {
+ *   return Math.round(Math.sqrt(this.x * this.x + this.y * this.y));
+ * }
+ * ```
+ *
+ * In documentation, fields that are inherited without being redeclared in the child type are
+ * marked as "inherited" and grouped by the type they are declared on.
+ *
+ * @see Type
+ * @see ValueType
+ * @see DeclaredFieldType
+ * @see FieldType
+ */
+abstract type FieldTypeBase mixes NameableType, WithToString {
+
+  /**
+   * The name of the field is the unique key for access.
+   */
+  name: ~
+
+  /**
+   * If the field is declared with a default value, the value expression is carried in this field. Use
+   * {@link FieldType#defaultValue defaultValue} to get the "evaluated" value.
+   *
+   * If the value type of the field is a named enum, the default should be the label (field name) from the enum type
+   * or an expression that evaluates to one.
+   *
+   * @see FieldType#defaultValue
+   */
+  @dsl(syntax="=", expr=true)
+  @implicit(parsed="defaultValueExpr")
+  declaredDefault: string serialized Expr
+
+  /**
+   * Indicates that the field calculation should be persisted. This is more expensive on update, but allows calculated
+   * values to be used in filter expressions.
+   *
+   * @see #calcExpr
+   */
+  @dsl(suppress=true)
+  storedCalc: boolean
+
+  /**
+   * Indicates that a field is calculated.  If the field is also persistable, then the field is a stored calc field
+   * and its value will be asynchronously updated when any of its dependencies change.  If the field is not persistable
+   * then it is a read only calc field and its value will be evaluated any time the obj/field is read.
+   *
+   * This should not be used directly.  Instead either defining the field as "stored calc" (implies persistable = true,
+   * calculated = true) or just "calc" (implies persistable = false, calculated = true) should be used.
+   *
+   * Note that the expression is normally calculated whenever the underlying data changes, but this can also be
+   * controlled using "periodic" and "scheduled" calculated fields.
+   *
+   * @see #calcPeriod
+   * @see #calcSchedule
+   */
+  @dsl(suppress=true)
+  calcExpr: string serialized Expr
+
+  /**
+   * Calculated fields can automatically be updated periodically. For example:
+   * ```type
+   * eventCount: periodic stored calc 'count(events)' period '1h'
+   * ```
+   * This means: evaluate and save the expression "count(events)" and re-evaluate every hour.
+   *
+   * @see #calculated
+   */
+  @dsl(suppress=true)
+  calcPeriod: string
+
+  /**
+   * Calculated fields can automatically be updated on a schedule. For example:
+   * ```type
+   * eventCount: scheduled stored calc 'count(events)' period '0 1 * * *'
+   * ```
+   * This means: evaluate and save the expression "count(events)" and re-evaluate every day at 1am.
+   *
+   * @see #calculated
+   * @see https://en.wikipedia.org/wiki/Cron
+   */
+  @dsl(suppress=true)
+  calcSchedule: string
+
+  /**
+   * Fkey fields define references that are not stored in an obj.  Instead the references are obtained by joining by
+   * this field in the reference type to the {@link key} field in this obj.
+   */
+  @dsl(suppress=true)
+  fkey: string
+
+  /**
+   * Fkey fields define references that are not stored in an obj.  Instead the references are obtained by joining by
+   * the {@link fkey} field in the reference type to this field in this obj.  The default is "id"
+   */
+  @dsl(suppress=true)
+  key: string
+
+  schemaName:   string
+  schemaSuffix: string
+
+  @dsl(syntax="translate by", ident=true)
+  translatedBy: string
+
+  /**
+   * If `true` then value of this field will _not_ be persisted in the database. This is either due to an explicit
+   * `not persistable` suffix on the field declaration or because it is a (non-stored) calculated field.
+   *
+   * @see #calcExpr
+   * @see #storedCalc
+   */
+  @dsl(suffix=true)
+  notPersistable: boolean
+
+  /**
+   * True if this field is declared final. This mans that it may not be changed by types that mix it in. Note that
+   * the type itself may not be final, which implies all fields are final.
+   *
+   * @see Type#final
+   */
+  final: boolean
+
+  /**
+   * True if this field is declared private. This means that it may not be used outside its declaring package.
+   *
+   * @see Type#private
+   */
+  private: boolean
+
+  /**
+   * True if this field is declared constant. That means its value can never be changed from the value specified
+   * by its default.
+   *
+   * @see #default
+   */
+  @dsl(syntax="const")
+  constant: boolean
+}

@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Plot horizontal lines at each y from xmin to xmax.
+ *
+ * # Example: Constant X Range
+ * ```JavaScript
+ * PlotAxes.make().hLines({
+ *   y: C3.Array.patternOfInt(10, n => n + 1),
+ *   xMin: 10,nn
+ *   xMax: 90
+ * }).show();
+ * ```
+ *
+ * # Example: Variable X Range
+ * ```JavaScript
+ * var N = 10;
+ * PlotAxes.make().hLines({
+ *   y: C3.Array.patternOfInt(N, n => n + 1),
+ *   xMin: C3.Array.patternOfDbl(N, n => 1 + Math.random() * 10),
+ *   xMax: C3.Array.patternOfDbl(N, n => 41 + Math.random() * 10),
+ * }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.hlines.html
+ */
+type PlotHLinesSpec mixes PlotElementSpec {
+
+  /**
+   * y-indexes where to plot the lines.
+   *
+   * Python: scalar or sequence of scalar
+   */
+  y: any
+
+  /**
+   * Respective beginning and end of each line. If scalars are provided, all lines will have same length.
+   * (matplotlib xmin)
+   *
+   * Python: scalar or 1D array_like
+   */
+  xMin: any
+
+  /**
+   * Respective beginning and end of each line. If scalars are provided, all lines will have same length.
+   * (matplotlib xmax)
+   *
+   * Python: scalar or 1D array_like
+   */
+  xMax: any
+
+  /**
+   * Python: array_like of colors
+   */
+  colors: [string] = 'k'
+
+  /**
+   * (matplotlib linestyles)
+   *
+   * Python: ['solid' | 'dashed' | 'dashdot' | 'dotted']
+   */
+  lineStyles: string enum('solid', 'dashed', 'dashdot', 'dotted') = 'solid'
+
+  label: ?string
+  data:  any
+}

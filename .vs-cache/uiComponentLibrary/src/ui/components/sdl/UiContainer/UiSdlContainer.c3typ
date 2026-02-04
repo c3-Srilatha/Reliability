@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that holds other components.
+ */
+@uiSdlDesignerComponent(designable=true,
+                        category='UiSdlContainer.CategoryName',
+                        name='UiSdlContainer.ComponentName',
+                        icon='rectangle-landscape')
+@typeScript
+@uiComponentCategorizer(name='Container', category='Components')
+type UiSdlContainer mixes UiSdlComponent<UiSdlNoData>, UiSdlComponentSubtitle {
+
+  dataSpec: ~
+
+  /**
+   * Title of container.
+   */
+  title: string
+
+  /**
+   * How to arrange children.
+   */
+  orientation: string enum('HORIZONTAL', 'VERTICAL') = 'VERTICAL'
+
+  /**
+   * Description going into popup.
+   */
+  hoverDescription: string
+
+  /**
+   * A data record.
+   * If provided, the record will be passed to all the {@link children},
+   * and {@link children} can use it in the data spec.
+   */
+  dataItem: json
+
+  /**
+   * Components that will be in container.
+   */
+  @uiSdlComponentAcceptedKinds(includeCategories=['data-visual-component'], includeAttributes=['nestable'])
+  children: [UiSdlComponentRef<UiSdlComponent<UiSdlNoData>>]
+}

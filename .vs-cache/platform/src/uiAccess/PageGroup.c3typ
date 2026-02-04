@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A page group is used to provide access control for a set of related pages.
+ * Note that the page definition itself is in UI metadata (page component).
+ */
+@deprecated(finalVersion="8.10", details="Read Role-based access control for application developers")
+entity type PageGroup mixes AclEnabled schema name 'UIACCESS_PAGEGRP' {
+
+  application: Application
+  pageNames:   [string] schema name 'PGN'
+
+  /**
+   * Grant access to a role for given PageGroup.
+   *
+   * @param pageId
+   *           Id of PageGroup for which access will be granted.
+   * @param roleId
+   *           Id of Role to which access will be granted.
+   * @param readOnlyAccess
+   *           If true, acl will have read permissions only. Otherwise update access will be granted.
+   * @return updated PageGroup.
+   */
+  @action(group+='user-admin')
+  addRole: function(pageId: !string, roleId: !string, readOnlyAccess: boolean): PageGroup js-server
+
+  /**
+   * Grant access to a role for given PageGroup.
+   *
+   * @param pageId
+   *           Id of PageGroup for which access will be granted.
+   * @param roleId
+   *           Id of Role to which access will be granted.
+   * @param readOnly
+   *           If true, acl will have read permissions only.
+   * @return updated PageGroup.
+   */
+  @action(group+='user-admin')
+  removeRole: function(pageId: !string, roleId: !string): PageGroup js-server
+
+  /**
+   * Get id of the pageGroup
+   *
+   * @return
+   *       id of the pageGroup
+   */
+  toString: member function(): string
+
+  /**
+   * Get list of Permission for requested PageGroups
+   */
+  getPermissions: function(pages: [PageGroup]): map<string, [Permission]>
+
+  /**
+   * Get list of permission for current pageGroup
+   */
+  permissions: member function(): [Permission]
+
+  /**
+   * Get the PageGroups the calling user has access to.
+   */
+  forUser: private inline function(): [PageGroup]
+
+  name: !~
+}

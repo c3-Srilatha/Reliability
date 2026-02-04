@@ -1,0 +1,22 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing "timeout" error.
+ */
+type Err.Timeout mixes Error {
+
+  @error(message="The request timed out")
+  timeout: function(): !Err.Timeout
+
+  @error(message="The request timed out after ${time}")
+  timeout: function(time: !any): !Err.Timeout
+
+  @error(message="The request timed out on websocket ${webSocketId}")
+  socketTimeout: function(webSocketId: !?int): !Err.Timeout
+}

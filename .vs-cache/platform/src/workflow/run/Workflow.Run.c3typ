@@ -1,0 +1,277 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specific run for a workflow.  It holds all status information about the run.
+ */
+@db(compactType=true)
+entity type Workflow.Run mixes WorkflowExecutorRun, Configurable<Workflow.Run.Config> {
+
+  /**
+   * WorkflowV7 that owns the run.
+   */
+  @deprecated(details="Use workflowRef field instead")
+  @db(persistAllFields=true)
+  workflow: Workflow
+
+  /**
+   * Reference to the parent {@link Workflow} being executed by this run.
+   */
+  // Developer Note: this is effectively required, but we can't make it as such for backwards compatibility reasons
+  workflowRef: Workflow
+
+  /**
+   * Holds a copy of the spec that was passed to {@link Workflow#start}.
+   */
+  spec: WorkflowExecutionSpec
+
+  /**
+   * Id of workflow.  Used for fkey array in `Workflow`.
+   */
+  workflowId: string
+
+  /**
+   * Used by internal implementation for preparing source vertices for execution.
+   */
+  sourceValuesInitialized: private boolean
+
+  /**
+   * Input values provided in {@link startWorkflow}.
+   */
+  @db(persistAllFields=true)
+  inputValues: map<string, any>
+
+  /**
+   * Map, keyed by vertex id, of currently running vertices for the workflow.  There can be more than one.
+   */
+  currentVertexRuns: map<string, Workflow.Run.Vertex>
+
+  /**
+   * The run of the workflow which executes the {@link Workflow#finallyVertex} of the workflow.
+   * This run could be used to make sure the {@link Workflow#finallyVertex} is done executing.
+   * The {@link Workflow#finallyVertex} execution starts after the {@link Workflow.Run} transitions into completed, failed, or canceled state.
+   * The output of the {@link Workflow#finallyVertex} could be retrieved using {@link Workflow.Run#executionResults} keyed
+   * by `finallyVertexOutput`.
+   */
+  finallyVertexWorkflowRun: Workflow.Run
+
+  /**
+   * Status for the overall workflow run.
+   */
+  runStatus: Workflow.Status
+
+  status: ~
+
+  /**
+   * Accumulated results returned from each vertex's result function upon completion, keyed by the "out" port id.  These
+   * values may be used by subsequent vertices.
+   */
+  @db(persistAllFields=true)
+  results: private map<string, any>
+
+  /**
+   * Time the run was started
+   */
+  started: datetime
+
+  /**
+   * Id of the user that started the workflow.  This will be set automatically by the system to the current user during
+   * the creation of the run and cannot be changed.  Any value set manually in the create request will be ignored.
+   */
+  @db(writeOnce=true)
+  startedBy: !string
+
+  /**
+   * If true, then {@link Workflow.Run#updateStatus} is currently being called by something in the system.
+   * This is used as a lock to ensure safe concurrent updates to this run.
+   */
+  updating: boolean
+
+  /**
+   * If true, then {@link Workflow.Run#updateStatus} cancels all running vertices,
+   * and sets the status to 'canceled'.
+   */
+  canceling: boolean
+
+  /**
+   * The time at which the {@link #updating} lock was acquired. Used to timeout the lock.
+   */
+  updatingStartTime: datetime
+
+  /**
+   * Attempts to recover a workflow run that is in the 'failing' or 'failed' state (similar to Batch/MapReduce.recover)
+   */
+  @action(group+='monitor')
+  recover: private member function(): Workflow.Status
+
+  /**
+   * Attempts to cancel a running workflow run asynchronously.
+   * All currently executing vertices will canceled as part of next invalidation of this workflow run and
+   * status will eventually be updated to 'canceled'.
+   *
+   * @return the current status of the workflow run after the cancel operation is initiated.
+   */
+  @action(group+='monitor')
+  cancel: member function(): Workflow.Status
+
+  /**
+   * Checks the status of the currently running vertices for a workflow run.  If any are completed, it
+   * saves the result of the vertices and makes that available to subsequent vertices before starting the next vertices,
+   * if any as indicated by the vertex.
+   *
+   * NOTE: this method represents the critical section of the {@link Workflow.Run} execution logic. To protect against
+   * current updates, locks are used. See {@link #updating}. This method will return `null` if the lock is not acquired.
+   */
+  updateStatus: private member function(): Workflow.Status
+
+  /**
+   * @return all of the previous edges for the vertex that correspond to "input" edges (e.g. edges that aren't
+   * {$link Workflow.Signal) edges.
+   */
+  inputEdges: member function(vertex: !Workflow.Vertex): [FlowGraph.Edge<Workflow.Vertex>]
+
+  /**
+   * @return all of the next edges for the vertex that correspond to "output" edges (e.g. edges that aren't
+   * {$link Workflow.Signal) edges.
+   */
+  outputEdges: member function(vertex: !Workflow.Vertex): [FlowGraph.Edge<Workflow.Vertex>]
+
+  /**
+   * Creates and starts a {@link Workflow.Run) for a workflow.
+   *
+   * Note that not all valid workflows are currently supported.
+   *
+   * @param inputs:
+   *        Map of input values to be used for the workflow run.  The key of the map must be the name of a vertex that
+   *        mixes Workflow.Input.
+   * @param spec
+   *        The spec for the workflow run.
+   *
+   * @return the new workflow run.
+   */
+  startWorkflow: function(workflow: !Workflow, inputs: map<string, any>, spec: WorkflowExecutionSpec): !Workflow.Run
+
+  /**
+   * Waits for this {@link Workflow.Run} and {@link #finallyVertexWorkflowRun} to be completed.
+   * @param timeoutMinutes
+   *          Maximum time to wait for operation to complete, in minutes.
+   *          Either {@link WaitSpec#maxTotalMillis} in {@link #spec} or {@link #timeoutMinutes} will specify the maximum wait time, but {@link #timeoutMinutes}
+   *          will take precedence over {@link WaitSpec#maxTotalMillis}.
+   * @param displayStatus
+   *     If True, display current status periodically while waiting for completion of {@link #run}
+   * @param spec
+   *         {@link WaitSpec} for customization of sleep time between polling status of {@link #run}
+   *
+   * @returns the status for the {@link #finallyVertexWorkflowRun} after completion.
+   */
+  waitForFinallyCompletion: member function(timeoutMinutes: int,
+                                            displayStatus: boolean = False,
+                                            spec: WaitSpec): !Workflow.Status py
+
+  /**
+   * Sets the output value(s) for a vertex.
+   *
+   * @param vertex
+   *           Vertex to set the output value for.
+   * @param run
+   *           Execution run of the vertex, which should contain the results.
+   *
+   * @return the updated workflow run.
+   */
+  setVertexOutput: private member function(vertex: !Workflow.Vertex, run: !Workflow.Run.Vertex): !Workflow.Run
+
+  /**
+   * @return the output value for the specified port.  The port should be the "from" port on an edge for a vertex that
+   *   produces output.
+   */
+  outputValue: private member function(fromPort: !FlowGraph.Port): any
+
+  /**
+   * @return the input values for the specified action vertex.  This handles massaging of complex inputs (e.g.
+   *   'out.value').
+   */
+  inputValuesForAction: private member function(actionRun: !(Workflow.Run.Action | Workflow.Run.Nested.Action))
+                                         : map<string, any>
+
+  /**
+   * @return a map of outputs specified by {@link Workflow.Output} vertices, keyed by those vertex names.
+   */
+  outputs: member function(): map<string, any>
+
+  /**
+   * Change the log level for {@link Workflow.Run} and its inner Types.
+   *
+   * @param logLevel
+   *           The log level to set on the Logger for all {@link Workflow.Run} related Types
+   * @param children
+   *           If set to True, then this method will also update the log level on the Loggers for
+   *           {@link Workflow}, {@link WorkflowQueue}, and {@link InvalidationQueueEngine}.
+   */
+  setLogLevel: function(logLevel: !string enum Logger.Level, children: boolean)
+
+  /**
+   * Find {@link Workflow.Run}s that are "idle", where idle is based on a heuristic. For example, a {@link Workflow.Run}
+   * may be deemed idle if it has not been updated for a certain amount of time. For all "idle" runs, the corresponding
+   * {@link Workflow.Run#updateStatus} will be triggered to refresh the status of all currently running vertices.
+   *
+   * NOTE: this method is run as part of a platform-seeded {@link CronJob}.
+   * NOTE: there is a limit to the number of {@link Workflow.Run}s that will be recovered in a single call to
+   * this method. See {@link Workflow.Run.Config}.
+   */
+  recoverStuck: function()
+
+  /**
+   * @return a map of all vertex runs, active and finished, keyed by vertex name.
+   */
+  vertexRunsByName: member function(): map<string, Workflow.Run.Vertex>
+
+  /**
+   * @return a map of all vertex runs, active and finished, keyed by {@link Workflow.Vertex#id}.
+   * This API is used by Workflow visualization to get the vertex run by id.
+   */
+  vertexRunsById: private member function(): map<string, Workflow.Run.Vertex>
+
+  /**
+   * @return a map containing all errors. key is {@link Workflow.Vertex#id}.
+   * Value is the list of error(s) for that vertex.
+   * This API is used by Workflow visualization to get the vertex errors by id.
+   */
+  errorsById: private member function(): map<string, [string]>
+
+  visualize:            ~ py
+  summary:              ~ py-data
+  errors:               ~
+  magnify:              ~
+  afterRemove:          ~
+  summaryAsFetchResult: ~ py-server
+  summaryCount:         ~ py-server
+
+  @db(callbackRequired=true)
+  beforeCreate: ~
+
+  /**
+   * Optional parent {@link WorkflowExecutorRun} that launches this instance of {@link Workflow}.
+   * This is used for invalidating the corresponding parent {@link WorkflowQueue} entry as part of
+   * finally vertex execution of this {@link Workflow}.
+   * See {@link Workflow.Vertex#requiresPolling} for additional details.
+   */
+  parentWorkflowRun: private Workflow.Run
+
+  /**
+   * Add {@link Workflow.Run#parentWorkflowRun} to this instance of {@link Workflow.Run}
+   * and invalidate the corresponding parent {@link WorkflowQueue} entry.
+   */
+  addAndInvalidateParentWorkflowRun: private member function(parentWorkflowRun: Workflow.Run): !Workflow.Run
+
+  /**
+   * Validates if this instance of {@link Workflow.Run} is monitorable, i.e
+   * if invoking APIs in {@link Workflow.Monitorable} will return correct results.
+   * A {@link Workflow.Run} is considered monitorable if all vertices in {@link Workflow.Run#workflowRef} have unique names.
+   */
+  validateMonitorable: member function()
+}

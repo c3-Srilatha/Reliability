@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The possible units of time measurement. Note that these are logical units, especially ones larger than "hour",
+ * because calendar and time zone logic makes them vary in actual length.
+ */
+enum type TemporalUnit {
+
+  /**
+   * One billionth (10⁻⁹) of a second.
+   */
+  NANOSECOND
+
+  /**
+   * One milionth (10⁻⁶) of a second.
+   */
+  MICROSECOND
+
+  /**
+   * One thousandth of a second.
+   */
+  MILLISECOND
+
+  /**
+   * One second.
+   */
+  SECOND
+
+  /**
+   * One minute (60 seconds).
+   */
+  MINUTE
+
+  /**
+   * One hour (60 minutes).
+   */
+  HOUR
+
+  /**
+   * One day (24 hours except on daylight savings transitions).
+   */
+  DAY
+
+  /**
+   * A 7-day period.
+   */
+  WEEK
+
+  /**
+   * A calendar month (Gregorian calendar). A logical month is "30 days", but actual months are 28-31 days depending on
+   * which month and whether it is a leap year.
+   */
+  MONTH
+
+  /**
+   * Three months. A logical quarter is 91 days, but actual quarters have slight different lengths depending on which
+   * months comprise them.
+   */
+  QUARTER
+
+  /**
+   * A calendar year. This is usually 365 days, but 366 on leap years.
+   */
+  YEAR
+
+  /**
+   * Return true if the first argument represents a _shorter_ time period than the latter. For example, MILLISECOND is
+   * finer than SECOND.
+   *
+   * @see #isCoarser
+   */
+  isFiner: function(left: !string enum TemporalUnit, right: !string enum TemporalUnit): boolean
+
+  /**
+   * Return true if the first argument represents a _longer_ time period than the latter. For example, WEEK is coarser
+   * than DAY.
+   *
+   * @see #isFiner
+   */
+  isCoarser: function(left: !string enum TemporalUnit, right: !string enum TemporalUnit): boolean
+
+  /**
+   * Convert various string values into the official enum value. For example "d" and "days" are both aliases for DAY.
+   * If the value cannot be understood null is returned, unless failIfBad is true in which case an error is thrown.
+   *
+   * Note that units are generally case insensitive, except the abbreviation "m" which indicates MINUTE while the
+   * alias "M" indicates MONTH. This also supports the Pandas period aliases and frequencies, such as "A" for YEAR.
+   *
+   * @param str string to parse
+   * @param failIfBad if true, throw an error if string is not recognized
+   */
+  standardize: inline function(s: !?string, failIfBad: boolean): string
+
+  /**
+   * Return the standard abbreviation for this unit. This will be a short (1- or 2-character) lower-case string:
+   *  - "ns" (nanosecond)
+   *  - "μs" (microsecond)
+   *  - "ms" (millisecond)
+   *  - "s" (second)
+   *  - "m" (minute)
+   *  - "h" (hour)
+   *  - "d" (day)
+   *  - "w" (week)
+   *  - "mo" (month)
+   *  - "q" (quarter)
+   *  - "y" (year)
+   *
+   * Note that most abbreviations are 1 letter long, except the sub-second values (for clarity) and MONTH
+   * (to distinguish it from MINUTE).
+   *
+   * @param unit unit value
+   * @param failIfBad if true, throw an error if unit is not recognized
+   */
+  abbreviate: inline function(unit: !?string, failIfBad: boolean): string
+}

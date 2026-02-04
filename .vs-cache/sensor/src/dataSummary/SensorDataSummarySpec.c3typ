@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specification for retrieving or creating {@link SensorDataSummary} entities for a
+ * combination of sensors, time range, and interval.
+ */
+type SensorDataSummarySpec mixes Spec {
+
+  /**
+   * The sensors for which to retrieve or create {@link SensorDataSummary} entities.
+   */
+  sensors: [Sensor]
+
+  /**
+   * Used as a backup for {@link getSensors} if {@link sensors} is not specified.
+   */
+  sensorFilter: Filter
+
+  /**
+   * The time range for which to retrieve or create {@link SensorDataSummary} entities.
+   */
+  timeRange: !TimeRange
+
+  /**
+   * The interval for which to retrieve or create {@link SensorDataSummary} entities.
+   */
+  interval: !Interval
+
+  /**
+   * Returns {@link sensors} if it is specified, otherwise returns the sensors matching {@link sensorFilter}.
+   */
+  getSensors: inline member function(spec: FetchSpec): [Sensor] py-jep
+
+  /**
+   * Returns a filter that can be used to retrieve {@link SensorDataSummary} entities matching this spec.
+   */
+  getFilter: inline member function(): Filter py-jep
+
+  /**
+   * Returns a map of all {@link SensorDataSummary} entities matching this spec, keyed by sensor ID.
+   */
+  getSensorDataSummaryMap: inline member function(): map<string, [SensorDataSummary]> py-jep
+}

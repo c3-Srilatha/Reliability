@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The Silhouette Coefficient score, is a clustering score defined as $$(b - a) / max(a, b)$$
+ * for each sample point, where `a` is the mean intra-cluster distance and `b` is the mean nearest-cluster distance for
+ * each sample point. See the
+ * [sklearn reference](https://scikit-learn.org/stable/modules/clustering.html#silhouette-coefficient) for a detailed
+ * formulation.
+ *
+ * This metric **requires** `modelInput` as `context`. `modelInput` is the feature matrix used in clustering and must
+ * have the same number of samples as the `modelOutput`.
+ *
+ * **NOTE**: The current implementation materializes the entire dataset in memory.  Thus, if the dataset is too large
+ * to fit in memory you may run into out-of-memory errors.
+ */
+@beta
+type MlSilhouetteCoefficientMetric mixes MlScoringMetric<Data, Data, { modelInput: Data }>, SklearnClusterScoreMixin {
+
+  doScore:        ~ py
+  noTarget:       ~ py
+  contextNames:   ~ py
+  higherIsBetter: ~ py
+}

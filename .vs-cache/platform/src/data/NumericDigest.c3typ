@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Summary statistics of a numeric value set.
+ */
+type NumericDigest mixes Digest<number, NumericDigest, DigestBuilder<NumericDigest>> {
+
+  /**
+   * the mean of the input stream
+   */
+  mean: !double
+
+  /**
+   * Used for calculating variance. @see https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+   */
+  m2: private !double
+
+  /**
+   * The widest number type that was added to this digest. The following number types are considered, from narrowest to
+   * widest: Byte, Int16, Int32, Int, Double. Null if no numbers have been added to the digest.
+   */
+  widestNumberType: NumberType
+
+  /**
+   * the sum of the input stream
+   */
+  sum: member function(): !double
+
+  /**
+   * the sample variance of the input stream
+   */
+  sampleVariance: member function(): !double
+
+  /**
+   * the population variance of the input stream
+   */
+  populationVariance: member function(): !double
+
+  /**
+   * the sample standard deviation of the input stream
+   */
+  sampleStddev: member function(): !double
+
+  /**
+   * the population standard deviation of the input stream
+   */
+  populationStddev: member function(): !double
+
+  /**
+   * the approximate median of the input stream
+   */
+  approxMedian: member function(): !double
+
+  /**
+   * Best approximation of distribution of the input stream
+   */
+  histogram: NumericHistogram schema suffix 'HIST'
+}

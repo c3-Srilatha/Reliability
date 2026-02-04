@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Return value for {@link Jdbc.listTableNames}.
+ */
+type JdbcListTableNamesResult {
+
+  /**
+   * Table names (unqualified) that were found via the jdbc connection.
+   */
+  names: [string]
+
+  /**
+   * Table names (qualified with schema) that were found via the jdbc connection.
+   */
+  qualifiedNames: [string]
+
+  /**
+   * Table names (unqualified) that were found via the jdbc connection, grouped by schema name.
+   */
+  namesBySchema: map<string, [string]>
+
+  /**
+   * If limit was specified > 0 and there were more table names to return than permitted by the limit, this will be
+   * this will be true and will be false otherwise.
+   */
+  hasMore: boolean
+}

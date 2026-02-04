@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used by {@link Datastore} for managing shared read connections.
+ */
+private type ReadOnlyConnRef {
+
+  /**
+   * If true, when the connection was originally borrowed, it was indicated that the connection could be shared with
+   * other actions that required a read only connection that could be shared.
+   */
+  isSharable: boolean
+
+  /**
+   * Native connection.
+   */
+  conn: !native
+
+  /**
+   * Time when ref was created.  Used to check for exceeding max lifetime
+   */
+  startedTimestamp: datetime
+
+  /**
+   * Current number of holders of the connection.
+   */
+  refCount: @java(class="java.util.concurrent.atomic.AtomicInteger") native
+
+  /**
+   * Pool of write connections.
+   */
+  recycle: @java(class="java.util.concurrent.atomic.AtomicBoolean") native
+
+  /**
+   * Constructs a new instance for a native connection.
+   */
+  forConnection: inline function(conn: !native, isSharable: !boolean): !ReadOnlyConnRef
+}

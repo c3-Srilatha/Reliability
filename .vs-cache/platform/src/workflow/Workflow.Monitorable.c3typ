@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface for monitoring an ongoing or finished {@link Workflow.Run}-like object. Note the `magnify` API, which
+ * represents a recursive "drill down" operation that allows inspection of arbitrarily nested {@link Workflow}-like objects.
+ */
+type Workflow.Monitorable {
+
+  /**
+   * Visualize the steps in the current `Workflow`-like object in a graph.
+   */
+  visualize: abstract member function(spec: FlowGraphVisualizeSpec): any
+
+  /**
+   * @param spec
+   *           specializations for the summarization.
+   * @return a table with a row for each step and the corresponding execution metadata.
+   */
+  summary: abstract member function(spec: Workflow.Monitorable.SummarySpec): !Data
+
+  /**
+   * @return a map containing all errors. Key is the step's name in {@link #visualize} or {@link #summary}.
+   *           Value is the list of error(s) for that step.
+   */
+  errors: abstract member function(): map<string, [string]>
+
+  /**
+   * @return whether any errors would be returned by {@link #errors} (i.e. number of keys in map greater than 0).
+   */
+  hasErrors: member function(): !boolean
+
+  /**
+   * Drill down recursively into a step. This allows inspection of nested `Workflow`-like objects in the steps.
+   * @param name
+   *    the name should be consistent with the step's name in {@link #visualize} or {@link #summary}.
+   * @return the nested {@link Workflow.Monitorable} object corresponding to the step.
+   */
+  magnify: abstract member function(name: !string): !Workflow.Monitorable
+
+  /**
+   * @return {@link #errors} as a flat array of strings.
+   */
+  errorsAsFlatArray: private member function(): [string]
+
+  /**
+   * Display a flamegraph of the C3 actions for the `Workflow.Run`-like object
+   */
+  flamegraph: abstract member function(): native py-client
+
+  /**
+   * Given a list of actions, returns the data required for a flamegraph with the following fields (note that depending on the entry, some fields may be missing):
+   *    name: abbreviated name of the action (when [type name]#[action name] is longer than 20 characters, the beginning part of type name is truncated)
+   *    value: total time in milliseconds for the action and all of its descendant actions to complete
+   *    time: start time of the action
+   *    id: action id
+   *    asyncParent: id of the parent action in the async tree
+   *    parent: id of the parent action in the action tree
+   *    asyncRoot: id of the root action in the async tree
+   *    nameLong: full name of the action (format: [type name]#[action name])
+   *    root: id of the root action in the action tree
+   *    children: list of child actions (same format as this object)
+   * @return json of flamegraph data
+   */
+  flamegraphJson: abstract member function(): json py-server
+
+  /**
+   * Helper API created for UI to visualize the steps in the current `Workflow`-like object as a {@link FetchResult}
+   * @param spec
+   *           {@link FetchSpec} for customizing the output.
+   *
+   * @returns a {@link FetchResult}, one object representing each step and the corresponding execution metadata.
+   */
+  summaryAsFetchResult: private abstract member function(spec: FetchSpec): !FetchResult<any>
+
+  /**
+   * Helper API created for UI to count the number of steps in the current `Workflow`-like object in a tabular format.
+   *
+   * @param spec
+   *           {@link FetchFilterSpec} for customizing the output.
+   *
+   * @returns the number number of steps in the current `Workflow`-like object.
+   */
+  summaryCount: private abstract member function(spec: FetchFilterSpec): !int
+}

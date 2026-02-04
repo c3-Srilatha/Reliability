@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This component display arbitrary data, such as a Obj instance and children or even any JSON object.
+ */
+type DataTree mixes ReactClass {
+
+  /**
+   * The data to be displayed.
+   */
+  data: any
+
+  /**
+   * If true, ignore type metadata for built instances. This will essentially display the JSON serialized version of
+   * the objects instead of the marked-up structure.
+   */
+  ignoreType: boolean
+
+  /**
+   * How much of the tree to initially expand:
+   *  - `none` fully collapsed
+   *  - `root` only top-level object/collection expanded
+   *  - `all` entire tree fully expanded
+   */
+  initialExpand: !string enum('none', 'root', 'all') = 'root'
+
+  /**
+   * Normally, empty collections are ignored, but if this flag is set, they will be shown as `[]` or `{}` in the
+   * tree (but will not be expandable).
+   */
+  showEmptyCollections: boolean
+
+  /**
+   * Normally, null/undefined values are ignored, but if this flag is set, they will be shown as `null` or `undefined`
+   * in the tree when rendering an Obj instance. Note that this implicitly includes #showEmptyCollections, since _all_
+   * fields are shown (whether set or not) and unset collection fields will be empty arrays/objects.
+   */
+  showAllFields: boolean
+
+  /**
+   * Maximum number of array elements to expand at once. This helps avoid excessively long display times or crashing
+   * the browser tab when very large arrays are expanded.
+   */
+  maxArraySize: int = 100
+}

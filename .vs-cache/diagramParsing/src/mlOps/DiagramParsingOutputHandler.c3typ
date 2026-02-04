@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * DiagramParsingOutputHandler: Handles the processing and validation of diagram parsing model outputs.
+ * It processes parsed data, validates the pipeline outputs, and upserts diagram entities in batches.
+ * The handler works with the following entities:
+ * {@link ParsableDiagram}, {@link ParsedDiagramExtract}, and {@link ParsedSensor}.
+ */
+type DiagramParsingOutputHandler mixes MlModel.DataOutputHandler {
+
+  /**
+   * The batch size for upserting {@link ParsableDiagram}s, {@link ParsedDiagramExtract}s, or {@link ParsedSensor}s.
+   * This should be a integer greater than 0. The default value is 1000.
+   */
+  mergeBatchSize: int = 1000
+
+  process: ~ py
+
+  /**
+   * Process the MIMO output for the given {@link MlModel.Route}. This method will throw an exception if `output`
+   * is an instance of {@link Data}.
+   * @see MlModel.DataOutputHandler#doProcess
+   */
+  doProcess: member function(route: !MlModel.Route, output: map<string, Data>) py
+  doProcess: ~ py
+
+  validate: ~ py
+
+  /**
+   * A private helper function to generate all the entities that will be upserted.
+   */
+  getParsedEntities: private function(output: !Data, pipeline: !MlPipeline): !map<string, [any]> py
+}

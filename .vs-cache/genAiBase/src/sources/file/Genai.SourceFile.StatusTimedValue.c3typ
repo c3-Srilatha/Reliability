@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The time that a {@link Genai.SourceFile} was changed to a state in the
+ * in the data ingestion process
+ */
+type Genai.SourceFile.StatusTimedValue mixes TimedValue {
+
+  timestamp: !~
+
+  /**
+   * The status of the {@link Genai.SourceFile}
+   */
+  value: !string enum Genai.SourceFile.StatusEnum
+
+  /**
+   * Used to store the error message when a {@link Genai.SourceFile} transitions
+   * to the {@link Genai.SourceFile.StatusEnum#FAILED} state.
+   */
+  errorMessage: string
+
+  /**
+   * The {@link User#email} who last processed this source file.
+   * This is used in {@link Genai.SourceFile#displayLastProcessedBy} to display the last processed activity in UI.
+   * The entire {@link User} is not persisted to avoid access issues with ACLs.
+   * This could either be triggered manually or by the cron job.
+   */
+  lastProcessedBy: string
+}

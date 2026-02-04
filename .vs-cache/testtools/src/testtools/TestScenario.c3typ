@@ -1,0 +1,93 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type to organize the test data of all child metrics for a compound metric
+ *
+ * A type to hold functions of TestScenario
+ */
+entity type TestScenario schema name 'TSTL_TSTSNRO' {
+
+  /**
+   * The id of the test scenario
+   */
+  id: string
+
+  /**
+   * The description of the test scenario
+   */
+  description: !string
+
+  /**
+   * The compound metric for which the test scenario is created for
+   */
+  metric: !CompoundMetric
+
+  /**
+   * The reference to the test data of all the child metrics.
+   */
+  testData: ![TestMetricData] schema name 'TSTDATA'
+
+  /**
+   * The datetime array of all test points
+   */
+  datetimes: ![datetime] schema name 'DTS'
+
+  /**
+   * The source type to be evaluated on
+   */
+  sourceType: !Type
+
+  /**
+   * The interval for evaluating the compound metric
+   */
+  interval: !string enum('QUARTER_HOUR', 'HOUR', 'DAY', 'MONTH', 'YEAR')
+
+  /**
+   * Save a test scenario
+   *
+   * @param compoundMetricId
+   *                         The compound metric id for the test scenario
+   *
+   * @param description
+   *                         Description of the test scenario
+   *
+   * @param datetimes
+   *                         Datetimes of all test data
+   *
+   * @param interval
+   *                         The interval for evaluating the compound metric
+   *
+   * @param childMetrics
+   *                         Each child metric has all the necessary fields for setting up a test metric data.
+   *                         the fields include metricName, metricId, data array, gaps array, unavailable array
+   *
+   * @param id
+   *                         Id of the test scenario. If provided, then it is an update, otherwise it is a creation
+   * @return the created or updated test scenario
+   */
+  saveTest: function(compoundMetricId: !string,
+                     description: !string,
+                     datetimes: !?[datetime],
+                     interval: !string,
+                     sourceType: !string serialized Type,
+                     childMetrics: !?[json],
+                     id: string): TestScenario js-server
+
+  /**
+   * Delete a test scenario.
+   *
+   * All the test data of the child metrics of the test scenario will be deleted along with the test scenario
+   *
+   * @param id
+   *            The id of the test scenario
+   *
+   * @return the result of deletion, true means success, and false means failure
+   */
+  deleteTest: function(id: !string): boolean js-server
+}

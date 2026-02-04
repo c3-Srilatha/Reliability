@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An {@link MlModel.OutputHandler} that writes the output into a CSV file.
+ *
+ * **Important note**: the type of the pipeline output values must be {@link Data}.
+ *
+ * This handler generates a file in the {@link FileSourceCollection#inboxUrl inbox} of the {@link sourceCollection}.
+ * The filename is the concatenation of the {@link filenamePrefix} and the current timestamp, for example:
+ * `<sourceCollectionInbox>/project1--model1--1658245954.csv`
+ *
+ * The header of the CSV is the following:
+ * ```
+ * modelId,statusLabel,statusTags,subjectId,outputTimestamp,field1,field2,...
+ * ```
+ * where:
+ *  - `modelId` is the ID of the {@link MlModel};
+ *  - `statusLabel` is the {@link MlModel.Route.Status.Label status label} of the route;
+ *  - `statusTags` is a string representing the (optional) {@link MlModel.Route.Status#tags} of the route;
+ *  - `subjectId` is the ID of the {@link MlSubject} for which the output is computed;
+ *  - `outputTimestamp` is the timestamp for which the output is computed (optional, it is present only when
+ *     there is a {@link Feature#TIMESTAMP timestamp} column in the {@link Data} to process);
+ *  - `field1,field2,...` correspond to the mapped columns of the output to process (see {@link columnMapping}).
+ *
+ * Each row of the CSV correspond to a row in the {@link Data} object processed by the handler.
+ *
+ * **NOTE**: This handler only supports single pipeline output, so `outputNames` should be singleton or empty.
+ *
+ * Usage:
+ * ```python
+ * handler = c3.MlModel.CsvOutputHandler(
+ *     outputNames=["predictions"],
+ *     columnMapping={
+ *         "mean": "value"
+ *     },
+ *     sourceCollection="Prediction_Collection"
+ * )
+ * ```
+ */
+type MlModel.CsvOutputHandler mixes MlModel.DataOutputHandler {
+
+  doProcess: ~
+  validate:  ~
+
+  /**
+   * The {@link FileSourceCollection} in which the CSV files are placed.
+   */
+  sourceCollection: !string serialized FileSourceCollection
+
+  /**
+   * The prefix of the filename generated for each call to {@link process}.
+   * The fields used to populate the template are derived from the `route` argument.
+   */
+  filenamePrefix: !string serialized StrFormat = '${project.id}--${model.id}'
+
+  /**
+   * Convert the `output` into a CSV string and write it to the `file`.
+   *
+   * @param route
+   *    the route argument passed to {@link process}
+   * @param output
+   *    the output to convert; the columns are mapped using {@link columnMapping}
+   * @param file
+   *    the file in which the CSV is written (the file is assumed to exist and be writable)
+   */
+  write: private member function(route: !MlModel.Route, output: !Data, file: !File) py
+}

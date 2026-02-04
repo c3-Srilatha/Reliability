@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+native py remix type Array {
+
+  /**
+   * This API is the most performant mechanism to materialize an {@link Array} of {@link PrimitiveType primitives} into
+   * a Python interpreter's memory space such that this data can be consumed for ML. This method only works for
+   * {@link Array}s with one of the following {@link elementType}s:
+   * - {@link ByteType}
+   * - {@link BooleanType}
+   * - {@link DateTimeType}
+   * - {@link DoubleType}
+   * - {@link FloatType}
+   * - {@link IntType}
+   * - {@link Int16Type}
+   * - {@link Int32Type}
+   * - {@link StringType}
+   *
+   * NOTE: `Array<string>` produce numpy arrays with `dtype=object`. If a unicode dtype is desirable (i.e. "U32"),
+   * you must use {@link toNumpyUnicode}.
+   *
+   * NOTE: This method is experimental for the `client` location
+   * NOTE: In the case that your `Array` contains `null`s, this method attempts to mirror `pandas` null-handling
+   * semantics:
+   * - {@link ByteType}, {@link Int16Type}, {@link Int32Type}, {@link IntType}: The resulting numpy array will have
+   * `dtype=double`, with `null` values replaced with `nan`.
+   * - {@link DoubleType}, {@link FloatType}: `null` values replaced with `nan`.
+   * - {@link BooleanType}, {@link StringType}: The resulting numpy array will have `dtype=object`, and `null` values
+   * will remain `null`.
+   * - {@link DateTimeType}: `null` values are replaced with `nat`.
+   *
+   * @return a 1 dimensional numpy array containing the contents of this {@link Array}
+   */
+  toNumpy: member function(): !native py
+
+  /**
+   * This method behaves identically to {@link toNumpy}, but is only applicable for {@link Array<string>}, and allows
+   * you to change string truncation length. The {{numChars}} parameter dictates the number of characters in each
+   * unicode string of the resulting numpy array. If {{this}} is not an {@link Array<string>}, this method will throw.
+   * This method is generally faster than {@link toNumpy} for {@link Array<string>}.
+   *
+   * NOTE: This method is experimental for the `client` location
+   * NOTE: This method is not supported for {@link Array}s containing null elements
+   *
+   * @param numChars
+   *           The number of characters in each string in the resulting numpy array.
+   *
+   * @return a 1 dimensional numpy array containing the contents of this {@link Array} (truncating `string`s to length
+   *         {{numChars}} as applicable).
+   */
+  toNumpyUnicode: member function(numChars: int = 32): !native py
+
+  /**
+   * Returns True if the element type of an {@link Array} instance supports {@link toNumpy} or
+   * {@link toNumpyUnicode} APIs. Currently, only {@link Primitive} type arrays (not {@link JsonType}, {@link BigIntType},
+   * {@link DecimalType}, {@link BinaryType}) are supported.
+   */
+  supportsNumpy: member function(): !boolean py
+
+  /**
+   * Converts array to Pandas Series.
+   */
+  toSeries: member function(): !native py
+
+  /**
+   * Returns the index of the first element with the specified value
+   */
+  index: member function(element: !?native): !int py
+}

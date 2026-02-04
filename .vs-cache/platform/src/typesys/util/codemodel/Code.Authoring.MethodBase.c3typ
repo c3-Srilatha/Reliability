@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Builder for authoring a method-like structure, such as methods and constructors.
+ *
+ * @see Code.Authoring
+ */
+abstract type Code.Authoring.MethodBase mixes Code.Authoring.StmtWithBody, Code.MethodBase {
+
+  /**
+   * Set a modifier on this method.
+   */
+  mod: member function(mod: !string enum Code.Mod): !mixing Code.Authoring.MethodBase
+
+  /**
+   * Add a parameter to this method. This is useful when no other info is to be defined on the parameter.
+   *
+   * @param name parameter name
+   * @return this method
+   */
+  param: member function(name: !string): !mixing Code.Authoring.MethodBase
+
+  /**
+   * Add a parameter to this method. This is useful for parameters with additional state.
+   *
+   * @param name parameter name
+   * @return new parameter
+   */
+  param: member function(): !Code.Authoring.MethodParam
+
+  /**
+   * Set the documentation comment body text for this method.
+   */
+  doc: member function(text: !string): !mixing Code.Authoring.MethodBase
+}

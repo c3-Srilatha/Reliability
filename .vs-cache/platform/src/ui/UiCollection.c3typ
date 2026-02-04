@@ -1,0 +1,189 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The "collection" encapsulates data access methods needed by a user interface to interact with the underlying data
+ * of a set of a logical objects in some data repository. The individual objects are instances of models for a single
+ * source type.
+ *
+ * A collection maintains state locally about changes made which have not yet been saved to the server. The #add method
+ * changes data locally (applying simple validations), but does not send anything to the server and just marks the
+ * local collection as dirty. Similarly, changes to the models within the collection are buffered. When #save is called,
+ * all pending changes are bundled up and submitted to the server in a single request and if the server responds with a
+ * success status, the collection becomes clean.
+ *
+ * Collections support these {@link UiEventSource events}:
+ *  - `change`: any change to the individual models or the loaded set
+ *  - `add`: addition of a model (via #add or #insert)
+ *  - `remove`: removal of a model (via #remove)
+ *  - `save`: the collection was successfully saved to the server
+ *  - `reload`: the collection was reloaded from the server
+ *
+ * The collection only manages the data of a set of objects. The presentation is configured using a {@link UiView view}.
+ *
+ * It also doesn't act as a controller, that is done by defining a {@link ReactComponent component}. For example,
+ * {@link CollectionGrid} is a generic controller component for collections that presents the contents as a table.
+ *
+ * Methods which delegate processing to the server are asynchronous and return a Promise.
+ *
+ * @see UiModel
+ * @see UiView
+ */
+abstract type UiCollection mixes UiModelBase {
+
+  /**
+   * Get the number of models loaded in this collection. This may be a subset of the all the objects available for the
+   * underlying collection query.
+   */
+  loadedSize: inline member function(): !int js-client
+
+  /**
+   * The 0-based offset in the total set of objects of the first model in memory within the underlying collection query.
+   */
+  loadedOffset: abstract member function(): !int js-client
+
+  /**
+   * Whether there may be more objects beyond the current loaded set. This is not exact before a query is performed,
+   * and may even be incorrect after a query since other jobs may change the objects in the data stores.
+   */
+  hasMore: abstract member function(): boolean js-client
+
+  /**
+   * Estimate the total number of rows in the underlying query. Note that this may not be exact, plus other processes
+   * may change the underlying data store. However, this should be at least an approximate value which can be used as a
+   * guideline for building a scolling UI.
+   */
+  totalCount: abstract member function(): !Promise<int>
+
+  /**
+   * Get the current relative page number assuming that #nextPage was used to advance the offset. This value is 1-based
+   * for display in a paging UI. If paging is not supported by the collection type, this will always return 1.
+   * If a static collection is empty or a persistable collection has not yet been queried, this will return 0.
+   */
+  pageNumber: member function(): !int js-client
+
+  /**
+   * Estimate the total number of pages in the underlying query. Note that this may not be exact, plus other processes
+   * may change the underlying data store. However, this should be at least a minimum value which can be used as a
+   * guideline for building a scolling UI. If paging is not supported by the collection type, this will always return 1
+   * unless the collection is empty.
+   */
+  pageCount: member function(): !Promise<int> js-client
+
+  /**
+   * Retrieve the loaded model at the given index (0-based). This index is not stable across queries as objects may be
+   * added or removed in the underlying store. This throws an error if the index is not in the range `0` to
+   * `loadedSize - 1`.
+   */
+  get: inline member function(index: !int): !UiModel js-client
+
+  /**
+   * Add a new instance of the model this collection represents. When #save is called, the object will be created in
+   * the underlying data store. The new model will appear at the end of the collection (#loadedSize will increase by 1).
+   *
+   * The returned instance has only default values (for fields with initializers) set, plus any values specified in the
+   * argument map. For each map entry, the equivalent of UiModel#set is called.
+   *
+   * @param values made Obj or initial values for fields in the newly created model
+   */
+  add: inline member function(values: Obj | map<string, any>): !UiModel js-client
+
+  /**
+   * Add a new instance of the model this collection represents. When #save is called, the object will be created in
+   * the underlying data store. The new model will appear at the specified index in the collection (#loadedSize will
+   * increase by 1). Note that this index is not guaranteed to be stable after a reload.
+   *
+   * The returned instance has only default values (for fields with initializers) set, plus any values specified in the
+   * argument map. For each map entry, the equivalent of UiModel#set is called.
+   *
+   * @param index 0-based index within loaded objects at which to insert the new model
+   * @param values made Obj or initial values for fields in the newly created model
+   */
+  insert: inline member function(index: !int, values: Obj | map<string, any>): !UiModel js-client
+
+  /**
+   * Remove the model at the specified index. When #save is called, the object will be removed from the underlying data
+   * store.
+   */
+  remove: member function(index: !int) js-client
+
+  /**
+   * Discard any pending changes and re-request the data of the underlying objects from the server. Note that the
+   * number of models and their order in the collection may change. The arguments are used to position the loaded range
+   * on a particular set of results to implement a scrolling UI.
+   *
+   * @param offset the offset in the overall query to start at
+   * @param limit maximum number of objects to query
+   *
+   * @return true if any results were returned
+   */
+  reload: abstract member function(offset: !int, limit: !int): !Promise<boolean> js-client
+
+  /**
+   * Discard any pending changes and request the next set of underlying objects from the server. Note that the number
+   * of models and their order in the collection may change. The argument is a relative page number that represents
+   * a logic set of results of the collection type.
+   *
+   * @param delta the number of pages to advance/back up
+   * @return true if any more results were loaded
+   */
+  nextPage: optional member function(delta: int = 1): !Promise<boolean> js-client
+
+  /**
+   * Whether save is supported for collection modification. Note that this means adds, updates and deletes.
+   * This may be separate from whether save is supported for individual models within the collection.
+   */
+  isSavable: member function(): boolean js-client
+
+  /**
+   * Execute the specified lambda against each loaded model in the collection. The first argument is the model and the
+   * second is the index within the collection.
+   */
+  each: inline member function(iterator: !lambda(model: UiModel, index: int)) js-client
+
+  /**
+   * Execute the specified lambda against each loaded model in the collection and return an array of the values it
+   * returns. The first argument is the model and the second is the index within the collection.
+   */
+  map: inline member function(iterator: !lambda(model: UiModel, index: int): any): [any] js-client
+
+  /**
+   * Execute the specified lambda against each loaded model in the collection and return the final value it returns.
+   * The first argument is the model and the second is the previous return value.
+   *
+   * @param iterator lambda to execute
+   * @param initial value to pass to first lambda call
+   */
+  fold: inline member function(iterator: !lambda(model: UiModel, partial: any): any, initial: any): any js-client
+
+  /**
+   * Execute the specified lambda against each loaded model in the collection and return the models for which the
+   * lambda returns true.
+   */
+  filter: inline member function(iterator: !lambda(model: UiModel): boolean): [UiModel] js-client
+
+  /**
+   * Instantiate an appropriate collection from the Obj instances in the specified array.
+   */
+  fromArray: function(insts: ![WithType]): !UiCollection js-client
+
+  /**
+   * Instantiate an appropriate collection from the Obj instances in the specified array.
+   */
+  fromSet: function(insts: !set<WithType>): !UiCollection js-client
+
+  instances:    private [UiModel]
+  originals:    private [UiModel]
+  modelChanged: private lambda()
+  checkIndex:   private inline member function(index: int) js-client
+  save:         abstract ~ js-client
+  reload:       abstract ~ js-client
+  isDirty:      ~ js-client
+  isReadOnly:   ~ js-client
+  afterMake:    ~ js-client
+}

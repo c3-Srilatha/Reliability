@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Record of all virtual machine (instance) types we use, with theoretical capacity
+ * as well as high watermarks of observed throughput, used to calculate utilization.
+ * The name and ID are both the instance type (i.e., "db.m2.xlarge"), which should
+ * be unique within a platform (i.e., "AWS").
+ */
+@db(unique=['platform,name'])
+@seed(notUserCreatable=true)
+entity type VmTypeInfo mixes SeedData<VmTypeInfo> schema name 'ADMIN_VMTYPINF' {
+
+  /**
+   * virtualization platform name (i.e., "AWS")
+   */
+  platform: !string
+
+  /**
+   * additional info about the function of this VM
+   */
+  description: string
+
+  /**
+   * count of virtual CPUs
+   */
+  cpuCount: int
+
+  /**
+   * size of available memory, in Gb
+   */
+  memoryGb: double
+
+  /**
+   * attached storage, number and size in Gb (not including EBS volumes)
+   */
+  diskCount: int
+
+  diskSizeGb: double
+
+  /**
+   * observed maximum memory usage, in Gb
+   */
+  maxMemUsedGb: double
+
+  /**
+   * observed maximum disk I/O, in bytes/second
+   */
+  maxDiskRate: double
+
+  /**
+   * observed maximum network I/O, in bytes/second
+   */
+  maxNetworkRate: double
+
+  /**
+   * name = id
+   */
+  name: !~
+}

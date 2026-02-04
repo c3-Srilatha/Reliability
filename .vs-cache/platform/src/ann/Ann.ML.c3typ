@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * General annotation for ML staff.
+ */
+@annotation(appliesTo=['field', 'type'])
+type Ann.ML mixes Annotation {
+
+  /**
+   * Mark fields on sub-types of {@link MlAtomicPipe} as hyperparameters. These fields / hyperparameters can then
+   * be addressed using the {@MlPipe#withHyperparams} API, creating a new copy of the {@link MlPipe} that includes the
+   * new or updated hyperparameters.
+   */
+  hyperparameter: boolean = false
+
+  /**
+   * Mark fields on sub-types of {@link MlAtomicPipe} as a field whose Type contains
+   * hyperparameters. Then, the nested fields, or nested hyperparameters, can be
+   * referenced and modified using the hyperparameter APIs on {@link MlPipe}.
+   *
+   * Use the dot delimiter ('.') to address nested hyperparameters when calling {@link MlPipe} APIs.
+   * Example for field that is {@link Obj}:
+   * ```py
+   * keras_pipe = c3.MlPipe.convert(model)
+   * keras_pipe.generator.batchSize
+   * >>> 32
+   * keras_pipe = keras_pipe.withHyperparams({'generator.batchSize': 64})
+   * keras_pipe.generator.batchSize
+   * >>> 64
+   * ```
+   *
+   * Additionally, if the field contains an {@link Array} or {@link Map}, then the dot notation can be used to
+   * access the collection value by position and key, respectively.
+   * For example, suppose a pipe has the following field:
+   * ```
+   * @ML(containsHyperparams=true)
+   * mapp: map<string, int>
+   * ```
+   * Then `withHyperparams` can be used to change an existing key within the map or adding a non-existing one:
+   * ```
+   * pipe = pipe.withHyperparams({"key": 42})
+   * ```
+   */
+  containsHyperparams: boolean = false
+}

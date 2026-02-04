@@ -1,0 +1,196 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A run of a {@link GenaiCore.Unstructured.Job}.
+ */
+entity type GenaiCore.Unstructured.Job.Run {
+
+  /**
+   * The job that owns this run.
+   */
+  job: !GenaiCore.Unstructured.Job
+
+  /**
+   * The runs of {@link GenaiCore.Unstructured.BatchJob} that actually executed/implemented this run.
+   * NOTE: there could be multiple due to {@link #retry}.
+   */
+  batchJobRuns: private [BatchJobRun]
+
+  /**
+   * @return the most recent of this Run's #batchJobRuns.
+   */
+  latestRun: private member function(): BatchJobRun py
+
+  /**
+   * The number of times this run has been run including retries.
+   */
+  runCount: !int = 0
+
+ /**
+  * Waits for the job to be completed.
+  *
+  * @param timeout
+  *         Specifies the amount of time to wait for the job to be completed. Default is 5 minutes
+  * @param dontFailOnError
+  *         If true, then this will not throw an exception if the job run fails. Instead, it will return the error
+  *
+  * @return The status of the job run. If there was an error, then `dontFailOnError` controls whether this throws an
+  *         exception or just returns the error status.
+  */
+  waitForCompletion: member function(timeout: Duration, dontFailOnError: boolean): !BatchJobStatusBase js-rhino
+
+  /**
+   * If {@link GenaiCore.Unstructured.Job#enableCheckpointing}[checkpointing] was enabled for this
+   * run, returns the checkpoints for the given source.
+   *
+   * @param source
+   *        The source for which to return checkpoints.
+   * @return A map of component names ({@link #components}) to the checkpoint for that component.
+   */
+  checkpointsForSource: member function(source: !string serialized File): map<string, GenaiCore.Unstructured.Job.Checkpoint> py
+
+  /**
+   * @param spec
+   *          fetch spec to limit number of errors returned.
+   * @return any errors which occurred during the run. The outer key is the source name for which the error occurred.
+   *          The inner key is the component name for which the error occurred. The inner value is the error message.
+   */
+  errors: member function(spec: FetchSpec): map<string, map<string, string>> py
+
+  /**
+   * @return the number of errors which occurred during the run.
+   */
+  errorCount: member function(): !int py
+
+  /**
+   * Returns a list of component names for all components used in this run.
+   * This includes all components in the job's processor, as well as the embedder and vector store.
+   * For components within the job's processor, this will be `processor.<componentName>`.
+   *
+   * @return a list of component names for all components used in this run.
+   */
+  components: member function(): ![string] py
+
+  /**
+   * Retries at least some of the sources processed in this run according to the given spec. This will reuse/update
+   * the same job run on which it is called.
+   *
+   * **NOTE** This will also overwrite the {@link GenaiCore.Unstructured.Job.SourceRun}[source runs] and associated
+   * errors for all retried sources.
+   *
+   * @param sourceDir
+   *        The directory containing the source files to be processed.
+   * @param spec
+   *        A spec controlling how the retry should be run
+   *
+   * @return the retried job run
+   */
+  retry: member function(sourceDir: !string serialized File, spec: GenaiCore.Unstructured.Job.RetrySpec): !mixing GenaiCore.Unstructured.Job.Run py
+
+  /**
+   * The current status of the job run.
+   */
+  status: JobStatusEnum = JobStatusEnum.initial
+
+  /**
+   * Return a summary of the job run.
+   *
+   * @return a summary of the job run
+   */
+  summary: member function(): GenaiCore.Unstructured.Job.Run.Summary py
+
+  /**
+   * Once the run has finished, we can store the result of #summary so that it does not need to be recomputed
+   * every time it is requested.
+   */
+  computedSummary: private GenaiCore.Unstructured.Job.Run.Summary
+
+  /**
+   * Performs all post-run processing for this job run. This currently includes #consolidateToFinalStatus and
+   * #summary.
+   *
+   * **NOTE** This runs when the run has finished whether or not it was successful.
+   *
+   * @return the completed job run
+   */
+  onComplete: private member function(): !mixing GenaiCore.Unstructured.Job.Run py
+
+  /**
+   * Consolidates the statuses of source runs and batch job run into a final job run status
+   *
+   * @return the updated job run
+   */
+  consolidateToFinalStatus: private member function(): !mixing GenaiCore.Unstructured.Job.Run py
+
+  /**
+   * Get source runs for this job run according to the given spec.
+   * @param spec
+   *          a spec to control which source runs to return.
+   * @return a stream of source runs for this job run that match the given spec (if any)
+   */
+  sourceRuns: member function(spec: FetchStreamSpec): Stream<GenaiCore.Unstructured.Job.SourceRun> py
+
+  /**
+   * Get the batch runs for the latest run of this job run.
+   *
+   * @return a stream of batch runs for the latest run of this job run
+   */
+  latestBatchRuns: member function(): Stream<GenaiCore.Unstructured.Job.BatchRun> py
+
+  /**
+   * @param source
+   *          the name of a source.
+   * @return the source run for the given source, if it exists.
+   */
+  sourceRun: private member function(source: !string): GenaiCore.Unstructured.Job.SourceRun py
+
+  /**
+   * @param source
+   *          the name of a source.
+   * @return the source run ID for the given job run and source.
+   */
+  sourceRunIdFromSource: private member function(source: !string): !string py
+
+  /**
+   * @param processorComponent
+   *          name of a component in {@link GenaiCore.Unstructured.Processor}.
+   * @return the name of the corresponding component in {@link GenaiCore.Unstructured.Job.Run}.
+   */
+  jobComponentFromProcessorComponent: private function(processorComponent: !string): !string py
+
+  /**
+   * The timestamp after which this job run is eligible for cleanup.
+   */
+  cleanUpAfter: datetime
+
+  /**
+   * @param jobComponent
+   *          name of a component in {@link GenaiCore.Unstructured.Job.Run}.
+   * @return the name of the corresponding component in {@link GenaiCore.Unstructured.Processor}.
+   */
+  processorComponentFromJobComponent: private function(jobComponent: !string): !string py
+
+  @dependency(include='batchJobRuns')
+  beforeRemove: ~ py
+
+  /**
+   * The total number of chunks produced by the {@link GenaiCore.Unstructured.Job#processor} for this run.
+   *
+   * **NOTE** This field is only updated when the run has finished or #summary is called.
+   */
+  processorChunkCount: int
+
+  /**
+   * The total number of vectors stored in the {@link GenaiCore.Unstructured.Job#vectorStore} for this run.
+   *
+   * **NOTE** This field is only updated when the run has finished or #summary is called.
+   */
+  vectorCount: int
+}

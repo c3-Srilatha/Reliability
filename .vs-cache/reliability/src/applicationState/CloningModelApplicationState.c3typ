@@ -1,0 +1,117 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state for the model cloning workflow.
+ */
+type CloningModelApplicationState mixes SettableApplicationState {
+  /**
+   * The {@link ReliabilityMlModel} that is being cloned.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  baseModel: ReliabilityMlModel
+
+  /**
+   * The {@link ReliabilityAsset} related to the model being cloned.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  asset: ReliabilityAsset
+
+  /**
+   * Indicates whether the subject is a CV asset.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  usingSensorAssociation: boolean
+
+  /**
+   * The current excluded {@link Sensor}s, that are not selected for the model to be cloned.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  excludedSensors: [Sensor]
+
+  /**
+   * The current selected {@link Sensor}s, that are selected for the model to be cloned.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  selectedSensors: [Sensor]
+
+  /**
+   * The list of {@link Sensor}s ids that are currently plotted on the 'Reliability.SensorPreviewChart'.
+   * Indicates which sensors' data is currently plotted so that both
+   * 'Reliability.CloningModelSensorSelectionExcludedSensorsGrid' and the
+   * 'Reliability.CloningModelSensorSelectionSelectedSensorsGrid', can be updated accordingly.
+   */
+  sensorsPlotted: [string]
+
+  /**
+   * Original hyperparameter data retrieved from the base {@link ReliabilityMlModel}.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  hyperparameterData: ModelConfigJsonHyperparams
+
+  /**
+   * The {@link ModelTemplate} used to clone the base {@link ReliabilityMlModel}.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  template: ModelTemplate
+
+  /**
+   * The {@link ReliabilityDataPreparationUiSettings} used for data preparation. Includes
+   * fields like: trainingDatasetTimeRanges and validateDatasetTimeRanges.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   */
+  dataPreparationUiSettings: ReliabilityDataPreparationUiSettings
+
+  /**
+   * The {@link ReliabilityMlDatasetPreparationRun} used to create the base model's dataset.
+   * Includes fields like: start, end and interval.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+  */
+  datasetPreparationRun: ReliabilityMlDatasetPreparationRun
+
+  /**
+   * The name of the new model to be created.
+   */
+  newModelName: string
+
+  /**
+   * Stores where the user should be redirected to if they hit "exit anyway" in the exit modal
+   */
+  redirectTo: string
+
+  /**
+   * Stores the initial form field values of `Reliability.CloningModelExclusionsCVForm`.
+   *
+   * **NOTE**: This field is prepopulated by {@link CloningModelPrepopulateStateEpic}.
+   * **NOTE**: Not all fields from {@link BulkSensorAssociationUiDefaultableFields} are used.
+   */
+  cvExclusionsFormFieldValues: BulkSensorAssociationUiDefaultableFields
+
+  /**
+   * The list of sensor ids that are currently selected in the
+   * `Reliability.CloningModelSensorSelectionSelectedSensorsGrid`, and is updated through:
+   * {@link CloningModelAddSensorOnSelectionUpdateEpic}
+   */
+  addToSensorSelectedItemsIds: [string]
+
+  /**
+   * The currently selected template in `Reliability.CloningModelTemplatesGrid`.
+   * It is updated through {@link CloningModelSelectModelTemplateEpic}
+   */
+  selectedTemplate: ModelTemplate
+}

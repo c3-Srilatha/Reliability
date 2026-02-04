@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Jarvis pipeline Step representation including declaration of the step as well as state
+ */
+// TODO: TOOLS-13642 Enable steps to specify they should be run even if a blocking step had a fatal error
+type Jarvis.Step mixes Identified, Nameable, Jarvis.WithStateHistory {
+
+  /**
+   * Parent Jarvis Build Pipeline
+   */
+  jarvisBuild: !Jarvis.Build
+
+  /**
+   * Input data necessary for this specific step's execution; note value is `json` and not `any` because actual value
+   * type may not be known in every App using Jarvis interface
+   */
+  input: map<string, json>
+
+  /**
+   * If step is RUNNING then executor that is performing the run
+   */
+  executor: string serialized AppId
+
+  /**
+   * The action id of the step execution on the executor.
+   */
+  actionId: string
+
+  /**
+   * The running executor's {@link Server#id}
+   */
+  serverId: string
+
+  /**
+   * Next step that should be executed by Jarvis after this one. Note that step can only start execution after all other
+   * steps that have it as `#next` are DONE
+   */
+  next: Jarvis.Step
+
+  /**
+   * Wether or not this step should run when an upstream step has a fatal error.
+   */
+  continueOnUpstreamFailure: boolean
+
+  /**
+   * Core logic of this step
+   */
+  action: lambda(step: !Jarvis.Step): Jarvis.Step.Result
+
+  /**
+   * The previous step in the retry chain. Allows this retry to have access to the error message of the previous retry.
+   */
+  retryOf: Jarvis.Step
+
+  /**
+   * The current retry count for this step
+   */
+  retryCount: int = 0
+
+  /**
+   * The maximum number of times Jarvis should retry the step.
+   */
+  maxRetries: int = 0
+
+  /**
+   * The version of the server to run this step on.
+   */
+  serverVersion: string serialized SemanticVersion
+
+  /**
+   * Lets the service know what type of {@link Env} is needed in order to run properly.
+   */
+  startEnvSpec: string serialized Cluster.StartEnvSpec
+
+  /**
+   * The amount of time to wait for a step to finish before Jarvis aborts it.
+   */
+  timeout: string serialized Duration
+
+  // TODO: revisit / remove
+  lambda: Jarvis.Lambda
+}

@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enum for the different kinds of errors that can occur during a state machine transition.
+ */
+enum type StateMachineTransitionError {
+
+  /**
+   * The transition failed due to an error when executing the {@link StateMachineTransition#action}.
+   */
+  ACTION_ERROR
+
+  /**
+   * The transition failed due to an error due to one of the following issues with the {@link StateMachine}'s state:
+   * - The {@link StateMachine} to transition does not exist.
+   * - The {@link StateMachineTransition} failed previously and requires manual intervention.
+   */
+  STATE_MACHINE_ERROR
+
+  /**
+   * The transition failed due to a synchronization error. This occurs when trying to transition when another transition
+   * is already in progress.
+   */
+  SYNCHRONIZATION_ERROR
+
+  /**
+   * The transition failed due to an error because any of the following conditions weren't satisfied:
+   * - There a no valid transitions for the entity from the current state.
+   * - The {@link StateMachineTransition#condition} wasn't satisfied.
+   */
+  TRANSITION_ERROR
+}

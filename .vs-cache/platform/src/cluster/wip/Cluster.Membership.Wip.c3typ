@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Some WIP ideas regarding future enhancements / changes in Cluster.Membership
+ */
+abstract private type Cluster.Membership.Wip {
+
+  /**
+   * @return capabilities of this Cluster Membership and Discovery Service
+   */
+  capabilities: abstract member function(): Cluster.MembershipCaps_Wip
+
+  /**
+   * Start Leader or Worker node(s) / server(s)
+   */
+  startNodes: abstract member function(spec: !Cluster.Membership.StartNodesSpec): ![Server]
+
+  /**
+   * Restart node
+   */
+  restartNode: abstract member function(node: !Server)
+
+  /**
+   * Issue graceful shutdown request to node
+   */
+  shutdownNode: abstract member function(node: !Server)
+
+  /**
+   * Abort and terminate node
+   */
+  terminateNode: abstract member function(node: !Server)
+
+  /**
+   * @return autoscaler for this cluster
+   */
+  autoscaler: cached abstract member function(): !Cluster.Autoscaler
+}

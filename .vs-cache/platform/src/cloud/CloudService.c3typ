@@ -1,0 +1,267 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all Cloud Services such ad Database, JupyterHub, etc
+ */
+abstract type CloudService<C: CloudServiceConfig> mixes Configurable<C>, CloudResourceFields {
+
+  /**
+   * Returns cached configuration for instance of this type. See Configurable type documentation for more details.
+   */
+  config: ~
+
+  /**
+   * Find Cloud Service in Cloud Provider based on provided C3 canonical cloud identifier
+   */
+  forId: ~
+
+  /**
+   * Constructs Cloud Service instance based on provided C3 identifier string and configuration.
+   *
+   * @see #toString
+   */
+  fromString: ~
+
+  /**
+   * Cloud Identifier for this service
+   */
+  id: ~ serialized CloudId
+
+  /**
+   * Status of this service
+   */
+  status: property(): CloudResourceState
+
+  /**
+   * App for of this service
+   */
+  parentApp: property(): App
+
+  /**
+   * Optional endpoint for connecting to the service
+   */
+  endpoints: abstract property(): CloudServiceUrl
+
+  /**
+   * @return `true` if this is CloudService for a specific application
+   */
+  isSingleApp: member function(): boolean
+
+  /**
+   * @return `true` if the CloudService is configured and has the right config
+   */
+  isConfigured: optional member function(): boolean
+
+  /**
+   * @return `true` if this is CloudService is shared across multiple applications
+   */
+  isSharedAcrossApps: member function(): boolean
+
+  /**
+   * Constructs Cloud Service instance based on provided C3 identifier string and configuration.
+   */
+  fromId: inline function(id: !string, failIfInvalid: boolean): mixing CloudService
+
+  /**
+   * Adds correct role and next sequence for the Cloud Service instance
+   *      based on provided C3 identifier string and configuration.
+   */
+  withRoleAndSeq: inline member function(): mixing CloudService
+
+  /**
+   * @return C3 Canonical abbreviation for CloudId.func component;
+   *   e.g. Cassandra => `k8scass` when running under Kubernetes and `awscass` when running in https://aws.amazon.com/keyspaces/
+   */
+  cloudFunc: inline member function(): string
+
+  /**
+   * @return computed cached map of cloudFunc -> Type
+   */
+  typeMetasByCloudFunc: private cached function(): map<string, TypeMeta>
+
+  /**
+   * @return C3 resource type from the given func component; e.g. k8scass => Cassandra
+   */
+  typeFromCloudFunc: function(cloudFunc: !string, failIfInvalid: boolean): Type
+
+  /**
+   * returns corresponding CloudService Impl based on this instance's cloud provider
+   */
+  impl: private member function(): !CloudService.Impl
+
+  /**
+   * returns corresponding CloudService Impl instance based on this instance's cloud provider
+   */
+  implType: private member function(): !Type<<CloudService.Impl>>
+
+  /**
+   * @return Impl instance type from the given func component; e.g. k8scass => Cassandra
+   */
+  implTypeFromCloudFunc: function(cloudFunc: !string, failIfInvalid: boolean): Type
+
+  /**
+   * @return Impl instance type from the given env; e.g. Env_Membership_Type
+   */
+  implTypeFromEnv: function(env: Env, failIfInvalid: boolean): Type
+
+  /**
+   * Retrieve all known cloud services in this cluster; if called on a subtype, limit results to instances of that
+   * subtype.
+   *
+   * @param tag
+   *         Optional {@link CloudTag}s used to filter results.
+   * @return known cloud services in this cluster that matches {@link CloudTag} specifications.
+   */
+  @action(group='cluster-admin')
+  list: function(tags: [CloudTag]): [mixing CloudService]
+
+  /**
+   * Retrieve all known CloudService IDs (as strings) in this cluster; if called on a subtype, limit results to
+   * instances of that subtype.
+   *
+   * @param tags
+   *         Optional {@link CloudTag}s used to filter results.
+   * @return list of CloudService ID strings that match {@link CloudTag} filters.
+   */
+  @action(group='cluster-admin')
+  listKeys: function(tags: [CloudTag]): [string]
+
+  /**
+   * @param envId
+   *          The envId to list the cloud services for
+   *          If not given, will list for the current env
+   * @return list of all known cloud services for provided Env
+   */
+  listForEnv: function(envId: string): [mixing CloudService]
+
+  /**
+   * @param appId
+   *          The appId to list the cloud services for
+   *          If not given, will list for the current app
+   * @return list of all known cloud services for provided App
+   */
+  listForApp: function(appId: string): [mixing CloudService]
+
+  /**
+   * Ensure the existence of a Cloud Service if it does not already exist.
+   *
+   * @param spec
+   *         Specifications to start a Cloud Service.
+   * @return created CloudService instance
+   */
+  ensureService: member function(spec: CloudServiceStartSpec): mixing CloudService
+
+  /**
+   * Await for Service to be ready to serve requests.
+   * Throws an error if Service does not become ready in time.
+   *
+   * @param spec
+   *         Customization for wait logic.
+   */
+  waitForReady: member function(spec: WaitSpec)
+
+  /**
+   * Updates config with actual values according to current context.
+   */
+  ensureConfig: optional member function()
+
+  /**
+   * Called before actual code of {@link #stop}.
+   */
+  beforeStop: optional member function(spec: CloudServiceStopSpec)
+
+  /**
+   * Called after actual code of {@link #stop}.
+   */
+  afterStop: optional member function(spec: CloudServiceStopSpec)
+
+  /**
+   * Upsert custom resource to start a Cloud Service
+   */
+  upsertResource: optional member function(cloudTag: !CloudTag)
+
+  /**
+   * Hibernate Cloud Service by releasing ephemeral resources but maintaining state as needed so it can be woken up at later time.
+   *
+   * @param spec
+   *         Specifications to stop a Cloud Service.
+   */
+  stop: member function(spec: CloudServiceStopSpec)
+
+  /**
+   * Called before actual code of {@link #terminate}.
+   */
+  beforeTerminate: optional member function(spec: CloudServiceStopSpec)
+
+  /**
+   * Called after actual code of {@link #terminate}.
+   */
+  afterTerminate: optional member function(spec: CloudServiceStopSpec)
+
+  /**
+   * Called after actual code of {@link #ensureService}.
+   */
+  afterEnsureService: optional member function(spec: CloudServiceStartSpec)
+
+  /**
+   * Abort and terminate Cloud Service and by default discard all state.
+   *
+   * @param spec
+   *         Specifications to stop a Cloud Service.
+   */
+  terminate: member function(confirm: boolean, spec: CloudServiceStopSpec)
+
+  /**
+   * Override of the this CloudService
+   */
+  overrideLevelFromAppId: private function(appId: !string): !string
+
+  /**
+   * @return `true` if this CloudService is currently deployed
+   */
+  isDeployed: final member function(): boolean
+
+  /**
+   * Get HttpResponse from CloudService
+   *
+   * @param encodedSubPathAndQuery
+   *         HTTP encoded subPath and query
+   */
+  httpGet: member function(encodedSubPathAndQuery: string): !HttpResponse
+
+  /**
+   * telemetry labels for the cloud service
+   */
+  telemetryLabels: abstract function(): string
+
+  /**
+   * @return `true` if istio is enabled in the cluster
+   */
+  istioEnabled: function(): boolean
+
+  /**
+   * @return `true` if this CloudService is currently terminating
+   */
+  isTerminating: optional member function(): boolean
+
+  /**
+   * restarts the JVM for the parent app of the cloud service
+   * @param restartAllServers
+   *            Set to true to restart all servers that belong
+   *            to the cluster/env/app that start/terminate this CloudService
+   *            Example: PG and Cassandra respect this to restart all servers
+   *            in order to use the new DataStore config when switching to new DB
+   */
+  restartServers: private member function(restartAllServers: boolean)
+
+  /**
+   * Indicates the IP mode of the cluster (IPv4, IPv6, or DualStack).
+   */
+  ipMode: function(): string enum IpMode
+}

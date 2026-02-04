@@ -1,0 +1,1444 @@
+// TypeScript definitions for the C3 type DataValidationUiSettings
+
+/**
+ * Type to get the configurations to render the DataValidation UI.
+ *
+ * @remarks this represents a value passed to a method that expects an instance of DataValidationUiSettings
+ */
+declare interface IDataValidationUiSettings {
+
+  /**
+   * Various system fields.
+   */
+  meta?: IMeta;
+
+  /**
+   * The unique and required name of this instance.
+   */
+  name: string;
+
+  /**
+   * Path in page parameter to get the key to {@link DataValidationUiSettings page configurations}.
+   */
+  pageKeyPageParamId?: string;
+
+  /**
+   * A map of {@link DataValidationUiPageSettings settings} for each data validation page.
+   */
+  pageConfigs?: Map_Type<string, DataValidationUiPageSettings> | {[key: string]: IDataValidationUiPageSettings};
+}
+
+/**
+ * Type to get the configurations to render the DataValidation UI.
+ *
+ * @remarks this represents a made instance of DataValidationUiSettings
+ */
+declare class DataValidationUiSettings extends Obj  {
+
+  /**
+   * Various system fields.
+   */
+  readonly meta?: Meta;
+  withMeta(meta: IMeta | null): DataValidationUiSettings;
+
+  /**
+   * Various system fields.
+   */
+  static readonly meta?: Meta;
+
+  /**
+   * The unique and required name of this instance.
+   */
+  readonly name: string;
+  withName(name: string): DataValidationUiSettings;
+
+  /**
+   * The unique and required name of this instance.
+   */
+  static readonly name: string;
+
+  /**
+   * Path in page parameter to get the key to {@link DataValidationUiSettings page configurations}.
+   */
+  readonly pageKeyPageParamId?: string;
+  withPageKeyPageParamId(pageKeyPageParamId: string | null): DataValidationUiSettings;
+
+  /**
+   * Path in page parameter to get the key to {@link DataValidationUiSettings page configurations}.
+   */
+  static readonly pageKeyPageParamId?: string;
+
+  /**
+   * A map of {@link DataValidationUiPageSettings settings} for each data validation page.
+   */
+  readonly pageConfigs?: Map_Type<string, DataValidationUiPageSettings>;
+  withPageConfigs(pageConfigs: Map_Type<string, DataValidationUiPageSettings> | {[key: string]: IDataValidationUiPageSettings} | null): DataValidationUiSettings;
+
+  /**
+   * A map of {@link DataValidationUiPageSettings settings} for each data validation page.
+   */
+  static readonly pageConfigs?: Map_Type<string, DataValidationUiPageSettings>;
+
+  /**
+   * @return the default instance to be used when member functions are called on this type. E.g.
+   *         FileSystem.inst() should return a default file system. It is up to implementation to decide if default
+   *         instance is a singleton or not.
+   */
+  static inst(): DataValidationUiSettings;
+
+  /**
+   * Load the JSON-based representation and reconstruct the corresponding object.
+   *
+   * fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+   * called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+   * an instance of the correct type.
+   *
+   * @see #toJson
+   */
+  static fromJson(json: any): DataValidationUiSettings | null;
+
+  /**
+   * Load the JSON-based representation and reconstruct the corresponding object.
+   *
+   * fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+   * called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+   * an instance of the correct type.
+   *
+   * @see #toJsonString
+   */
+  static fromJsonString(json: string): DataValidationUiSettings | null;
+
+  /**
+   * Load the XML-based representation and reconstruct the corresponding object.
+   *
+   * fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+   * may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+   * isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+   * will return an instance of the correct type.
+   *
+   * @see #toXmlString
+   */
+  static fromXmlString(xml: string): DataValidationUiSettings | null;
+
+  /**
+   * Load from contentType representation and reconstruct the corresponding object.
+   *
+   * fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+   * (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+   * will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+   * type and will return an instance of the correct type.
+   */
+  static deserialize(contentStr: string, contentType: string): DataValidationUiSettings | null;
+
+  /**
+   * Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+   * type does not contain fields from old or field value types are not convertable then drops the field.
+   *
+   * This method is used during live metadata update
+   */
+  replaceType(old: Type, new_: Type): DataValidationUiSettings;
+
+  /**
+   * Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+   * type does not contain fields from old or field value types are not convertable then drops the field.
+   *
+   * This method is used during live metadata update
+   */
+  static replaceType(old: Type, new_: Type): DataValidationUiSettings;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValues(mapper: λBiFunction<FieldType, any, any | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapFieldValues(mapper: λBiFunction<FieldType, any, any | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValues(spec: ValueSpec, mapper: λBiFunction<FieldType, any, any | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapFieldValues(spec: ValueSpec, mapper: λBiFunction<FieldType, any, any | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the asynchronous `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that fields
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValuesAsync(mapper: λBiFunction<FieldType, any, Promise<any> | null>, convertValue?: boolean): Promise<DataValidationUiSettings>;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the asynchronous `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that fields
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapFieldValuesAsync(mapper: λBiFunction<FieldType, any, Promise<any> | null>, convertValue?: boolean): Promise<DataValidationUiSettings>;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * asynchronous `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValuesAsync(spec: ValueSpec, mapper: λBiFunction<FieldType | null, any, Promise<any> | null>, convertValue?: boolean): Promise<DataValidationUiSettings>;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * asynchronous `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapFieldValuesAsync(spec: ValueSpec, mapper: λBiFunction<FieldType | null, any, Promise<any> | null>, convertValue?: boolean): Promise<DataValidationUiSettings>;
+
+  /**
+   * Result of this function call is a copy of current instance with specified field value replaced based on result of
+   * the `mapper` invocation.
+   * @param field
+   *           field being mapped
+   * @param includeEmpty
+   *           if set, invokes mapper for fields with empty value
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValue(field?: FieldType, includeEmpty?: boolean, mapper: λFunction<any, any | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Result of this function call is a copy of current instance with specified field value replaced based on result of
+   * the `mapper` invocation.
+   * @param field
+   *           field being mapped
+   * @param includeEmpty
+   *           if set, invokes mapper for fields with empty value
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapFieldValue(field?: FieldType, includeEmpty?: boolean, mapper: λFunction<any, any | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param action
+   *           function to be executed for each pair of field type and Obj instance
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapRefs(mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param action
+   *           function to be executed for each pair of field type and Obj instance
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapRefs(mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param includeEmpty
+   *           if `true` will also process references with `null` / "Empty" references
+   * @param mapper
+   *           function to be executed for each pair of field type and Obj instance for producing new reference value
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapRefs(includeEmpty: boolean, mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param includeEmpty
+   *           if `true` will also process references with `null` / "Empty" references
+   * @param mapper
+   *           function to be executed for each pair of field type and Obj instance for producing new reference value
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  static mapRefs(includeEmpty: boolean, mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): DataValidationUiSettings;
+
+  /**
+   * Populates all missing default values and throws error if any constraint is violated.
+   */
+  validateObj(): DataValidationUiSettings;
+
+  /**
+   * Populates all missing default values and throws error if any constraint is violated.
+   */
+  static validateObj(): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           name of the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  withField(field: string, value: any, doNotConvert?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           name of the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  static withField(field: string, value: any, doNotConvert?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  withField(field: FieldType, value: any, doNotConvert?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  static withField(field: FieldType, value: any, doNotConvert?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+   * defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+   *
+   * @param fields
+   *           map of field names/values
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @return new Obj
+   */
+  withFields(fields: Map_Type<string, any>, doNotConvert?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+   * defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+   *
+   * @param fields
+   *           map of field names/values
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @return new Obj
+   */
+  static withFields(fields: Map_Type<string, any>, doNotConvert?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+   * If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+   *
+   * Immutable objects may return the same instance if the field being set does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path to set value at
+   * @param value
+   *           value to set
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @param doNotCreateIfMissing
+   *           true indicates that any empty reference along the path will not set the value
+   * @return new Obj
+   */
+  withFieldAtPath(path: string, value: any, doNotConvert?: boolean, doNotCreateIfMissing?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+   * If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+   *
+   * Immutable objects may return the same instance if the field being set does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path to set value at
+   * @param value
+   *           value to set
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @param doNotCreateIfMissing
+   *           true indicates that any empty reference along the path will not set the value
+   * @return new Obj
+   */
+  static withFieldAtPath(path: string, value: any, doNotConvert?: boolean, doNotCreateIfMissing?: boolean): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj without the specified path field.
+   *
+   * Immutable objects may return the same instance if the field being removed does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path for field to remove
+   * @return new Obj
+   *
+   * @see #withFieldAtPath
+   * @see #withoutField
+   */
+  withoutFieldAtPath(path: string): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj without the specified path field.
+   *
+   * Immutable objects may return the same instance if the field being removed does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path for field to remove
+   * @return new Obj
+   *
+   * @see #withFieldAtPath
+   * @see #withoutField
+   */
+  static withoutFieldAtPath(path: string): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the field with the provided name.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  withoutField(field: string): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the field with the provided name.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  static withoutField(field: string): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the field with the provided field type.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  withoutField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the field with the provided field type.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  static withoutField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided names.
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           names of the fields to remove
+   * @return new Obj with removed fields
+   */
+  withoutFields(fields: Array_Type<string>): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided names.
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           names of the fields to remove
+   * @return new Obj with removed fields
+   */
+  static withoutFields(fields: Array_Type<string>): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+   * exact same type as the type of the obj to respect the "ordinal" of the field type
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           field types to remove
+   * @return new Obj with removed fields
+   */
+  withoutFieldsByType(fields: Array_Type<FieldType>): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+   * exact same type as the type of the obj to respect the "ordinal" of the field type
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           field types to remove
+   * @return new Obj with removed fields
+   */
+  static withoutFieldsByType(fields: Array_Type<FieldType>): DataValidationUiSettings;
+
+  /**
+   * @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+   */
+  withoutSecretFields(): DataValidationUiSettings;
+
+  /**
+   * @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+   */
+  static withoutSecretFields(): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+   * calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+   * {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+   * fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+   * fields that have already been set.
+   *
+   * {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+   * As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+   *
+   * @param includeEmptyRefsWithDefaults
+   *           it `true` then missing / empty child references that have fields with defaults will also be instantiated
+   * @param defaultFields
+   *           If not empty, a list of default field paths to populate.  Any default fields not specified in the
+   *           array will be ignored.
+   * @return new Obj
+   *
+   * @see #defaultField
+   * @see FieldType#defaultValueConst
+   * @see FieldType#defaultValue
+   */
+  withDefaults(includeEmptyRefsWithDefaults?: boolean, defaultFields?: Array_Type<string>): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+   * calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+   * {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+   * fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+   * fields that have already been set.
+   *
+   * {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+   * As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+   *
+   * @param includeEmptyRefsWithDefaults
+   *           it `true` then missing / empty child references that have fields with defaults will also be instantiated
+   * @param defaultFields
+   *           If not empty, a list of default field paths to populate.  Any default fields not specified in the
+   *           array will be ignored.
+   * @return new Obj
+   *
+   * @see #defaultField
+   * @see FieldType#defaultValueConst
+   * @see FieldType#defaultValue
+   */
+  static withDefaults(includeEmptyRefsWithDefaults?: boolean, defaultFields?: Array_Type<string>): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         name of the field to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  defaultField(field: string): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         name of the field to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  static defaultField(field: string): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         field type to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  defaultField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         field type to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  static defaultField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         name of the field to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  unsetField(field: string): DataValidationUiSettings;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         name of the field to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  static unsetField(field: string): DataValidationUiSettings;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         field type to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  unsetField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         field type to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  static unsetField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         name of the field to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  removeField(field: string): DataValidationUiSettings;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         name of the field to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  static removeField(field: string): DataValidationUiSettings;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         field type to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  removeField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         field type to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  static removeField(field: FieldType): DataValidationUiSettings;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+   *
+   * @param other
+   *           object
+   * @param fieldPathMergeSpec
+   *           mapping of fields of the object to the respective merge annotations
+   * @return the new merged Obj
+   */
+  mergeObj(other: Obj, fieldPathMergeSpec?: Map_Type<string, string>): DataValidationUiSettings;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+   *
+   * @param other
+   *           object
+   * @param fieldPathMergeSpec
+   *           mapping of fields of the object to the respective merge annotations
+   * @return the new merged Obj
+   */
+  static mergeObj(other: Obj, fieldPathMergeSpec?: Map_Type<string, string>): DataValidationUiSettings;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence.
+   *
+   * @param other
+   *           object
+   * @param otherFieldsFilter
+   *           only fields of otherFieldsFilter type from other are merged into this obj.
+   * @return the new merged Obj
+   */
+  mergeObj(other: Obj, otherFieldsFilter: Type): DataValidationUiSettings;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence.
+   *
+   * @param other
+   *           object
+   * @param otherFieldsFilter
+   *           only fields of otherFieldsFilter type from other are merged into this obj.
+   * @return the new merged Obj
+   */
+  static mergeObj(other: Obj, otherFieldsFilter: Type): DataValidationUiSettings;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+   * @param deep
+   *        if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+   *        the same key or index.
+   */
+  mergeObj(other: Obj, deep?: boolean, merger: λQuadFunction<FieldPath | null, any | null, FieldPath | null, any | null, any | null>): DataValidationUiSettings;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+   * @param deep
+   *        if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+   *        the same key or index.
+   */
+  static mergeObj(other: Obj, deep?: boolean, merger: λQuadFunction<FieldPath | null, any | null, FieldPath | null, any | null, any | null>): DataValidationUiSettings;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+   * traverse child reference and collection fields.
+   */
+  mergeObj(other: Obj, merger: λQuadFunction<FieldType | null, any | null, FieldType | null, any | null, any | null>): DataValidationUiSettings;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+   * traverse child reference and collection fields.
+   */
+  static mergeObj(other: Obj, merger: λQuadFunction<FieldType | null, any | null, FieldType | null, any | null, any | null>): DataValidationUiSettings;
+
+  mergeJson(json: any): DataValidationUiSettings;
+
+  static mergeJson(json: any): DataValidationUiSettings;
+
+  /**
+   * Merge the obj references within the current obj
+   * @param deep
+   *        If set, traverses the reference fields within the obj as well for a deep merge
+   * @param objKey
+   *        lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+   * @param filter
+   *        Field paths that need to be filtered from this merge
+   * @return Obj with child references merged
+   */
+  mergeChildren(deep?: boolean, objKey?: λFunction<Obj | null, any | null>, filter?: λPredicate<string>): DataValidationUiSettings;
+
+  /**
+   * Merge the obj references within the current obj
+   * @param deep
+   *        If set, traverses the reference fields within the obj as well for a deep merge
+   * @param objKey
+   *        lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+   * @param filter
+   *        Field paths that need to be filtered from this merge
+   * @return Obj with child references merged
+   */
+  static mergeChildren(deep?: boolean, objKey?: λFunction<Obj | null, any | null>, filter?: λPredicate<string>): DataValidationUiSettings;
+
+  /**
+   * Adds the numeric Obj fields with the other Objs respective fields.
+   * If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+   * references with same name and collection elements at same index or key.
+   */
+  sumObj(other: Obj, deep?: boolean): DataValidationUiSettings;
+
+  /**
+   * Adds the numeric Obj fields with the other Objs respective fields.
+   * If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+   * references with same name and collection elements at same index or key.
+   */
+  static sumObj(other: Obj, deep?: boolean): DataValidationUiSettings;
+
+  /**
+   * Build an array of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  singletonArray(): Array_Type<DataValidationUiSettings>;
+
+  /**
+   * Build an array of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  static singletonArray(): Array_Type<DataValidationUiSettings>;
+
+  /**
+   * Creates an array of instances of this type.
+   */
+  static array(...elements: Array_Type<any>[]): Array_Type<DataValidationUiSettings> | null;
+
+  /**
+   * Creates an array of instances of this type.
+   */
+  static arrayBuilder(): ArrayBuilder<DataValidationUiSettings> | null;
+
+  /**
+   * Build an set of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  singletonSet(): Set_Type<DataValidationUiSettings>;
+
+  /**
+   * Build an set of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  static singletonSet(): Set_Type<DataValidationUiSettings>;
+
+  /**
+   * Creates a set of instances of this type.
+   */
+  static setBuilder(): SetBuilder<DataValidationUiSettings> | null;
+
+  /**
+   * Create a map of string to elements of this type.
+   */
+  static mapBuilder(): MapBuilder<string, DataValidationUiSettings> | null;
+
+  /**
+   * Create a map with the given key type and elements of this type.
+   */
+  static mapBuilderOf(keyType: ValueType): MapBuilder<any, DataValidationUiSettings> | null;
+
+  /**
+   * @return new ObjBuilder with initial state set to fields of this instance.
+   */
+  toBuilder(): ObjBuilder<DataValidationUiSettings>;
+
+  /**
+   * @return new ObjBuilder with initial state set to fields of this instance.
+   */
+  static toBuilder(): ObjBuilder<DataValidationUiSettings>;
+
+  /**
+   * @return new ObjBuilder of this instance.
+   */
+  static builder(): ObjBuilder<DataValidationUiSettings>;
+
+  /**
+   * Construct instance of this type from provided field values and options
+   */
+  static fromFields(fields: Map_Type<FieldType, any>, spec: Obj.MakeSpec): DataValidationUiSettings;
+
+  /**
+   * Construct an instance of this type from provided fields
+   * @param fields
+   *            Fields to construct the instance of the obj with
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+   *
+   * @see withDefaults
+   */
+  static fromFields(fields: Map_Type<FieldType, any | any>, withDefaults?: boolean): DataValidationUiSettings;
+
+  /**
+   * Construct instance of this type from provided field values and options
+   */
+  static make(fields: Map_Type<string, any>, spec: Obj.MakeSpec): DataValidationUiSettings;
+
+  /**
+   * Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+   *            populated
+   *
+   * @see withDefaults
+   */
+  static make(withDefaults?: boolean): DataValidationUiSettings;
+
+  /**
+   * Construct an instance from provided fields
+   * @param fields
+   *            Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+   *            field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+   *            to Panda.make()
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+   *            -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+   *            the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+   *
+   *
+   * @see fromFields
+   * @see beforeMake
+   * @see afterMake
+   * @see withDefaults
+   */
+  static make(fields: Map_Type<string, any | any>, withDefaults?: boolean): DataValidationUiSettings;
+
+  /**
+   * Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+   *
+   * ```js
+   * User.make({
+   *   email: 'joe@smith.com',
+   *   realName: 'Joe Smith'
+   * })
+   *
+   * Obj.make({
+   *   type: 'User',
+   *   email: 'joe@smith.com',
+   *   realName: 'Joe Smith'
+   * })
+   * ```
+   *
+   * ```py
+   * c3.User.make({
+   *   "email": 'joe@smith.com',
+   *   "realName": 'Joe Smith'
+   * })
+   *
+   * c3.Obj.make({
+   *   "type": 'User',
+   *   "email": 'joe@smith.com',
+   *   "realName": 'Joe Smith'
+   * })
+   *
+   * c3.User(email='joe@smith.com', realName='Joe Smith')
+   *
+   * c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+   * ```
+   *
+   * Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+   * specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+   * such as {@link Ann.Ser} do not apply.
+   * @param fields
+   *            Fields to construct the instance of the obj with
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+   *
+   * @see fromFields
+   * @see beforeMake
+   * @see afterMake
+   * @see withDefaults
+   */
+  static make(fields: any, withDefaults?: boolean): DataValidationUiSettings;
+
+  /**
+   * Construct an instance of this type from the string. This is an alias for #fromString, as a specific overload
+   * when the argument is a known string.
+   *
+   * @see #fromString
+   */
+  static make(s: string): DataValidationUiSettings | null;
+
+  /**
+   * Construct an instance of this type from provided instance of a subtype or a "duck type".
+   */
+  static remake(other: Obj, failIfExtraOrInvalidFields?: boolean): DataValidationUiSettings;
+
+  /**
+   * Optional override that will be called every time instance of this type is created.
+   *
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  static beforeMake(fields: Map_Type<FieldType, any>): Map_Type<FieldType, any> | null;
+
+  /**
+   * Optional override that will be called after every instance creation.
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  afterMake(): DataValidationUiSettings;
+
+  /**
+   * Optional override that will be called after every instance creation.
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  static afterMake(): DataValidationUiSettings;
+
+  /**
+   * Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+   * every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+   * Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+   *
+   * @see ValueType#defaultEmptyValue
+   */
+  static cachedEmptyInst(): DataValidationUiSettings;
+
+  /**
+   * Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+   * value is read.
+   */
+  static generateObjs(spec?: Obj.GenerateSpec): Stream<DataValidationUiSettings> | null;
+
+  /**
+   * Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+   * random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+   * populates fields in a more realistic way.
+   */
+  static generateObj(spec?: Obj.GenerateSpec): DataValidationUiSettings;
+
+  /**
+   * Fetches multiple obj instances based on a specification.  Only objs that the caller is authorized to fetch will be
+   * returned.
+   *
+   * @param spec
+   *           Specification of what data to fetch.  If not specified, no filtering will be applied and a default limit
+   *           of 2000 will be applied.
+   * @return Requested objs.
+   */
+  static fetch(spec?: FetchSpec): FetchResult<DataValidationUiSettings>;
+
+  /**
+   * Fetches multiple obj instances based on a filter.  Only objs that the caller is authorized to fetch will be
+   * returned.
+   *
+   * @param filter
+   *           Specification of filter to apply to data to fetch.  Note that default limit of 2000 will be applied.
+   * @return Requested objs.
+   */
+  static fetch(filter: Filter): FetchResult<DataValidationUiSettings>;
+
+  /**
+   * Fetches multiple obj instances based on a specification.  Only objs that the caller is authorized to fetch will be
+   * returned.
+   *
+   * @param spec
+   *           Specification of what data to fetch.  If not specified, no filtering or limit will be applied.
+   * @return Requested obj stream.
+   */
+  static fetchObjStream(spec?: FetchStreamSpec): Stream<DataValidationUiSettings> | null;
+
+  /**
+   * Fetches multiple obj instances based on a specification and returns them as stream of Arrow batches with
+   * specified maximum batch size.
+   *
+   * @param spec
+   *           Specification of what data to fetch.
+   * @return Stream of Arrow batches.
+   */
+  static fetchArrowStream(spec: FetchArrowStreamSpec): Stream<Arrow>;
+
+  /**
+   * Fetched multiple obj instances in multiple locales based on specification.
+   *
+   * @param spec
+   *        Specification of what data to fetch. If not specified, all objs will be returned in all locales for the
+   *        type.
+   * @return Requested objs where key of map is locale id
+   */
+  static fetchMultiLocale(spec?: MultiLocaleFetchSpec): Map_Type<string, FetchResult<DataValidationUiSettings>> | null;
+
+  /**
+   * @return The number of entries that match the specification.
+   */
+  static fetchCount(spec?: FetchFilterSpec): number;
+
+  /**
+   * Gets the estimated count of objs that a fetch on the type with the optional filter will return.
+   * For non-kv types, The count is obtained from the query explain plan for the fetch.
+   * For kv types, the count is obtained by reading metadata from the state column and approximating the size of every
+   * other column based on newColMaxObjCount. Since we compute based on max obj count, this value will be the
+   * upper bound for the partition. For more accurate results, perform fillBuckets first.
+   *
+   * @param spec
+   *        Optional filter to use for the estimated count.  Note that since the estimate is obtained from the query
+   *        explain plan for the fetch it's accuracy will be MUCH greater if the filter involves only indexed
+   *        fields.
+   * @param updateStatistics
+   *        If true, the database statistics for all tables involved in the query will be updated prior to obtaining
+   *        the estimated row count.  This will give the most up to date estimate for types that are updated frequently.
+   *
+   * @return The requested estimated count.
+   */
+  static fetchCountEstimated(spec?: FetchFilterSpec, updateStatistics?: boolean): number;
+
+  /**
+   * Fetches all the data for this type based on provided filter and include spec, groups them by batchSize and invokes
+   * a callback function for the given batch.
+   *
+   * @param spec
+   *           Specification of the scan action.
+   * @return Statistics of the scan action.
+   */
+  static scan(spec: ScanSpec): ScanStats | null;
+
+  /**
+   * Returns a stream of ids for batches where the result[i] is the starting id for batch 'i + 1'.
+   *
+   * @param spec
+   *        Spec indicating how the operation should work.
+   *
+   * IMPORTANT - If both `suggestedNumBatches` and `batchSize` are specified in the spec, then the maximum number of
+   *             rows that will participate in the resulting batches is `suggestedNumBatches` * `batchSize`.  This could
+   *             cause an issue if the results are blindly used to create filters for fetching batches as the last batch
+   *             would include EVERYTHING after the requested number of batches.  Therefore, typically only one or the
+   *             other would be specified, depending on whether you are interested in controlling the number of batches
+   *             or batch size.
+   *
+   * @return A stream of batch ids based on the input parameters.
+   */
+  static batchIds(spec?: BatchIdsSpec): Stream<string> | null;
+
+  /**
+   * @return True if there are at least the number of entries matching the filter/count specified in the spec.
+   */
+  static exists(spec?: ExistsSpec): boolean;
+
+  /**
+   * @return True if there are at least the number of entries matching the filter/count specified in the spec.
+   */
+  static exists(filter: Filter): boolean;
+
+  /**
+   * @return key field type.
+   */
+  static keyFieldType(): FieldType;
+
+  /**
+   * @return key field value.
+   */
+  keyFieldValue(): string | null;
+
+  /**
+   * @return key field value.
+   */
+  static keyFieldValue(): string | null;
+
+  /**
+   * Build a map of the correct type with a single element which is this instance and key field value as key.
+   */
+  singletonMap(): Map_Type<string, WithKey>;
+
+  /**
+   * Build a map of the correct type with a single element which is this instance and key field value as key.
+   */
+  static singletonMap(): Map_Type<string, WithKey>;
+
+  /**
+   * Retrieves dependencies to types or other metadata elements for the given instance of metadata.
+   */
+  dependencies(): MetadataDeps<DataValidationUiSettings>;
+
+  /**
+   * Retrieves dependencies to types or other metadata elements for the given instance of metadata.
+   */
+  static dependencies(): MetadataDeps<DataValidationUiSettings>;
+
+  save(subPath?: string, contentType?: string): DataValidationUiSettings;
+
+  static save(subPath?: string, contentType?: string): DataValidationUiSettings;
+
+  remove(spec?: UpsertSpec): boolean;
+
+  static remove(spec?: UpsertSpec): boolean;
+
+  /**
+   * Remove the metadata instance as well as its associated backward dependencies.
+   * Ex: {@link SourceSystem} has backward dependencies on {@link SourceCollection}
+   */
+  removeWithChildren(): boolean;
+
+  /**
+   * Remove the metadata instance as well as its associated backward dependencies.
+   * Ex: {@link SourceSystem} has backward dependencies on {@link SourceCollection}
+   */
+  static removeWithChildren(): boolean;
+
+  static removeAll(removeFilter?: string): number;
+
+  update(srcObj?: DataValidationUiSettings, spec?: UpsertSpec): DataValidationUiSettings | null;
+
+  static update(srcObj?: DataValidationUiSettings, spec?: UpsertSpec): DataValidationUiSettings | null;
+
+  upsert(srcObj?: DataValidationUiSettings, spec?: UpsertSpec): DataValidationUiSettings | null;
+
+  static upsert(srcObj?: DataValidationUiSettings, spec?: UpsertSpec): DataValidationUiSettings | null;
+
+  /**
+   * Retrieves folder that holds metadata.
+   */
+  static metadataFolder(): string | null;
+
+  /**
+   * If this Metadata type has arbitrary folder hierarchy.
+   */
+  static hasArbitraryFolderHierarchy(): boolean;
+
+  /**
+   * If metadata path is valid.
+   * @param pkg
+   *    name of the package
+   * @param filePath
+   *    path of metadata json file
+   */
+  static isValidMetadataJson(pkg: string, filePath: string): boolean;
+
+  /**
+   * Optional member function to enable custom validation logic.
+   */
+  validateMetadata(): ValidateObjResult;
+
+  /**
+   * Optional member function to enable custom validation logic.
+   */
+  static validateMetadata(): ValidateObjResult;
+
+  /**
+   * Build the canonical string representation of this instance. This must be implemented to provide serialization.
+   *
+   * If the object has no content, and fromString would properly reproduce it from a null value, toString may return
+   * null or empty string. Note that toString is primarily for serialization and only secondarily for inspection.
+   *
+   * @see #fromString
+   */
+  toString(): string | null;
+
+  /**
+   * Build the canonical string representation of this instance. This must be implemented to provide serialization.
+   *
+   * If the object has no content, and fromString would properly reproduce it from a null value, toString may return
+   * null or empty string. Note that toString is primarily for serialization and only secondarily for inspection.
+   *
+   * @see #fromString
+   */
+  static toString(): string | null;
+
+  /**
+   * Parse the string-based representation and reconstruct the corresponding instance. This must be implemented to
+   * provide deserialization.
+   *
+   * fromString is called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type can be a sub-type
+   * of called-on type, but perhaps not the same type.
+   *
+   * E.g. `Url.fromString('c3fs:///...')` will produce {@link FileUrl}
+   *
+   * @see #toString
+   */
+  static fromString(s: string): DataValidationUiSettings | null;
+
+  /**
+   * @return single instance of this Nameable type by name. Note that if this type is also Cached then it will
+   * retrieve instance from cache.
+   */
+  static forName(name: string, failIfMissing?: boolean): DataValidationUiSettings | null;
+
+  /**
+   * Gets the value of a field based on the specified path.
+   * @param path
+   *    The path to the field containing the desired value.
+   * @return
+   *    The value of the field at the specified path.
+   */
+  get(path?: string): any | null;
+
+  /**
+   * Gets the value of a field based on the specified path.
+   * @param path
+   *    The path to the field containing the desired value.
+   * @return
+   *    The value of the field at the specified path.
+   */
+  static get(path?: string): any | null;
+}
+
+
+interface λFunction<T, R> {
+  (t: T): R
+}
+
+interface λBiFunction<T, U, R> {
+  (t: T, u: U): R
+}
+
+interface λQuadFunction<T, U, V, W, R> {
+  (t: T, u: U, v: V, w: W): R
+}
+
+interface λPredicate<T> {
+  (t: T): boolean
+}

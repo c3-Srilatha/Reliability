@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Iterator interface over sequence of elements
+ */
+type Iterator<E> mixes Value {
+
+  /**
+   * @return true if there is an element in the sequence
+   */
+  hasNext: abstract member function(): boolean
+
+  /**
+   * @return next element in the sequence
+   */
+  next: abstract member function(): E
+
+  /**
+   * "Close" iterator so any associated resources can be released. Exhausting iterator with hasNext / next should always
+   * close it but it should be ok to close it early.
+   */
+  close: optional member function()
+}

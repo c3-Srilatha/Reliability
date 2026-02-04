@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Static configuration for {@link UiSdlGraphic}.
+ * TODO: TOOLS-13113 Integrate static config with {@link UiSdlGraphic}
+ */
+@typeScript
+type UiSdlGraphicTypeStaticConfig {
+
+  /**
+   * Suffix for the display icon
+   */
+  iconSuffix: private string
+
+  /**
+   * Sets to color of icon/text
+   */
+  color: private string
+
+  /**
+   * Sets to backgroundColor of icon/text
+   */
+  backgroundColor: private string
+
+  /**
+   * Text to display. For Avatar/Logo, text will be trimmed to just use initials.
+   */
+  text: private string
+
+  /**
+   * Size of the component
+   */
+  size: private string enum('extraSmall', 'small', 'medium', 'large', 'extraLarge')
+
+  /**
+   * Triggered when the graphic is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @returns A `CLICK_ACTION` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CLICK_ACTION')
+  clickAction: private function(id: string, args: json): !UiSdlReduxAction ts-client
+}

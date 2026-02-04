@@ -1,0 +1,143 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Distributed batch processing engine to process batches in a massively parallel way across the cluster.
+ *
+ * The flow of calls is given under:
+ * ```
+ *                                           doStart
+ *             |              |                 |                |                 |
+ *       processBatch     processBatch       processBatch    processBatch   processBatch ......
+ *        |                                                         |
+ *  processBatch                                                processBatch
+ *      .                                                           .
+ *      .                                                           .
+ *                                              |
+ *                                         allComplete
+ * ```
+ *
+ * If the batch job has failed due to errors, one can retrieve all errors using:
+ * ```java
+ * String filter = String.format("queueTypeId == %d && targetTypeId == %d && targetObjId == %s",
+ *                               Db.Engine.inst().typeId(BatchQueue.myType()),
+ *                               Db.Engine.inst().typeId(job.type()),
+ *                               Expr.literal(job.id()));
+ * InvalidationQueueError.fetchObjStream(FetchStreamSpec.builder().filter(filter).include(include)
+ *                                                                .limit(Long.valueOf(limit)).build());
+ * ```
+ *
+ * @var JT job type
+ * @var OT options type
+ * @var BT batch type
+ *
+ * BT needs to be either a Primitive or Reference Type.
+ */
+extendable entity type BatchJob<JT, OT, BT> mixes JobBase<BatchJobRun, BatchJobStatus, OT>, BatchJobOptions type key 'BATCHJ' schema name 'BATCH_JOB' {
+
+  /**
+   * optional flag to abort on first error (by default on first error job will continue processing all maps or
+   *
+   * reduces and will simply mark state as "failing" - it can be recovered from this state using "recover" action)
+   */
+  abortOnError: boolean
+
+  /**
+   * Don't set this field in the BatchJob, set it in the BatchJobOptions when calling `start`
+   */
+  nodePool: private ~
+
+  /**
+   * This is the starting point of your batch job. This function will be invoked first by the batch engine.
+   * In this function, write logic to create & schedule batches {@link BatchJob#scheduleBatch}
+   * that should be distributed across the cluster.
+   */
+  doStart: abstract function(job: JT, options: OT)
+
+  /**
+   * This should be independent code blocks that will be invoked for every scheduled batch across the cluster. This step
+   * can also schedule other batches which will be enqueued and processed on the cluster. It is not necessary that the
+   * batch that is scheduled is processed on the same node.
+   */
+  processBatch: abstract function(batch: BT, job: JT, options: OT)
+
+  /**
+   * Override this function to be invoked when all the batches that were scheduled have successfully finished
+   * processing.  Will not be called if the job fails.
+   *
+   * @param job
+   *           Batch job.
+   * @param  options
+   *           Options the job was run with.
+   *
+   * @return optional info that will be returned in the {@link BatchJobStatus.info} field.
+   */
+  allComplete: optional function(job: !JT, options: OT): string
+
+  /**
+   * Override this function to be invoked when a batch job fails (e.g. it's status becomes 'failed')
+   *
+   * @param job
+   *           Batch job.
+   * @param status
+   *           Status of the failed job (including errors).
+   * @param  options
+   *           Options the job was run with.
+   */
+  failed: optional function(job: !JT, status: !BatchJobStatus, options: OT)
+
+  /**
+   * Call from your implementation of {@link doStart} to schedule a batch for processing.
+   *
+   * @param batch
+   *        Batch to schedule.
+   */
+  scheduleBatch: member function(batch: BT)
+
+  /**
+   * Call from your implementation of {@link doStart} to schedule multiple batches for processing.
+   *
+   * @param batches
+   *        Batches to schedule.
+   */
+  scheduleBatches: member function(batches: [BT])
+
+  /**
+   * Schedules batches indicated by the objBatch, returns number of objs processed.
+   *
+   * @param job
+   *        Job to schedule batches for.
+   * @param objBatch
+   *        Spec indicating what objs to schedule batches for.
+   * @param logPrefix
+   *        Prefix to use for logging.
+   *
+   * @return The total number of objs for all batches that were scheduled.
+   */
+  scheduleObjBatch: function(job: JT, objBatch: ObjBatch, logPrefix: string): int
+
+  /**
+   * Sets the subBatchSize for a job for batch jobs that support subBatchSize (e.g. jobs that have
+   * a field called subBatchSize in the options type.  An error is returned for job types that don't support it.
+   *
+   * @param job
+   *           Batch job
+   * @param subBatchSize
+   *           New subBatchSize
+   */
+  @action(group+='monitor')
+  setSubBatchSize: member function(subBatchSize: int)
+
+  /**
+   * BatchJob engine provided internal actions
+   */
+  dispatchDoStart: private function(jobId: string)
+
+  dispatchProcessBatch: function(jobId: string, context: string)
+  versionEdits:         ~ not persistable
+}

@@ -1,0 +1,172 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base Type for {@link BaseCodeAnalyzer} to interact with a GitHub repository through REST.
+ * This Type is intended to add on additional APIs required for the code analyzer on top of
+ * what's already provided by the {@link GitHub} Type.
+ */
+type BaseCodeAnalyzer.GitHubGadget mixes BaseCodeAnalyzer.SourceControlGadget<BaseCodeAnalyzer.GitHubRestApi, GitHub, BaseCodeAnalyzer.GitHubGadget.Spec> {
+
+  getGadgetFromSpec: ~
+
+  getBaseBranchName: ~
+
+  postPendingCommitStatus: ~
+
+  postSuccessCommitStatus: ~
+
+  postFailureCommitStatus: ~
+
+  postIncompleteCommitStatus: ~
+
+  postCompletionCommitStatus: ~
+
+  getPullRequestTitle: ~
+
+  getModifiedFileDiffs: ~
+
+  parseDiff: ~
+
+  getCommitEncodedAnchor: ~
+
+  getPrEncodedAnchors: ~
+
+  updateOrPostCodeReviewComments: ~
+
+  updateOrPostCodeReviewSummary: ~
+
+  commitProcessedResults: ~
+
+  getFileContents: ~
+
+  /**
+   * Function to check whether the commit on which this code analysis build is running is up-to-date, i.e.,
+   * if the SHA of the build is the same as the current SHA of the PR.
+   *
+   * @returns true if the sha is up-to-date.
+   */
+  isCommitShaUpToDate: private inline member function(): boolean js-rhino
+
+  /**
+   * Helper function to get a list of auth tokens to be used for authorizing.
+   * Contains the default auth token with passed in the source control spec along with
+   * the backup tokens.
+   *
+   * @returns the list of GitHub token to be used to authorize GitHub API request.
+   */
+  getAuthWithBackupTokens: private inline member function(): [string] js-rhino
+
+  /**
+   * Wrapper function to execute a lambda with retry logic by trying multiple auth tokens
+   * until the API request succeeds. All write operations must use this wrapper so to ensure
+   * there is fault tolerance if any one token hits secondary rate limits.
+   *
+   * @param url
+   *           The GitHub API url to use.
+   * @param lambda
+   *           The request lambda to execute. Must have partially applied args for all parameters
+   *           other than the url and auth with which to execute the lambda. Must accept a url and auth token.
+   * @returns the response from the GitHub API, if any
+   */
+  invokeApiWithBackupTokens: private inline member function(url: !string, lambda: !Lambda): any js-rhino
+
+  /**
+   * Wrapper around the {@link GitHub#pullRequest} function.
+   * Being used to reliably spy on the `pullRequest` function.
+   *
+   * @param fullRepositoryName
+   *           GitHub's full repository path. (e.g. `c3-e/c3server`)
+   * @param pullRequestNumber
+   *           The number of the pull request.
+   * @returns the latest pull request information corresponding to the repo and PR number.
+   */
+  pullRequest: private inline member function(fullRepositoryName: !string, pullRequestNumber: !string): GitHubPullRequest js-rhino
+
+  /**
+   * Wrapper around the {@link BaseCodeAnalyzer.GitHubRestApi#pullRequestComments} function.
+   * Being used to reliably spy on the `pullRequestComments` function.
+   *
+   * @returns the list of GitHub comments for the PR linked to this gadget.
+   */
+  pullRequestComments: private inline member function(): [BaseCodeAnalyzer.GitHubComment] js-rhino
+
+  /**
+   * Wrapper around the {@link BaseCodeAnalyzer.GitHubRestApi#createPullRequestReview} function.
+   * Being used to reliably spy on the `createPullRequestReview` function to ensure the
+   * correct comments are being passed through.
+   *
+   * @param body
+   *           The text of the review comment.
+   * @param comments
+   *           The list of GitHub comments to be posted as part of the pull request review.
+   */
+  createPullRequestReview: private inline member function(body: string, comments: [BaseCodeAnalyzer.GitHubComment]) js-rhino
+
+  /**
+   * Wrapper around the {@link GitHub#createIssueComment} function.
+   * Being used to reliably spy on the `createIssueComment` function to ensure the
+   * correct summary message is being passed through.
+   *
+   * @param summaryMessage
+   *           The summary message to be posted on the PR.
+   */
+  createIssueComment: private inline member function(summaryMessage: string) js-rhino
+
+  /**
+   * Wrapper around the {@link GitHub#updateIssueComment} function.
+   * Being used to reliably spy on the `updateIssueComment` function to ensure the
+   * correct summary message is being passed through.
+   *
+   * @param summaryMessage
+   *           The summary message to be posted on the PR.
+   * @param issueCommentId
+   *           The ID of the the issue comment to update.
+   */
+  updateIssueComment: private inline member function(summaryMessage: string, issueCommentId: int) js-rhino
+
+  /**
+   * Helper function to get the ID of an existing code analysis summary comment, if it exists.
+   * If there isn't one, returns null.
+   *
+   * @returns the ID of the existing summary comment.
+   */
+  getExistingSummaryCommentId: private inline member function(): int js-rhino
+
+  /**
+   * Helper function to determine the number of comments to post as part of the review.
+   *
+   * The C3 AI Code Analyzer only posts a maximum of {@link BaseCodeAnalyzer.NotifyPullRequestSpec#maxCodeAnalyzerCommentCount}
+   * error messages as inline comments and posts the rest of the messages in the review comment.
+   * This function determines how many of the error messages were already posted
+   * and returned the number of previous posted messages, the number of new messages (including warnings) and also
+   * provides the list of comments to post on the PR (ensuring the total comments posted is at a maximum of `x`).
+   *
+   * Returns a JSON object with the following shape:
+   *
+   * ```json
+   * {
+   *   "previouslyPostedMsgsCount": int,
+   *   "newCommentCount": int,
+   *   "commentsToPost": [BaseCodeAnalyzer.GitHubComment]
+   * }
+   * ```
+   *
+   * @param messages
+   *           The processed metric messages (along with their metric code) to convert and classify.
+   * @param maxCodeAnalyzerCommentCount
+   *           The maximum number of code analyzer comments to post as inline comments.
+   * @returns Object with the previously posted message count, new comment count and
+   *          the comments to post.
+   */
+  convertAndClassifyToGitHubComments: private inline member function(
+    messages: [(!string enum BaseCodeAnalysis.Metric.Code, BaseCodeAnalysis.Metric.Message.Processed)],
+    maxCodeAnalyzerCommentCount: int
+  ): json js-rhino
+}

@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ *  Application-driven calculations through callbacks.
+ *  The callback function's signature should be:
+ *    type T { ... foo : function(T t, [UpdatedDependency] updatedDependencies) }
+ *  If this annotation is not defined on a function that has this signature,
+ *  the annotation will be ignored.
+ *  If the dependency path does not contain a reference to an entity type,
+ *  that dependency will be ignored.
+ *  The callback function is called when the value pointed to by one or more
+ *  dependency changes. If the dependency is a timeseries, the callback would be
+ *  invoked AFTER normalization. If grainPath or timeRangeStartPath or timeRangeEndPath
+ *  is specified, the call is invoked only if the change satisfies all the specified conditions i.e.
+ *    1. the change impacted a complete grain
+ *    2. the change was after the specified start time
+ *    3. the change was before the specified end time
+ *
+ * The callback is invoked under the following circumstances:
+ *    1. When the value of the dependency changes
+ *       If the dependency is a reference to a timeseries, the UpdatedDependency Obj will
+ *       contain the affected TimeRange.
+ *    2. When the reference to the dependency changes
+ *       e.g. if the dependency is devices.measurements, the following changes will lead to the callback:
+ *       A. devices changes i.e. a new device got added or a device got removed
+ *       B. devices.measurements changes i.e. a new measurement series got added or a measurement series got removed
+ *       In this case, the callback will point to the changed Object but the TimeRange value will not be set.
+ */
+@annotation(appliesTo=['function'])
+type Ann.TimeseriesCallbackFunction mixes Annotation {
+
+  /**
+   * Path to fields that this function is interested in
+   */
+  dependencies: [string]
+
+  /**
+   * Path to field that contains the grain
+   */
+  grainPath: string
+
+  /**
+   * Path to field that contains the timeRangeStart
+   */
+  timeRangeStartPath: string
+
+  /**
+   * Path to field that contains the timeRangeEnd
+   */
+  timeRangeEndPath: string
+}

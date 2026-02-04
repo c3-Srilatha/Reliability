@@ -1,0 +1,172 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a route to a deployed model, for a group of {@link MlSubject} instances defined by
+ * a {@link subjectFilter}.
+ * A route is associated with a {@link MlModel.Router} that handles all the routes for a {@link MlProject}.
+ *
+ * To change the status of a {@link MlModel.Route}, it is recommended to use the function {@link updateStatus}
+ * of this type.
+ *
+ * @see MlModel#deploy
+ * @see MlModel.Router
+ */
+@db(index=["groupId"])
+@dependency(include="this, isActive, status, router.this")
+entity type MlModel.Route {
+
+  /**
+   * A filter that defines which {@link MlSubject subjects} are in scope of the rule.
+   * If null, all the subjects in the scope of the related {@link MlModel} are in scope.
+   */
+  @db(createOnly=true)
+  subjectFilter: string serialized Filter
+
+  /**
+   * The model deployed with this route.
+   */
+  @db(createOnly=true)
+  model: !MlModel
+
+  /**
+   * The {@link MlProject} to which the route's {@link model} belongs.
+   */
+  project: MlProject stored calc model.project
+
+  /**
+   * The {@link MlModel.Router} that handles this route.
+   */
+  router: MlModel.Router stored calc model.project.router
+
+  /**
+   * The status history of the route.
+   */
+  @db(order='descending(start)')
+  statusHistory: [MlModel.Route.StatusHistory](parent)
+
+  /**
+   * The current status of the route.
+   */
+  @db(timedValueHistoryField="statusHistory")
+  status: MlModel.Route.Status = {"label": "CANDIDATE"}
+
+  /**
+   * When true, this route can be used to select models for inference.
+   */
+  isActive: boolean stored calc status.label != "RETIRED"
+
+  /**
+   * Optional field that can be used to group routes together.
+   * For example, this is used to identify routes created by a single {@link MlModel#deployBatch} operation.
+   */
+  groupId: string
+
+  /**
+   * {@link MlModel.OutputHandler Model output handlers} used to post-process model outputs, e.g. transforming and
+   * persisting to prediction types or saving to a CSV file.
+   *
+   * This field is on {@link MlModel.Route} as opposed to {@link MlModel} as same model may be deployed to different
+   * populations requiring differing prediction handling logic.
+   *
+   * @see MlModel.DbOutputHandler
+   * @see MlModel.CsvOutputHandler
+   */
+  outputHandlers: [MlModel.OutputHandler]
+
+  /**
+   * {@link MlModel.OutputHandler Model output handlers} used to post-process model interpretation results, e.g. transforming and
+   * persisting to prediction types or saving to a CSV file.
+   *
+   * This field is on {@link MlModel.Route} as opposed to {@link MlModel} as same model may be deployed to different
+   * populations requiring differing prediction handling logic.
+   *
+   * @see MlModel.DbOutputHandler
+   * @see MlModel.CsvOutputHandler
+   */
+  interpretHandlers: [MlModel.OutputHandler]
+
+  /**
+   * Update the {@link status} of the route and update the state of the deployment by notifying the {@link router}.
+   * The provided `status` completely replaces the current one (i.e. the objects are not merged).
+   *
+   * Internally, the function calls {@link MlModel.Router#updateRoute} with the updated route
+   * if {@link router} is not `null`.
+   *
+   * When updating to {@link MlModel.Route.Status.Label#CHAMPION CHAMPION}, a check is performed to ensure that no
+   * other route with status `CHAMPION` is currently deployed for the same subjects (or at least on a group of
+   * subjects overlapping with the current route's {@link subjectFilter}).
+   * If an overlap is detected, an error is thrown and the operation is aborted.
+   * Note that even if the operation succeeds, there is a possibility that the subjects will be modified in the
+   * future and that two routes with status `CHAMPION` become deployed on the same subjects.
+   * In that case, a tie-breaking logic is applied: the most recently updated route is used for "CHAMPION" predictions.
+   *
+   * @param status
+   *          the new status of the route
+   * @param spec
+   *          configurations for the status update
+   */
+  @dependency(include="this, model.project.this")
+  updateStatus: member function(status: !MlModel.Route.Status, spec: MlModel.Route.UpdateStatusSpec)
+
+  /**
+   * Update the {@link status} of the route and update the state of the deployment by notifying the {@link router}.
+   * The provided `status` label replaces the current one but the {@link MlModel.Route.Status#tags} field is preserved
+   * by default (unless the flag `dropTags` is set to `true`).
+   *
+   * Internally, the function calls {@link MlModel.Router#updateRoute} with the updated route
+   * if {@link router} is not `null`.
+   *
+   * @param status
+   *          the new status label of the route
+   * @param dropTags
+   *          if true, the tags of the current status are dropped so that the new status has an empty list of tags
+   * @param spec
+   *          configurations for the status update
+   */
+  updateStatus: member function(status: !string enum MlModel.Route.Status.Label,
+                                dropTags: boolean,
+                                spec: MlModel.Route.UpdateStatusSpec)
+
+  /**
+   * Batched version of {@link MlModel.Route#updateStatus}.
+   * NOTE: this function must be called at least once for each new status label.
+   *
+   * @param routes
+   *          list of routes to update the status for.
+   * @param status
+   *          see corresponding argument to {@link MlModel.Route#updateStatus}.
+   * @param dropTags
+   *          see corresponding argument to {@link MlModel.Route#updateStatus}.
+   * @param spec
+   *          configurations for the status update
+   */
+  updateStatusBatch: function(routes: ![MlModel.Route],
+                              status: !string enum MlModel.Route.Status.Label,
+                              dropTags: boolean,
+                              spec: MlModel.Route.UpdateStatusSpec)
+
+  /**
+   * Batched version of {@link MlModel.Route#updateStatus}.
+   * NOTE: this function must be called at least once for each new status label.
+   *
+   * @param groupId
+   *          grouping id returned from the e.g. {@link MlModel#deployBatch} operation that was used to create the
+   *          group of routes that are the target of this operation. See {@link #groupId}.
+   * @param status
+   *          see corresponding argument to {@link MlModel.Route#updateStatus}.
+   * @param dropTags
+   *          see corresponding argument to {@link MlModel.Route#updateStatus}.
+   * @param spec
+   *          configurations for the status update
+   */
+  updateStatusBatch: function(groupId: !string,
+                              status: !string enum MlModel.Route.Status.Label,
+                              dropTags: boolean,
+                              spec: MlModel.Route.UpdateStatusSpec)
+}

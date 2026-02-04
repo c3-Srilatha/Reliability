@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Manages the execution of a set of register model job runs for multiple {@link ReliabilityMlModel}s.
+ * This is created by {@link ReliabilityOrchestrator.RegisterModelsJob#start}.
+ */
+entity type ReliabilityOrchestrator.RegisterModelsJobRun extends MlWorkflowCoordinatable<ReliabilityOrchestrator.RegisterModelsJobResult> type key 'REL_REG' {
+
+  /**
+   * {@link ReliabilityOrchestrator.RegisterModelsJob} that this job run belongs to
+   */
+  job: !ReliabilityOrchestrator.RegisterModelsJob
+
+  /**
+   * Specify the modelFilter for which models should be registered.
+   */
+  modelFilter: !string
+
+  /**
+   * Spec that was used to specify execution constraints for this register models job run.
+   */
+  options: ReliabilityOrchestrator.JobOptions
+
+  /**
+   * Contains a {@link File} that can be ported to the target environment, and used to load
+   * {@link ReliabilityMlModel}s in the target environment.
+   */
+  file: File
+
+  /**
+   * Returns a {@link File} that can be ported to the target environment, and used to load
+   * {@link ReliabilityMlModel}s in the target environment.
+   */
+  getModelRegistryFile: member function(): !File py
+
+  generateNextResults: ~ py
+
+  startResult: ~ py
+
+  completeResult: ~ py
+
+  afterComplete: ~ py
+}

@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a {@link https://github.com/conda/conda/blob/main/conda/models/channel.py Conda channel}.
+ */
+private type Py.ResolvedLibrary.Channel {
+
+  /**
+   * Name of the channel like "conda-forge" and "pkgs/main".
+   */
+  channelName: string
+
+  /**
+   * Os platform/architecture the channel should use like linux-64, osx-64, noarch
+   */
+  platform: string
+
+  /**
+   * @param useConfig
+   *        If true, the url is computed always using the {@link CondaLibraryManager.Config} and the channelName and platform. The {@link CondaLibraryManager.Config#useArtifactHub} is ignored.
+   * @param useAppInternalUrl
+   *        If true it will use {@link App#internalUrl} as the host url else it will use {@link Server#endpointUrl} when {@link CondaLibraryManager.Config#useArtifactHub} is true.
+   * @param authToken
+   *        A map containing the system user artifact user  and the token for the user and also system user artifact reader and the token for the user. The token is used to authenticate the user.
+   *
+   * @return  The url for this channel. The full url is computed using the {@link CondaLibraryManager.Config} except when {@link CondaLibraryManager.Config#useArtifactHub} is true and useConfig is false. For that case when {@link CondaLibraryManager.Config#useArtifactHub} is true and useConfig is false, we use
+   * {@link CondaLibraryManager#hostUrlForArtifactHub} to compute the url.
+   * The url follows the format <channel-location><channelName><platform>. More {@link https://github.com/conda/conda/blob/main/conda/models/channel.py#L204 info}.
+   */
+  url: member function(useConfig: boolean,
+                       useAppInternalUrl: boolean,
+                       authToken: map<string enum SystemUser, string>): Url
+
+  /**
+   * The method takes a url as input and creates instance of {@link ImplLanguage.Library.Channel}. We rely
+   * internal conda apis for this. See {@link https://github.com/conda/conda/blob/main/conda/models/channel.py here}.
+   */
+  fromUrl: cached function(url: string serialized Url): Py.ResolvedLibrary.Channel py-conda
+}

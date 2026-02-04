@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility to parse through typeMetasCache and transformCache
+ * perform dfs search on the Persistables to find all linked Canonicals
+ */
+@typeScript
+type GenerateCanonicalsMappingForPersistable {
+
+  /**
+   * Generates mapping for Canonicals mapped to Persistables
+   * @param typeMetasCache
+   *          Type: map<string, TypeMetasCache>
+   * @param persistableNames
+   *          Type: string[]
+   * @param transformCache
+   *          Type: map<[string], Transform>
+   * @param canonicalNames
+   *          Type: string[]
+   * @param stopBacktrackingCanonicalsAtPersistable
+   * @returns mapping list for persistable to list of canonicals
+   *          return data format [string(Persistable Name): string[](list of canonical names)]
+   *
+   * Scenarios: (C: Canonical, P: Persistable)
+   * 1. C1 -> Transform1 -> P1 => P1: [C1]
+   * 2. C1 -> Transform1 -> C2 -> Transform2 -> P1; C3 -> Transform3 -> P1 -> P1 => P1: [C1, C2, C3]
+   * 3. Case1: If stopBacktrackingCanonicalsAtPersistable === true
+   *    C1 -> Transform1 -> P1 -> Transform2 -> C2 -> Transform3 -> P2 => P2: [C2], P1: [C1]
+   *    Case2: If stopBacktrackingCanonicalsAtPersistable === false (default)
+   *    C1 -> Transform1 -> P1 -> Transform2 -> C2 -> Transform3 -> P2 => P2: [C2, C1], P1: [C1]
+   * 4. C4, C5 -> Don't have any mapping to persistables => "Unmapped Canonicals": [C4, C5]
+   * 5. P6, P8 -> Don't have any backtrack mapping to canonicals => P6: [], P8: []
+   */
+  fetchCanonicalsMappingForPersistables: function(typeMetasCache: !map<string, TypeMeta>,
+                                                  persistableNames: ![string],
+                                                  transformCache: !map<[string], Transform>,
+                                                  canonicalNames: ![string],
+                                                  stopBacktrackingCanonicalsAtPersistable: boolean = false): !Obj ts-client
+}

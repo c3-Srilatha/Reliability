@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Binds a {@link App.Metric} to a {@link App.Metric.QuerySpec}.
+ */
+@beta
+private type App.Metric.Bound<S: App.Metric.QuerySpec> mixes App.Metric.ValidateAndFillable {
+
+  /**
+   * {@link App.Metric} that is bound to {@link #spec}.
+   */
+  metric: !App.Metric
+
+  /**
+   * The {@link App.Metric.QuerySpec} bound to the {@link #metric}.
+   */
+  spec: S
+
+  /**
+   * Validates that the {@link App.Metric.Bound} fields are valid. Throws error if not valid.
+   * 1. `metric` must exist
+   * 2. `return` must be listed in `metric#return` if S is instance of {@link App.Metric.EvaluateSpec}
+   * If valid, returns an instance of {@link App.Metric.Bound} with all fields fetched.
+   */
+  validateAndFillImpl: ~
+
+  /**
+   * All {@link App.Metric.MeterRef} references in the {@link #metric} and {@link #spec}.
+   */
+  allMeterRefs: member function(): [App.Metric.MeterRef]
+
+  /**
+   * All the variables that can be populated at runtime by an {@link App.Metric.EvaluatableSpec}.
+   */
+  unresolvedVariables: member function(): [App.Metric.Variable]
+}

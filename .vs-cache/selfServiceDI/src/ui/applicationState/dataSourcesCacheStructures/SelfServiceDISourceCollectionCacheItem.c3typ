@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Cached information about a {@link SourceCollection} for quick lookup for use in the UI.
+ */
+type SelfServiceDISourceCollectionCacheItem {
+
+  /**
+   * The specific {@link SourceCollection} object.
+   */
+  sourceCollection: SourceCollection
+
+  /**
+   * Only for {@link SqlSourceCollection}
+   * The tableExistResult that can have object like {exist:boolean, schemaName: schemaName}
+   * to indicate whether the table is exist or not.
+   */
+  tableExistResult: json
+
+  /**
+   * Represents the {@link Persistable} type linked to this source collection
+   * on which fetch operation is performed to preview the target data.
+   */
+  target: string
+
+  /**
+   * The status of a {@link FileSourceCollection} created through FileUpload flow
+   */
+  status: string enum SelfServiceDISourceCollectionStatus
+
+  /**
+   * The configuration of the source collection.
+   */
+  config: SourceCollection.Config
+
+  /**
+   * List of data issues associated with the source collection.
+   */
+  dataIssue: [DataIssue.SourceCollection]
+
+  /**
+   * CDC configuration extracted from the source collection.
+   * Contains enabled status, tracking column, and schedule.
+   * Only available for SqlSourceCollection, null for other types.
+   */
+  cdcConfig: SelfServiceDICdcConfig
+}

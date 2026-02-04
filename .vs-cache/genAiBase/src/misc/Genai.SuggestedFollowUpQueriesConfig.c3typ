@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Describes the config for setting up the SuggestedFollowUpQueries.
+ */
+type Genai.SuggestedFollowUpQueriesConfig mixes Named, Config {
+
+  /**
+   * The name of the {@link Genai.UnstructuredQuery.Engine.ModelConfig} to be used for the process of follow queries.
+   */
+  llmModelName: !string
+
+  /**
+   * The {@link Genai.Prompt} that should be used.
+   */
+  rewriterPrompt: !Genai.Prompt
+
+  /**
+   * The maximum number of examples to retrieve.
+   */
+  nExamples: !int = 3
+
+  /**
+   * Specifies the minimum vector distance allowed for similarity search. If set to 0, then exact matches to query are allowed.
+   * Notice the few-shot retriever uses cosine distance to calculate vector dissimilarity (ranges from 0 to 2).
+   */
+  minVectorDistance: double = 0
+
+  /**
+   * Specifies the maximum vector distance allowed for similarity search. The greater this value is, the higher
+   * dissimilarity from query is allowed. It's usually recommended to set a lower maxVectorDistance to ensure the retrieved
+   * examples are relevant enough to the context.
+   * Notice the few-shot retriever uses cosine distance to calculate vector dissimilarity (ranges from 0 to 2).
+   */
+  maxVectorDistance: double = 0.15
+
+}

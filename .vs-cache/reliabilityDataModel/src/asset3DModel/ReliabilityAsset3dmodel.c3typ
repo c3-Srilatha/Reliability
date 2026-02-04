@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The ReliabilityAsset3dmodel entity represents a 3D model or image asset with associated metadata, used in reliability workflows.
+ */
+entity type ReliabilityAsset3dmodel {
+  /**
+   * object representing the uploaded 3D model or image file.
+   */
+  file: !File
+
+  /**
+   * The type of the file: "3D" for .glb/.gltf, "2D" for .png/.jpg/.jpeg/.gif, otherwise "-".
+   */
+  fileType: string calc
+  file && file.url && (
+    endsWith(file.url, ".glb") || endsWith(file.url, ".gltf")
+  ) ? "3D" :
+  file && file.url && (
+    endsWith(file.url, ".png") || endsWith(file.url, ".jpg") ||
+    endsWith(file.url, ".jpeg") || endsWith(file.url, ".gif")
+  ) ? "2D" : "-"
+
+  /**
+   * Object indicating the associated facility for the 3D model.
+   */
+  facility: Facility
+
+  /**
+   * Timestamp recording when the 3D model was uploaded.
+   */
+  dateUploaded: DateTime
+
+  /**
+   * Array of assets linked to the 3D model.
+   */
+  assets: [ReliabilityAsset](linked3DModel)
+
+  /**
+   * Array of asset classes linked to the 3D model.
+   */
+  assetClasses: [AssetClass](linked3DModel)
+
+  /**
+   * The link status of the 3D model, which is calculated based on the presence of linked assets or asset classes.
+   */
+  linkStatus: string calc exists(assets) || exists(assetClasses) ? 'Linked' : '-'
+
+  /**
+   * Indicates whether any assets are directly linked to the 3D model.
+   */
+  assetLinkStatus: string calc exists(assets) ? 'Linked' : '-'
+
+  /**
+   * Indicates whether any asset classes are associated with the 3D model.
+   */
+  assetClassLinkStatus: string calc exists(assetClasses) ? 'Linked' : '-'
+
+
+  /**
+   * Function that takes a file URL and creates {@link ReliabilityAsset3dmodel} entities.
+   */
+  uploadModal: function(formObject: json): [ReliabilityAsset3dmodel] js-rhino
+
+  /**
+   * Function that returns 3D model statistics:
+   * - total3DModels: total count of 3D models
+   * - linked3DModels: count of models with linkStatus == 'Linked'
+   * - unlinked3DModels: derived from total - linked
+  */
+  get3DModelStatistics: function(): json js-rhino
+}

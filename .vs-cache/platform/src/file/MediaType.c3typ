@@ -1,0 +1,211 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A list of commonly used Media Types (formerly known as MIME types). Full list can be found at
+ * http://www.iana.org/assignments/media-types/media-types.xhtml.
+ *
+ * @see ContentType
+ */
+enum type MediaType mixes VisualMediaType {
+
+  PLAIN_TEXT = 'text/plain'
+
+  OCTET_STREAM = 'application/octet-stream'
+
+  MD = 'text/markdown'
+
+  CSV = 'text/csv'
+
+  CSV_APP = 'application/csv'
+
+  TSV = 'text/tab-separated-values'
+
+  XML = 'text/xml'
+
+  XML_APP = 'application/xml'
+
+  ATOM_XML = 'application/atom+xml'
+
+  JSON = 'application/json'
+
+  JSON_ALT = 'text/json'
+
+  JSON_LINES = 'application/x-ndjson'
+
+  JSON_MERGE_PATCH = 'application/merge-patch+json'
+
+  JSON_PATCH = "application/json-patch+json"
+
+  YAML = 'text/vnd.yaml'
+
+  XLSX = 'application/vnd.c3.data+excel'
+
+  ZIP = 'application/zip'
+
+  GZIP = 'application/gzip'
+
+  AVRO = 'application/vnd.apache.avro+binary'
+
+  PARQUET = 'application/vnd.apache.parquet+binary'
+
+  HDF5 = 'application/vnd.hdf.hdf5+binary'
+
+  ARROW_FILE = 'application/vnd.apache.arrow.file'
+
+  ARROW_STREAM = 'application/vnd.apache.arrow.stream'
+
+  CSV_GREEN_BUTTON = 'text/greenButtonCsv'
+
+  XML_GREEN_BUTTON = 'text/greenButtonXml'
+
+  FORM_URLENCODED = 'application/x-www-form-urlencoded'
+
+  FORM_DATA = 'multipart/form-data'
+
+  HTML = 'text/html'
+
+  CSS = 'text/css'
+
+  SCSS = 'text/scss'
+
+  XHTML_XML = 'application/xhtml+xml'
+
+  EDI = 'application/edi-x12'
+
+  DSL_TYPE = 'text/vnd.c3.type+plain'
+
+  DSL_UI = 'text/vnd.c3.ui+plain'
+
+  DOC = 'text/vnd.c3.doc+plain'
+
+  JS_TYPE = 'application/vnd.c3.type+javascript'
+
+  JS_UI = 'application/vnd.c3.ui+javascript'
+
+  JS_TEST = 'application/vnd.c3.test+javascript'
+
+  JS = 'text/javascript'
+
+  JS_APP = 'application/javascript'
+
+  JS5 = 'application/javascriptversion=ES5'
+
+  PY_TYPE = 'application/vnd.c3.type+x-python'
+
+  PY_TEST = 'application/vnd.c3.test+x-python'
+
+  PY = 'application/x-python'
+
+  PY_ALT = 'text/python'
+
+  R_TYPE = 'application/vnd.c3.type+x-r'
+
+  R_TEST = 'application/vnd.c3.test+x-r'
+
+  R = 'application/x-r'
+
+  RUBY_TYPE = 'application/vnd.c3.type+x-ruby'
+
+  RUBY = 'application/x-ruby'
+
+  TS_TYPE = 'application/vnd.c3.type+typescript'
+
+  TS = 'text/typescript'
+
+  TS_APP = 'application/typescript'
+
+  TSX_TYPE = 'application/vnd.c3.type+tsx'
+
+  TSX = 'text/tsx'
+
+  TSX_APP = 'application/tsx'
+
+  JSON_DATA = 'application/vnd.c3.data+json'
+
+  CSV_DATA = 'application/vnd.c3.data+csv'
+
+  XML_DATA = 'application/vnd.c3.data+xml'
+
+  C3BIN_DATA = 'application/vnd.c3.data+octet-stream'
+
+  JAVA_SRC = 'text/x-java-source'
+
+  R_SRC = 'text/x-R'
+
+  WOFF = 'font/woff'
+
+  WOFF2 = 'font/woff2'
+
+  OPEN_API_YAML = 'application/openapi+yaml'
+
+  OPEN_API_JSON = 'application/openapi+json'
+
+  PDF = 'application/pdf'
+
+  JUPYTER_NOTEBOOK = 'application/x-ipynb+json'
+
+  C3_NOTEBOOK = 'application/vnd.c3.notebook+json'
+
+  WILDCARD = '*/*'
+
+  GDRIVE_FOLDER = 'application/vnd.google-apps.folder'
+
+  GOOGLE_DOCS = 'application/vnd.google-apps.document'
+
+  GOOGLE_SHEETS = 'application/vnd.google-apps.spreadsheet'
+
+  GOOGLE_SLIDES = 'application/vnd.google-apps.presentation'
+
+  EVENT_STREAM = 'text/event-stream'
+
+  SHELL = 'x-sh'
+
+  /**
+   * @return character set typically used with provided media type or null if unknown. @see Charset
+   */
+  defaultCharset: inline function(mediaType: !?string): string
+
+  /**
+   * @return true if provided media type is used for textual content. Note that this method may return false negatives
+   *         I.e. some new / yet unknown media type may be for text but this method will still return false.
+   */
+  isAnyText: inline function(mediaType: !?string): boolean
+
+  /**
+   * @return true if provided media type is used for images.
+   */
+  isAnyImage: inline function(mediaType: !?string): boolean
+
+  /**
+   * Extract the baseline MediaType from a potentially vendor-specific content type.
+   * For example, <code>text/vnd.c3.typ+plain</code> is a variant of <code>text/plain</code>
+   * {link ContentType#baseMediaType}
+   */
+  baseMediaType: inline function(contentType: !?string): string
+
+  /**
+   * Check if provided media type is registered with IANA https://www.iana.org/ - will pull latest csv file if possible.
+   *
+   * https://www.iana.org/assignments/media-types/media-types.xhtml
+   * https://www.iana.org/assignments/media-types/application.csv
+   */
+  isRegisteredMediaType: function(mediaType: !?string): boolean
+
+  /**
+   * @param filter
+   *        c3 expression to filter media type fields
+   * @param sort
+   *        c3 sort order expression to sort media type by field(s)
+   * @param noCache
+   *        if true, will not use cached data and make a fresh request to IANA
+   *
+   * @return list of all known media types registered with IANA https://www.iana.org/
+   */
+  registeredMediaTypes: function(filter: string, sort: string, noCache: boolean): [MediaTypeFields]
+}

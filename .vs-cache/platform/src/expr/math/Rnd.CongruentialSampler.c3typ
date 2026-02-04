@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The "Congruential" sampler returns a value from the collection in a pseudo-random sequence which visits all the
+ * values before repeating. This is equivalent to shuffling the collection (once) and the repeatedly iterating through
+ * it.
+ *
+ * The benefit of this compared to {@link Rnd.UniformSampler} is that it supports tests that require the next value to
+ * be different from the previous value. The implementation is heaver weight and should not be used unless this
+ * characteristic is required.
+ *
+ * Formally: $$I_{n+1} = (aI_{n} + c) \\mod m$$
+ *  - _a_: `1`
+ *  - _c_: chosen to be corprime with _m_
+ *  - _m_: the collection size
+ *
+ * @see https://en.wikipedia.org/wiki/Linear_congruential_generator
+ */
+type Rnd.CongruentialSampler<E> mixes Rnd.Sampler<E> {
+
+  /**
+   * The index of the first element to be returned from the collection. If null, a value is chosen at random.
+   */
+  initialIndex: int
+
+  /**
+   * The index of the next array element that will be chosen.
+   */
+  nextIndex: property(): !int
+
+  /**
+   * The increment to the index that will be added to obtain the next index, chosen on construction to be coprime
+   * with the collection size.
+   */
+  c: property(): !int
+}

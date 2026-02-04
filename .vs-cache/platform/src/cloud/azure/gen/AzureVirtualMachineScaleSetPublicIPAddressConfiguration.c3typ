@@ -1,0 +1,24 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.management.compute.VirtualMachineScaleSetPublicIPAddressConfiguration',
+      runtimeFieldMapper='JavaC3StyleFieldMapper')
+type AzureVirtualMachineScaleSetPublicIPAddressConfiguration {
+
+  publicIPAddressVersion: @java(runtimeClassName='com.microsoft.azure.management.compute.IPVersion') string enum AzureComputeIPVersion
+  dnsSettings:            @java(runtimeClassName='com.microsoft.azure.management.compute.VirtualMachineScaleSetPublicIPAddressConfigurationDnsSettings') AzureVirtualMachineScaleSetPublicIPAddressConfigurationDnsSettings
+  idleTimeoutInMinutes:   @java(runtimeClassName='java.lang.Integer') int32
+  name_:                  @java(runtimeClassName='java.lang.String') string
+  publicIPPrefix:         @java(runtimeClassName='com.microsoft.azure.SubResource') AzureSubResource
+  ipTags:                 @java(runtimeClassName='java.util.List') [AzureComputeVirtualMachineScaleSetIpTag]
+
+  fromJava: function(javaObj: @java(class="java.lang.Object") !?native)
+              : AzureVirtualMachineScaleSetPublicIPAddressConfiguration
+
+  toJava: member function(): native
+}

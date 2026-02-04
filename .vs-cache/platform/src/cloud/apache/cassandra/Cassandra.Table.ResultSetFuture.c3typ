@@ -1,0 +1,21 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result set from {@link Cassandra.Cluster#executeQueryAsync}
+ */
+type Cassandra.Table.ResultSetFuture mixes Cassandra.Table.ResultSet {
+
+  future: @java(class='java.util.concurrent.CompletionStage<com.datastax.oss.driver.api.core.cql.AsyncResultSet>') native
+
+  /**
+   * Wait for and get the cassandra rows as a result of the query. Any exceptions that occur during the execution
+   * of the cql query will be surfaced when you call this method.
+   */
+  get: member function(): stream<Cassandra.Table.Row>
+}

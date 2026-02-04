@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents one pdf or image file of industrial engineering diagrams such as P&ID.
+ */
+extendable entity type SourceParsableDiagram mixes MlSubject, DiagramParsingMatchingHelper schema name 'SRC_PRSBL_DGRM' {
+
+  /**
+   * The {@link File} which references to a file of diagrams with the format of either a single-page pdf,
+   * a multi-page pdf, or an image.
+   */
+  file: !File
+
+  /**
+   * Function to trigger the parse and match workflow using `DiagramParsingMatchingHelper#parseAndMatchBatch`.
+   * Creates new {@link SourceParsableDiagram}s for each file passed in.
+   * Creates a new {@link UploadedFileCollection} to track workflow status for the batch.
+   */
+  triggerBatchParseAndMatchWorkflow: function(files: ![File]): Workflow.Run js-rhino
+
+  /**
+   * Wrapper function for triggerBatchParseAndMatchWorkflow to be called on form submit in the UI.
+   */
+  triggerBatchParseAndMatchWorkflowOnFormSubmit: function(formObject: json, user: User): Workflow.Run js-rhino
+
+  /**
+   * Function that takes the PDF file url and creates {@link SourceParsableDiagram} and {@link ParsableDiagram}.
+   * Function will not trigger parsing job.
+   */
+  createParsableDiagrams: function(formObject: json, isParsingEnabled: boolean, user: User): [ParsableDiagram] js-rhino
+
+  /**
+   * Function that triggers a parsing job for a list of {@link ParsableDiagram}s.
+   */
+  triggerParsingJobForParsableDiagrams: function(parsableDiagrams: [ParsableDiagram]): [ParsableDiagram] js-rhino
+}

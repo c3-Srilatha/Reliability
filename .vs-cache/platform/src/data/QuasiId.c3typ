@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Quasi-identifiers are pieces of information that are not of themselves unique identifiers, but are sufficiently well
+ * correlated with an entity that they can be combined with other quasi-identifiers to create a unique identifier.
+ * This type is used for Data anonymization algorithm in Anonymizer type.
+ */
+type QuasiId mixes Spec {
+
+  /**
+   * name of the field that is consider as a quasi identifier
+   * the name could be a path to the field
+   */
+  name: string
+
+  /**
+   * ValueType of the quasi identifier field
+   * If unspecified, it will be guessed based on the input
+   */
+  valueType: ValueType
+
+  /**
+   * Compile expression to read field from the Obj
+   *
+   * @param ths,     Quasi identifier
+   * @param objType, Type
+   * @return Expr.Compile for faster read
+   */
+  compileExpr: member function(objType: !Type): !Expr.Compiled<Obj, any>
+
+  /**
+   * Find all @Ann.QuasiId annotation within the meta
+   *
+   * @param meta,               TypeMeta of input obj
+   * @param include             include spec to indicate how far to traverse references
+   * @param includeAllFields,   if includeAllFields is set to true, all fields will be included to give QuasiIdentifiers
+   * @param additional,         If includeAllFields is false (by default) and additional fields are specified,
+   *                            then those are added to the list.
+   * @return all of the path to the quasi identifier
+   */
+  fromType: function(meta: !TypeMeta,
+                     include: string,
+                     includeAllFields: boolean,
+                     additionalFields: [string]): Pair<[QuasiId], [Error]>
+
+  /**
+   * Create Array of QuasiId based on the path to the field.
+   *
+   * @param path,  path to the fields
+   * @return  Array of QuasiId
+   */
+  fromStr: function(path: string ...): [QuasiId]
+}

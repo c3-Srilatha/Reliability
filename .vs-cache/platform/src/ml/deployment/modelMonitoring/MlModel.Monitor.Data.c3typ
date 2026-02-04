@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface for fetching inputs for calculating scoring metrics defined in {@link MlModel.Monitor.Group#metrics}.
+ * Users need to create concrete types by mixin this abstract interface,
+ * and override the {@link MlModel.Monitor.Data#dataGroupsFromSpec}.
+ * Users are recommended to create one concrete type per prediction or label.
+ */
+abstract type MlModel.Monitor.Data {
+
+  /**
+   * Method to override to fetch input data (one of predictions, labels, scoring context) and group it per {@link MlModel}.
+   * Expected output is list of {@link MlModel.Monitor.Input}s,
+   * i.e one instance of {@link MlModel.Monitor.Input} per {@link MlModel}. If there is an additional
+   * {@link MlModel.Monitor.DataSpec#groupBy}, this method needs to produce one {@link MlModel.Monitor.Input},
+   * per {@link MlModel} per group by value.
+   * Each {@link MlModel.Monitor.Input} will be used for calculating model performance defined in {@link MlModel.Monitor.Group#metrics}.
+   * For example, if there are 10 {@link MlModel.Monitor.DataSpec#models} that need to be monitored,
+   * this method is expected to produce 10 {@link MlModel.Monitor.Input}s, one per {@link MlModel}.
+   * @param spec
+   *    {@link MlModel.Monitor.DataSpec} for customization of fetching inputs.
+   * @returns a list of {@link MlModel.Monitor.Input}s. Each {@link MlModel.Monitor.Input} holds the
+   * information used for grouping and the {@link Data} per group.
+   */
+  dataGroupsFromSpec: abstract member function(spec: !MlModel.Monitor.DataSpec): ![MlModel.Monitor.Input]
+
+  /**
+   * An empty {@link MlModel.Monitor.Data} is still meaningful as long as {@link #dataGroupsFromSpec} is implemented.
+   */
+  isEmptyObj: ~ py
+}

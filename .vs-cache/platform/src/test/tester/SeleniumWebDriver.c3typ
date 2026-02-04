@@ -1,0 +1,135 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * SeleniumWebDriver manages Selenium RemoteWebDriver instances for UI testing and code coverage tracking.
+ *
+ * This type provides infrastructure to:
+ * - Create and manage Chrome browser instances via Selenium Grid
+ * - Collect UI code coverage using Chrome DevTools Protocol (CDP)
+ * - Track coverage across page navigations and window/tab switches
+ *
+ * Each test creates a new Selenium session and associated DevTools instance. The RemoteWebDriver
+ * instance is passed as a parameter to coverage methods to support multiple concurrent test executions
+ * (e.g., during PSR runs with multiple pods).
+ */
+type SeleniumWebDriver {
+
+  TS_BROWSER_FILE_PATH:   const string = "/ts-c3ui-browser/"
+  SEED_BASELINE_COVERAGE: const string = "test_seedBaselineUiCodeCoveragedata"
+
+  /**
+   * Sets the current instance of the Selenium RemoteWebDriver.
+   */
+  setRemoteWebDriver: function(remoteWebDriver: @java(class="org.openqa.selenium.remote.RemoteWebDriver") !native)
+
+  /**
+   * Checks {@link CodeCoverageConfig#enableUiCoverage} to determine if UI code coverage collection is enabled.
+   *
+   * @return true if UI code coverage is enabled for this application, false otherwise.
+   */
+  isCodeCoverageEnabled: function(): boolean
+
+  /**
+   * Checks whether precise code coverage collection is currently active.
+   * This flag is set to true when startPreciseCoverage() is called and false when stopPreciseCoverage() completes.
+   *
+   * @return true if coverage is actively being collected, false otherwise.
+   */
+  isCoverageStillBeingCollected: function(): boolean
+
+  /**
+   * Stops and restarts code coverage collection on the current driver.
+   *
+   * This method should be called when navigating to a new page, opening a new window,
+   * or switching tabs, as Chrome DevTools coverage is scoped to a specific browsing context.
+   * The method will:
+   * 1. Collect and serialize coverage from the current page
+   * 2. Disconnect the CDP session
+   * 3. Reconnect the CDP session
+   * 4. Start fresh coverage collection on the new page
+   *
+   * Note: This method operates on static state and should be called from the test thread.
+   */
+  restartCollectingCodeCoverage: function()
+
+  /**
+   * Sets the current test suite path of the current test suite being executed.
+   * This path is used when serializing code coverage results to associate coverage data
+   * with the specific test file.
+   *
+   * @param testSuitePath The file path of the test suite (e.g., "/path/to/TestSuite.js")
+   */
+  setCurrentTestSuitePath: function(testSuitePath: !string)
+
+  /**
+   * Initializes a RemoteWebDriver instance with Chrome browser capabilities.
+   *
+   * This method:
+   * - Configures Chrome with headless mode and required arguments
+   * - Sets script and page load timeouts
+   * - Connects to the Selenium Grid hub
+   * - Includes retry logic for connection failures
+   *
+   * @param browser        Browser configuration string (currently only "CHROME" is supported).
+   *                       The parameter is converted to an array and each element is added as a Chrome argument.
+   * @param scriptTimeout  Timeout in seconds for asynchronous JavaScript execution (default: 2000s).
+   * @param pageLoadTimeout Timeout in seconds for page load operations (default: 900s).
+   * @return A new RemoteWebDriver instance connected to Selenium Grid.
+   */
+  initializeDriver: private function(browser: !string,
+                                     scriptTimeout: int,
+                                     pageLoadTimeout: int)
+                              : @java(class="org.openqa.selenium.remote.RemoteWebDriver") native
+
+  /**
+   * Quits the RemoteWebDriver instance and closes the browser session.
+   *
+   * This method should be called in a finally block to ensure the browser is always closed
+   * and the Selenium Grid session is properly released, even if the test fails.
+   */
+  quitDriver: private function()
+
+  /**
+   * Closes the Chrome DevTools instance associated with the RemoteWebDriver.
+   *
+   * This should be called before quitDriver() to properly clean up the DevTools connection.
+   * The DevTools instance is obtained from the driver via HasDevTools interface.
+   */
+  quitDevTools: private function()
+
+  /**
+   * Starts precise code coverage collection using Chrome DevTools Protocol (CDP).
+   *
+   * This method:
+   * 1. Obtains the DevTools instance from the provided RemoteWebDriver
+   * 2. Creates a CDP session if one doesn't exist
+   * 3. Enables the Profiler and Debugger
+   * 4. Starts precise coverage tracking with detailed block-level coverage
+   * 5. Sets the isCodeCoverageBeingCollected flag to true
+   *
+   * The coverage data will be collected until stopPreciseCoverage() is called.
+   */
+  startPreciseCoverage: function()
+
+  /**
+   * Stops precise code coverage collection and saves the collected coverage data.
+   *
+   * This method:
+   * 1. Retrieves coverage data from Chrome DevTools using takePreciseCoverage()
+   * 2. Filters out blacklisted files (e.g., framework internals, build artifacts)
+   * 3. Serializes coverage results and script sources to the database
+   * 4. Disables the Profiler and Debugger
+   * 5. Disconnects the CDP session
+   * 6. Sets the isCodeCoverageBeingCollected flag to false
+   *
+   * The CDP session is disconnected but the DevTools object remains available,
+   * allowing it to be reconnected via startPreciseCoverage() if needed (e.g., after navigation).
+   */
+  stopPreciseCoverage: function()
+}

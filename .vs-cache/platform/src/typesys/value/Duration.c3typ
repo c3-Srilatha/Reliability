@@ -1,0 +1,210 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A duration is a measurement of elapsed time in microseconds.  This can be naturally represented as a string of the
+ * form "5h3m45s350ms", which is used as the serialization format.
+ *
+ * @see Period
+ */
+inline type Duration mixes StringSerializable {
+
+  NANOS_IN_MICROS:  const !int = 1000
+  NANOS_IN_MILLIS:  const !int = 1000000
+  NANOS_IN_SEC:     const !int = 1000000000
+  NANOS_IN_MIN:     const !int = 60000000000
+  MICROS_IN_MILLIS: const !int = 1000
+  MICROS_IN_SEC:    const !int = 1000000
+  MICROS_IN_MIN:    const !int = 60000000
+  MILLIS_IN_SEC:    const !int = 1000
+  MILLIS_IN_MIN:    const !int = 60000
+  MILLIS_IN_HOUR:   const !int = 3600000
+
+  /**
+   * @return the number of milliseconds in the duration
+   */
+  milliseconds: property(): !int java | js
+
+  /**
+   * @return the number of seconds in the duration
+   */
+  seconds: property(): !double java | js
+
+  /**
+   * @return the number of minutes in the duration
+   */
+  minutes: property(): !double java | js
+
+  /**
+   * @return the number of hours in the duration
+   */
+  hours: property(): !double java | js
+
+  /**
+   * @return the number of days in the duration
+   */
+  days: property(): !double java | js
+
+  /**
+   * Sleeps i.e. pauses execution on the current thread for this duration
+   */
+  sleep: member function()
+
+  /**
+   * Construct a Duration from the serialization format.
+   *
+   * The duration is specified by any combination of number/unit pairs. Pairs may be separated by spaces or
+   * concatenated. For example: "1h 15m", "75m" and "1.25h" all mean 1 hour 15 minutes.
+   *
+   * It is also possible to have negative numbers for pairs other than the first. For example "1h-1m" is the same as
+   * "59m".
+   *
+   * The supported units are:
+   *  - day (d)
+   *  - hour (h)
+   *  - minute (m)
+   *  - second (s)
+   *  - millisecond (ms)
+   *  - microseconds (μs)
+   *
+   * If the value is a string containing only an integer, the units are assumed to be microseconds.
+   *
+   * @param s
+   *           input string
+   * @return the parsed duration
+   */
+  fromString: ~ java | js
+
+  /**
+   * @return duration that is a difference between provided `start` and `end` dates. If `start` or `end` is missing then
+   *         will use DateTime.BOT and DateTime.EOT respectively.
+   */
+  delta: function(start: !?datetime, end: !?datetime): !Duration
+
+  /**
+   * @return duration that is a difference between provided `start` and now. If `start` is missing then from DateTime.BOT.
+   */
+  deltaToNow: function(start: !?datetime): !Duration
+
+  /**
+   * @return duration that is a difference between provided `start` microseconds from epoch and now. If `start` is
+   * missing then from DateTime.BOT.
+   */
+  deltaToNow: function(start: !?int): !Duration
+
+  /**
+   * @return duration that is a difference between now and provided `end` dates. If `end` is missing the to DateTime.EOT.
+   */
+  deltaFromNow: function(end: !?datetime): !Duration
+
+  /**
+   * @return duration that is a difference between now and provided `end` microseconds from epoch. If `end` is missing
+   *         then to DateTime.EOT.
+   */
+  deltaFromNow: function(end: !?int): !Duration
+
+  /**
+   * Return the datetime this long before the specified time.
+   * @param end datetime from which duration is subtracted
+   * @param increment if true, pad the value earlier by the smallest unit
+   * @see #increment
+   */
+  timeBefore: member function(end: !datetime with nanos, increment: boolean): !datetime with nanos
+
+  /**
+   * Return the datetime this long before the current instant. If this duration's #finestUnitMicros is smaller than
+   * second, the current instant will use {@link DateTime#nowWithMillis}.
+   * @param increment if true, pad the value earlier by the smallest unit
+   * @see #increment
+   * @see #timeBefore
+   */
+  timeBeforeNow: member function(increment: boolean): !datetime with nanos
+
+  /**
+   * Return the datetime this long after the specified time.
+   * @param start datetime to which duration is added
+   * @param increment if true, pad the value later by the smallest unit
+   * @see #increment
+   */
+  timeAfter: member function(start: !datetime with nanos, increment: boolean): !datetime with nanos
+
+  /**
+   * Return the datetime this long after the current instant. If this duration's #finestUnitMicros is smaller than
+   * second, the current instant will use {@link DateTime#nowWithMillis}.
+   * @param increment if true, pad the value later by the smallest unit
+   * @see #increment
+   * @see #timeAfter
+   */
+  timeAfterNow: member function(increment: boolean): !datetime with nanos
+
+  /**
+   * Lengthen the duration by one of the smallest specified unit. This returns a new duration that can be compared
+   * "greater than" rather than "greater than or equal" when using a smaller unit (such as the native microseconds).
+   * For example, "2d12h" would become "2d13h" so that a value of "2d12h30m" would not be excluded.
+   *
+   * @see #finestUnitMicros
+   */
+  increment: member function(): !Duration
+
+  /**
+   * Return the size of the finest unit specified in microseconds (the fundamental resolution of Duration).
+   * For example, "2d12h" would return 7,200,000,000 (the number of milliseconds in 2 hours). For zero-length
+   * durations, this will be 1.
+   */
+  finestUnitMicros: member function(): !int
+
+  /**
+   * Generate a duration from a number of microseconds.
+   */
+  fromMicros: function(us: !int): !Duration java | js
+
+  /**
+   * Generate a duration from a number of milliseconds.
+   */
+  fromMillis: function(ms: !int): !Duration java | js
+
+  /**
+   * Generate a duration from a number of seconds.
+   */
+  fromSecs: function(seconds: !int): !Duration
+
+  /**
+   * @return duration instance for given seconds with fractions
+   */
+  fromSeconds: function(seconds: !?double): !Duration
+
+  /**
+   * Generate a duration from a number of minutes.
+   */
+  fromMinutes: function(minutes: !int): !Duration
+
+  /**
+   * Generate a duration from a number of hours.
+   */
+  fromHours: function(hours: !int): !Duration
+
+  /**
+   * Generate a duration from a number of days.
+   */
+  fromDays: function(days: !int): !Duration
+
+  /**
+   * @return closest interval for the given duration
+   */
+  toClosestInterval: member function(): string enum Interval
+
+  // Actual duration in microseconds.
+  // TODO: PLAT-49724 - :v8 Support @constraint "$" Syntax
+  // @constraint(condition='$ > 0') and Run Persistable_Test_Misc.duration
+  @constraint(condition='microseconds > 0')
+  microseconds: !int
+
+  unitToMillis: function(unit: !?string enum TemporalUnit): !int java | js
+  unitToMicros: function(unit: !?string enum TemporalUnit): !int java | js
+  toString:     ~ java | js
+}

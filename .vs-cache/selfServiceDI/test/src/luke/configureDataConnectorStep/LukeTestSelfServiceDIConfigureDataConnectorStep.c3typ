@@ -1,0 +1,242 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A base test component for a connector
+ */
+type LukeTestSelfServiceDIConfigureDataConnectorStep mixes LukeTestSelfServiceDIConnector {
+
+  /**
+   * The error inline notification component associated with this connector
+   */
+  errorInlineNotification: LukeTestUiSdlInlineNotification
+
+  /**
+   * The overarching form component associated with this connector
+   */
+  form: LukeTestSelfServiceDIConnectorForm
+
+  /**
+   * The Defintion List component for the landing page associated with this connector
+   */
+  landingPageConnectorNameAndDescription: LukeTestUiSdlDefinitionList
+
+  /**
+   * A list of objects of form input values and the expected error messages
+   * to be used when verifying the form
+   * [ {
+   *  invalidCredentialFields: [ 'listOf', 'fieldNames', 'toBe', 'invalid'],
+   *  errorMessageKey: 'Expected.key.of.error.message',
+   *  assertionDescription: 'Specific description to be returned if the assertion fails'
+   * }, ... ]
+   */
+  additionalCredentialFormErrors: [json]
+
+  /**
+   * The selector for the Successful checkmark icon in the connector form
+   * when a test connection is successful
+   */
+  connectorFormSuccessCheckSelector: string = '.icon.c3-icon.c3-icon-check-circle'
+
+  /**
+   * The selector for the Success message in the connector form
+   * when a test connection is successful
+   */
+  connectorFormSuccessMessageSelector: string = '.text-element.text-element-with-prepend-avatar.md'
+
+  /**
+   * The selector for the button loading spinner in the connector form
+   */
+  connectorFormLoadingSpinnerSelector: string = '.c3-button-link.c3-button-loading'
+
+  /**
+   * The selector for the search bar
+   */
+  searchBarSelector: const string = '.c3-metadata-id-selfservicedi-externalsourcessearchbar'
+
+  /**
+   * When testing that leaving the current connector and selecting a new, different connector clears the form
+   * this is the connector to select
+   */
+  backConnectorToSelect: string = 'Snowflake'
+
+  /**
+   * The message to be displayed in the connector form when a test connection is successful
+   */
+  testConnectionSuccessMessage: string = 'Success'
+
+  /**
+   * The key for a missingRequiredFields error in the connector form
+   */
+  missingRequiredFieldsErrorKey: string = 'SelfServiceDI.DataConnectorForm.currentConnectStatus.missingRequiredFields.text'
+
+  /**
+   * The key for when there are incorrect required fields in the connector form
+   */
+  incorrectRequiredFieldsErrorKey: string = 'SelfServiceDI.DataConnectorForm.currentConnectStatus.incorrectRequiredFields.text'
+
+  /**
+   * The key for the succesful banner message after completing the connector form
+   */
+  bannerSuccessMessageKey: string = 'SelfServiceDI.CreateSourceSystem.success.message'
+
+  /**
+   * Asserts that the form currently has no error, sets the name input to an invalid name, and
+   * asserts that the form now has an error
+   */
+  setInvalidName: inline member function() js
+
+  /**
+   * In step 1 of the Add Data Source flow, this function searches for the current connector,
+   * selects it, and proceeds to the connector form
+   */
+  selectCurrentConnector: inline member function() js
+
+  /**
+   * Verifies that the form has no banner error or inline errors
+   */
+  verifyNoConfigureFormErrors: inline member function() js
+
+  /**
+   * Verifies that the name input field is empty
+   */
+  verifyEmptyNameField: inline member function() js
+
+  /**
+   * Cancels form and verifies the connector properly resets the form
+   */
+  verifyCancellationLogic: inline member function() js
+
+  /**
+   * goes back on form and verifies
+   * the form and all errors are cleared if a different connector is selected
+   * the form and all errors are persisted if the same connector is selected
+   */
+  verifyBackLogic: inline member function() js
+
+  /**
+   * Once form is properly filled out, this function clicks test connection and verifies
+   * loading spinner
+   * no errors
+   * the test connection button is disabled
+   * success green chackmark
+   * loading spinner is gone
+   * @param wait
+   *           Whether to wait before and after clicking test connection
+   */
+  verifyTestConnectionButton: inline member function(wait: boolean) js
+
+  /**
+   * Once form is properly filled out, this function clicks complete and verifies
+   * no errors
+   * spinner
+   * form closed and landing page rendered
+   * the success banner
+   * connector was added to treeview
+   * the correct logo is displayed in treeview
+   * checkmark next to connector
+   * the newly added connector is selectable
+   * the 3dots gives three options when selected
+   */
+  verifyCompleteLogic: inline member function() js
+
+  /**
+   * Verifies there is a form error,
+   * Verifies the hintText
+   * Verifies inline error
+   *
+   * @param formFieldHintText
+   *           The expected hint text of the form field
+   */
+  verifyInputError: inline member function(formFieldHintText: string) js
+
+  /**
+   * Verifies the name field of the form
+   */
+  verifyName: inline member function() js
+
+  /**
+   * Verifies the description field of the form
+   */
+  verifyDescription: inline member function() js
+
+  /**
+   * Verifies the name and description inputs work as expected
+   */
+  verifyNameAndDescription: inline member function() js
+
+  /**
+   * Creates an instance of the proper connector
+   * based on the connector.name
+   *
+   * connector.name == 'kafka' => LukeTestKAFKA
+   *
+   * @param connector
+   *           The connector to be created
+   * @return The connector instance
+   */
+  createConnector: function(connector: !Obj): LukeTestSelfServiceDIConnector js
+
+  /**
+   * Verifies the form for a failed connection
+   * @param credentials
+   *           The inputted credentials to be given in the form for the connector
+   * @param errorMessageKey
+   *           The error message key to be given in the form for the connector
+   * @param assertionDescription
+   *           The description to be given if the assertion fails
+   */
+  verifyFormError: inline member function(credentials: CloudCredentials,
+                                          errorMessageKey: string,
+                                          assertionDescription: string) js
+
+  /**
+   * Verifies the form for a successful connection
+   */
+  verifyFormSuccess: inline member function() js
+
+  /**
+   * Function that verifies the connector form
+   */
+  verifyForm: inline member function() js
+
+  /**
+   * Generates an invalid name, override if forms need to have specific invalid names
+   * @param key
+   *           The key of the specific field within the credentials
+   * @return The invalid name
+   */
+  generateInvalidInput: inline member function(key: string): string js
+
+  /**
+   * TODO: PLAT-114794 should internally call the function to get valid credentials and override the field's provided in invalidFormFieldsList
+   * Generates invalid credentials based on the invalidFormFieldsList
+   * @param invalidFormFieldsList
+   *           The list of invalid form fields to generate invalid credentials for
+   * @return The generated invalid credentials
+   */
+  generateIncorrectCredentials: inline member function(invalidFormFieldsList: json): CloudCredentials js
+
+  /**
+   * Verifies the form errors defined in additionalCredentialFormErrors
+   * which should be overridden in the child connector specific classes
+   */
+  verifyFormErrors: inline member function() js
+
+  /**
+   * Function that verifies the landing page after successful connection
+   */
+  verifyLandingPage: inline member function() js
+
+  /**
+   * Function that completes the step without all the verifications
+   * assumes that the test starts from the landing page
+   * completes at the landing page
+   */
+  completeStep: inline member function() js
+}

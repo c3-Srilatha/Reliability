@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@db(datastore='kv',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    compactType=true,
+    shortIdReservationRange=100000)
+/**
+ * Represents a predicted value within the context of machine learning or reliability modeling.
+ * This entity captures the predicted value for model validation, including bounds on the predicted value
+ * and other relevant metadata for tracking the performance and reliability of the model.
+ * For details on other information stored in this Type, refer to the documentation on each of the fields of this Type.
+ */
+extendable entity type ReliabilityMl.ValidationPrediction mixes TimedDataPoint<ReliabilityMl.ValidationPredictionHeader> schema name 'REL_MVP' {
+
+  /**
+   * Represents the predicted value for a validation, typically a numerical value that indicates
+   * the expected outcome of a model validation.
+   * `@ts(treatmentPath="parent.treatment", unitPath="parent.unitConstraint")` - Specifies the paths to retrieve
+   * the treatment value and unit constraint from the parent entity.
+   */
+  @ts(treatmentPath="parent.treatment", unitPath="parent.unitConstraint")
+  value: !double
+
+  /**
+   * The upper bound for the predicted value.
+   * This defines the maximum allowed value for the prediction and can be used to set a threshold or boundary
+   * for validation. It helps in ensuring the prediction doesn't exceed certain predefined limits.
+   */
+  valueUpperBound: double
+
+  /**
+   * The lower bound for the predicted value.
+   * This defines the minimum allowed value for the prediction, ensuring it stays within a meaningful and
+   * acceptable range. This can be useful for validation checks, ensuring the value does not fall below a certain threshold.
+   */
+  valueLowerBound: double
+}

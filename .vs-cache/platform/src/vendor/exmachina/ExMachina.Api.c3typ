@@ -1,0 +1,222 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents ExMachina REST Api
+ */
+// TODO PLAT-42951 Reimplement Jupyter*.Api types with OpenApi.generateType
+// TODO: PLAT-85018 Refactor ExMachina.Api in platform package to avoid remixing in exMachina
+@typesys(remixable=true)
+private type ExMachina.Api mixes REST {
+
+  /**
+   * Basic liveness check.
+   * Action call with throw an error if ExMachina is not healthy.
+   */
+  @rest(method='GET', uri='ping', skipThis=true)
+  ping: abstract member function()
+
+  /**
+   * Check if Spark pods are ready.
+   * Returns status information about the readiness of Spark pods.
+   */
+  @rest(method='GET', uri='sparkPods/ready', skipThis=true)
+  isReady: abstract member function()
+
+  /**
+   * Verify the auth token is validated
+   * @return the context for the auth token
+   */
+  @rest(method='GET', uri='verify', skipThis=true, c3Context=true)
+  verify: abstract member function(): json
+
+  @rest(uri='runDataPipeline', method='POST', skipThis=true, c3Context=true)
+  executePipeline: abstract member function(executionId: string, pipeline: json, outputs: [[string]]): json
+
+  /**
+   * Refreshes the translations that are cached in the ExMachina for a single tenant, tag, and locale combination.
+   * Tenant and tag are taken from the request (ie: the tenant and tag from which this request is made).
+   * If locale is not specified, the locale of the request will be used.
+   *
+   * Returns true if successful.
+   */
+  @rest(uri='refreshTranslations', method='GET', skipThis=true, c3Context=true)
+  refreshTranslations: abstract member function(locale: string): boolean
+
+  /**
+   * Check if the Spark server is initialized and ready to serve requests.
+   */
+  @rest(uri='isInitialized', method='GET', skipThis=true, c3Context=true)
+  isInitialized: abstract member function(): boolean
+
+  /**
+   * Start a run of the graph.
+   *
+   * @param projectId
+   *           Project Id. Should be same as in DB
+   * @param pipeline
+   *           Json representation of graph to run.
+   * @param forceRerun
+   *           If true, invalidate nodes in graph.
+   * @returns the Dataset, made of Tensor data.
+   */
+  @rest(uri='runPipeline', method='POST', skipThis=true, c3Context=true)
+  runGraph: abstract member function(projectId: !string, pipeline: !json, forceRerun: boolean)
+
+  /**
+   * Cancel all spark jobs and child futures related to current graph
+   *
+   * @param projectId
+   *           Project Id. Should be same as in DB.
+   * @param nodeId
+   *           If specified, cancel all jobs related to the node in the project.
+   */
+  @rest(uri='cancelGraph', method='POST', skipThis=true, c3Context=true)
+  cancelGraph: abstract member function(projectId: !string, nodeId: string): json
+
+  /**
+   * Remove from memory all references to a set of graphs so garbage collection can free the memory.
+   *
+   * @param projectIds
+   *           The ids of the projects to purge. If empty, will purge all.
+   *
+   * @return true if successful.
+   */
+  @rest(uri='purgeGraphs', method='POST', skipThis=true, c3Context=true)
+  purgeGraphs: abstract member function(projectIds: [string]): boolean
+
+  /**
+   * Get the result of a graph run.
+   *
+   * @param projectId
+   *           Project Id. Should be same as in DB
+   * @returns the Dataset, made of Tensor data.
+   */
+  @rest(uri='getRunGraphResult', method='POST', skipThis=true, c3Context=true)
+  getRunGraphResult: abstract member function(projectId: !string): json
+
+  /**
+   * Run graph actions
+   *
+   * @param pipelineId
+   *           The id of the pipeline/project loaded into memory
+   * @param inputNodes
+   *           Pipeline input nodes specifications (see {@link ExMachinaOperatorSpec})
+   * @param inputBindings
+   *           Input nodes bindings to pipeline inputs
+   * @param runId
+   *           Optional run id which is tracking action execution
+   * @param actionDefinitionIds
+   *           Ids of actions whose definitions are persisted within the graph
+   * @param actionDefinitions
+   *           Action definitions which are dynamically executed instead of stored within the graph
+   * @return the execution info which contains the id of the job run
+   */
+  @rest(uri='runActions', method='POST', skipThis=true, c3Context=true)
+  runActions: abstract member function(pipelineId: !string,
+                                       inputNodes: [ExMachinaOperatorSpec],
+                                       inputBindings: json,
+                                       runId: string,
+                                       actionDefinitions: [ExMachinaAction],
+                                       actionDefinitionIds: [string],
+                                       propertiesBindings: json = {}): json
+
+  /**
+   * Gets the result of actions run
+   *
+   * @param id
+   *           Execution id
+   * @return action results.
+   */
+  getActionResults: member function(id: string): json js-server
+
+  /**
+   * Get actions execution status
+   *
+   * @param id
+   *           Execution id
+   * @return the execution info which contains status and results if available
+   */
+  @rest(uri='executionStatus', method='POST', skipThis=true, c3Context=true)
+  executionStatus: abstract member function(id: !string): json
+
+  /**
+   * Get a list of projects currently running
+   *
+   * @param onlyCurrentlyRunning
+   *           If true, only return graphs that are currently running (not finished).
+   *
+   * @return array of project IDs
+   */
+  @rest(uri='getLoadedGraphs', method='POST', skipThis=true, c3Context=true)
+  getLoadedGraphs: abstract member function(onlyCurrentlyRunning: boolean): json
+
+  /**
+   * Set the log level.
+   *
+   * @param level
+   *           The log level (TRACE, DEBUG, INFO, WARNING, ERROR)
+   * @param logger
+   *           The name of the logger (e.g. c3.vad.commons)
+   * @return the confirmation
+   */
+  @rest(uri='log', method='GET', skipThis=true, c3Context=true)
+  setLogLevel: abstract member function(logger: !string, level: !string): json
+
+  /**
+   * Return the time the service reports since the last authorized request was processed.
+   *
+   * @returns the number of milliseconds since the last authorized request was processed.
+   */
+  @rest(uri='idleTime', method='GET', skipThis=true, c3Context=true)
+  idleTime: abstract member function(): int
+
+  /**
+   * Create a dataset upload. Useful for testing.
+   *
+   * @param partitions
+   *           The partition details.
+   * @return the dataset upload details
+   */
+  @rest(uri='createDatasetUpload', method='POST', skipThis=true, c3Context=true)
+  createDatasetUpload: private abstract member function(partitions: ![json]): json
+
+  /**
+   * Retrieves the Prometheus metric data
+   *
+   * @param format
+   *           The format the data is returned in (prometheus string(default), json)
+   * @returns the metric data in the specified format
+   */
+  @rest(uri='metrics', method='GET', skipThis=true, c3Context=true)
+  metrics: abstract member function(format: string): string
+
+  /**
+   * Keep polling using {@link verify} until the call succeeds
+   *
+   * @param timeoutInSeconds
+   *          The max timeout in seconds
+   * @param pollIntervalInSeconds
+   *          The interval on which to call {@link verify}
+   *
+   * @return true if verify call eventually succeeds
+   */
+  waitForVerify: member function(timeoutInSeconds: int = 300, pollIntervalInSeconds: int = 5): boolean js-server
+
+  /**
+   * Get a REST interface to the Spark server that times out API calls quickly. This avoids blocking c3server
+   * threads when the service is starting up or under heavy load.
+   */
+  timebound: member function(): !ExMachina.Api.Timebound js-server
+
+  /**
+   * Get a REST interface to the Spark server that doesn't support authentication for unprotected endpoints.
+   */
+  unprotected: member function(): !ExMachina.Api.Unprotected js-server
+
+}

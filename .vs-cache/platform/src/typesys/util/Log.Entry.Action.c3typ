@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single timestamped log entry in a C3 log, with extra performance profiling information.
+ *
+ * @see Log.Profile
+ * @see Action
+ */
+type Log.Entry.Action mixes Log.Entry {
+
+  /**
+   * Regex used to parse out {@link ActionTelemetry} data from string serialized Log.Entry.Action.
+   */
+  TELEMETRY_REGEX: const string = '((, a_cpu=([^,]+))?(, a_self=([^,]+))?(, a_self_cpu=([^,]+))?(, a_io=([^,]+))?(, a_sql=([^,]+))?(, a_kv=([^,]+))?(, a_self_io=([^,]+))?(, a_self_sql=([^,]+))?(, a_self_kv=([^,]+))?)'
+
+  /**
+   * See {@link Action#state}.
+   */
+  state: !string enum Action.State
+
+  /**
+   * Action duration. See {@link Action#age}.
+   */
+  time: !string
+
+  /**
+   * Action telemetry data. See {@link Action#telemetry} and {@link ActionTelemetry}.
+   */
+  telemetry: !string
+
+  toString:   ~
+  fromString: ~
+
+  /**
+   * Timestamp at the beginning of action execution.
+   */
+  start: property(): datetime with millis
+
+  /**
+   * Timestamp at the end of action execution.
+   */
+  end: property(): datetime with millis
+}

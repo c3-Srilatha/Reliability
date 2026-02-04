@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The {@link MlFbetaScoreMetric} computes the weighted harmonic mean of precision and recall,
+ * where an F-beta score reaches its best value at 1 and worst score at 0. The formula for the F-beta score is:
+ * ```
+ * F-beta =  (1 + beta^2) * precision * recall / (beta^2 * precision + recall)
+ * ```
+ * This metric only works for binary classification. If there are no true positive and false positive predictions,
+ * this metric returns 0. The `modelOutput` can either be a single-dimensional with binary (i.e. 0 and 1) data or
+ * two-dimensional with predicted probabilities for class '0' and '1'.  Column '1' will be used for scoring.
+ * The `targetOutput` is expected to be single-dimensional with binary (i.e. 0 and 1) data. This metric supports
+ * `sampleWeights`  as `context`. `sampleWeights` is single-dimensional with same number of samples as the
+ * `modelOutput`. It represents a per-sample weighting when aggregating for F-beta Score calculation.
+ */
+@beta
+type MlFbetaScoreMetric mixes MlScoringMetricSupportingPd<Data, Data, { sampleWeights: Data }> {
+
+  /**
+   * `beta` used to compute F-beta score
+   */
+  beta: !double
+
+  /**
+   * `probaThreshold` is a `double` value used to convert the predicted probabilities to class
+   * labels for F-beta Score calculation. `probaThreshold` defaults to 0.5 if no value is provided with the predicted
+   * probabilities as input
+   */
+  probaThreshold: double = 0.5
+
+  doScore:         ~ py
+  noTarget:        ~ py
+  contextNames:    ~ py
+  higherIsBetter:  ~ py
+  scoreFunction:   ~ py
+  scoreAggregator: ~ py
+}

@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that represents transformation from some arbitrary data format to
+ * the format for {@link UiSdlChartData} type.
+ */
+@typeScript
+@uiSdlPluggable(namespace='dataTransform')
+abstract type UiSdlDataTransform<I, O> {
+
+  /**
+   * Transforms data from an object such as evalMetricsResult, to UiSdlChartData type.
+   */
+  transform: abstract function(data: !I, context: UiSdlDataTransform.Context): O ts-client
+
+  /**
+   * A function that transforms the action's arguments.
+   *
+   * @param arguments
+   *            The search argument spec object to be sent to backend
+   * @param componentId
+   *            Component Id.
+   * @param state
+   *            Redux state.
+   * @param context
+   *            Transformation context
+   * @returns The action argument with a new filter query.
+   *
+   * {
+   *    spec: {
+   *      filter: "contains(lowerCase(string(fieldName)), \"transformed value\")"
+   *    }
+   * }
+   */
+  transformArgs: abstract function(arguments: map<string, any>, componentId: string, state: !UiSdlReduxState, context: UiSdlDataTransform.Context): map<string, any> ts-client
+}

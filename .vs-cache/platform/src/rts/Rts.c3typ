@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * The following RTS (Regression Test Selection) type provides apis necessary to do test selection
+ * @see TypesysTestCase.setupRts()
+ */
+type Rts mixes Configurable<RtsConfig> {
+
+  /**
+   * Writes to a file the mappings of test suite to action types for the latest executed test suite
+   * @param suite
+   *           The name of the latest executed test suite
+   * @param typesSet
+   *           A set of types collected during test suite execution
+   */
+  generateTestToTypeDB: function(suite: !string, typesSet: !Set<string>)
+
+  /**
+   * Generates pattern-based source to type relations
+   */
+  generateSourceToTypeDB: function(): !map<string, ArrayBuilder<string>>
+
+  /**
+   * Generates source to test relations for .md poly test files
+   */
+  generatePolySourceToTestDB: function(): !map<string, ArrayBuilder<string>>
+
+  /**
+   * Returns an array of test suites selected based on the diff between two commits
+   * and returns an empty array if all tests should be running
+   * @param changedFiles
+   *           The files that are different between the developer commit and the base commit, essentially, the files the developer commit touched
+   * @returns
+   *           A map from test step to an array of test suites. Possible keys include: integ, kpiJava, kpiPython, migration, repo
+   */
+  testSelector: function(changedFiles: !string): !map<string, [string]>
+
+  /**
+   * Aggregates multiple files in a directory into one file. Used for aggregating each test suite's test to type file contents into one file
+   * @param startPath
+   *           The parent directory of the files to aggregate
+   * @param destPath
+   *           The directory at which the aggregated file should be placed
+   */
+  aggregate: function(startPath: !string): !string
+
+  /**
+   * To a given list of test suites, adds all possible test suites with all possible runtimes, as well as the resolved runtime classname
+   * @param suites
+   *           The string of test suites, delimited by spaces
+   * @returns
+   *           For each .py test filepath, the returned list contains all possible file paths with the possible runtime directories, and all possible resolved class names
+   */
+  addRuntimesToSuites: function(suites: !string): !string
+}

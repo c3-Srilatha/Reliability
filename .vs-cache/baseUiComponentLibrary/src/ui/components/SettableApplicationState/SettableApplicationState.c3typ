@@ -1,0 +1,117 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * c3-analysis-disable c3-excessive-method-params -- SettableApplicationState methods require multiple parameters
+ */
+
+/**
+ * Application state that provides functions to conveniently set fields and clear fields.
+ * If you would like to explicitly define fields or add new functions,
+ * create a new type that mixes {@link SettableApplicationState}.
+ */
+type SettableApplicationState mixes UiSdlApplicationState {
+
+  /**
+   * An action to change a field in the application state.
+   *
+   * @param appStateId
+   *        The ID of the app state to change.
+   * @param field
+   *        The field in application state to be updated.
+   * @param value
+   *        The value to update the state field with. Takes precedence over the path param.
+   * @param path
+   *        The path in the action payload to get the value to update the state field with.
+   * @return A Redux action of type `SET_FIELD`.
+   */
+  @uiSdlActionCreator(actionType='SET_FIELD')
+  setFieldAction: function(
+    appStateId: !string,
+    field: !string,
+    value: string,
+    path: string
+  ): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FIELD` and stores selected value in application state.
+   *
+   * @param state
+   *        The current Redux state.
+   * @param action
+   *        The Redux action that triggered this reducer.
+   * @return A new Redux state.
+   */
+  @uiSdlReducer(actionType='SET_FIELD')
+  setFieldReducer: private function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * Sets multiple fields of the application state.
+   *
+   * @param appStateId
+   *        The ID of the app state to change.
+   * @param fieldToValueMap
+   *        Map of key `field` in app state to value to set this `field`.
+   * @param fieldToPathMap
+   *        Map of key `field` to value `path`. `path` is the path in the action payload
+   *        to get the value to set `field` to.
+   * @return A Redux action of type `SET_MULTIPLE_FIELDS`.
+   */
+  @uiSdlActionCreator(actionType='SET_MULTIPLE_FIELDS')
+  setMultipleFieldsAction: function(
+    appStateId: !string,
+    fieldToValueMap: map<string, any>,
+    fieldToPathMap: map<string, string>
+  ): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_MULTIPLE_FIELDS` and updates application state accordingly.
+   *
+   * @param state
+   *        The current Redux state.
+   * @param action
+   *        The Redux action that triggered this reducer.
+   * @return A new Redux state.
+   */
+  @uiSdlReducer(actionType='SET_MULTIPLE_FIELDS')
+  setMultipleFieldsReducer: private function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * An action to clear application state.
+   *
+   * @param appStateId
+   *        The ID of the app state to change.
+   * @param keepFields
+   *        The fields to keep in the application state.
+   * @return A Redux action of type `CLEAR_STATE`.
+   */
+  @uiSdlActionCreator(actionType='CLEAR_STATE')
+  clearStateAction: function(appStateId: !string, keepFields: [string]): !UiSdlReduxAction ts-client
+
+  /**
+   * Clears application state completely.
+   *
+   * @param state
+   *        The current Redux state.
+   * @param action
+   *        The Redux action that triggered this reducer.
+   * @return A new Redux state.
+   */
+  @uiSdlReducer(actionType='CLEAR_STATE')
+  clearStateReducer: private function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+}

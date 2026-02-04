@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipeline} template for a Virtual Sensor Pipeline. The user can use this template to
+ * build and train a regression-based reconstruction pipeline on 2D timeseries data based on the user-specified
+ * hyperparameters. The outputs will be the reconstructed input and the residual between the reconstruction and the
+ * original input.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Reconstruction.VirtualSensorPipeline<DX, DO, DI> extends MlTemplate.Pipeline<DX, void, void, DO, DI> mixes ReliabilityMlDatasetPreparationRunResolvable type key 'VSP' {
+
+  /**
+   * Define the list of all the feature names in this field. This is a
+   * COMPULSORY field to define.
+   */
+  features: ![string]
+
+  /**
+   * By default, all the features from {@link features} will be regressed
+   * against. However, if the user does not want to train regressors for all
+   * {@link features}, then they can specify a subset of features to build
+   * estimators for.
+   */
+  targetsToReconstruct: [string] schema suffix 'TTR'
+
+  /**
+   * By default, for all the {@link targetsToReconstruct}, all the other features
+   * will be used to train the regressors. However, if the user has additional
+   * information that may aid the model training process, for example, to estimate
+   * feature4 we only need feature1 and feature3, then that may be encoded here as
+   * `{"feature4": ["feature1","feature3"]}`. For all features that are not found
+   * in the keys of this map object, all other features will be used to train
+   * regressors.
+   */
+  targetToFeaturesMap: map<string, [string]> schema suffix 'TTFM'
+
+  /**
+   * By default, if not overridden by {@link targetToRegressorMap}, every feature
+   * will be regressed against using this template regressor.
+   */
+  @ML(containsHyperparams=true)
+  @db(persistAllFields=true)
+  templateRegressor: !MlPipe
+
+  /**
+   * If the {@link templateRegressor} is not deemed appropriate for some features,
+   * then the particular regressor to be applied to those features may be specified
+   * in this map object. The key of this map represents the feature, i.e., column name
+   * in the input dataset. The value should be a regressor.
+   */
+  targetToRegressorMap: map<string, MlPipe> schema suffix 'TTRM'
+
+  generatePipeline: ~ py
+
+  generateTypeBindings: ~ py
+
+  resolveForDatasetPreparationRun: ~ py
+
+  replaceEntityReferences: ~ py
+}

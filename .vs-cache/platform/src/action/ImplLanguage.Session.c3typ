@@ -1,0 +1,200 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides the structure to support persistent sessions for action engines based in the server.
+ *
+ * Classes that implement specific language (really #runtime) support need to implement the abstract methods.
+ *
+ * These instances are maintained in the server memory to allow execution state to be preserved between executions.
+ * Thus their instances are not fully serializable and only a unique ID will be sent back and forth.
+ *
+ * These sessions are modeled after the
+ * [Jupyter Client protocol](https://jupyter-client.readthedocs.io/en/latest/messaging.html),
+ * and could easily be used to implement custom kernels.
+ */
+abstract type ImplLanguage.Session mixes Identified, Configurable<ImplLanguage.Session.Config>, DispatchTarget {
+
+  /**
+   * The programming language supported within the server. This is the language in which the code will be executed.
+   */
+  language: member function(): !string serialized ImplLanguage
+
+  /**
+   * The runtime supported by this session type.
+   */
+  runtime: member function(): !string serialized ImplLanguage.Runtime
+
+  /**
+   * Examine the spec's {@link ImplLanguage.Session.SetupSpec#actionRequirement actionRequirement} and instaniate a
+   * supported session for that action engine. After creation, #setup is immediately called. This instance is recorded
+   * in a cache and can get retrieved using #forId.
+   */
+  create: function(spec: !ImplLanguage.Session.SetupSpec): !ImplLanguage.Session
+
+  /**
+   * The setup method builds an instance of this type which will be necessary for any other communication between
+   * a client and the server. The default implementation returns an instance of the subtype with the #id field set to a
+   * UUID. Sub-types will usually specialize this to do additional setup and _must_ call this base method as well.
+   */
+  setup: member function(spec: ImplLanguage.Session.SetupSpec): !mixing ImplLanguage.Session
+
+  /**
+   * Implement the <b>execute request</b>, including producing the output cell value. This _must_ be overridden by
+   * each session implementation to execute the code in the proper environment.
+   */
+  execute: abstract member function(spec: !ImplLanguage.Session.ExecuteSpec): !ImplLanguage.Session.ExecuteResult
+
+  /**
+   * Implement the <b>execute request</b>, including producing the output cell value. This method makes an asynchronous
+   * call to #execute, even when called on a synchronous type system instance.
+   */
+  executeAsync: member function(spec: !ImplLanguage.Session.ExecuteSpec): Promise<!ImplLanguage.Session.ExecuteResult> js-client
+
+  /**
+   * Implement the <b>code completeness request</b>, determining if the snippet is executable. The default
+   * implementation just returns "unknown", and should be overridden by session implementations which can provide a
+   * better answer.
+   */
+  isComplete: member function(code: !?string): !ImplLanguage.Session.IsCompleteResult
+
+  /**
+   * Implement the <b>interrupt request</b>, aborting running cell actions (started by #execute or #executeAsync).
+   */
+  interrupt: member function(spec: ImplLanguage.Session.InterruptSpec): !ImplLanguage.Session.Result
+
+  /**
+   * Implement the <b>heartbeat request</b>, echoing the input value to the output.
+   */
+  heartbeat: member function(msg: binary): !ImplLanguage.Session.HeartbeatResult
+
+  /**
+   * The parsed action requirement from the {@link ImplLanguage.Session.SetupSpec}.
+   */
+  actionRequirement: !Action.Requirement
+
+  /**
+   * Remove the cached state of this session, meaning that it can no longer be used (remotely). If this is overridden,
+   * the base implementation _must_ be called as well.
+   */
+  close: member function()
+
+  /**
+   * @returns true if this session has been closed
+   */
+  closed: final member function(): boolean
+
+  /**
+   * Get the next counter value (starting at 1) and increment the counter.
+   */
+  nextCounter: member function(): !int
+
+  /**
+   * Get the next counter value (starting at 1) _without_ incrementing the counter.
+   */
+  peekCounter: member function(): !int
+
+  /**
+   * Get the amount of time since this session was last used, including the last time #heartbeat was called.
+   * Sessions will time out after some period of time (such as 15 minutes) to avoid memory leaks.
+   */
+  idle: private member function(): !Duration
+
+  /**
+   * If set, we will target all dispatched method calls to this particular app node in the server. This makes the
+   * session "sticky" to a single server node. For recovery on node failure,
+   * {@link ImplLanguage.Session.Result each result} includes the node on which it was processed and further calls
+   * to this session should use the new node.
+   */
+  appNode: string serialized App.Node.Id
+
+  /**
+   * Scrape global variables from the current session and serialize them into a map that can be saved to the database.
+   * This is optional; if this or #loadGlobals are not implemented, auto-restored sessions will not preserve state.
+   */
+  saveGlobals: optional member function(): map<!string, binary>
+
+  /**
+   * Restore global variables in the current session from the serialized map that was saved to the database.
+   * This is optional; if this or #saveGlobals are not implemented, auto-restored sessions will not preserve state.
+   */
+  loadGlobals: optional member function(globals: !?map<!string, binary>)
+
+  /**
+   * Save the current state of the session to the database so it can be recovered. This will happen automatically
+   * when the server goes down and/or after a specified idle time, but it can also be requested explicitly.
+   *
+   * Note that a saved session can be recovered by #forId from the database after the session has been removed from
+   * memory or even on a different server node.
+   */
+  save: member function()
+
+  /**
+   * Create an instance of the saved session entity for this instance.
+   *
+   * @see #fromSaved
+   */
+  toSaved: private member function(): !ImplLanguage.SavedSession
+
+  /**
+   * Create a restored session instance from the saved entity.
+   *
+   * @see #toSaved
+   */
+  fromSaved: private function(saved: !ImplLanguage.SavedSession): !ImplLanguage.Session
+
+  /**
+   * Action that can be run manually or as a cron job to remove all saved sessions that have not been touched recently.
+   *
+   * @see ImplLanguage.Session.Config#restoreTimeout
+   */
+  cleanupExpiredSessions: function()
+
+  /**
+   * Look up an active session created by the current user. This also handles auto-restore by reloading session state
+   * if one was previously saved.
+   *
+   * @see ImplLanguage.Session.Config
+   */
+  forId: ~
+
+  /**
+   * Produce one or more visualizations of a {@link ImplLanguage.ExecuteResult execution result} from the data value.
+   * These may be abbreviations of the total data, but will provide a preview. When possible,
+   * {@link Content#contentLocation contentLocation} provides a link to the full result.
+   *
+   * Note that there is always at least one visualization, often of type `text/plain` for the default cell result.
+   * Additional visualizations will have more specific MIME types for enhanced display.
+   *
+   * @param result the result from evaluating the code cell
+   * @param spec the original spec passed to ImplLanguage.Session.
+   *
+   * @see ImplLanguage.ExecuteResult#data
+   */
+  visualizations: member function(result: !?any, spec: ImplLanguage.Session.ExecuteSpec): ![!Content]
+
+  /**
+   * Produce extra metadata for the data value. This will always include a "label" and perhaps also a "description"
+   * used for the output cell.
+   *
+   * @param result the result from evaluating the code cell
+   * @param spec the original spec passed to ImplLanguage.Session.
+   *
+   * @see ImplLanguage.Session.ExecuteResult#metadata
+   */
+  valueMetadata: member function(result: !?any, spec: ImplLanguage.Session.ExecuteSpec): map<!string, any>
+
+  toString:       ~ java | js | py
+  fromString:     ~ java | js | py
+  targetNodeFunc: ~
+  _touch:         private member function()
+  _setupSpec:     private !ImplLanguage.Session.SetupSpec
+  _counter:       private @java(class="java.util.concurrent.atomic.AtomicLong") !native
+  _touched:       private @java(class="java.util.Date") !native
+  _running:       private @java(class="java.util.Set<c3.platform.action.SessionCellAction>") ?native
+}

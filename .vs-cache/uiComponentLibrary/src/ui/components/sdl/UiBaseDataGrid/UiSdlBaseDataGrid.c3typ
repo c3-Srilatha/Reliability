@@ -1,0 +1,1171 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link UiSdlDataGrid} and {@link UiSdlFormDataGrid}.  Contains common logic to be shared across the two grid types.
+ */
+@typeScript
+abstract type UiSdlBaseDataGrid<DataType> mixes UiSdlComponent<DataType> {
+
+  /**
+   * The specification used for retrieving data displayed by the grid.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataCollection')
+  dataSpec: ~
+
+  /**
+   * The spec used for retrieving the total data count, will be used for exporting and pagination.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataCollectionCount')
+  totalDataCount: UiSdlDataGridTotalDataCountDataSpec
+
+  /**
+   * Holds the total count of the data.
+   */
+  dataCollectionCount: int
+
+  /**
+   * Holds the data to display in the grid.
+   */
+  dataCollection: [Obj]
+
+  /**
+   * Configuration of the header subcomponent.
+   */
+  header: UiSdlComponentHeader
+
+  /**
+   * When a component is provided, it is shown as detail when a row is expanded.
+   */
+  detailComponentId: string
+
+  /**
+   * Whether we should apply filter from the filter panel to the detailComponent.
+   */
+  detailComponentFilterable: boolean = true
+
+  /**
+   * A mapping to keep track of which item details to expand.
+   * Key is item id, value is boolean.
+   *
+   * map<string, boolean> doesn't play well with Immutable.js
+   */
+  expandedItems: json = {}
+
+  /**
+   * Specifies whether checkboxes will be prepended to each row in the grid.
+   */
+  checkboxes: boolean = false
+
+  /**
+   * Whether the scrollbar should be visible on scroll or all the time
+   */
+  scrollbarAlwaysVisible: boolean = false
+
+  /**
+   * Specifies whether select all action will be enabled when a checkboxes are present in a grid.
+   */
+  checkboxesShowSelectAllBanner: boolean = true
+
+  /**
+   * Specifies the row style of the grid.
+   *
+   * 'LINE_DIVISIONS' would add lines between each row,
+   * 'FREE_FORM' would add no lines between any row or column, and
+   * 'GRID_LINES' would add lines between each row and between each column.
+   */
+  rowStyle: string enum('LINE_DIVISIONS', 'FREE_FORM', 'GRID_LINES') = 'LINE_DIVISIONS'
+
+  /**
+   * Specifies whether the grid's rows will have alternating background colors.
+   */
+  zebraStripes: boolean = false
+
+  /**
+   * Specifies the visible density of the grid rows.
+   */
+  rowDensity: string enum('SMALL', 'MEDIUM', 'LARGE') = 'MEDIUM'
+
+  /**
+   * Specifies whether to allow the user to resize columns in the grid display.
+   */
+  resizableColumns: boolean = false
+
+  /**
+   * Specifies whether to allow the user to reorder columns in the grid display.
+   * NOTE: even if this is true, columns with {@link UiSdlDataGridDataSpecColumnFieldSetting#sticky} as true will not be re-orderable
+   */
+  reorderableColumns: boolean = false
+
+  /**
+   * Specifies whether to allow the user to add and remove individual grid rows in order to change the underlying data.
+   */
+  removableRows: boolean = false
+
+  /**
+   * Whether to show a confirmation modal when deleting a row.
+   * This only takes effect if {@link #removableRows} is `true`.
+   *
+   * When set to true, the grid dispatches a `ROW_ACTION_CLICK_DELETE_WITH_CONFIRMATION` action
+   * instead of the standard `ROW_ACTION_CLICK_DELETE` action. This allows the developer to
+   * implement a custom confirmation modal before the row is deleted.
+   *
+   * The `ROW_ACTION_CLICK_DELETE_WITH_CONFIRMATION` action is handled by {@link #pendingRowDeletionIdUpdateEffect}, which updates {@link #pendingRowDeletionId}.
+   */
+  confirmBeforeRowDelete: boolean = false
+
+  /**
+   * Saves the rows id for deletion, when there is a confirmation modal before deletion.
+   */
+  pendingRowDeletionId: string | [string]
+
+  /**
+   * `id`s of items that are currently selected in a checklist grid.
+   * Applicable if and only if {@link grid#checkBoxes} is `true`.
+   */
+  selectedItemIds: [string]
+
+  /**
+   * Currently clicked row data.
+   */
+  currentlyClickedData: json
+
+  /**
+   * Internal state field to capture the current sort column and sort order. This field
+   * should not be configured directly. For configuring a column to be used as the data grid's
+   * default sort order (i.e. on initial render), use
+   * {@link UiSdlBaseDataGridDataSpecColumnFieldSetting#defaultSortField} instead.
+   */
+  sortColumn: UiSdlDataGridSortColumn
+
+  /**
+   * Whether the grid is in editable mode (a field is actively being edited).
+   */
+  isEditing: boolean = false
+
+  /**
+   * The `id` of the item that is being edited.
+   * Applicable if and only if one of the {@link UiSdlDataGridDataSpecColumnFieldSetting#editable} is true.
+   */
+  editItemId: string
+
+  /**
+   * The `field` of the item that is being edited.
+   * Applicable if and only if one of the {@link UiSdlDataGridDataSpecColumnFieldSetting#editable} is true.
+   */
+  editItemField: string
+
+  /**
+   * The changes that are made to the grid. This key is `id`; value is an array of fields modified.
+   */
+  editChanges: map<string, [string]>
+
+  /**
+   * The upserting editErrors from {@link #editChanges}. This key is `id`; value is a map of field to error message.
+   */
+  editErrors: map<string, map<string, string>>
+
+  /**
+   * The set of row-specific actions to be rendered in each row.
+   */
+  rowActions: [UiSdlDataGridRowAction]
+
+  /**
+   * The number of table actions to display on the grid header.  If there are more, an additional table action
+   * icon is displayed, and the extra actions are displayed under a dropdown triggered by clicking the additional
+   * table action.
+   *
+   * Table actions that are configured outside of the {@link #tableActions} field (such as adding new rows,
+   * removing columns, or exporting) do not count towards this limit.  The additional table action itself
+   * does count towards the limit.  Examples:
+   *
+   * - If tableActionsCollapseThreshold is set to 2 and there are two actions, both of them are shown on the
+   *   grid header, and there is no additional actions icon.
+   * - If tableActionsCollapseThreshold is set to 2 and there are three actions - "A", "B", and "C" - the
+   *   grid header will show action "A" and the additional actions icon.  Clicking the additional actions icon
+   *   will show a dropdown containing actions "B" and "C".
+   */
+  tableActionsCollapseThreshold: int = 2
+
+  /**
+   * The set of actions that don't depend on rows, e.g., export, refresh. A toggleable group of actions can also be
+   * specified. When considering the `tableActionsCollapseThreshold`, consider the table actions to be flattened.
+   * Listen to triggers of the table actions through `TABLE_ACTION_CLICK_${actionSuffix}`. Actions specified in a
+   * UiSdlBaseDataGridSelectableTableAction will only be triggered when it enters a "selected" state.
+   */
+  tableActions: [UiSdlActionGroup | UiSdlBaseDataGridToggleableTableActionGroup]
+
+  /**
+   * The set of actions that could apply to one or more rows.
+   *
+   * Those actions will be visible only if one or more rows are selected.
+   */
+  multipleRowActions: [UiSdlDataGridMultipleRowAction]
+
+  /**
+   * Whether grid allows inserting rows. If this field's value is `false` in metadata, grid does not allow new row insertion.
+   * If this field's value is not set, then we use {@link UiSdlDataGrid#removableRows} to decide whether to allow new row insertion.
+   */
+  insertableRows: boolean
+
+  /**
+   * The component that handles the empty state.
+   * It will appear if the grid has no data.
+   */
+  emptyState: UiSdlComponentRef<UiSdlEmptyState>
+
+  /**
+   * An instance of {@link UiSdlSidePanel}.
+   */
+  sidePanel: UiSdlAlignedComponentRef<UiSdlSidePanel>
+
+  /**
+   * The currently selected items in the grid. See {@link UiSdlSelectedGridItemConfig} for the selectable item types.
+   */
+  selectedGridItems: [UiSdlSelectedGridItemConfig]
+
+  /**
+   * Whether or not rows without a checkbox are selectable on row click. Will only be respected if {@link #checkboxes}
+   * is false.
+   */
+  selectableRows: boolean = false
+
+  /**
+   * Whether or not columns are selectable on header click.
+   */
+  selectableColumns: boolean = false
+
+  /**
+   * Whether to show the action button in the grid header (checkboxes enabled).
+   */
+  showCheckboxActionButtons: boolean = false
+
+  /**
+   * Whether to show row actions on grid rows on idle. If false, row actions will show on hover.
+   * If true:
+   * 1. Single action: Display a visible icon for the specific action.
+   * 2. Two or more actions: Display the "…" (ellipsis) icon and allow users to view the available actions in a menu.
+   */
+  showRowActionsOnIdle: boolean = false
+
+  /**
+   * Whether to show the action button in the grid header (checkboxes enabled).
+   */
+  checkboxPrimaryActionButtonText: string = 'UiSdlDataGrid.checkboxPrimaryActionButtonText'
+
+  /**
+   * Whether to show the action button in the grid header (checkboxes enabled).
+   */
+  checkboxSecondaryActionButtonText: string = 'UiSdlDataGrid.checkboxSecondaryActionButtonText'
+
+  /**
+   * Whether to show the save cancel button in the grid header. If set to true, this will force the save/cancel buttons
+   * to be shown, regardless of whether any grid cells have been edited.
+   */
+  showSaveCancelButton: boolean = false
+
+  /**
+   * Whether to hide the save/cancel buttons when the grid is editable, and a cell has been edited.
+   * This should be set to true if custom table actions are being used to save/cancel changes.
+   */
+  hideSaveCancelButtonOnEdit: boolean = false
+
+  /**
+   * Enabled to pass new label for save button.
+   */
+  saveChangesButtonText: string
+
+  /**
+   * Triggers `DATA_CONFIG_UPDATE` and `DATA_REQUEST` actions if the type of data source is 'Hierarchy'.
+   * Otherwise triggers `DATA_COUNT_ARGS_SYNC` and `DATA_REQUEST` actions.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='TOTAL_DATA_COUNT')
+  countDataEpic: private function(actionStream: UiSdlActionsObservable,
+                                  stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggered when the component needs to load its data.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `DATA_LOAD` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='DATA_LOAD')
+  loadDataAction: function(id: string): UiSdlDataLoadAction ts-client
+
+  /**
+   * Triggered when a row has been successfully edited@param id.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `EDIT_CHANGES_UPDATE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='EDIT_CHANGES_UPDATE')
+  editChangesUpdateAction: function(id: string): UiSdlEditChangesUpdateAction ts-client
+
+  /**
+   * Triggered to update {@link #showSaveCancelButton} value.
+   *
+   * @param id
+   *            Id of the component.
+   * @param visible
+   *            True if `Save` and `Cancel` buttons should be visible, false otherwise.
+   *
+   * @returns A `SAVE_CANCEL_BUTTON_VISIBILITY_UPDATE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SAVE_CANCEL_BUTTON_VISIBILITY_UPDATE')
+  updateSaveCancelButtonVisibilityAction: function(id: string,
+                                                   visible: boolean): UiSdlSaveCancelButtonVisibilityUpdateAction ts-client
+
+  /**
+   * Triggered when the user (un)selects a checkbox for one of the grid items.
+   * Applicable if and only if {@link grid#checkBoxes} is `true`.
+   *
+   * @param id
+   *            Id of the component.
+   * @param selected
+   *           `true` if the item was selected, `false` if it was unselected.
+   * @param itemId
+   *           The `id` of the object that was (un)selected.
+   *
+   * @returns A `SELECTION_CHANGE` action for this instance with the following properties:
+   * - payload.selected {boolean} `true` if the item was selected, `false` if it was unselected.
+   * - payload.id {string} The `id` of the object that was (un)selected.
+   * - payload.componentId {string} The componentId of the component on which the action was triggered.
+   * - meta.dataSourceId {string} The `id` of the data source to which the (un)selected item belongs.
+   */
+  @uiSdlActionCreator(actionType='SELECTION_CHANGE')
+  changeSelectionAction: function(id: string,
+                                  selected: boolean,
+                                  itemId: !string): UiSdlBaseDataGridSelectionChangeAction ts-client
+
+  /**
+   * Triggered when the user (un)checks the "select all" checkbox in the header
+   * row of the grid in a page. Applicable if and only if {@link grid#checkBoxes} is `true`.
+   * This action can also be used to clear selections by passing in the 'false' parameter to deselect everything.
+   * The toggle select/deselect all is in local scope -
+   * it only apply to items in a page, not all data from the fetch response.
+   *
+   * @param id
+   *            Id of the component.
+   * @param selected
+   *           `true` if the "select all" checkbox was selected, `false` if it was unselected.
+   *
+   * @returns A `SELECT_ALL_TOGGLE` action for this instance with the following properties:
+   * - payload.selected {boolean} `true` if the item was selected, `false` if it was unselected.
+   * - payload.componentId {string} The componentId of the component on which the action was triggered.
+   */
+  @uiSdlActionCreator(actionType='SELECT_ALL_TOGGLE')
+  toggleSelectAllAction: function(id: string, selected: boolean): UiSdlSelectAllToggleAction ts-client
+
+  /**
+   * Triggered when a row in the grid is clicked
+   *
+   * @param id
+   *            Id of the component.
+   * @param dataItem
+   *            The record that represents the row in the grid.
+   *
+   * @returns A `ROW_CLICK` action for this instance with the following properties:
+   * - payload.componentId - {string} The `id` of the component who dispatches the action.
+   * - payload.dataItem - The record that represents the row in the grid.
+   */
+  @uiSdlActionCreator(actionType='ROW_CLICK')
+  clickRowAction: function(id: string, dataItem: json): UiSdlRowCellClickAction ts-client
+
+  /**
+   * Triggered when row action button clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *           The action that was clicked on the row.
+   * @param dataItem
+   *           The record that represents the row in the grid.
+   * @param args
+   *           The args that represent additional data that may be provided.
+   *
+   * @returns A `ROW_ACTION_CLICK_${actionSuffix}` action with the following properties:
+   * - `payload.dataItem` {any} The record that represents the row in the grid that the action was triggered from.
+   * - `meta.dataSourceId` {string} The `id` of the data source to which the items belong.
+   */
+  @uiSdlActionCreator(actionType='ROW_ACTION_CLICK_${actionSuffix}')
+  triggerRowAction: function(id: string,
+                             actionSuffix: string,
+                             dataItem: json,
+                             args: json): UiSdlRowCellClickAction ts-client
+
+  /**
+   * Triggers an action that applies to the currently selected items only.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *           The suffix of the action that should be triggered.
+   * @param dataItems
+   *           The list of records that are selected at the time the action is triggered.
+   *
+   * @returns A `MULTIPLE_ROW_ACTION_CLICK_${actionSuffix}` action with the following properties:
+   * - `action.payload` {any} The list of records that are selected.
+   * - `action.componentId` {string} The `id` of the component who dispatches the action.
+   */
+  @uiSdlActionCreator(actionType='MULTIPLE_ROW_ACTION_CLICK_${actionSuffix}')
+  triggerMultipleRowAction: function(id: string,
+                                     actionSuffix: string,
+                                     dataItems: [json]): UiSdlMultipleRowActionClickAction ts-client
+
+  /**
+   * Triggers an action that applies to the whole component.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *           The suffix of the action that should be triggered.
+   *
+   * @returns A `TABLE_ACTION_CLICK_${actionSuffix}` action with the following properties:
+   * - `meta.dataSourceId` {string} The `id` of the `UiSdlDataGrid`.
+   */
+  @uiSdlActionCreator(actionType='TABLE_ACTION_CLICK_${actionSuffix}')
+  triggerTableAction: function(id: string, actionSuffix: string): UiSdlTableActionClickAction ts-client
+
+  /**
+   * Return an action that sets the loading status of a table action button.  A loading button
+   * will show a spinner and not respond to clicks.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *            The actionSuffix of the action in {@link #tableActions}.
+   * @param loading
+   *           The loading status to set.
+   *
+   * @return A `TABLE_ACTION_LOADING_SET` action corresponding to the table action.
+   */
+  @uiSdlActionCreator(actionType='TABLE_ACTION_LOADING_SET')
+  setTableActionLoadingAction: function(id: string,
+                                        actionSuffix: !string,
+                                        loading: boolean): UiSdlTableActionLoadingSetAction ts-client
+
+  /**
+   * Triggered when a {@link UiSdlBaseDataGridSelectableTableAction} selection state is toggled.
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *            The suffix of the action that is toggled.
+   * @param selected
+   *            True if the action is toggled to be selected.
+   *
+   * @returns A `SELECTABLE_TABLE_ACTION_TOGGLE` action with the following properties:
+   *  - payload.actionSuffix {string} The action suffix of the action.
+   *  - payload.componentId {string} The id of this grid component.
+   *  - payload.selected {boolean}  True if the action is toggled to be selected.
+   */
+  @uiSdlActionCreator(actionType='SELECTABLE_TABLE_ACTION_TOGGLE')
+  triggerToggleSelectedTableAction: function(id: string,
+                                             actionSuffix: string,
+                                             selected: boolean): UiSdlSelectableTableActionToggleAction ts-client
+
+  /**
+   * Triggers an action that applies to the clicked cell.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *            The suffix of the action that should be triggered.
+   *
+   * @return A CELL_ACTION_CLICK_${actionSuffix} action with the following properties:
+   * - `payload.dataItem` {any} The record for the specific cell.
+   * - `meta.dataSourceId` {string} The `id` of the data source to which the items belong.
+   */
+  @uiSdlActionCreator(actionType='CELL_ACTION_CLICK_${actionSuffix}')
+  triggerCellAction: function(id: string, actionSuffix: string, dataItem: json): UiSdlRowCellClickAction ts-client
+
+  /**
+   * Triggered when the user changes the value in a cell, after each key stroke.
+   *
+   * @param id
+   *        The id of the component.
+   * @param itemId
+   *        The id of the item.
+   * @param field
+   *        The field of the column.
+   * @param value
+   *        The new value.
+   *
+   * @return An `ITEM_CHANGE` action for this instance with the following properties:
+   * - payload.id {string} The id of the item.
+   * - payload.field {string} The field of the column.
+   * - payload.value {string} The new value.
+   * - meta.dataSourceId {string} The `id` of the data source.
+   */
+  @uiSdlActionCreator(actionType='ITEM_CHANGE')
+  changeItemAction: function(id: string,
+                             itemId: !string,
+                             field: !string,
+                             value: string): UiSdlItemChangeAction ts-client
+
+  /**
+   * Triggered when the user cancels any editable cell changes.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `CHANGE_CANCEL` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CHANGE_CANCEL')
+  cancelChangeAction: function(id: string): UiSdlBaseDataGridChangeCancelAction ts-client
+
+  /**
+   * Triggered when the user saves data that was edited in a grid cell.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `DATA_SAVE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='DATA_SAVE')
+  saveDataAction: function(id: string): UiSdlDataSaveAction ts-client
+
+  /**
+   * Triggered when the user clicks the primary button when checkboxes are true
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `CHECKBOX_PRIMARY_BUTTON_CLICK` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CHECKBOX_PRIMARY_BUTTON_CLICK')
+  checkboxPrimaryButtonClickAction: function(id: string): UiSdlBaseDataGridCheckboxPrimaryButtonAction ts-client
+
+  /**
+   * Triggered when the user clicks the primary button when checkboxes are true
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `CHECKBOX_SECONDARY_BUTTON_CLICK` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CHECKBOX_SECONDARY_BUTTON_CLICK')
+  checkboxSecondaryButtonClickAction: function(id: string): UiSdlBaseDataGridCheckboxSecondaryButtonAction ts-client
+
+  /**
+   * Triggered when the user selects/deselects a column in the 'edit columns' dropdown.
+   *
+   * @param id
+   *            Id of the component.
+   * @param columnId
+   *           The id of the {@link UiSdlDataGridDataSpecColumnFieldSetting} to toggle (hidden/visible).
+   *
+   * @returns A `COLUMN_VISIBILITY_TOGGLE` action for this instance with the following properties:
+   * - payload.columnId {string} the id of the column to toggle.
+   */
+  @uiSdlActionCreator(actionType='COLUMN_VISIBILITY_TOGGLE')
+  toggleColumnVisibilityAction: function(id: string, columnId: !string): UiSdlColumnVisibilityToggleAction ts-client
+
+  /**
+   * Triggered when the user clicks into an editable cell.
+   *
+   * @param id
+   *        Id of the component.
+   * @param itemId
+   *        The id of the item.
+   * @param field
+   *        The field of the column.
+   *
+   * @return An `EDIT_ENTER` action for this instance with the following properties:
+   * - payload.id {string} The id of the item.
+   * - payload.field {string} The field of the column.
+   * - meta.dataSourceId {string} The `id` of the data source.
+   */
+  @uiSdlActionCreator(actionType='EDIT_ENTER')
+  enterEditAction: function(id: string, itemId: !string, field: !string): UiSdlEditEnterExitAction ts-client
+
+  /**
+   * Triggered when the user moves the focus out of a editable cell.
+   *
+   * @param id
+   *        Id of the component.
+   * @param itemId
+   *        The id of the item.
+   * @param field
+   *        The field of the column.
+   *
+   * @return An `EDIT_EXIT` action for this instance with the following properties:
+   * - payload.id {string} The id of the item.
+   * - payload.field {string} The field of the column.
+   * - meta.dataSourceId {string} The `id` of the data source.
+   */
+  @uiSdlActionCreator(actionType='EDIT_EXIT')
+  exitEditAction: function(id: string, itemId: !string, field: !string): UiSdlEditEnterExitAction ts-client
+
+  /**
+   * Triggered when the user saves changes or when data is loaded
+   *
+   * @param id
+   *          Id of the component.
+   * @param buttonType
+   *          The type of button ('SAVE' or 'CANCEL')
+   * @param disable
+   *          Whether the button should be disabled
+   * @param loading
+   *           Whether the button should be loading
+   *
+   * @return An `ACTION_BUTTON_STATE_CHANGE` action for this instance with the following properties:
+   * - payload.componentId {string} The id of the item.
+   * - payload.buttonType {string} The type of button
+   * - payload.disabled {boolean} Whether the button should be disabled
+   * - payload.loading {boolean} Whether the button should be loading
+   */
+  @uiSdlActionCreator(actionType='ACTION_BUTTON_STATE_CHANGE')
+  changeActionButtonStateAction: function(id: string, buttonType: !string, disable: boolean, loading: boolean): UiSdlBaseDataGridActionButtonStateChangeAction ts-client
+
+  /**
+   * Triggered to update {@link editErrors}.
+   *
+   * @param id
+   *            Id of the component.
+   * @param editErrors
+   *        Edit errors to be saved to {@link #editErrors}.
+   *
+   * @return An `EDITERROR_CHANGES` action for this instance with the following properties:
+   * - payload {map<string, map<string,string>>} Edit errors to be saved to {@link #editErrors}.
+   * - meta.dataSourceId {string} The `id` of the data source.
+   */
+  @uiSdlActionCreator(actionType='EDITERROR_CHANGES')
+  editErrorChangesAction: function(id: string,
+                                   editErrors: map<string, map<string, string>>): UiSdlEditerrorChangesAction ts-client
+
+  /**
+   * Triggered when the user expands/contracts a row's details.
+   *
+   * @param id
+   *            Id of the component.
+   * @param expanded
+   *           `true` if the detail are being expanded, `false` if contracted.
+   * @param itemId
+   *           The id of the data item in the toggled row.
+   *
+   * @returns a `ROW_TOGGLE` action for this instance with the following properties:
+   * - payload.expanded {boolean} True if the row's detail has to be expanded.
+   * - payload.id {string} The id of the row's dataItem.
+   */
+  @uiSdlActionCreator(actionType='ROW_TOGGLE')
+  toggleRowAction: function(id: string, expanded: boolean, itemId: !string): UiSdlRowToggleAction ts-client
+
+  /**
+   * Triggers an action when either `primaryActionButton` or `secondaryActionButton` is clicked
+   * on the empty state component.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *           The suffix of the action that should be triggered.
+   *
+   * @returns An `EMPTY_STATE_ACTION_CLICK_${actionSuffix}` action.
+   */
+  @uiSdlActionCreator(actionType='EMPTY_STATE_ACTION_CLICK_${actionSuffix}')
+  clickEmptyStateButtonAction: function(id: string, actionSuffix: !string): UiSdlEmptyStateActionClickAction ts-client
+
+  /**
+   * Triggered when a row in the grid is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `CURRENTLY_CLICKED_DATA_UPDATE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CURRENTLY_CLICKED_DATA_UPDATE')
+  updateCurrentlyClickedData: function(id: string, data: json): UiSdlCurrentlyClickedDataUpdateAction ts-client
+
+  /**
+   * When {@link #selectableRows} is true, and a row is clicked, this action will be invoked.
+   * Applicable if and only if {@link #selectableRows} is `true` and {@link #checkboxes} is `false`.
+   *
+   * @param id
+   *            Id of the component.
+   * @param dataItem
+   *            The record that represents the row in the grid.
+   *
+   * @returns A `ROW_SELECT` action for this instance with the following properties:
+   * - payload.componentId - {string} The `id` of the component who dispatches the action.
+   * - payload.dataItem - The record that represents the row in the grid.
+   */
+  @uiSdlActionCreator(actionType='ROW_SELECT')
+  selectRowAction: function(id: string, dataItem: json): UiSdlRowCellClickAction ts-client
+
+  /**
+   * When {@link #selectableColumns} is true, and a column header is clicked, this action will be invoked.
+   *
+   * @param id
+   *            Id of the component.
+   * @param columnConfig
+   *            Json that represents the column in the grid.
+   *
+   * @returns A `COLUMN_SELECT` action for this instance with the following properties:
+   * - payload.componentId - {string} The `id` of the component who dispatches the action.
+   * - payload.columnConfig - The json that represents the column in the grid.
+   */
+  @uiSdlActionCreator(actionType='COLUMN_SELECT')
+  selectColumnAction: function(id: string, columnConfig: json): UiSdlColumnSelectAction ts-client
+
+  /**
+   * Triggered to update the state with the new column order.
+   *
+   * @param state
+   *          Redux state.
+   * @param action
+   *          Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlActionCreator(actionType='REORDER_COLUMNS')
+  reorderColumnsAction: function(id: string, columnsOrder: map<string, int>): UiSdlColumnsReorderedAction ts-client
+
+  /**
+   * Listens for actions of type 'REORDER_COLUMNS' updates the state with the new column order.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='REORDER_COLUMNS')
+  reorderColumnsReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlColumnsReorderedAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `ROW_ACTION_CLICK_DELETE_WITH_CONFIRMATION` and updates the state accordingly.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='ROW_ACTION_CLICK_DELETE_WITH_CONFIRMATION')
+  pendingRowDeletionIdUpdateEffect: private function(state: !UiSdlReduxState,
+                                                     action: !UiSdlRowCellClickAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `MULTIPLE_ROW_ACTION_CLICK_DELETE_WITH_CONFIRMATION` and updates the `pendingRowDeletionId` value.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='MULTIPLE_ROW_ACTION_CLICK_DELETE_WITH_CONFIRMATION')
+  pendingRowsDeletionIdUpdateReducer: private function(state: !UiSdlReduxState,
+                                                     action: !UiSdlMultipleRowActionClickDeleteRowAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `CURRENTLY_CLICKED_DATA_UPDATE` and updates the {@link #currentlyClickedData} value.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CURRENTLY_CLICKED_DATA_UPDATE')
+  currentlyClickedDataUpdateEffect: private function(state: !UiSdlReduxState,
+                                                     action: !UiSdlCurrentlyClickedDataUpdateAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `EDIT_CHANGES_UPDATE` and updates the {@link #editChanges} value.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='EDIT_CHANGES_UPDATE')
+  updateEditChangesEffect: private function(state: !UiSdlReduxState,
+                                            action: !UiSdlEditChangesUpdateAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type 'DATA_COUNT_ARGS_SYNC' and synchronizes the grid's dataSpec and dataCountExportSpec,
+   * specifically the filter for fetchCount.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='DATA_COUNT_ARGS_SYNC')
+  dataCountArgumentsSyncReducer: private inline function(state: UiSdlReduxState,
+                                                         action: UiSdlDataCountArgumentsSyncAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SAVE_CANCEL_BUTTON_VISIBILITY_UPDATE` and updates the {@link #showSaveCancelButton} value.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SAVE_CANCEL_BUTTON_VISIBILITY_UPDATE')
+  saveCancelButtonVisibilityUpdateReducer: private function(state: !UiSdlReduxState,
+                                                            action: !UiSdlSaveCancelButtonVisibilityUpdateAction)
+                                                     : !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `MULTIPLE_ROW_ACTION_CLICK_DELETE_ROW` and clear {@link #selectedItemIds}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='MULTIPLE_ROW_ACTION_CLICK_DELETE_ROW')
+  multipleRowsDeleteEffect: private function(state: !UiSdlReduxState,
+                                             action: !UiSdlMultipleRowActionClickDeleteRowAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `COLUMN_VISIBILITY_TOGGLE` and toggles the 'hidden' field on the specified column.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='COLUMN_VISIBILITY_TOGGLE')
+  columnVisibilityToggleEffect: private inline function(state: UiSdlReduxState,
+                                                        action: UiSdlColumnVisibilityToggleAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `EDIT_ENTER` and updates internal
+   * fields {@link editItemId} and {@link #editItemField} with the new item id and field.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='EDIT_ENTER')
+  enterEditEffect: private inline function(state: UiSdlReduxState,
+                                           action: UiSdlEditEnterExitAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `EDIT_EXIT` and updates internal
+   * fields {@link editItemId} and {@link #editItemField} to null.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='EDIT_EXIT')
+  editExitEffect: private inline function(state: UiSdlReduxState,
+                                          action: UiSdlEditEnterExitAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `EDITERROR_CHANGES` and updates internal
+   * field {@link #editErrors}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='EDITERROR_CHANGES')
+  editErrorChangesEffect: private inline function(state: UiSdlReduxState,
+                                                  action: UiSdlEditerrorChangesAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SELECTION_CHANGE` and updates internal
+   * field {@link selectedItemIds} by removing or adding the unchecked or
+   * checked item, respectively. Applicable if and only if {@link grid#checkBoxes} is `true`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SELECTION_CHANGE')
+  selectionChangeEffect: private inline function(state: UiSdlReduxState,
+                                                 action: UiSdlBaseDataGridSelectionChangeAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SELECT_ALL_TOGGLE` and updates internal
+   * field {@link selectedItemIds} with either all items or no items.
+   * Applicable if and only if {@link grid#checkBoxes} is `true`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SELECT_ALL_TOGGLE')
+  selectAllToggleEffect: private inline function(state: UiSdlReduxState,
+                                                 action: UiSdlSelectAllToggleAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `ROW_SELECT` and updates {@link #selectedGridItems} to contain only the selected row.
+   *
+   * @param state
+   *    Redux state.
+   * @param action
+   *    Redux action containing a payload with the selected row's data item.
+   *
+   * @returns A new Redux state with the updated {@link #selectedGridItems} array.
+   */
+  @uiSdlReducer(actionType='ROW_SELECT')
+  rowSelectReducer: private function(state: UiSdlReduxState, action: UiSdlRowCellClickAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `COLUMN_SELECT` and updates {@link #selectedGridItems} to contain only the selected
+   * column.
+   *
+   * @param state
+   *    Redux state.
+   * @param action
+   *    Redux action containing a payload with the selected column's data.
+   *
+   * @returns A new Redux state with the updated {@link #selectedGridItems} array.
+   */
+  @uiSdlReducer(actionType='COLUMN_SELECT')
+  columnSelectReducer: private function(state: UiSdlReduxState, action: UiSdlColumnSelectAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `ROW_TOGGLE` and updates internal
+   * field `expanded` on the expanded item.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='ROW_TOGGLE')
+  toggleRowEffect: private inline function(state: UiSdlReduxState,
+                                           action: UiSdlRowToggleAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `ACTION_BUTTON_STATE_CHANGE` and updates the specified
+   * button's state.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state
+   */
+  @uiSdlReducer(actionType='ACTION_BUTTON_STATE_CHANGE')
+  actionButtonStateChangeEffect: private inline function(state: UiSdlReduxState,
+                                                         action: UiSdlBaseDataGridActionButtonStateChangeAction)
+                                                  : UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `TABLE_ACTION_LOADING_SET` and sets the loading status of the
+   * requested table action.
+   */
+  @uiSdlReducer(actionType='TABLE_ACTION_LOADING_SET')
+  tableActionLoadingSetReducer: private function(state: UiSdlReduxState,
+                                         action: UiSdlTableActionLoadingSetAction): UiSdlReduxState ts-client
+
+  /**
+   * Trigger a handle new added entry when create a new row at data grid.
+   * @param id
+   *            Id of the component.
+   * @returns an `ADDED_ENTRY_HANDLE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='ADDED_ENTRY_HANDLE')
+  handleAddedEntryAction: member function(id: string, dataId: string): UiSdlAddedDataHandleAction ts-client
+
+  /**
+   * Private
+   *
+   * Listens for actions of type `SELECTABLE_TABLE_ACTION_TOGGLE` and updates the state accordingly
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SELECTABLE_TABLE_ACTION_TOGGLE')
+  selectableTableActionToggleReducer: private function(state: !UiSdlReduxState,
+                                                       action: !UiSdlSelectableTableActionToggleAction)
+                                                : !UiSdlReduxState ts-client
+
+  /**
+   * Triggers `DATA_DELETE` and `DATA_SAVE` actions to delete multiple rows.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='MULTIPLE_ROW_ACTION_CLICK_DELETE_ROW')
+  multipleRowsDeleteEpic: private function(actionStream: UiSdlActionsObservable,
+                                           stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `DATA_DELETE` and `DATA_SAVE` actions to delete a row.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='ROW_ACTION_CLICK_DELETE')
+  rowDeleteEpic: private function(actionStream: UiSdlActionsObservable,
+                                  stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `DATA_MODIFY` and `EDIT_CHANGES_UPDATE` actions to change an item.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='ITEM_CHANGE')
+  itemChangeEpic: private inline function(actionStream: UiSdlActionsObservable,
+                                          stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers 'EDIT_CHANGES_UPDATE', 'ACTION_BUTTON_STATE_CHANGE', and 'SEARCH_LOADING_SET' actions to get rid of cancel and save buttons
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='LOADED_DATA_HANDLE')
+  loadedDataHandleEpic: private inline function(actionStream: UiSdlActionsObservable,
+                                          stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `'EDIT_ENTER` and `ID_CREATE` actions to add a row.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='TABLE_ACTION_CLICK_ADD_ROW')
+  rowAddEpic: private function(actionStream: UiSdlActionsObservable,
+                               stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `ARGUMENTS_MERGE` and `DATA_REQUEST` actions to load data.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='DATA_LOAD')
+  dataLoadEpic: private function(actionStream: UiSdlActionsObservable,
+                                 stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `CHANGE_CANCEL` and `EDIT_CHANGES_UPDATE` actions to cancel a change.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='CHANGE_CANCEL')
+  changeCancelEpic: private function(actionStream: UiSdlActionsObservable,
+                                     stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `DATA_SAVE` and `ACTION_BUTTON_STATE_CHANGE` actions to save data.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='DATA_SAVE')
+  dataSaveEpic: private function(actionStream: UiSdlActionsObservable,
+                                 stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `TOTAL_DATA_COUNT` action to update total data count in a grid
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='UPDATE_DATA_COUNT')
+  dataUpdateCountEpic: private function(actionStream: UiSdlActionsObservable,
+                                 stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `EDIT_ENTER` action to start enter edit mode for new added entry.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='ADDED_ENTRY_HANDLE')
+  addedEntryHandleEpic: private function(actionStream: UiSdlActionsObservable,
+                                         stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+}

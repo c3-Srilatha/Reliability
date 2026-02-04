@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Pkg.File mixes Pkg.Path, File {
+
+  /**
+   * @return new instance of Pkg.File for meta URL or encoded full path.
+   */
+  fromUrlOrPath: inline function(urlOrPath: !string): !Pkg.File
+
+  /**
+   * New Pkg.File from a given Pkg.Path.
+   */
+  fromMetaPath: inline function(path: !Pkg.Path): !Pkg.File
+
+  /**
+   * New Pkg.File with a given Pkg.Path.
+   */
+  withMetaPath: inline member function(path: !Pkg.Path): !Pkg.File
+
+  /**
+   * If this metadata file is for a C3 type (e.g, JavaScript code, JSON content, type DSL etc) then name of that type.
+   */
+  safeTargetType: ~
+
+  /**
+   * @return in memory copy of this Pkg.File with embedded content. This means read* methods don't need to perform
+   * any IO.
+   */
+  inMemoryCopy: inline member function(): !Pkg.File.Value
+
+  fromFile:     private inline function(file: !File): !Pkg.File
+  fromDb:       private inline function(dbMetaFile: !Pkg.File.Db): !Pkg.File
+  deps:         member function(): PkgFileDeps
+  readMetadata: ~
+  toString:     ~
+
+  // TODO: remove this and instead use constructor to make sure url and other fields are populated correctly!
+  fs: ~
+
+  encodedStream:     ~
+  encodedPushStream: ~
+}

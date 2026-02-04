@@ -1,0 +1,148 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents difference between two collections.
+ *
+ * @see ArryEdit
+ * @see MappEdit
+ */
+type CollectionUpdate<V: Obj> {
+
+  /**
+   * Array of new elements; i.e. ones that are in a new collection but not in an old collection.
+   */
+  inserted: [V]
+
+  /**
+   * Array of updated elements; i.e. ones from new collection that existed in the old one and contain different values.
+   */
+  updated: [V]
+
+  /**
+   * Array of old copy of updated elements; i.e. ones from the old collection that are updated in the new one. Note that
+   * size of this array matches updated and objects are in the same order as in updated.
+   */
+  updatedOld: [V]
+
+  /**
+   * Array of ObjUpdate derived from updated and updatedOld.
+   */
+  objUpdates: member function(): [ObjUpdate<V>]
+
+  /**
+   * Array of inserted and updated objects from collection update
+   */
+  upserted: member function(): [V]
+
+  /**
+   * Array of old elements; i.e. ones that were in the old collection but not in new one.
+   */
+  removed: [V]
+
+  /**
+   * Compares two streams and returns a difference.
+   * @param new
+   *         New objects that need to be diffed with
+   * @param old
+   *         Old (existing) objects to diff the new objects with
+   * @param spec
+   *        collection update spec to tweak the comparison between two streams
+   * @return difference between new & old based on fieldPath
+   */
+  // TODO: PLAT-6174 forStream: function<V>(new: stream<V>, old: stream<V>): CollectionUpdate<V>
+  forStream: function(new: !?stream<Obj>, old: !?stream<Obj>, spec: CollectionUpdateSpec): CollectionUpdate<Obj>
+
+  /**
+   * Compares two arrays and returns a difference.
+   * @param new
+   *         New objects that need to be diffed with
+   * @param old
+   *         Old (existing) objects to diff the new objects with
+   * @param spec
+   *        collection update spec to tweak the comparison between two arrays
+   * @return difference between new & old based on fieldPath
+   */
+  // TODO: PLAT-6174 forArray: function<V>(new: [V], old: [V]): CollectionUpdate<V>
+  forArray: function(new: !?[Obj], old: !?[Obj], spec: CollectionUpdateSpec): CollectionUpdate<Obj>
+
+  /**
+   * Compares given string of entity object with the state of the same entities in the db. Note that removed will always
+   * be empty.
+   *
+   * It is strongly recommended to use CollectionUpdateSpec.include when dealing with entity types.
+   * @param new
+   *         New entities that need to be diffed with
+   * @param spec
+   *        collection update spec to tweak the comparison between two arrays
+   * @return difference between new & old based on fieldPath
+   */
+  // TODO: PLAT-6174 forArray: function<V>(new: [V], old: [V]): CollectionUpdate<V>
+  forEntityStream: function(new: !?stream<Persistable>, spec: CollectionUpdateSpec): CollectionUpdate<Persistable>
+
+  /**
+   * Compares given Persistable array with the state of the same entities in the db. Note that removed will always be
+   * empty.
+   *
+   * It is strongly recommended to use CollectionUpdateSpec.include when dealing with entity types.
+   * @param new
+   *         New entities that need to be diffed with
+   * @param spec
+   *        collection update spec to tweak the comparison between two arrays
+   * @return difference between new & old based on fieldPath
+   */
+  // TODO: PLAT-6174 forArray: function<V>(new: [V], old: [V]): CollectionUpdate<V>
+  forEntityArray: function(new: !?[Persistable], spec: CollectionUpdateSpec): CollectionUpdate<Persistable>
+
+  /**
+   * Collects final values.
+   *
+   * @param remove
+   *          unless `true` doesn't remove elements; i.e. result will include elements from `old` even if they are not
+   *          in `new`.
+   */
+  collect: member function(remove: boolean): [V]
+
+  /**
+   * Persists this change in the database.
+   *
+   * @param remove
+   *          unless `true` doesn't remove data from database.
+   * @param include
+   *          the specification set for fields to be returned in the ObjList
+   */
+  persist: member function(remove: boolean, include: string): ObjList<V>
+
+  /**
+   * Calls an action for each inserted or updated element.
+   */
+  eachUpserted: member function(action: !?lambda(e: V))
+
+  /**
+   * Creates new instance of CollectionUpdate by transforming inserted elements. If mapper action returns `null` then
+   * corresponding inserted element will be discarded.
+   */
+  mapInserted: member function(mapper: !?lambda(inserted: !V): V): !CollectionUpdate<V>
+
+  /**
+   * Creates new instance of CollectionUpdate by transforming updated elements. If mapper action returns `null` then
+   * corresponding updated element will be discarded.
+   */
+  mapUpdated: member function(mapper: !?lambda(updated: !V, updatedOld: V): V): !CollectionUpdate<V>
+
+  /**
+   * Creates new instance of CollectionUpdate by transforming inserted or updated elements. If mapper action returns
+   * `null` then corresponding inserted or updated element will be discarded.
+   */
+  mapUpserted: member function(mapper: !?lambda(insertedOrUpdated: !V, updatedOld: V): V): !CollectionUpdate<V>
+
+  /**
+   * Set field on the {@link #inserted} and {@link #updated} objects with the provided value
+   */
+  withCollectionsField: member function(field: !string, value: !?string): !CollectionUpdate<V>
+}

@@ -1,0 +1,120 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This remix type is used to defined fields and functions used on the UI side for {@link ReliabilityMetric}.
+ */
+remix type ReliabilityMetric{
+
+  /**
+   * String that represents the first (alphabetical order) 3 {@link #assets} associated with this
+   * {@link ReliabilityMetric}. "..." is appended if more than 3 {@link #assets} are associated.
+   */
+  assetsDisplayStr: string stored calc concat(
+    join(
+      getFirstObjs(ascending(assets.name), 3), ', '
+    ),
+    count(assets) > 3 ? '...' : ''
+  )
+
+  /**
+   * String to display in the side panel that represents first (alphabetical order) 20 {@link #assets} associated with
+   * this {@link ReliabilityMetric}. "..." is appended if more than 20 {@link #assets} are associated.
+   */
+  assetsDisplayStrInSidePanel: string calc concat(
+    join(
+      getFirstObjs(ascending(assets.name), 20), ', '
+    ),
+    count(assets) > 20 ? '...' : ''
+  )
+
+  /**
+   * Custom fetch method to fetch dependent metrics for the given metric id.
+   * Called to show grid of dependent metrics when a user wants to delete a custom metric.
+   * The method takes `metricId` as an argument and then calls the `getAllRelatedMetrics` to fetch all the dependency metrics at all the levels.
+   */
+  fetchDependentMetrics: function(metricId: !string, spec: FetchSpec): FetchResultWithTotalCount<ReliabilityMetric> js-rhino
+
+  /**
+   * Custom fetch method to fetch child metrics for the given metric id.
+   * Called to show grid of child metrics when a user wants to promote a custom metric to shared/public.
+   * The method takes `expression`, from the state during metric creation/modification as an argument
+   * and parses the expression to get all the {@link ReliabilityMetric}s.
+   * Then calls the `getAllRelatedMetrics` to fetch all the child metrics at all the levels.
+   */
+  fetchChildMetrics: function(expression: !string, spec: FetchSpec): FetchResultWithTotalCount<ReliabilityMetric> js-rhino
+
+  /**
+   * Helper function that check the syntaxis of `expression` typed by the user while creating/modifying a metric,
+   * if the expression is invalid, it parses the error message and returns the translated error message, else returns
+   * `null`.
+   * The errors handled by this function are:
+   * - When you have an extra operator or ',' at the end of the expression.
+   * - When you have an extra closing parenthesis, bracket, or braces.
+   * - When you have opened but not closed all parenthesis.
+   * - When you have opened but not closed all brackets.
+   * - When you have opened but not closed all braces.
+   * - When you use an ilegal character inside the expression  (for example '#').
+   * - When you use a point that doesn't belong to a number of a sensor name.
+   *
+   * @param expression - The expression of the [metric](ReliabilityMetric) that is being created or modified.
+   * @returns The translation key of the error message if the expression is invalid, else returns `null`.
+   */
+  validateSyntax: private function(expression: !string): string js-rhino
+
+  /**
+   * Helper functions that validates that all the elements used in the `expression` typed by the user while
+   * creating/modifying a metric are valid.
+   *
+   * The elements that are validated are [functions](ReliabilityFunction) used in the expression, [sensors](Sensor),
+   * [metrics](SimpleMetric) and constants.
+   * This validation can fail if the function, sensor or metric doesn't exist in the system.
+   * If the validation fails, it returns the translated error message, else returns `null`.
+   *
+   * @param expressionIdentifiers - The identifiers of the elements used in the expression.
+   * @returns The translation key of the error message if the expression is invalid, else returns `null`.
+   */
+  validateExpression: private function(expressionIdentifiers: [string]): string js-rhino
+
+  /**
+   * Function used to validate the expression of a metric when the user is creating or modifying a metric.
+   * This function calls the #validateSyntax and #validateExpression functions to validate the expression. For more
+   * information about the errors handled by this function see their documentation. After this other validations are
+   * done, we try to evaluate the expression, if it's invalid the evaluation will fail and we will return an error
+   * message to the user, otherwise we will return `null`.
+   *
+   * If the expression is invalid, it returns the translation of the error message, else returns `null`.
+   *
+   * @param expression - The expression of the [metric](ReliabilityMetric) that is being created or modified.
+   * @returns The translation key of the error message if the expression is invalid.
+   */
+  validateMetricExpression: function(expression: string): string js-rhino
+
+  /**
+   * Helper function that retrieves the related {@link ReliabilityAsset}s depending on the given {@link Sensor}s and
+   * {@link ReliabilityMetric}s.
+   *
+   * @param sensorObjs - The list of {@link Sensor}s to retrieve the related {@link ReliabilityAsset}s.
+   * @param metricObjs - The list of {@link ReliabilityMetric}s to retrieve the related {@link ReliabilityAsset}s.
+   * @returns An array of  strings that represents the related {@link ReliabilityAsset}s ids for the given
+   * {@link Sensor}s and {@link ReliabilityMetric}s.
+   */
+  getAssetsForMetrics: private function(sensorObjs: [Sensor], metricObjs: [ReliabilityMetric]): [string] js-rhino
+
+  /**
+   * Function that retrieves the {@link CreateMetricConfigurationPreviewChartHelperSpec} from the given metric
+   * expression.
+   *
+   * **NOTE**: This function considers given `expression` as **valid**.
+   *
+   * @param expression - The expression of the [metric](ReliabilityMetric) that is being created or modified.
+   * @returns {@link CreateMetricConfigurationPreviewChartHelperSpec} with the data to preview the chart.
+   */
+  buildMetricPreviewSpec: function(expression: !string): CreateMetricConfigurationPreviewChartHelperSpec js-rhino
+}

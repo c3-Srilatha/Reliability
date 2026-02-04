@@ -1,0 +1,464 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface to J.A.R.V.I.S.
+ */
+abstract type JarvisIface mixes Microservice.Content.Iface, Microservice.Iface, Singleton {
+
+  /**
+   * @inheritdoc Microservice.Content.Iface
+   *
+   * NOTE: Jarvis utilizes only the {@link Jarvis.Content#name} field to retrieve the backing content.
+   */
+  contentFor: abstract ~
+
+  /**
+   * Where to service is currently configured to store build artifacts, ex: logs, screenshots.
+   * This is NOT the same as the generated artifacts that are managed by {@link ArtifactHub}.
+   * Build artifacts will be stored by {@link JarvisService.Build#id} and {@link JarvisService.Step#id}.
+   */
+  buildArtifactsMount: abstract function(): string serialized FileUrl
+
+  /**
+   * @return build for provided id
+   */
+  buildForId: abstract function(id: !string, failIfMissing: boolean): Jarvis.Build
+
+  /**
+   * @return step for provided id
+   */
+  stepForId: abstract function(id: !string, failIfMissing: boolean): Jarvis.Step
+
+  /**
+   * @return content containing step artifacts for provided id
+   */
+  stepArtifactsForId: abstract function(id: !string): Content
+
+  /**
+   * Fetch related semantic versions for the given semantic versions. This includes semantic versions that are
+   * used for production, testing, coverage, and root source.
+   */
+  relatedSemanticVersions: abstract function(semanticVersions: [string]): [string]
+
+  /**
+   * Triggers build for a given branch with null build config value.
+   * @param branch
+   *           The branch to build
+   * @param forceRefresh
+   *           Whether or not the latest commit sha should be force refreshed
+   * @return the build instance.
+   * @return Build pipeline url.
+   * @param buildId The build id to generate the pipeline url for.
+   */
+  buildPipelineUrl: abstract function(buildId: !string): string
+
+  /**
+    * Triggers build for a given branch with null build config value.
+    * @param branch
+    *           The branch to build
+    * @param forceRefresh
+    *           Whether or not the latest commit sha should be force refreshed
+    * @return the build instance.
+    */
+  triggerBuild: abstract function(branch: !Jarvis.Branch, forceRefresh: boolean): Jarvis.Build
+
+  /**
+   * Triggers build for a given branch. Does not impose any limits on starting a build.
+   * @param branch
+   *           The branch to build
+   * @param config
+   *           The build config for this {@link Jarvis.Build}.
+   *           This config will take precedence over config file from {@link Jarvis.Build#jarvisFilePath}.
+   * @param forceRefresh
+   *           Whether or not the latest commit sha should be force refreshed
+   * @return the build instance.
+   */
+  triggerBuild: abstract function(branch: !Jarvis.Branch, config: json, forceRefresh: boolean): Jarvis.Build
+
+  /**
+   * Asynchronously aborts a running build.
+   */
+  abort: abstract function(build: !Jarvis.Build)
+
+  /**
+   * Adds a step to current pipeline; will perform basic validation.
+   * @param steps
+   *       The steps to add
+   * @param inheritEdges
+   *       If true, the new steps will inherit the calling step's edges - meaning it will block the same steps.
+   * @return identifiable instances of added Jarvis.Steps
+   */
+  addSteps: abstract function(steps: !?[Jarvis.Step], inheritEdges: boolean): !?[Jarvis.Step]
+
+  /**
+   * Re-directs the parent of the given steps to the new parent step.
+   * Note that this might change the order of operations of the steps, since step execution order
+   * is partially determined by the parent-child relationship.
+   *
+   * Pipeline authors should be aware of the implications of this method and use it with caution.
+   */
+  resetStepsParent: abstract function(steps: [Jarvis.Step], newParent: Jarvis.Step)
+
+  /**
+   * Sets a list of steps to be blocked by the specified step.
+   */
+  setStepsBlockedBy: abstract function(steps: [Jarvis.Step], blockedBy: Jarvis.Step)
+
+  /**
+   * Adds placeholder steps to current pipeline; will perform basic validation. The steps will automatically be marked
+   * as DONE with SUCCESS results.
+   * @return identifiable instances of added Jarvis.Steps
+   */
+  addPlaceholderSteps: abstract function(steps: !?[Jarvis.Step]): !?[Jarvis.Step]
+
+  /**
+   * Lock the next step for calling executor; if `null` then no more steps left to execute
+   *
+   * @see #completeStep
+   */
+  // TOOLS-13647: Improve testing and performance of lock step
+  lockStep: abstract function(): Jarvis.Step
+
+  /**
+   * Completes and unlocks locked step for calling executor; note that #result parameter is optional and if not provided
+   * then will either create a new empty result or will change status of existing result to
+   * {@link Jarvis.Step.Status.SUCCESS}
+   */
+  completeStep: abstract function(result: Jarvis.Step.Result)
+
+  /**
+   * Fail the locked step for calling executor
+   */
+  failStep: abstract function(err: !Error)
+
+  /**
+   * Notify Jarvis that a step has begun execution and the actionId associated with that execution.
+   */
+  setStepRunning: abstract function(actionId: !string): Jarvis.Step
+
+  /**
+   * Return a {@link SourceControlRestApi} for the build that the calling executor is currently running a step for.
+   */
+  sourceControlRestApi: abstract function(): !SourceControlRestApi
+
+  /**
+   * Returns the step results that match the given filter but removes all results for steps that that were retried.
+   * Effectively returns the step results that should be considered for any status evaluation.
+   * @param filter
+   *          Filter to apply on the Jarvis.Step.Result before calculating the final results to return
+   * @param include
+   *          Include statement for the returned {@link Jarvis.Step.Result}
+   */
+  finalStepResultsFor: abstract function(filter: string serialized Filter, include: string): !?[Jarvis.Step.Result]
+
+  // Temporary general data access interface, will remove after the convention of microservice data access is decided
+  accessData: abstract function(typeName: !string,
+                                actionName: !string enum('fetch', 'evaluate', 'fetchCount'),
+                                spec: any): json
+
+  // Returns the build config key value pairs.
+  buildConfigKeyValues: abstract function(buildId: !string): map<string, string>
+
+  // Returns the build config secret keys.
+  buildSecretKeys: abstract function(buildId: !string): [string]
+
+  // Returns the service level build config object.
+  serviceConfigKeyValues: abstract function(): map<string, string>
+
+  /**
+   * Set the service level config.
+   */
+  setServiceConfigValue: abstract function(key: !string, value: string)
+
+  // Returns the branch group config key value pairs.
+  branchGroupConfigKeyValues: abstract function(branchGroupId: !string): map<string, string>
+
+  // Returns the branch group config secret keys.
+  branchGroupSecretKeys: abstract function(branchGroupId: !string): [string]
+
+  /**
+   * Return a {@link Jarvis.BranchGroup} config value for the current {@link Jarvis.Step}.
+   * Should only be used from Jarvis Executor.
+   */
+  branchGroupConfigValue: abstract function(key: !string): string
+
+  /**
+   * Return a {@link Jarvis.BranchGroup} config value for the current {@link Jarvis.Step}.
+   * Should only be used from Studio UI.
+   */
+  branchGroupConfigValue: abstract function(branchGroupId: !string, key: !string): string
+
+  /**
+   * Return a {@link Jarvis.BranchGroup} secret config value for the current {@link Jarvis.Step}.
+   * Should only be used from Jarvis Executor.
+   */
+  branchGroupSecretValue: abstract function(key: !string): string
+
+  /**
+   * Return a {@link Jarvis.BranchGroup} secret config value for the current {@link Jarvis.Step}.
+   * Should only be used from Studio UI.
+   */
+  branchGroupSecretValue: abstract function(branchGroupId: !string, key: !string): string
+
+  /**
+   * Set a branch group config value for {@link Jarvis.BranchGroup}.
+   * Should only be used from Studio UI.
+   */
+  setBranchGroupConfigValue: abstract function(branchGroupId: !string, key: !string, value: !string)
+
+  /**
+   * Set a secret branch group config value for {@link Jarvis.BranchGroup}.
+   * Should only be used from Studio UI
+   */
+  setBranchGroupSecretValue: abstract function(branchGroupId: !string, key: !string, secret: !string)
+
+  /**
+   * Clear a specified branch group config value from a {@link Jarvis.BranchGroup}
+   * Should only be used from Studio UI.
+   */
+  clearBranchGroupConfigValue: abstract function(branchGroupId: !string, key: !string)
+
+  /**
+   * Clear a list of specified branch group config values from a {@link Jarvis.BranchGroup}
+   * Should only be used from Studio UI.
+   */
+  clearBranchGroupConfigValues: abstract function(branchGroupId: !string, keys: !?[string])
+
+  /**
+   * Clear a specified branch group secret config value from a {@link Jarvis.BranchGroup}
+   * Should only be used from Studio UI.
+   */
+  clearBranchGroupSecretValue: abstract function(branchGroupId: !string, key: !string)
+
+  /**
+   * Clear a list of specified branch group secret config values from a {@link Jarvis.BranchGroup}
+   * Should only be used from Studio UI.
+   */
+  clearBranchGroupSecretValues: abstract function(branchGroupId: !string, keys: !?[string])
+
+  /**
+   * Clear all the branch group config values and secret values for a specific branch group.
+   * @param branchGroupId
+   *        The id of the branch group whose config values are to be cleared.
+   */
+  clearBranchGroupConfigAndSecret: abstract function(branchGroupId: !string)
+
+  /**
+   * Fetch build config value from a config with a specific build id.
+   * Should only be used from Studio UI.
+   * @param buildId
+   *        The id of the build.
+   * @param key
+   *        The key of the config whose value is to be fetched.
+   */
+  buildConfigValue: abstract function(buildId: !string, key: !string): string
+
+  /**
+   * Fetch build secret value from a config with a specific build id.
+   * Should only be used from Studio UI.
+   * @param buildId
+   *        The id of the build.
+   * @param key
+   *        The key of the config whose value is to be fetched.
+   */
+  buildSecretValue: abstract function(buildId: !string, key: !string): string
+
+  /**
+   * Fetch build config value with a specific key from the current build.
+   * Should only be used from Jarvis Executor.
+   */
+  buildConfigValue: abstract function(key: !string): string
+
+  /**
+   * Fetch build secret value with a specific key from the current build.
+   * Should only be used from Jarvis Executor.
+   */
+  buildSecretValue: abstract function(key: !string): string
+
+  /**
+   * Set config value for the current {@link Jarvis.Build}.
+   * Should only be used in Jarvis Executor.
+   * @param key
+   *        The key of the config whose value is to be added/changed.
+   * @param value
+   *        The value of the new key in the config.
+   */
+  setBuildConfigValue: abstract function(key: !string, value: !string)
+
+  /**
+   * Set config value for the current {@link Jarvis.Build}.
+   * Should only be used in Jarvis Executor.
+   * @param key
+   *        The key of the config whose value is to be added/changed.
+   * @param value
+   *        The value of the new key in the config.
+   */
+  setBuildSecretValue: abstract function(key: !string, secret: !string)
+
+  /**
+   * Clear config value with a specified key for the current {@link Jarvis.Build}.
+   * Should only be used in Jarvis Executor.
+   * @param key
+   *        The key of the config whose value is to be added/changed.
+   */
+  clearBuildConfigValue: abstract function(key: !string)
+
+  /**
+   * Clear secret value with a specified key for the current {@link Jarvis.Build}.
+   * Should only be used in Jarvis Executor.
+   * @param key
+   *        The key of the config whose value is to be added/changed.
+   */
+  clearBuildSecretValue: abstract function(key: !string)
+
+  /**
+   * Clear all config/secret values for the current {@link Jarvis.Build}.
+   * Should only be used in Jarvis Executor.
+   */
+  clearBuildConfigAndSecret: abstract function()
+
+  /**
+   * Create and set a new {@link JarvisService.BuildConfig} for the current {@link Jarvis.Build}.
+   * @param buildId
+   *        The id of the build whose config values are to be set.
+   * @param configValues
+   *        The config values of build config.
+   * @param secretValues
+   *        The secret values of build config.
+   * @param overwrite
+   *        Whether the values with the same keys that already exist be overwritten.
+   */
+  setBuildConfig: abstract function(buildId: string,
+                                    configValues: map<string, string>,
+                                    secretValues: map<string, string>,
+                                    overwrite: boolean)
+
+  /**
+   * Create and set a new {@link JarvisService.BuildConfig} for the current {@link Jarvis.Build}.
+   * @param buildId
+   *        The id of the build whose config values are to be set.
+   * @param jsSource
+   *        The js source of build config, read from source content.
+   */
+  setBuildConfig: abstract function(buildId: string, jsSource: string, overwrite: boolean)
+
+  /**
+   * Register a {@link Jarvis.BranchGroup} in service. It will trigger a refresh of all {@link Jarvis.Branch}es for
+   * the given branchGroup's repository
+   *
+   * @param branchGroup
+   *           The group to register. If the repository of the group does not exist, will also create the repo
+   * @param token
+   *           An auth token that can be used to access the {@link Jarvis.BranchGroup#repository}.
+   *           If given, it will update the {@link Jarvis.BranchGroup#repository} to use the token moving forward.
+   *           If none is given, it will try to use an existing token for the repo.
+   * @return the registered branch group
+   */
+  registerBranchGroup: abstract function(branchGroup: !Jarvis.BranchGroup, token: string): Jarvis.BranchGroup
+
+  /**
+   * Register a {@link Jarvis.BranchGroup} in service. It will trigger a refresh of all {@link Jarvis.Branch}es for
+   * the given branchGroup's repository
+   *
+   * @param branchGroup
+   *           The group to register. If the repository of the group does not exist, will also create the repo
+   * @param token
+   *           An auth token that can be used to access the {@link Jarvis.BranchGroup#repository}.
+   *           If given, it will update the {@link Jarvis.BranchGroup#repository} to use the token moving forward.
+   *           If none is given, it will try to use an existing token for the repo.
+   * @param configValues
+   *        The config values of branchGroup config.
+   * @param secretValues
+   *        The secret values of branchGroup config.
+   * @return the registered branch group
+   */
+  registerBranchGroup: abstract function(branchGroup: !Jarvis.BranchGroup,
+                                         token: string,
+                                         configValues: map<string, string>,
+                                         secretValues: map<string, string>): Jarvis.BranchGroup
+
+  /**
+   * Unregister a {@link Jarvis.BranchGroup} in service. It will trigger a refresh of all {@link Jarvis.Branch}es for
+   * the given branchGroup's repository
+   *
+   * @param branchGroup
+   *           The group to remove.
+   */
+  unregisterBranchGroup: abstract function(branchGroupId: !string)
+
+  /**
+   * De-activate a {@link Jarvis.Branch}
+   */
+  deactivateBranch: abstract function(branch: !Jarvis.Branch)
+
+  /**
+   * Re-activate a {@link Jarvis.Branch}
+   */
+  reactivateBranch: abstract function(branch: !Jarvis.Branch)
+
+  /**
+   * Update expiration settings for a {@link Jarvis.Build}, and subsequently its corresponding {@link ArtifactHub.Artifact}s.
+   */
+  updateBuildExpiration: abstract function(buildId: !string, expiration: DateTime, keepForever: boolean = false)
+
+  /**
+   * Get config {@link CodeCoverageConfig} for the current build
+   */
+  @deprecated(finalVersion="8.5", details="Retrieve individual values with branchGroupConfigValue instead")
+  getCoverageConfig: abstract function(): CodeCoverageConfig
+
+  /**
+   * Persist all custom {@link Jarvis.Lambda}s to the Jarvis database.
+   * @param lambdas
+   *        The list of custom lambdas to register.
+   */
+  registerBuildLambdas: abstract function(lambdas: [Jarvis.Lambda])
+
+  /**
+   * Retrieves updated {@link Jarvis.Report} from the service. Child reports should be aggregated
+   * by cronjob {@link JarvisService#aggregateChildReports}
+   */
+  reportForId: abstract function(reportId: !string): Jarvis.Report
+
+  /**
+   * Retrieves updated {@link Jarvis.Report} from the service if exists or throws an error if desired.
+   */
+  reportForId: abstract function(reportId: !string, failIfMissing: boolean): Jarvis.Report
+
+  /**
+   * Retrieves data for {@link Jarvis.Report}. Ensures that the reports are up to date.
+   */
+  accessReports: abstract function(actionName: !string enum('fetch', 'fetchCount'), spec: FetchSpec): json
+
+  /**
+   * Updates the supplied reports on the service. A combination of {@link Jarvis.Report} subtypes can be given at once.
+   */
+  fileReports: abstract function(reports: [Jarvis.Report])
+
+  /**
+   * Removes the {@link Jarvis.Report} with the given ids from the service. Generally, this should be used when a {@link Jarvis.Step}
+   * processes child reports "manually" instead of relying on {@link Jarvis.Report#amend} to be called asynchronously.
+   */
+  removeReports: abstract function(reportIds: [string])
+
+  /**
+   * Terminate executors by setting their state to ABORTING.
+   */
+  terminateExecutors: abstract function(executorIds: [string]): int
+
+  /**
+   * Terminates all the executor that are NOT in DONE state.
+   */
+  forceTerminateAllExecutors: abstract function(confirm: boolean)
+
+  /**
+   * Fetch all metrics related to builds, executors, and steps.
+   */
+  fetchPerformanceMetrics: abstract function(): json
+}

@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the S3FileSystem file.
+ */
+type S3File mixes BlobFile<S3FileSystem> {
+
+  /**
+   * Physical physical length of the entire content.
+   */
+  instanceLength: decimal
+
+  /**
+   * Server-side encryption algorithm when encrypting the object using AWS-managed keys.
+   */
+  sseAlgorithm: string
+
+  /**
+   * AWS Key Management System key id used for Server Side Encryption of the Amazon S3 object.
+   */
+  sseAwsKmsKeyId: string
+
+  /**
+   * Server-side encryption algorithm if the object is encrypted using customer-provided keys.
+   */
+  sseCustomerAlgorithm: string
+
+  /**
+   * Base64-encoded MD5 digest of the encryption key for server-side encryption,
+   * if the object is encrypted using customer-provided keys.
+   */
+  sseCustomerKeyMd5: string
+
+  /**
+   * Return the public url for this file.
+   * @param failIfNotPublic
+   *            A flag indicates whether an exception will be thrown if the file is not publicly accessible.
+   */
+  publicEndpoint: member function(failIfNotPublic: boolean): string
+
+  generatePresignedUrl: ~
+
+  // TODO: PLAT-21848 Fix this after migrating Cloud Framework
+
+  /**
+   * @return the credentials of the s3 file
+   */
+  // credentials: private inline member function(): AwsCredentials
+
+  /**
+   * upsert grants of the s3 file.
+   * @param grants
+   *        the grants to upsert
+   */
+  // upsertGrants: member function(grants: [AwsS3Grant], spec: FileOperationSpec)
+
+  /**
+   * @return grants of the s3 file.
+   */
+  // grants: inline member function(spec: FileOperationSpec): [AwsS3Grant]
+  fs: ~: S3FileSystem
+}

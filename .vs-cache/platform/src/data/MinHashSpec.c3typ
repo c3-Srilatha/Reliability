@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines spec for MinHash instance.
+ *
+ * @see MinHash
+ * @see MinHashBuilder
+ * @see https://www.cs.utah.edu/~jeffp/teaching/cs5955/L5-Minhash.pdf
+ */
+type MinHashSpec mixes Spec {
+
+  /**
+   * Number of hash functions used in MinHash. More hash functions leads to more accurate inclusion tests at the cost
+   * of additional time and space. This may be extremely expensive if too large.
+   */
+  hashCount: !int32 = 10
+
+  /**
+   * The number of minimum hashes to store per hash function; thus, the total number of hashes stored is (hashCount *
+   * minCount). Larger minCount leads to more accurate inclusion tests at the cost of additional time and space. This
+   * may be extremely expensive if too large.
+   */
+  minCount: !int32 = 20
+
+  /**
+   * The approximate error for the Jaccard index which is 1/sqrt(k) where k == hashCount * minCount.
+   */
+  approximateError: member function(): !double
+}

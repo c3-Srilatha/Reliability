@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to record the history of a {@link StateMachine}.
+ */
+@db(datastore='kv',
+    partitionKeyField='parent',
+    persistenceOrder='descending(stateOrderCounter)',
+    unique=['parent, stateOrderCounter'])
+type StateMachineHistory<P, S: StateMachineState, T: StateMachineTransition> mixes TimedValueHistory<P> {
+
+  /**
+   * Parent/owning obj instance.
+   */
+  parent: !~
+
+  /**
+   * All transition are disabled when `error` is true.
+   */
+  error: boolean
+
+  /**
+   * A field for populating an error message if an error occurs.
+   */
+  errorMessage: string
+
+  /**
+   * Will be incremented every time state changes. This is to be able to differentiate state history if more than 1 automatic transition occurs in a second.
+   * Note: DateTime milliseconds are not persisted.
+   */
+  stateOrderCounter: !int
+
+  /**
+   * The state of this step in the {@link StateMachineHistory}.
+   */
+  state: !S
+
+  /**
+   * If null, the new state is set through automatic transition.
+   */
+  updatedBy: User
+
+  /**
+   * If null, the new state is set without evaluating any transition conditions.
+   */
+  transition: T
+}

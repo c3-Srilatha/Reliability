@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Common fields used by Retrievers that implement Genai.Retriever.
+ */
+type Genai.Retriever.ConfigFields {
+  /**
+   * If true, zip file will not be written to remote.
+   * Has a default value so getMissing will not try to get the retriever again when readOnly is not set.
+   */
+  readOnly: boolean = false
+
+  /**
+   * If true, when loading a seeded read-only retriever, `initialize` will also call `populateSourceFilesForName`
+   */
+  fabricateSources: boolean
+
+  /**
+   * If #fabricateSources is true, this will be set to true if the sources have been fabricated.
+   */
+  sourcesFabricated: boolean
+
+  /**
+   * The url of the zipfile containing the pre-indexed data to be searched by the engine
+   */
+  indexZipUrl: string
+
+  /**
+   * CPU or GPU device to use. -1 is CPU, and GPU devices can be passed as a list.
+   * See {@link https://developer.nvidia.com/blog/cuda-pro-tip-control-gpu-visibility-cuda_visible_devices/}
+   */
+  device: !string = "-1"
+
+  /**
+   * A map of passage number thresholds to node pool names.
+   *
+   * If set, and the number of passages exceeds one of the thresholds, the node pool for that threshold
+   * will be used when adding the indexPassages call to the ActionQueue,
+   * thus allowing indexing to happen on a specific GPU type.
+   */
+  indexerNodePoolMatrix: map<int, string>
+
+  /**
+   * Number of times an index/unindex call should be attempted asynchronously before
+   * the call is not attempted again and the relevant {@link Genai.SourceFile}s are then
+   * transitioned to the FAILED state.
+   */
+  maxTries: int = 3
+
+  /**
+   * If incremental indexing is supported, large indexing calls will be split into
+   * batches of around this number of passages.
+   *
+   * The passages for each source are fully read before the batch is cut off, so
+   * if indexingBatchSize is 250000 and there are already 200000 in the current batch
+   * and the next {@link Genai.SourceFile} to be loaded has 75000 passages, the batch
+   * will end up having 275000 passages in it.
+   */
+  indexingBatchSize: int = 250000
+
+  /**
+   * The preprocessor to use for the query before embedding.
+   * If not set, no preprocessing will be done.
+   * If the input to the retriever is a {@link Genai.Query}, this will be applied to the
+   * `standaloneQuery` field.
+   * A typical use-case would be to prefix the query with some instruction template.
+   */
+  queryPreprocessLambda: lambda(query: !string): !string
+}

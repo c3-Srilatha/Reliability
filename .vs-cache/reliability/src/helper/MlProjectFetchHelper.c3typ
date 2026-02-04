@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type to fetch data for Ml Scenarios Nested Grid on the Models Set up Page.
+ * Fetches project information for a given asset ({@link ReliabilityAsset}) passed to the `fetch` call.
+ */
+type MlProjectFetchHelper {
+
+  /**
+   * The id of the {@link MlProject} that has at least one model or dataset for the given asset.
+   */
+  id: string serialized MlProject
+
+  /**
+   * The name of the {@link MlProject} that has at least one model or dataset for the given asset.
+   */
+  name: string
+
+  /**
+   * The name of the current Champion {@link ReliabilityMlModel} of the given asset with project {@link #id}.
+   */
+  liveModel: ReliabilityMlModel
+
+  /**
+   * The number of {@link ReliabilityMlModel} with a specific {@link MlProject} for the given asset.
+   * Excludes retired models.
+   */
+  numberOfModels: int
+
+  /**
+   * The last {@link ReliabilityMlModel} or Reliability Dataset created in the
+   * {@link MlProject} for the given asset.
+   */
+  lastUpdated: datetime
+
+  /**
+   * The number of Reliability Datasets with a specific {@link MlProject} for the given asset.
+   */
+  numberOfDatasets: int
+
+  /**
+   * The string representation of the {@link ReliabilityAsset#latestDataValidationRun} status.
+   */
+  assetValidationStatus: string
+
+  /**
+   * Limit for fetching all assigned projects. The default value is set to 200 but can be increased.
+   */
+  fetchLimit: int = 200
+
+  /**
+   * The id of the {@link ReliabilityAsset} that the {@link MlProject} belongs to.
+   */
+  assetId: string serialized ReliabilityAsset
+
+  /**
+   *
+   * This function takes a given {@link ReliabilityAsset} and populates details about its assigned projects.
+   * Also calls private helper functions to populate additional field information:
+   * _populateProjectLiveModelFields - Calls to {@link MlProject} for liveModel details
+   * _populateProjectModelsFields - Calls to {@link ReliabilityMlModel} to retrieve model count
+   * _populateProjectDatasetsFields - Calls to {@link ReliabilityMlDatasetPreparationRun} to count completed project runs
+   *
+   * Any filtering performed in this fetch should conform to the filters for {@link ReliabilityMl.Project}.
+   *
+   * If searchText is provided, all assigned projects are fetched using {@link fetchLimit}, and in-memory filtering is applied
+   * based on whether the project name or the live model name contains the search text.
+   *
+   * @param asset
+   *           The reliability asset to fetch project information for
+   * @param spec
+   *           The fetch specification containing filters and pagination
+   * @param searchText
+   *           Optional search text to filter projects by name or live model name
+   * @return A fetch result containing ML project fetch helper data with total count
+   */
+  fetch: function(asset: !ReliabilityAsset, spec: FetchSpec, searchText: string): FetchResultWithTotalCount<MlProjectFetchHelper> js-rhino
+
+  /**
+   * Uses #fetch to get information for the given asset. If a project is specified, it returns the data for that project.
+   * @param assetId
+   *           the id of the asset containing the {@link ReliabilityMl.Project}
+   * @param projectId
+   *           the id of the {@link ReliabilityMl.Project} we wish to fetch data for
+   *
+   * @return Returns data describing a single {@link ReliabilityMl.Project}s for a given asset and project id.
+   */
+  get: function(assetId: string serialized ReliabilityAsset, projectId: string serialized ReliabilityMl.Project): MlProjectFetchHelper js-rhino
+}

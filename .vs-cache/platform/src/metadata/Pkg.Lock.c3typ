@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Describes a lock for a {@link Pkg} that influences dependency resolution during development.
+ * The elements in {@link #resolvedDependencies} will be placed into
+ * {@link DependencyResolutionSpec#preResolvedVersions} during dependency resolution, ensuring those versions are
+ * configured in the {@link Pkg.Store} or an error is thrown.
+ *
+ * By default, {@link Pkg.Store} will retry resolution if an error is thrown when using the lock. This is to make
+ * utilization of a lock at worst equivalent to the resolution behavior prior to the introduction of the lock.
+ * Setting {@link Pkg.Store.Config#doNotIgnoreLocksUponResolutionError} will change the default behavior, but is
+ * only recommended to be used during CI or validation.
+ *
+ * To ignore a lock when writing to the {@link Pkg.Store}, set {@link Pkg.Store.WriteSpec#ignoreLocks}. This will
+ * re-resolve dependencies and re-generate the lock.
+ */
+type Pkg.Lock {
+
+  /**
+   * The exact version of the package for which this lock was generated.
+   */
+  version: !string serialized SemanticVersion
+
+  /**
+   * The set of declared dependencies used when generating this lock. This field is used to determine if
+   * someone has edited {@link Pkg.Decl#dependencies}, in which case, the lock should be regenerated.
+   */
+  declaredDependencies: map<string, string serialized SemanticVersion.MajorMinor>
+
+  /**
+   * The set of locked/resolved dependencies. This set will be placed into
+   * {@link DependencyResolutionSpec#preResolvedVersions} during dependency resolution, ensuring these versions are
+   * configured in the {@link Pkg.Store} or an error is thrown.
+   *
+   * The version of the lock that lives in {@link Pkg.Category#PACKAGE_LOCK} (next to {@link FileExt#PKG}) is a writable
+   * file that is only generated if:
+   * - {@link Pkg.Decl#dependencies} changes
+   * - the lock is deleted
+   * - the lock has a conflict
+   * - {@link Pkg.Store.WriteSpec#ignoreLock}s is set.
+   * Only dependencies which are not sourced from {@link Pkg.Store.Java} and {@link Pkg.Store.Db} can be specified
+   * in this version of the lock. An error will be thrown if someone writes an element that is sourced from
+   * {@link Pkg.Store.Java} or {@link Pkg.Store.Db}.
+   *
+   * The version of the lock that lives in {@link Pkg.Category#CACHE} is a read only file that is always generated
+   * during dependency resolution. It includes a flattened list of all dependencies, including those sourced from
+   * {@link Pkg.Store.Java} and {@link Pkg.Store.Db}. It is used similar to other {@link Pkg.Category#CACHE} files
+   * to help drive the behavior of the type system.
+   */
+  resolvedDependencies: map<string, string serialized SemanticVersion>
+}

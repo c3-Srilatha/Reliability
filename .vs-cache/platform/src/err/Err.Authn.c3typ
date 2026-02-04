@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing "Authentication" error.
+ */
+type Err.Authn mixes Error {
+
+  @error(message="The password must be between 8 and 20 characters and contain at least one uppercase character, one lowercase character and one digit",
+         httpCode=401)
+  invalidPasswordFormat: function(): !Err.Authn
+
+  @error(message="Group with id ${quote(groupId)} was not found", httpCode=404)
+  groupNotFound: function(groupId: !?string): !Err.Authn
+
+  @error(message="Invalid credentials", httpCode=401)
+  unauthenticated: function(): !Err.Authn
+
+  @error(message="The env and/or app in the request ${requestUrl} does not exist", httpCode=404)
+  invalidEnvApp: function(requestUrl: !?string): !Err.Authn
+
+  @error(message='Invalid credentials', httpCode=401)
+  invalidSamlPayload: function(): !Err.Authn
+
+  @error(message='Invalid credentials', httpCode=401)
+  @deprecated(finalVersion="8.8", details="use userNotFound(id) instead")
+  userNotFound: function(): !Err.Authn
+
+  @error(message="User with id ${quote(id)} was not found", httpCode=404)
+  userNotFound: function(id: !?string): !Err.Authn
+
+  @error(message='Bad login request: ${message}', httpCode=400)
+  invalidLoginRequest: function(message: !?string): !Err.Authn
+
+  @error(message='The ${for_} has expired', httpCode=401)
+  expired: function(for_: !?string): !Err.Authn
+
+  @error(message='Expected a JWT token', httpCode=401)
+  notJwtToken: function(): !Err.Authn
+
+  @error(message='Invalid session sequence', httpCode=401)
+  invalidSessionSequence: function(): !Err.Authn
+}

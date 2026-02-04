@@ -1,0 +1,105 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Ideally `LukeTestUiSdlDiagramNode` mixes `LukeBrowserWebElement` and `LukeTestUiSdlDiagram` can make instances with
+ * `nodeEl`, however that results in a "Call stack exceeded" error.
+ * Another alternative is for `LukeTestUiSdlDiagramNode` to mix `LukeTestComponent` but for that to be helpful,
+ * we need to set `parentSelector`. However, `LukeBrowserWebElement#webElementSelector` (and LukeBrowserWebElement#selector)
+ * resolve to undefined.
+ * Last resort is to just wrap the `nodeEl` and supply some common functions that are on `LukeBrowserWebElement`.
+ */
+type LukeTestUiSdlDiagramNode {
+
+  /**
+   * Luke browser instance
+   */
+  luke: !LukeBrowser
+
+  /**
+   * Underlying node instance
+   */
+  nodeEl: !LukeBrowserWebElement
+
+  nodeType: const string = 'Default'
+
+  /**
+   * Identifying selector for the node type. This must align with {@link UiSdlDiagramNodeUi.className}.
+   * Serves as the outter most (div) selector of a node.
+   *
+   * Subtypes should override this to align with the corresponding node type's className constant,
+   * ex: {@link UiSdlDiagramCircularNode#className} and {@link LukeUiSdlDiagramCircularNode#nodeSelector}
+   *     should align.
+   * When overridden, the selector should point to an element inside {@link LukeTestUiSdlDiagramNode#nodeSelector}.
+   */
+  nodeSelector: const string = '.c3-sdl-diagram-node'
+
+  /**
+   * Main icon selector for the node type (if applicable).
+   * Should align with {@link UiSdlDiagramNodeUi.iconClassName}.
+   */
+  iconSelector: const string = '.c3-sdl-diagram-node-icon'
+
+  /**
+   * Main subtitle for all nodes (if applicable).
+   * Should align with {@link UiSdlDiagramNodeUi.subtitleClassName}.
+   */
+  subtitleSelector: const string = '.c3-sdl-diagram-node-subtitle'
+
+  /**
+   * Main title for all nodes. This is required to be present for all nodes even if the title is
+   * not visible in the UI.
+   * Should align with {@link UiSdlDiagramNodeUi.titleClassName}.
+   */
+  titleSelector: const string = '.c3-sdl-diagram-node-title'
+
+  /**
+   * The CSS selector for a node's right-click context menu item
+   */
+  nodeContextMenuActionItem: string = '.c3-sdl-diagram-context-menu .item'
+
+  /**
+   * Asserts that the node exists
+   */
+  exists: inline member function() js-client
+
+  /**
+   * Asserts the main iconClass of the node
+   */
+  assertIcon: inline member function(iconClass: string): LukeAsyncQueueNode js-client
+
+  /**
+   * Asserts the main subtitle of the node
+   */
+  assertSubtitle: inline member function(subtitle: string): LukeAsyncQueueNode js-client
+
+  /**
+   * Clicks the context menu item on the ndoe
+   */
+  clickContextMenuItem: inline member function(itemLabel: string): LukeAsyncQueueNode js-client
+
+  /**
+   * Asserts the text of the context menu items
+   */
+  assertContextMenuItems: inline member function(itemLabels: [string]): LukeAsyncQueueNode js-client
+
+  /**
+   * Click the node instance
+   */
+  click: inline member function(): LukeAsyncQueueNode js
+
+  /**
+   * {@see LukeBrowserWebElement#search}
+   */
+  search: inline member function(selector: !string, resolveOnFound: boolean, timeout: int): LukeWebElement js
+
+  /**
+   * {@see LukeBrowserWebElement#searchAll}
+   */
+  searchAll: inline member function(selector: !string, resolveOnFound: boolean, timeout: int): LukeAsyncQueueNode js
+}

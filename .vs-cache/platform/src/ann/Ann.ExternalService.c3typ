@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This annotations affect how an ExternalService is configured.
+ */
+@annotation(appliesTo=['type'])
+type Ann.ExternalService mixes Annotation {
+
+  /**
+   * The Url path prefix used to identify the request as one that needs to be proxied to the ExternalService
+   */
+  urlPathPrefix: !string
+
+  /**
+   * Url for static error page content to proxy a user to, if the service is not running.
+   * If null, then generic http error will be thrown.
+   */
+  errorPageUrl: string
+
+  /**
+   * If true, the proxied request will keep the urlPathPrefix, i.e. a request to https://c3server/proxy/foo/bar
+   * will be proxied as https://proxyserver/proxy/foo/bar. By default it will not be kept, i.e
+   * https://proxyserver/foo/bar
+   */
+  keepPrefix: boolean
+
+  /**
+   * This annotation indicates that the {@link ExternalServiceContext} will be sent to the ExternalService using a PUT
+   * http request before the actual proxied request is sent. The contextPath will be appended to the
+   * {@link ExternalService} endPoint.
+   */
+  contextPutPath: string
+
+  /**
+   * This annotation defines the value of the http 'Authorization' header value to be used in the PUT request to
+   * pass the {@link ExternalServiceContext} to the {@link ExternalService}. It is only used if the
+   * {@link Ann.ExternalService.contextPutPath} is defined.
+   */
+  contextPutAuth: string
+
+  /**
+   * If the {@link ExternalService} uses WebSocket protocol, set this annotation to 'true' to proxy the WebSocket
+   * connection.
+   */
+  webSocketProxy: boolean
+
+  /**
+   * Auto-start the service if it's not running when a authenticated request is proxied
+   */
+  // TODO: Remove this after fixing PLAT-25874
+  autoStartOnAccess: boolean
+}

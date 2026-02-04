@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Transfrom an object to {@link UiSdlDefinedValueParam}
+ * and dispatches an action with the {@link UiSdlDefinedValueParam}
+ */
+@typeScript
+type TransformObjectToUiSdlDefinedValueParamEpic mixes UiSdlEpic {
+
+  /**
+   * An action to transform object in payload to UiSdlDefinedValueParam.
+   *
+   * @param obj
+   *           The object containing data
+   * @param path
+   *           The path containing the data to be extracted
+   * @param dispatchSuffix
+   *           The action suffix to be dispatch after transformation
+   * @param objPath
+   *           obj will be extracted from payload if present. Defaults to obj if absent.
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='TRANSFORM')
+  transformAction: function(obj: json,
+                            path: string,
+                            dispatchSuffix: string,
+                            objPath: string): !UiSdlReduxAction ts-client
+
+  /**
+   * The dispatched action type is a combination of the uniqueId and `TransformObjectToUiSdlDefinedValueParamEpic.DISPATCH`
+   */
+  @uiSdlActionCreator(actionType='DISPATCH')
+  dispatchAction: function(specParam: UiSdlDefinedValueParam, dispatchSuffix: string): !UiSdlReduxAction ts-client
+
+  epic: ~ ts-client
+}

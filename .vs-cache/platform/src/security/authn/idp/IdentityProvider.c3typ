@@ -1,0 +1,289 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@action(group+='user-admin')
+abstract type IdentityProvider<C: IdpConfig> mixes Configurable<C>, Authenticator {
+
+  /**
+   * Returns the user from IdentityProvider
+   * @param id
+   *           The id of the user.
+   * @param failIfMissing
+   *           If the user is missing, throw an exception if this flag is true, or return null if false.
+   * @return the user if they exist, fails or null otherwise.
+   */
+  @action(inline=true)
+  userForId: private inline function(id: !string, failIfMissing: boolean): User
+
+  /**
+   * Returns a new User object that is a merged obj from user and the same user id in the db if there exists one
+   */
+  syncUser: private function(user: !User): User
+
+  /**
+   * Extracts user credentials from authentication data
+   */
+  @action(inline=true)
+  userCredentialsFromAuthData: private inline function(authData: !string): !Pair<string, string>
+
+  /**
+   * Create C3 user. The user will be identified with the email.
+   *
+   * @param email
+   *           the email address of the new user, this will be used as the user identifier if username is not specified.
+   * @param firstname
+   *           the given name of the user
+   * @param lastname
+   *           the family name of the user
+   * @param username
+   *           this will be used as the user identifier.
+   * @return the newly created User object on success; null otherwise.
+   */
+  createUser: optional function(email: !string, firstname: !string, lastname: !string, username: !string): !User
+
+  /**
+   * Set the basic auth password for the given C3 user.
+   *
+   * @param user
+   *           {@link User} argument.
+   * @param password
+   *           password to set.
+   */
+  setPassword: optional function(user: !User, password: !string)
+
+  /**
+   * Removes the user from the current environment. If the user is present, he/she will be removed from all
+   * applications bound to the current C3 cluster and current environment.
+   *
+   * @param user
+   *           {@link User} argument.
+   */
+  removeUser: optional function(user: !User)
+
+  /**
+   * Return the user from identity provider
+   * User names are unique across identity managers
+   * @param username
+   *           name of user to get
+   * @param failIfMissing
+   *           If true, will throw error when user is not found.
+   * @return User
+   *           User object or null if not found.
+   */
+  @action(inline=true)
+  user: optional inline function(username: !?string, failIfMissing: boolean): User
+
+  /**
+   * Fetches all users whose email matches the given email.
+   *
+   * @param email
+   *           The email to filter by.
+   * @return Users
+   *           The users matching the filter.
+   */
+  @action(inline=true)
+  users: optional inline function(email: !string): [User]
+
+  /**
+   * Unlock a locked user login.
+   *
+   * @param user
+   *          {@link User} argument.
+   */
+  unlockLogin: optional function(user: !User)
+
+  /**
+   * Adds the given user to the target application
+   * @param user
+   *       {@link User} argument.
+   * @param app
+   *       {@link App} argument.
+   */
+  addUserToApp: optional function(user: !User, app: !App)
+
+  /**
+   * Adds the given user to the target Environment
+   * @param user
+   *       {@link User} argument.
+   * @param env
+   *       {@link Env} argument.
+   */
+  addUserToEnv: optional function(user: !User, env: !Env)
+
+  /**
+   * Add the given user to the specified group.
+   *
+   * @param user
+   *           {@link User} argument.
+   * @param groupName
+   *           the c3 UserGroup name.
+   * @param daysAssigned
+   *           If daysAssigned is specified, the user will be a member of the given Group for the given number of days.
+   *           After this time expires, the user will be removed from the group
+   *           NOTE that the c3auth token is valid for 24 hours by default, so that is the granularity
+   *           of duration.
+   */
+  addUserToGroup: optional function(user: !User, groupName: !string, daysAssigned: int)
+
+  /**
+   * Remove the given user from the specified group.
+   *
+   * @param user
+   *           {@link User} argument.
+   * @param groupName
+   *           the c3 UserGroup name.
+   */
+  removeUserFromGroup: optional function(user: !User, groupName: !string)
+
+  /**
+   * Checks if the given user is a part of the specified group.
+   *
+   * @param user
+   *           {@link User} argument.
+   *
+   * @param groupName
+   *           the c3 UserGroup name
+   *
+   * @return true if the user is in the group
+   *		 false if the user is not in the group or doesn't exist or some other problem
+   */
+  isUserInGroup: optional function(user: !User, groupName: !string): !boolean
+
+  /**
+   * Set the public key for the given C3 user.
+   *
+   * @param user
+   *           {@link User} argument.
+   * @param publicKey
+   *           base64 encoded pub to set.
+   */
+  setUserPublicKey: optional function(user: !User, publicKey: !string)
+
+  /**
+   * Get the DateTime when the user last logged in.
+   *
+   * @param user
+   *           {@link User} argument.
+   * @return {@link User.Event.Login}.
+   */
+  userLastLogin: optional function(user: !User): User.Event.Login
+
+  /**
+   * Get the last login DateTime the given user last logged in to the given environment and application.
+   *
+   * @param user
+   *          {@link User} argument.
+   * @param env
+   *           env.id where to check the last login info for.
+   * @param app
+   *           app.id where to check the last login info for.
+   *
+   * @return DateTime or null if it has never logged-in to the given env.app.
+   *         throws C3RuntimeException if the User doesn't exist in the given env.app.
+   */
+  userLastLoginInApp: optional function(user: !User, env: !string, app: !string): !datetime
+
+  /**
+   * Get list of all applications that are accessible to this user.
+   * Ordered by 'last login date' from most recent.
+   * @param user
+   *          {@link User} argument.
+   *
+   * @return map of environment and applications.
+   */
+  allUserApps: optional function(user: !User): [App]
+
+  /**
+   * Get list of all environments that are accessible to this user.
+   * Ordered by 'last login date' from most recent.
+   *
+   * @param user
+   *          {@link User} argument.
+   * @param include
+   *           spec to include fields of Environment.
+   *
+   * @return list of environments.
+   */
+  allUserEnvs: optional function(user: !User, include: string): [Env]
+
+  /**
+   * Is the user in Environment.
+   *
+   * @param user
+   *          {@link User} argument.
+   * @param tenant
+   *           Environment to be checked for user's existence. If not provided, will use current tenant.
+   * @param tag
+   *           Application to be checked. If not provided, will use current application.
+   * @return True if the user exists in the Environment.
+   */
+  isUserInEnv: optional function(user: !User, env: string, app: string): boolean
+
+  /**
+   * Create a link from sourceGroup to destinationGroup such that all the members in sourceGroup will be added to
+   * destinationGroup.The link remains active while it exists, so that any user that gets added to sourceGroup will also
+   * be added to destinationGroup.The sourceGroup and destinationGroup can be in different env/app which requires that
+   * the user creating the link have access to the UserGroups in both env/app. Note also that if a User being linked
+   * from sourceGroup does not exist in the env/app of the destinationGroup (or its fetchTags hierarchy),the
+   * corresponding User will be created in the destinationGroup's env/app.
+   *
+   * __This does not apply to users with temporary membership in the sourceGroup.__
+   * @param sourceGroupId
+   *           Id of UserGroup that will be linked from.
+   * @param destinationGroupId
+   *           Id of UserGroup that will be linked to.
+   * @param destinationEnvId
+   *           Id of the Environment of the destination UserGroup.
+   * @param destinationAppId
+   *           Id of the App of the destination UserGroup.
+   */
+  @action(authz='always')
+  linkGroupToGroup: optional function(sourceGroupId: !string,
+                                      destinationGroupId: !string,
+                                      destinationEnvId: !string,
+                                      destinationAppId: !string)
+
+  /**
+   * Remove the link from sourceGroup to destinationGroup. Any users already added to the destinationGroup will remain there.
+   *
+   * @param sourceGroupId
+   *           Id of UserGroup linked from.
+   * @param destinationGroupId
+   *           Id of UserGroup linked to.
+   * @param destinationEnvId
+   *           Id of the Environment of the destination UserGroup.
+   * @param destinationAppId
+   *           Id of the App of the destination UserGroup.
+   */
+  @action(authz='always')
+  unlinkGroupFromGroup: optional function(sourceGroupId: !string,
+                                          destinationGroupId: !string,
+                                          destinationEnvId: !string,
+                                          destinationAppId: !string)
+
+  /**
+   * Create a System user. The user will be identified with the email.
+   * This routine creates the user name only if the supplied user name is whitelisted ({@see SystemUser}).
+   *
+   * @param username
+   *           username argument
+   * @param group
+   *           group id that the system user should be assigned.
+   *
+   * @return the newly created User object on success; null otherwise.
+   */
+  @action(group+='cluster-admin')
+  createSystemUser: optional function(username: !string, group: !string): !User
+
+  /**
+   * Checks if the Identity Provider is a TestIdp
+   *
+   * @return True if is TestIdp
+   */
+  isTest: member function(): boolean
+}

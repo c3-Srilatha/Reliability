@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for saving models from [HuggingFace Hub](https://huggingface.co/models) to remote file systems, such as S3, GCP, and ADL.
+ * As described in more detail in {@link admin-model-inference-service.c3doc.md}, it is not recommended to deploy models with {@link VllmPipe#fromModelId} in production.
+ * This type makes it easier to save models to remote, and later to use tools like {@link VllmPipe#fromRemoteUrl}, which is more reliable.
+ *
+ * {@link HuggingFaceHub#saveModel} and {@link HuggingFaceHub#saveModelFromBatches} trigger a {@link DynBatchJob}, where for each batch,
+ * the files in the batch are downloaded to a temporary directory on the task node and uploaded to the destination using {@link FileSystem}.
+ */
+@beta
+type HuggingFaceHub {
+
+  /**
+   * Saves model to C3 filesystem from HuggingFace Hub.
+   *
+   * @param destUrlOrEncodedPath
+   *           path prefix to destination directory, such as "gcs:///c3--datasets/michaeljordan/mixtral-8x7b/"
+   * @param modelId
+   *           HuggingFace Hub Model ID of the model intended to save to remote, such as "meta-llama/Meta-Llama-3.1-8B"
+   * @param spec
+   *           Additional parameters for saving
+   */
+  saveModel: function(destUrlOrEncodedPath: !string, modelId: !string, spec: HuggingFaceHub.SaveSpec): DynBatchJob py
+
+  /**
+   * Saves model to remote from HuggingFace Hub, given a list of batches {@link FileSystem}
+   *
+   * @param destUrlOrEncodedPath
+   *           path prefix to destination directory, such as "gcs:///c3--datasets/michaeljordan/mixtral-8x7b/"
+   * @param modelId
+   *           HuggingFace Hub Model ID of the model intended to save to remote, such as "meta-llama/Meta-Llama-3.1-8B"
+   * @param batches
+   *           Batches of filenames to download in the {@link DynBatchJob} spawned by this function.
+   * @param token
+   *           HuggingFace [security token](https://huggingface.co/docs/hub/en/security-tokens) with read access to the model.
+   * @return An instance of {@link DynBatchJob}. Call {@link DynBatchJob#status} to check on the status, or use {@link DynBatchJob#waitForCompletion} to block until the job has completed.
+   *           Check the "jobs" page for the calling app in C3 AI Studio to view the job status.
+   */
+  saveModelFromBatches: function(destUrlOrEncodedPath: !string,
+                                 modelId: !string,
+                                 batches: ![[string]],
+                                 token: ?string): DynBatchJob py
+
+  /**
+   * Gets the files in a model's HuggingFace Hub repository
+   *
+   * @param modelId
+   *           HuggingFace Hub Model ID of the model intended to save to remote
+   * @param include
+   *           Filename patterns to include when filtering the repository's files @see [fnmatch](https://docs.python.org/3/library/fnmatch.html)
+   *           If None (default), all filenames match this filter, equivalent to ["*"]. Exclude is processed as a separate filter.
+   * @param exclude
+   *           Filename pattern to exclude when filtering the repository's files @see [fnmatch](https://docs.python.org/3/library/fnmatch.html)
+   *           If None (default), all filenames bypass this filter. Include is processed as a separate filter.
+   * @return list of filenames
+   */
+  listFiles: function(modelId: !string, include: [string], exclude: [string]): [string] py-hfhub
+
+  /**
+   * Batches the files based on their size, using the first-fit-decreasing algorithm
+   *
+   * @param modelId
+   *           HuggingFace Hub Model ID of the model intended to save to remote
+   * @param files
+   *           Filenames to be batched
+   * @param token
+   *           HuggingFace [security token](https://huggingface.co/docs/hub/en/security-tokens) with read access to the model.
+   * @param maxBatchSizeGb
+   *           Maximum batch size in GB. Files larger than this size will be placed into their own batch with size 1
+   * @return list of batches of filenames (to pass to {@link HuggingFaceHub#saveModelFromBatches})
+   */
+  batchFiles: function(modelId: !string,
+                       files: ![string],
+                       token: ?string,
+                       maxBatchSizeGb: float = 5): [[string]] py-hfhub
+}

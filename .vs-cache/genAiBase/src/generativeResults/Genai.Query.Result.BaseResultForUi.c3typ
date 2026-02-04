@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Analogous to the result from calling {@link Genai.Query.Result#getForUi}, but does not include additional recursive
+ * results for child queries.
+ */
+type Genai.Query.Result.BaseResultForUi {
+
+  /**
+   * The top-level result (corresponding to the user's original query) from which most UI elements will use for
+   * rendering.
+   */
+  headResult: !Genai.Query.Result
+
+  /**
+   * All {@link Genai.Query.Result#sourceRelations} from the #headResult plus any that may exist on its
+   * {@link Genai.Query.Result#childResults}.
+   */
+  allSources: [Genai.Query.ResultToSourceRelation]
+
+  /**
+   * All {@link Genai.Query.Result#rationaleSources} from the #headResult plus any that may exist on its
+   * {@link Genai.Query.Result#childResults}.
+   */
+  allRationaleSources: [Genai.Query.ResultToSourceFileRelation]
+
+  /**
+   * The {@link Genai.Query.Result#visualization} from the #headResult plus any that may exist on its
+   * {@link Genai.Query.Result#childResults}.
+   */
+  allVisualizations: [GenAiVisualizationBase]
+
+}

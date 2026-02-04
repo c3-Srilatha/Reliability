@@ -1,0 +1,174 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type can be used to configure hyperparameter optimization for a {@link ReliabilityMl.Pipeline}. The best pipeline
+ * will be chosen based on the corresponding trained {@link ReliabilityMlModel} with the highest
+ * {@link ReliabilityMlModel.ClassificationScore}.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@beta
+type ReliabilityOrchestrator.HpoSpec mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  name: ~ = 'Reliability_Hpo'
+
+  /**
+   * The {@link ReliabilityMl.Pipeline} for which HPO should be run
+   */
+  pipeline: ReliabilityMl.Pipeline
+
+  /**
+   * Utilize the {@link ModelTemplate for creating the {@link ReliabilityMl.Pipeline}.
+   * If specified, it will override the given {@link #pipeline}.
+   */
+  template: ModelTemplate
+
+  /**
+   * Provide the hyperparams in the following expected format:
+   * The keys of the outer dictionary MUST be one of `algorithmPipe` or `alertPipe`.
+   * The keys of the inner dictionary MUST be the hyperparams you want to modify, and the values must be a list of possible values
+   * you want to type for that hyperparameter.
+   * An example is:
+   * ```
+   * search_space = {
+   *     "algorithmPipe": {
+   *         "epochs": c3.Hp.ParamSpace.Categorical.fromValues([5, 10]),
+   *         "window_size": c3.Hp.ParamSpace.Categorical.fromValues([4, 5])
+   *     },
+   *     "alertPipe": {
+   *         "alert_threshold": c3.Hp.ParamSpace.Categorical.fromValues([0.2, 0.4, 0.6])
+   *     }
+   * }
+   * ```
+   */
+  searchSpace: !map<string, map<string, Hp.ParamSpace.Categorical>>
+
+  /**
+   * Set this field to -1 to create all possible combinations of the provided hyperparams. This corresponds to performing a
+   * grid search on provided hyperparams.
+   * Set this field to a fixed number in order to randomly select a subset of combinations to try out during HPO. This corresponds
+   * to performing a random search on provided hyperparams.
+   */
+  nCombinations: int = -1
+
+  /**
+   * Specify the {@link ReliabilityMlDatasetPreparationRun} to use to generate the features and masks in order to run HPO.
+   */
+  datasetPreparationRun: !ReliabilityMlDatasetPreparationRun
+
+  /**
+   * Specify the {@link ReliabilityMl.Project} for which HPO should be run.
+   */
+  project: !ReliabilityMl.Project
+
+  /**
+   * Use this field to specify the {@link BatchJobOptions} that should be used for running the underlying
+   * {@link ReliabilityOrchestrator.PipelineCreationJob}
+   */
+  pipelineCreationJobOptions: BatchJobOptions
+
+  /**
+   * Optional name for the {@link ReliabilityOrchestrator.TrainingJob}.
+   * If not provided, a default name will be generated, with the following
+   * format: `f"HPO_ModelTraining_{c3.Uuid.create()}"`.
+   */
+  trainingJobName: string
+
+  /**
+   * Optional {@link ModelConfigRun} to be used for {@link ReliabilityOrchestrator.TrainingJob#start} to track the
+   * training job with hyperparameter optimization.
+   */
+  modelConfigRun: ModelConfigRun
+
+  /**
+   * Starts a {@link ReliabilityOrchestrator.TrainingJob} for the {@link ReliabilityMl.Pipeline}s created by the
+   * {@link ReliabilityOrchestrator.PipelineCreationJob}.
+   * @param pipelineFilter
+   *           Filter string to select pipelines for training.
+   * @param datasetPreparationRunFilter
+   *           Filter string to select dataset preparation runs.
+   * @param project
+   *           The reliability ML project to use for training.
+   * @param jobName
+   *           The name for the training job.
+   * @param modelConfigRun
+   *           The model configuration run to track the training job.
+   * @param template
+   *           The model template to use for training.
+   * @return An {@link MlOperationRun} for monitoring the training job.
+   */
+  startModelTrainingJob: function(
+    pipelineFilter: !string,
+    datasetPreparationRunFilter: !string,
+    project: !ReliabilityMl.Project,
+    jobName: string,
+    modelConfigRun: ModelConfigRun,
+    template: ModelTemplate
+  ): !MlOperationRun<ReliabilityOrchestrator.TrainingJobRun> py
+
+  /**
+   * Starts a {@link ReliabilityOrchestrator.PostTrainingJob} to classify the trained {@link ReliabilityMlModel}s
+   * corresponding to the {@link ReliabilityMl.Pipeline}s created by the {@link ReliabilityOrchestrator.PipelineCreationJob}.
+   * @param trainJobRun
+   *           The training job run to classify models for.
+   * @param project
+   *           The reliability ML project to use for classification.
+   * @return An {@link MlOperationRun} for monitoring the post-training job.
+   */
+  startModelClassificationJob: function(
+    trainJobRun: !ReliabilityOrchestrator.TrainingJobRun,
+    project: !ReliabilityMl.Project
+  ): !MlOperationRun<ReliabilityOrchestrator.PostTrainingJobRun> py
+
+  /**
+   * Returns the trained {@link ReliabilityMlModel} with the highest {@link ReliabilityMlModel.ClassificationScore}, upon the
+   * completion of the {@link #startModelClassificationJob}
+   * @param trainJobRun
+   *           The training job run to select the best model from.
+   * @return The {@link ReliabilityMlModel} with the highest classification score.
+   */
+  selectBestModel: function(
+    trainJobRun: !ReliabilityOrchestrator.TrainingJobRun
+  ): !ReliabilityMlModel py
+
+  /**
+   * Starts a {@link ReliabilityOrchestrator.PostTrainingJob} to validate the best {@link ReliabilityMlModel} (model with the
+   * highest classification score), output by the {@link #selectBestModel} API.
+   * @param project
+   *           The reliability ML project to use for validation.
+   * @param bestModel
+   *           The best model to validate.
+   * @return An {@link MlOperationRun} for monitoring the validation job.
+   */
+  startModelValidationJob: function(
+    project: !ReliabilityMl.Project,
+    bestModel: !ReliabilityMlModel
+  ): !MlOperationRun<ReliabilityOrchestrator.PostTrainingJobRun> py
+
+  createWorkflow: ~ py
+
+  /**
+   * Creates a Hyperparameter Optimization Workflow with the given id.
+   * This is a convenience method to easily track the workflow status and results
+   * by specifying the desired id.
+   *
+   * When #createWorkflow is called, the workflow is created with a random id (i.e `c3.Uuid.create()`)
+   *
+   * @param id
+   *           The id to use for the workflow
+   * @return The created {@link Workflow}
+   */
+  createWorkflowFromId: member function(id: string): !Workflow py-data-science-py4j
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

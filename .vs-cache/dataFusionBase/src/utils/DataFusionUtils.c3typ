@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * UI Util type for DataFusion
+ */
+@typeScript
+type DataFusionUtils {
+
+  /**
+   * The component ID for the Data Fusion Code Editor.
+   */
+  DATA_FUSION_CODE_EDITOR_COMPONENT_ID: string = 'DataFusion.CodeEditorContainer'
+
+  /**
+   * Util to get pkgName & typeName from given nodeId for {@link ErdNode}.
+   */
+  erdNodeIdToPkgNameTypeName: function(nodeId: !string): ![string] ts-client
+
+  /**
+   *  Returns whether the {@link StudioApp}'s {@link AppMode} is prod or test.
+   *  @param appMode
+   *             The current mode of the {@link StudioApp}
+   */
+  isAppModeProdOrTest: function(mode: !string enum AppMode): !boolean ts-client
+
+  /**
+   *  Returns whether the current editor is in view-only mode.
+   *  @param appMode
+   *             The current mode of the {@link StudioApp}.
+   *  @param isFinal
+   *             Whether the current type is final.
+   *  @param notInRootPkg
+   *             Whether the current type is not in the root package.
+   *  @param isRemix
+   *             Whether the current type is able to be remixed.
+   */
+  getIsEditorViewOnly: function(appMode: !string enum AppMode,
+                                isFinal: !boolean,
+                                notInRootPkg: !boolean,
+                                isRemix: !boolean): !boolean ts-client
+
+  /**
+   * Util to get pkgName from declaredPkgPath.
+   * @param declaredPkgPath
+   *            The declared package path.
+   * @returns The package name.
+   */
+  getPkgFromDeclaredPkgPath: function(declaredPkgPath: !string): !string ts-client
+}

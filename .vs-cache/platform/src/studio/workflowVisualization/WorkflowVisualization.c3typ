@@ -1,0 +1,112 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * UI methods for workflow visualization.
+ */
+type WorkflowVisualization {
+
+  /**
+   * Convert the {@link Workflow} with the given id into nodes and edges that are consumable by
+   * {@link NodeDiagram}. If the workflow has any runs, this returns node statuses for the most
+   * recent run.
+   *
+   * @param workflowId the id of the workflow
+   * @return the ReactFlow graph object
+   */
+  workflowToReactFlow: function(workflowId: !string): json js-server
+
+  /**
+   * Convert the {@link Workflow.Run} with the given id into nodes and edges that are consumable by
+   * {@link NodeDiagram}.
+   *
+   * @param workflowRunId the id of the workflow run
+   * @return the ReactFlow graph object
+   */
+  workflowRunToReactFlow: function(workflowRunId: !string): json js-server
+
+  /**
+   * Get the summary details and total count for the {@link Workflow.Run} with the given id, for the vertex with
+   * the given name. This includes the results of {@link workflowRunVertexSummaryAsFetchResult}
+   * and {@link workflowRunVertexSummaryAsFetchCount}.
+   * Note: the backend call used by this method assume that different vertices of a workflow
+   * have different names, but this is not actually enforced by the data model. This means
+   * that results might be incorrect if the given vertexName could refer to more than one vertex.
+   *
+   * @param workflowRunId the id of the workflow run
+   * @param vertexName the name of the vertex
+   * @param spec the spec for sorting and pagination
+   * @return a result object containing the vertex summary data and total count
+   */
+  fetchVertexSummary: function(workflowRunId: !string,
+                               vertexName: !string,
+                               spec: FetchSpec): FetchVertexSummaryResult js-server
+
+  /**
+   * Get the summary details for the {@link Workflow.Run} with the given id, for the vertex with
+   * the given name.
+   * Note: the backend call used by this method assume that different vertices of a workflow
+   * have different names, but this is not actually enforced by the data model. This means
+   * that results might be incorrect if the given vertexName could refer to more than one vertex.
+   *
+   * @param workflowRunId the id of the workflow run
+   * @param vertexName the name of the vertex
+   * @param spec the spec for sorting and pagination
+   * @return the vertex summary
+   */
+  workflowRunVertexSummaryAsFetchResult: function(workflowRunId: !string,
+                                                  vertexName: !string,
+                                                  spec: FetchSpec): FetchResult<any> js-server
+
+  /**
+   * Get the total count of detail rows for the {@link Workflow.Run} with the given id, for the
+   * vertex with the given name.
+   * Note: the backend call used by this method assume that different vertices of a workflow
+   * have different names, but this is not actually enforced by the data model. This means
+   * that results might be incorrect if the given vertexName could refer to more than one vertex.
+   *
+   * @param workflowRunId the id of the workflow run
+   * @param vertexName the name of the vertex
+   * @param spec the spec for sorting and pagination (neither affects the result, but keeping
+   *             here in case we add some kind of filtering in the future)
+   * @return the count
+   */
+  workflowRunVertexSummaryAsFetchCount: function(workflowRunId: !string,
+                                                 vertexName: !string,
+                                                 spec: FetchFilterSpec): int js-server
+
+  /**
+   * Get the runs that match the spec and return them as dropdown option objects. Each object has an id,
+   * which is the option value, and a name, which is the display text.
+   *
+   * @param spec the spec for sorting and limiting the resulting options
+   * @return the option objects
+   */
+  workflowRunOptions: function(spec: FetchSpec): [json] js-server
+
+  /**
+   * Get the total running/pending/completed/failure/error count for the {@link Workflow.Vertex} with the given id
+   * and vertex name.
+   * Only returns data if the node is a {@link Workflow.Coordinatable} or {@link Workflow.Nested.Action}.
+   *
+   * @param workflowRunId the id of the workflow run
+   * @param vertexType the type name of the vertex
+   * @param vertexName the name of the vertex
+   * @return an object containing the additional data
+   */
+  additionalRunDetails: function(workflowRunId: !string, vertexType: !string, vertexName: string): json js-server
+
+  /**
+   * Get the error logs for the given vertex and workflow run. Return null if there were no logs.
+   *
+   * @param workflowRunId the id of the workflow run
+   * @param vertexName the name of the vertex
+   * @return the error logs
+   */
+  errorLogs: function(workflowRunId: !string, vertexName: !string): string js-server
+}

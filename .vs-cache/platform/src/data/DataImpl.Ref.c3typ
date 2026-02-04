@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract parent type that acts as a layer of indirection between a actual instance of DataImpl in the Dataset. DataImpl.Ref
+ * allows us to simulate mutability for DataImpl while ensuring that operations stay lazy. When we execute an operator which
+ * is expected to mutate the underlying DataImpl, we create a new DataImpl.Lazy, then update the DataImpl.Ref's reference to point to
+ * the newly created DataImpl. Thus, it appears that the DataImpl has mutated, yet we preserve metadata tracking and laziness.
+ * {@link Mutable} mixin allows us to modify the {@link DataImpl.Ref} field in-place when a mutable operator is used.
+ */
+@beta
+abstract private type DataImpl.Ref mixes Data.Stateful, Mutable, DataImpl {
+
+  /**
+   * Pointer to the underlying {@link DataImpl} that this DataImpl.Ref represents. Either an instance of {@link DataImpl.Lazy} or a
+   * reference to a {@link Data.Stateful} by {@link Data.Stateful#id}. There is never a need for any client or
+   * downstream platform code to ever directly use this field. Use {@DataImpl#dereference} to follow the pointer if
+   * required.
+   */
+  ref: private string | DataImpl.Lazy
+
+  _exec: ~
+
+  @reClaim(inherit=true)
+  toJson: ~ java | py | js
+
+  @reClaim(inherit=true)
+  fromJson: ~ java | py | js
+
+  @reClaim(inherit=true)
+  toTypedJson: ~ java | py | js
+
+  @reClaim(inherit=true)
+  dereference: ~
+
+  @reClaim(inherit=true)
+  toDataRef: ~
+
+  @reClaim(inherit=true)
+  toString: ~
+
+  @reClaim(inherit=true)
+  visit: private ~
+
+  @reClaim(inherit=true)
+  sourceName: ~
+}

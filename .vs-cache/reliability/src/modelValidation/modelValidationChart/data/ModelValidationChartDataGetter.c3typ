@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+
+/**
+ * Helper type to get {@link ModelValidationChartData} for the model validation chart in UI.
+ */
+type ModelValidationChartDataGetter {
+
+  /**
+   * Aggregates the model validation data. By default, does an average on a day interval.
+   * This function can be overriden to change the behavior of the aggregation.
+   *
+   * @param data
+   *           The raw data to be aggregated
+   * @param model
+   *           The reliability ML model for which data is being aggregated
+   * @param interval
+   *           The aggregation interval (defaults to "DAY")
+   * @return The aggregated data
+   */
+  aggregateData: inline function(data: native, model: ReliabilityMlModel, interval: string = "DAY"): native py-data
+
+  /**
+   * Returns the event data for the given model.
+   *
+   * @param model
+   *         The model whose related events are returned.
+   * @returns a map containing the event data, with keys 'alerts' and 'events'.
+   */
+  getEventData: private function(model: ReliabilityMlModel): map<string, [ReliabilityAssetValidationAlert | ReliabilityAssetEvent]> py-data
+
+  /**
+   * Returns the series data for the given model validation data, timezone, model, and interval.
+   *
+   * @param model_validation_data
+   *         The model validation data for which the series data is returned.
+   * @param timezone
+   *         The timezone which will be used to convert timestamps of all the datapoints returned. Supports various
+   *         timezone formats recognized by the pytz library, such as 'America/New_York' or 'Europe/London'. This format
+   *         is consistent with the IANA Time Zone Database.
+   * @param model
+   *         The model whose related series data is returned.
+   * @param interval
+   *         The display interval for the chart.
+   * @returns a tuple containing the timestamps, series data, and mask chart configuration.
+   */
+  getSeriesData: private function(model_validation_data: native, timezone: string, model: ReliabilityMlModel, interval: string = "DAY"): native py-data
+
+  /**
+   * Returns {@link ModelValidationChartData} for a given {@link ReliabilityRiskMlModel} in a given timezone.
+   * Executes in py4j runtime to ensure that all memory used is cleaned up after this function runs.
+   *
+   * @param model
+   *         The model whose related alerts, events and risk scores are returned.
+   * @param timezone
+   *         The timezone which will be used to convert timestamps of all the datapoints returned. Supports various
+   *         timezone formats recognized by the pytz library, such as 'America/New_York' or 'Europe/London'. This format
+   *         is consistent with the IANA Time Zone Database.
+   * @param interval
+   *         The display interval for the chart.
+   * @returns chart data which is a map in the given format:
+   *  - eventData: which inturn is a map of keys 'events' and 'alerts'.
+   *  - seriesData: which maps to series data for keys 'trainingRiskScore', 'validationRiskScore', actual features and reconstruction features.
+   *  - timestamps: list of timestamps for the chart.
+   *  - thresholds: map of thresholds for the chart.
+   *  - maskConfig: list of mask configurations for the chart.
+   *  - columnGroups: list of column groups for the chart.
+   *  - featureToColumnGroups: map of feature to column groups for the chart.
+   *  - preparationInterval: interval used for data preparation.
+   */
+  getData: function(model: ReliabilityMlModel, timezone: string, interval: string = "DAY"): !ModelValidationChartData py-data-server-py4j
+}

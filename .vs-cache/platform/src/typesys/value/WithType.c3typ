@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type of instances (value) of a type that are "type-aware" i.e. can fully infer or store its own type.
+ *
+ * @see Obj
+ */
+abstract type WithType mixes Value {
+
+  /**
+   * C3 Type of this instance.
+   */
+  type: abstract inline member function(): !Type
+
+  /**
+   * Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+   * type does not contain fields from old or field value types are not convertable then drops the field.
+   *
+   * This method is used during live metadata update
+   */
+  replaceType: private abstract inline member function(old: !Type, new: !Type): !mixing WithType
+
+  /**
+   *  Produce a calling proxy that represents the content of all Obj type's mixins, but not the type itself. This is
+   *  useful for redispatching **member** methods reimplemented on this type to a parent implementation:
+   *  ```js
+   *  function toString() {
+   *    return this.super().toString() + ', x=' + this.x;
+   *  }
+   *  ```
+   *
+   *  ```py
+   *  def toString(this):
+   *     return this.super().toString() + ', x=' + this.x
+   * ```
+   *
+   *  To redispatch **static** methods, see {@link Type#super}.
+   *
+   *  Note that this not the same as the language-specific `super` keyword because it works through the type system and
+   *  supports multiple mixins. It behaves like the Python `super()` function, except called on the instance rather than
+   *  globally.
+   *
+   *  If `mixin` is the implementing type in a client implementation, this will delegate the call to the server.
+   *  This can be used to create a local implementation "around" the server implementation for additional caching or
+   *  other local state management.
+   *
+   *  @param mixin if specified, this mixin is used instead or an error is thrown
+   *  @return "super" calling proxy for this object
+   *
+   *  @see Type.super
+   */
+  super: final inline member function(mixin: Type): !native java | js | py
+}

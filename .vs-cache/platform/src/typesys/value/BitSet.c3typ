@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An indexable collection of bits. Insignificant (high false) bits will be automatically dropped.
+ *
+ * These are most commonly created using the builder pattern:
+ * ```js
+ * let b = BitSet.builder();
+ * type.meta().fieldTypes.each(ft => {
+ *   if (ft.name.includes("duck")) {
+ *     b.setAt(ft.ordinal(), true);
+ *   }
+ * });
+ * let ducks = b.build();
+ * ```
+ *
+ * @see BitSet.Builder
+ */
+final type BitSet mixes WithType, StringSerializable, WithToNative, Buildable<BitSet.Builder>, Value {
+
+  /**
+   * @return the bit at the given index. Return false if out of range
+   */
+  bitAt: member function(idx: !int32): boolean js | py | java
+
+  /**
+   * @return a new BitSet with the bit at the given index set to the value. Resize the bitset if the index is out of
+   * range.
+   */
+  withBitAt: member function(idx: !int32, value: !boolean): !mixing BitSet js | py | java
+
+  /**
+   * @return a new BitSet from the bits in the provided binary, with the insignificant bits removed.
+   */
+  fromBinary: function(bin: !?binary): !mixing BitSet js | py | java
+
+  /**
+   * @return an array of booleans representing the BitSet value
+   */
+  toBools: member function(): ![boolean] js | py | java
+
+  /**
+   * @return the index of the last bit set to 1. Return -1 if there are none.
+   */
+  lastBitIndex: member function(): !int js | py | java
+
+  /**
+   * @return if the BitSet has no bit set to 1
+   */
+  isEmpty: member function(): boolean js | py | java
+
+  /**
+   * @return a logical OR of this with the {@link BitSet} argument
+   */
+  or: member function(bitset: !BitSet): !BitSet js | py | java
+
+  type:       ~ js | py | java
+  toString:   ~ js | py | java
+  fromString: ~ js | py | java
+  toNative:   ~: @java(class="java.util.BitSet") @js(bigint=true) native js | py | java
+  builder:    ~ js | py | java
+  toBuilder:  ~ js | py | java
+}

@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link MlModel.HealthCalc.Job} is used to calculate the health of many {@link MlModel}s. All models should be within the
+ * scope of a single {@link MlProject}.
+ * The execution is essentially a map-reduce (primarily map) over {@link #models}, using {@link #operation}. The overall
+ * execution status is tracked in {@link MlModel.HealthCalc.JobRun}, and the execution status of individual batches are
+ * tracked in {@link MlModel.HealthCalc.Result}. The health values are stored in {@link MlModel.Health.History}.
+ *
+ * Usage:
+ * ```python
+ * # assumes a pre-defined health calculation `MyApp.MyModelHealthCalc` and a filter on all models
+ * job = c3.MlModel.HealthCalc.Job(name="my_health_job", operation=c3.MyApp.MyModelHealthCalc(lookback=3)).create()
+ * run_handle = job.start(modelFilter="true")
+ * job_run = run_handle.result()
+ * job_run.summary()
+ * ```
+ */
+@beta
+@db(createOnly=true)
+entity type MlModel.HealthCalc.Job {
+
+  /**
+   * User specified name of this health calculation job.
+   */
+  name: string
+
+  /**
+   * Reference to the {@link MlModel.HealthCalc.Operation} instance that implements the health calculation function
+   * to use.
+   * See {@link MlModel.HealthCalc.Operation#calculateHealth} for details.
+   */
+  operation: !MlModel.HealthCalc.Operation
+
+  /**
+   * Start a job run to do health calculations.
+   *
+   * @param modelFilter
+   *           {@link Filter} for fetching {@link MlModel}s to evaluate.
+   * @param context
+   *           any necessary context for the health calculation. Primarily used to specify the reference time for which
+   *           to calculate health, which is defaulted to current time.
+   * @param spec
+   *           any additional parameters to control the job execution.
+   * @return a handle to the {@link MlModel.HealthCalc.JobRun} instance that was started.
+   */
+  start: member function(modelFilter: !string serialized Filter,
+                         context: MlModel.HealthCalc.Context,
+                         spec: MlModel.HealthCalc.ExecutionSpec): !MlOperationRun<MlModel.HealthCalc.JobRun>
+
+  /**
+   * Start a job run to do health calculations. If there are many models, then prefer to instead specify a concise filter
+   * expression.
+   *
+   * @param models
+   *           the models to evaluate.
+   * @param context
+   *           any necessary context for the health calculation. Primarily used to specify the reference time for which
+   *           to calculate health, which is defaulted to current time.
+   * @param spec
+   *           any additional parameters to control the job execution.
+   * @return a handle to the {@link MlModel.HealthCalc.JobRun} instance that was started.
+   */
+  start: member function(models: ![string serialized MlModel],
+                         context: MlModel.HealthCalc.Context,
+                         spec: MlModel.HealthCalc.ExecutionSpec): !MlOperationRun<MlModel.HealthCalc.JobRun>
+}

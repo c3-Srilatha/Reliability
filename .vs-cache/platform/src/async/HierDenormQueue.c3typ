@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue for hierarchy denorm processing.  Hierarchy denorm is caching of parent/child Obj instances in a
+ * hierarchy for optimizing hierarchy based operations.
+ *
+ * Note: `targetObjId` is set to the edge type ID (not the individual edge object ID), so all edges of the same
+ * type share the same `targetObjId` and are grouped together. See {@link HierDenormInvalidator#processHierDenormEdges()}
+ *
+ * @see HierDenormQueueEntry
+ */
+@invalidationQueueOptions(grouping='targetObjId',
+                          defaultReportGrouping='targetTypeId, status',
+                          detailReportGrouping='targetTypeId, targetObjId, status',
+                          defaultErrorReportGrouping='targetTypeId, errorCode, review',
+                          detailErrorReportGrouping='targetTypeId, targetObjId, errorCode, review')
+type HierDenormQueue mixes InvalidationQueue<HierDenormQueueEntry>, Value {
+
+  dataIssueTypes: ~
+}

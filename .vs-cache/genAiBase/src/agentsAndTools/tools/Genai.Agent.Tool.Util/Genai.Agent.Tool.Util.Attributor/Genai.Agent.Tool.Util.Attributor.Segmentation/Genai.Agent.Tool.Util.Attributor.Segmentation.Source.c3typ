@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Source type for {@link Genai.Agent.Tool.Util.Attributor.Segmentation.Segment}.
+ */
+type Genai.Agent.Tool.Util.Attributor.Segmentation.Source mixes Genai.Query.Result.Source.AttributionSourceFields {
+
+  /**
+   * A unique identifier for the SourcePassage which this result belongs to.
+   */
+  passageId: !string
+
+  /**
+   * Response segment including the text from the query response and its following characters.
+   */
+  segment: !Genai.Agent.Tool.Util.Attributor.Segmentation.Segment
+
+  /**
+   * L2-normalized similarity score from similarity search.
+   */
+  similarityScore: !float
+
+  /**
+   * List of source segments with attribution result.
+   * Only populated when {@link Genai.Agent.Tool.Util.Attributor.Spec#generateRationale} is set to true.
+   */
+  sourceSegments: [Genai.Agent.Tool.Util.Attributor.Segmentation.SourceSegment]
+
+  /**
+   * Overall corroborator result for this whole doc evaluated from its response segment.
+   */
+  corroborationResult: Genai.Agent.Tool.Util.Corroborator.Output
+
+  /**
+   * Credibility score of a source.
+   */
+  credibilityScore: float
+
+  /**
+   * Normalized overall score of a source.
+   *
+   * After the attributions are created,
+   * we can run an additional step: {@link Genai.Agent.Tool.Util.Attributor#scoreAndConsolidate},
+   * that further summarizes the scores associated with a source that has been attributed to a response segment.
+   * This score is then used for consolidating the attribution results.
+   */
+  normalizedOverallScore: float
+}

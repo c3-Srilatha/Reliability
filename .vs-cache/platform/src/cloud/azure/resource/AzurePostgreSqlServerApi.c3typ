@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Azure PostgreSQL Servers API.
+ * Allows users to interact with Azure PostgreSQL server.
+ * [Rest API definitions](https://docs.microsoft.com/en-us/rest/api/postgresql/servers)
+ */
+@beta
+private type AzurePostgreSqlServerApi mixes REST {
+
+  connect: function(credentials: !AzureCredentials): AzurePostgreSqlServerApi
+
+  @rest(method='GET')
+  list: abstract member function(@rest(partOfURI=true,
+                                       uriPrefix='/subscriptions/',
+                                       uriSuffix='/providers/Microsoft.DBforPostgreSQL/servers?api-version=2017-12-01')
+                                 subscriptionId: !string): AzurePostgreSqlServerListResponse
+
+  @rest(method='GET')
+  listByResourceGroup: abstract member function(@rest(partOfURI=true, uriPrefix='/subscriptions/')
+                                                subscriptionId: !string,
+                                                @rest(partOfURI=true,
+                                                      uriPrefix='/resourceGroups/',
+                                                      uriSuffix='/providers/Microsoft.DBforPostgreSQL/servers?api-version=2017-12-01')
+                                                resourceGroupName: !string): AzurePostgreSqlServerListResponse
+
+  @rest(method='GET')
+  getWithResourceId: abstract member function(@rest(partOfURI=true, uriSuffix='/?api-version=2017-12-01')
+                                              resourceId: !string): AzurePostgreSqlServerResponseFields
+
+  @rest(method='GET')
+  get: abstract member function(@rest(partOfURI=true, uriPrefix='/subscriptions/')
+                                subscriptionId: !string,
+                                @rest(partOfURI=true,
+                                      uriPrefix='/resourceGroups/',
+                                      uriSuffix='/providers/Microsoft.DBforPostgreSQL/servers/')
+                                resourceGroupName: !string,
+                                @rest(partOfURI=true, uriSuffix='/?api-version=2017-12-01')
+                                serverName: !string): AzurePostgreSqlServerResponseFields
+
+  @rest(method='PUT', skipThis=true)
+  create: abstract member function(@rest(partOfURI=true, uriPrefix='/subscriptions/')
+                                   subscriptionId: !string,
+                                   @rest(partOfURI=true,
+                                         uriPrefix='/resourceGroups/',
+                                         uriSuffix='/providers/Microsoft.DBforPostgreSQL/servers/')
+                                   resourceGroupName: !string,
+                                   @rest(partOfURI=true, uriSuffix='/?api-version=2017-12-01')
+                                   serverName: !string,
+                                   @rest(doNotUseParameterName=true)
+                                   creationFields: !AzurePostgreSqlServerCreateFields)
+                            : AzurePostgreSqlServerResponseFields
+
+  @rest(method='PATCH', skipThis=true)
+  update: abstract member function(@rest(partOfURI=true, uriPrefix='/subscriptions/')
+                                   subscriptionId: !string,
+                                   @rest(partOfURI=true,
+                                         uriPrefix='/resourceGroups/',
+                                         uriSuffix='/providers/Microsoft.DBforPostgreSQL/servers/')
+                                   resourceGroupName: !string,
+                                   @rest(partOfURI=true, uriSuffix='/?api-version=2017-12-01')
+                                   serverName: !string,
+                                   @rest(doNotUseParameterName=true)
+                                   updateFields: !AzurePostgreSqlServerUpdateFields)
+                            : AzurePostgreSqlServerResponseFields
+
+  @rest(method='DELETE')
+  delete: abstract member function(@rest(partOfURI=true, uriPrefix='/subscriptions/')
+                                   subscriptionId: !string,
+                                   @rest(partOfURI=true,
+                                         uriPrefix='/resourceGroups/',
+                                         uriSuffix='/providers/Microsoft.DBforPostgreSQL/servers/')
+                                   resourceGroupName: !string,
+                                   @rest(partOfURI=true, uriSuffix='/?api-version=2017-12-01')
+                                   serverName: !string)
+}

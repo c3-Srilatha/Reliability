@@ -1,0 +1,340 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Tag definition.
+ */
+@deprecated
+@facade(tag='c3')
+entity type Tag mixes Value, ExecutionEnvironment schema name 'METADATA_TAG' {
+
+  /**
+   * Name must match the id (enforced in beforeCreate) and can't be changed.
+   */
+  @db(writeOnce=true)
+  name: !~ = id
+
+  /**
+   * Unique numeric id assigned during creation of a tag in a tenant.
+   */
+  @db(writeOnce=true)
+  tenantTagId: !int
+
+  /**
+   * Description of the purpose of the tag.
+   */
+  description: string
+
+  /**
+   * Name of the root package.
+   */
+  rootPackage: !string
+
+  /**
+   * Ordered list of all packages provisioned in the tag.
+   */
+  packages: ![string] schema name 'PACKAGES'
+
+  /**
+   * Name of the root repository.
+   */
+  rootRepository: !string
+
+  /**
+   * Map of all repository names to versions provisioned in the tag.
+   */
+  repositories: !map<string, string> schema name 'REPO_VERS'
+
+  /**
+   * Fingerprints by provisioned packages. see {@link packages} for order of packages.
+   */
+  packageFingerprints: !map<string, int> schema suffix 'PFP'
+
+  /**
+   * Map containing various administrative info about the last time the tag was provisioned.
+   */
+  infos: map<string, string> schema name 'INF'
+
+  /**
+   * If set then tag will monitor respective metadata repositories for changes and will continuously provision them.
+   */
+  activeMetadata: boolean
+
+  /**
+   * If set then tag will contain test metadata. Only valid for tags in `test` mode.
+   */
+  testMetadata: boolean
+
+  /**
+   * If true, Tag metadata file content will be cached in memory, when tag is loaded.
+   */
+  @beta
+  cacheContent: private boolean
+
+  /**
+   * Tag is created on a remote node/container is value is true
+   */
+  @beta
+  isRemote: private boolean
+
+  /**
+   * hardware profile to be used for bringing up the compute resource (vm, container). Valid only for bound tag.
+   */
+  @beta
+  hwProfile: private HardwareProfile
+
+  /**
+   * Upgrades the version of the c3 server on the remote tag instance. Valid only for remote tag.
+   */
+  @beta
+  upgrade: private member function(version: !string serialized SemanticVersion, spec: WaitSpec)
+
+  /**
+   * only used for remote tag
+   */
+  @beta
+  users: [string] schema suffix 'USERS'
+
+  /**
+   * server version of the tag
+   */
+  @beta
+  serverVersion: private string
+
+  /**
+   * VM use as the compute instance if true, else container instance is used. Valid only for remote tag.
+   */
+  @beta
+  useVm: private boolean
+
+  /**
+   * Creates logically isolated PG and Cassandra datastores. Valid only for remote tag.
+   */
+  @beta
+  useTenantDatastore: private boolean
+
+  /**
+   * Tag is bound to a c3 server node if value is true
+   */
+  @beta
+  isBound: private boolean
+
+  /**
+   * Creates a new tag and enables active metadata.
+   *
+   * Optionally also provisions test data.
+   */
+  @beta
+  @action(group+='write')
+  upsertWithActiveMetadata: function(name: !string, testMetadata: boolean): !Tag
+
+  /**
+   * Sets activeMetadata attribute on this tag.
+   *
+   * Optionally also provisions test data.
+   */
+  @beta
+  setActiveAndTestMetadata: member function(activeMetadata: boolean, testMetadata: boolean): !Tag
+
+  /**
+   * Updates types, code, seed and/or other metadata in this tag based on ALL metadata store.
+   */
+  @beta
+  @action(group+='provision')
+  updateFromAllMetadataStore: private member function(test: boolean): !Tag
+
+  /**
+   * Removes all the data from this tag.
+   */
+  @action(group+='delete')
+  removeData: member function(confirm: boolean, includeSeedAndMeta: boolean)
+
+  /**
+   * Removes all local filesystem cache data for this tag.
+   * ex: files saved for local caching which had to survive cache evictions but needs to be cleaned when tag is removed.
+   * git cloned in GitFileSystem, node modules installed in NodejsSourceCache etc.
+   */
+  @action(group+='delete')
+  removeLocalFileData: member function(confirm: boolean)
+
+  /**
+   * return a tag Cache, create one if missing by name provided.
+   */
+  tagCache: member function(name: !string, create: lambda(): Cache<string, any>): Cache<string, any>
+
+  /**
+   * Returns a unique integer tenanatTagId for this tag
+   */
+  @action(group+='read')
+  @deprecated
+  getTenantTagId: inline function(tag: Tag): int
+
+  /**
+   * Return unique numeric id for a given type.
+   */
+  @action(group+='read')
+  @deprecated
+  getTypeId: inline function(moduleName: string, typeName: string): int
+
+  /**
+   * Return type name for a give type id.
+   */
+  @action(group+='read')
+  @deprecated
+  getTypeNameFromId: inline function(typeId: !int): string
+
+  /**
+   * Return type for a give type id.
+   */
+  @action(group+='read')
+  @deprecated
+  getTypeFromId: inline function(typeId: !int): Type
+
+  /**
+   * Return unique numeric id for a given dot separated path (e.g. field path)
+   */
+  @action(group+='read')
+  @deprecated
+  getPathId: inline function(path: string): int
+
+  /**
+   * Retrieves Modules for a given tag (eg for metadata purposes).
+   * The response will also include the correct set of Platform modules
+   * for the current tenant and provided tag.
+   *
+   * However, it will not include pure extension modules or any extension (annotation) types.
+   */
+  @action(group+='read')
+  @deprecated
+  getModules: function(tag: !Tag): [Module]
+
+  /**
+   * Produce reformatted DSL for a single type.  Note that the wrapping module is not included,
+   * so the produced string cannot be loaded as a module.
+   */
+  @action(group+='read')
+  @deprecated
+  printType: function(tag: Tag, moduleName: string, typeName: string, options: DSLPrintTypeSpec): [DSLPrintResult]
+
+  /**
+   * Generate documentation for the specified tenant/tag by first converting each type into a dummy JavaScript
+   * with comments and annotations and then run jsduck on the generated JS files to generate the documentation
+   */
+  @deprecated
+  generateTypeDoc: function(tag: Tag, options: DSLPrintTypeSpec): [DSLPrintResult]
+
+  /**
+   * Produce reformatted DSL for a single function, and its non-persistent argument types.
+   * Note that the wrapping module is not included so the produced string cannot be loaded as a module.
+   */
+  @action(group+='read')
+  @deprecated
+  printFunction: function(tag: Tag,
+                          moduleName: string,
+                          typeName: string,
+                          funcName: string,
+                          options: DSLPrintTypeSpec): [DSLPrintResult]
+
+  /**
+   * Fetch module metadata as JSON, primarily for the UI framework.
+   * @param tag id of tag to query
+   * @param modules array of module names or ModuleHash objects
+   * @param detail level of module detail to fetch
+   */
+  @action(group+='read')
+  @deprecated
+  getModuleMetadata: function(tag: Tag, modules: [ModuleHash], detail: string): [Module]
+
+  /**
+   * Fetch type metadata as JSON, primarily for the UI framework.
+   * @param tag id of tag to query
+   * @param modules array of module names or ModuleHash objects
+   * @param detail level of type detail to fetch
+   */
+  @action(group+='read')
+  @deprecated
+  getTypeMetadata: function(tag: Tag, modules: [ModuleHash], detail: string): [Type]
+
+  /**
+   * Fetch function metadata as JSON, primarily for the UI framework.
+   * @param tag id of tag to query
+   * @param type the type to query
+   * @param function name of function to query, if empty query all functions
+   */
+  @action(group+='read')
+  @deprecated
+  getFunctionMetadata: function(tag: Tag, typeRef: Type, functions: [string]): [FieldType]
+
+  /**
+   * Get all types that mixin a specified type.
+   * @param mixin the mixin to search for
+   * @param deep if true, return types that mixin other types that mixin the specified type
+   */
+  @action(group+='read')
+  @deprecated(finalVersion='7.5', details='use MetadataStore.tag().typesThatMixin instead')
+  getTypesThatMixin: function(mixinType: !Type, deep: boolean): [Type]
+
+  /**
+   * Take a tag profile and start a batch job to populate the specified tag with
+   * data that matches the profile.
+   * @param tag id of tag to generate in
+   * @param spec previously built profile
+   */
+  @beta
+  generateTag: function(tag: Tag, spec: GenerateTagSpec): GenerateTagStatus
+
+  /**
+   * This is a stub that represents the HTTP-based type system delivery to clients.
+   * This method is not actually implemented; it is used only for logging.
+   */
+  serveTypeSys: private function(path: !string): int
+
+  /**
+   * We don't track version history for tags (the changes could be huge).  So no need for the versionEdits field to be persisted.
+   */
+  versionEdits: ~ not persistable
+
+  /**
+   * @return list of facade tenant tag and environments required by the current tag.
+   */
+  facades: member function(skipUnresolved: boolean): [Ann.Facade]
+
+  /**
+   * lists the tags in the server. For remoteTag servers only c3 and remote tag is returned
+   */
+  @action(group+='read')
+  tags: function(spec: FetchSpec): [Tag]
+
+  /**
+   * @return list of worker node ids assigned to this tag
+   */
+  workerAllocation: member function(): [string]
+
+  /**
+   * empty Tag and it's metadata cache on all nodes or specified nodes of cluster synchronously.
+   *
+   * @param nodeIds
+   *           If nodeIds is provided, cache will be emptied on those nodes only. see `Cluster.hosts()`
+   *           for possible nodeId values.
+   * @param spec
+   *           timeout spec for this action to complete.
+   */
+  @action(group+='provision')
+  emptyCache: member function(nodeIds: [string], spec: TimeoutSpec): map<string, Pair<any, Error>>
+
+  tenantId:        string
+  emptyCacheLocal: member function()
+  isValid:         member function(): boolean
+  ownTypes:        member function(): [Type]
+  allTypes:        member function(): [Type]
+  errors:          member function(): [Pkg.Issue]
+  beforeCreate:    ~
+  beforeUpdate:    ~
+  beforeRemove:    ~
+  afterCreate:     ~
+}

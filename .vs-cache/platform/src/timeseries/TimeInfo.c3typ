@@ -1,0 +1,161 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+inline type TimeInfo mixes TimeRange, WithToString {
+
+  /**
+   * Interval of timeseries.
+   */
+  interval: string enum Interval
+
+  /**
+   * Time zone treatment for timeseries.
+   */
+  // TODO: PLAT-105086 Make timeZone field `string serialized TimeZone`.
+  timeZone: TimeZone = NONE
+
+  /**
+   * length of this time-info in intervals. I.e. size of the timeseries this info represents.
+   */
+  _size: private int
+
+  /**
+   * true if time range is aligned with interval.
+   */
+  _isAligned: private boolean
+
+  /**
+   * true if time range is aligned with interval.
+   */
+  isAligned: member function(): boolean
+
+  /**
+   * length of this time-info in intervals. I.e. size of the timeseries this info represents.
+   */
+  size: cached member function(): !int
+
+  /**
+   * Time range for timeseries.
+   */
+  range: member function(): TimeRange
+
+  /**
+   * @return new time info with time range aligned with interval.
+   */
+  align: member function(): !TimeInfo
+
+  /**
+   * @return new time info shifted by provided length. It will shift the dates by the specified number of intervals
+   */
+  shift: member function(length: !int32): TimeInfo
+
+  shift: ~
+
+  /**
+   * @return new time info with updated start and end.
+   */
+  withStartAndEnd: member function(start: !datetime, end: datetime): !TimeInfo
+
+  /**
+   * @return new time information that spans over time range needed to compute a window function.
+   */
+  extendForWindow: member function(offset: !int32, span: !int32): TimeInfo
+
+  /**
+   * @return new instance of timeseries time info.
+   */
+  from: function(range: !TimeRange, interval: !string enum Interval, timeZone: TimeZone): !TimeInfo
+
+  from: function(start: !datetime,
+                 end: !datetime,
+                 interval: !string enum Interval,
+                 timeZone: TimeZone,
+                 align: boolean): !TimeInfo
+
+  from: private function(start: !datetime,
+                         end: !datetime,
+                         interval: !string enum Interval,
+                         timeZone: TimeZone,
+                         _size: int,
+                         _isAligned: boolean): !TimeInfo
+
+  /**
+   * @return new instance of time info based on the Timeseries c3 obj.
+   */
+  fromTimeseries: function(ts: !Timeseries): !TimeInfo
+
+  /**
+   * @return new instance of time info based on the spec c3 obj.
+   */
+  fromSpecObj: function(spec: Obj, align: boolean): !TimeInfo
+
+  /**
+   * convert input map into the desired timezone
+   */
+  convert: function(timeZone: !TimeZone, inputMap: !?map<datetime, datetime>): map<datetime, datetime>
+
+  /**
+   * Convert the given dates to the specified time zone
+   *
+   * @param timeZone
+   * @param dates
+   * @return
+   */
+  convert: function(timeZone: !TimeZone, dates: !?[datetime]): [datetime]
+
+  // Extracts tzShifts from an arry of dates
+  extractTimeZoneShifts: function(dates: [datetime]): [datetime]
+
+  /**
+   * Converts the given start & end pair to the given time zone
+   *
+   * @param start
+   * @param end
+   * @param timeZone
+   * @return
+   */
+  convert: function(timeZone: !TimeZone, start: !datetime, end: !datetime): Pair<datetime, datetime>
+
+  applyAndConvert: function(timeZone: TimeZone,
+                            start: datetime,
+                            end: datetime,
+                            tzShifts: [datetime]): Pair<datetime, datetime>
+
+  /**
+   * Apply time zones to dates according to the times when the shift happened
+   *
+   * @param dates
+   * @param tzShifts
+   * @return
+   */
+  applyTimeZoneShifts: function(dates: !?[datetime], tzShifts: [datetime]): [datetime]
+
+  /**
+   * Apply time zones to dates according to the times when the shift happened
+   *
+   * @param inputMap
+   * @param tzShifts
+   * @return
+   */
+  applyTimeZoneShifts: function(inputMap: !?map<datetime, datetime>, tzShifts: [datetime]): map<datetime, datetime>
+
+  applyTimeZoneShifts: function(start: datetime, end: datetime, tzShifts: [datetime]): Pair<datetime, datetime>
+
+  /**
+   * Create a TimeInfo object where `end` is the beginning of the provided period from now (E.g. beginning of today if period is '1d')
+   * and start is {@link count} intervals in the past
+   *
+   * E.g.
+   * ```js
+   * // Let's assume today (now) is 2020-10-10T14:23:12
+   * TimeInfo.fromValueCount(10, '1d')
+   * => TimeInfo.make({start: "2020-10-01", end:"2020-10-10", interval: "DAY"})
+   * ```
+   */
+  fromValueCount: private function(count: !int, period: string serialized Period = "1d"): !TimeInfo
+}

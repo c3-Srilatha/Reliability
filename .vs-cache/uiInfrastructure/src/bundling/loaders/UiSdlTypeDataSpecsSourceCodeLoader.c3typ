@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Data Spec type source code loader.
+ */
+private type UiSdlTypeDataSpecsSourceCodeLoader mixes UiSdlFileLoader {
+
+  /**
+   * Generates source code for each data spec type
+   */
+  produceAll: ~ js-server
+
+  /**
+   * Generates the import statements for components that have data specs
+   * @param componentTypeNames
+   *          The names of the {@link UiSdlComponent} types that should have the import
+   *          statements generated
+   * @return import statement
+   */
+  dataSpecImportStatementsForComponentType: function(componentTypeNames: [string]): string js-server
+
+  /**
+   * Returns the list of {@link FieldType} that have the {@Ann.UiSdlDataSpec} annotation
+   * declared on it for the given {@link UiSdlComponent} type
+   * @param componentTypeName
+   *            The {@link UiSdlComponent} type name
+   * @return the list of {@link FieldType}
+   */
+  dataSpecFieldTypesForComponent: function(componentTypeName: string): [FieldType] js-server
+}

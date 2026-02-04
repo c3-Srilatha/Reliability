@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specialization of {@link Data.Stream} in order to stream data from {@link Data.FeatureSet}.
+ */
+@beta
+type Data.FeatureSet.Stream mixes Data.Stream, Mutable {
+
+  /**
+   * Current slice index in each dimension ([NumSubject,NumTimestamp, NumFeatures]) for next() and hasNext().
+   */
+  // TODO: PLAT-60532 Enable Data.FeatureSet.SliceStream with timestamp slicing and change the field here.
+  currentIndex: private ![int]
+
+  /**
+   * The dimension ([NumSubject,NumTimestamp, NumFeatures]) to include in each slice
+   * This dimension is chosen to maximize the throughput while staying within memory resource bounds for
+   * providing a slice.
+   */
+  dimensionPerSlice: private [int]
+
+  /**
+   * Reference to {@link Data.FeatureSet} that is being streamed.
+   */
+  data: private !Data.FeatureSet
+
+  /**
+   * Set only if {@link #data} uses a subject filter. This field represents the total number of subjects
+   * that satisfy the filter.
+   *
+   * DEVELOPER NOTE: if this is set, then the streaming will be over positional indices across the total
+   * number of filtered subjects
+   */
+  subjectCount: private int
+
+  hasNext: ~
+  next:    ~
+  close:   ~
+  reset:   ~
+}

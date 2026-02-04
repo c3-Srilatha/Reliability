@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Individual queue type sub-configurations.
+ */
+type InvalidationQueueConfigChild mixes ConfigChild<InvalidationQueueConfig> {
+
+  /**
+   * Relative priority for processing.  In each sweep, the queue will get this many "slices" for dispatching computes.
+   */
+  priority: !int = 10
+
+  /**
+   * Batch size for queue processing.  Each compute call will receive (at most), entries for this many groups,
+   * determined by the queue's grouping.  Note that there can be multiple entries for each group so the actual
+   * number of entries processed may be higher.
+   */
+  batchSize: !int = 3
+
+  /**
+   * The maximum number of entries that will be passed into compute, even if batchSize has not been reached.
+   */
+  maxEntries: !int = 10000
+
+  @deprecated(details="Ignored.  Has no effect.")
+  maxLockRecursion: private !int = 2
+
+  /**
+   * If true, the queue will be ignored and not processed.
+   */
+  disabled: boolean
+
+  @deprecated(details="Ignored.  Has no effect.")
+  useSeparateLockFetch: private boolean
+
+  @deprecated(details="Ignored.  Has no effect.")
+  lockCandidateFactor: private !int = 10
+}

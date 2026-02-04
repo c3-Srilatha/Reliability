@@ -1,0 +1,74 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+native py remix type C3 mixes Value {
+
+  /**
+   * This method enables sharing in-memory values across the scope of Python files for different c3 types.
+   * This will set the key `key` with value `value`. This value can be accessed by the {@link C3#getVar} method.
+   * One dictionary is used per Python SDK instance.
+   * @param key
+   *        key for which you want to set value
+   * @param value
+   *        value of the key
+   * @param overrideIfExists
+   *        If set to true it will allow you to override a key which already exists to a new value. Otherwise, trying
+   *        to set the value of key which already exists will throw an error. The default value overrideIfExists is false.
+   *
+   * Eg:
+   * ```python
+   *	 def setSomeValueToBeShare(this, key, val):
+   *	        c3.setVar(key,val)
+   * ```
+   * ```python
+   *	 def getSomeValueWhichHasBeenShared(this, key):
+   *	        return c3.getVar(key)
+   * ```
+   */
+  setVar: inline function(key: !string, value: !native, overrideIfExists: boolean) py
+
+  /**
+   * The method is used to retrieve values set by {@link C3#setVar}
+   * @param key
+   *        key for which you want to retrieve the value
+   * @param defaultValue
+   *        if `key` is not in vars, the defaultValue (if provided) will be returned. Otherwise, None will be returned
+   *
+   * @return native
+   *        The value for the key if it exists or defaultValue is given, otherwise None
+   */
+  getVar: inline function(key: !string, defaultValue: native): native py
+
+  /**
+   * The method is used to retrieve values set by {@link C3#setVar} and set the key if not already set
+   * @param key
+   *        key for which you want to retrieve the value
+   * @param defaultProvider
+   *        if `key` is not in vars, defaultProvider will be used to set the value for `key` and that value will be returned
+   *
+   * @return native
+   *        The value for the key if it exists or defaultProvider is given, otherwise None
+   */
+  getVarSetIfMissing: inline function(key: !string, defaultProvider: lambda(): !native): native py
+
+  /**
+   * Returns the keys of all values set by {@link C3#setVar}.
+   *
+   * @return the set of keys
+   */
+  vars: private inline function(): !set<string> py
+
+  /**
+   * The method is used to remove the key and value pair set using {@link C3#setVar}.
+   * @param key
+   *        key which should be removed
+   *
+   * @return true if the key was successfully removed
+   */
+  removeVar: private inline function(key: !string): !boolean py
+}

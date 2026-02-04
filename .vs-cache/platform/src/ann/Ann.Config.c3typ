@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The @config annotation is used to specify configuration parameter behavior.
+ */
+@annotation(appliesTo=['field', 'type'])
+type Ann.Config mixes Annotation {
+
+  /**
+   * Indicates {@link Config#getConfig} should return null if it does not exist.
+   * If set to true, takes into consideration configs in both config store and pkg for the specific config key when
+   * determining existence.
+   */
+  doNotDefaultIfMissing: boolean
+
+  /**
+   * Indicates that this value is a secret and should be stored in the Vault.
+   */
+  secret: boolean
+
+  /**
+   * Minimum configuration override level. Default is {@link ConfigOverride#APP}.
+   */
+  // TODO PLAT-131773 use defaults correctly
+  minOverride: string enum ConfigOverride
+
+  /**
+   * Maximum configuration override level. Default is {@link ConfigOverride#ROOT}.
+   */
+  // TODO PLAT-131773 use defaults correctly
+  maxOverride: string enum ConfigOverride
+
+  /**
+   * Folder override where to read configuration from. By default this will be config type name.
+   */
+  folder: string
+
+  /**
+   * Sub folder override where to read configuration from. Only makes sense if one of base Config types has
+   * @config(folder) annotation.
+   */
+  subFolder: string
+
+  /**
+   * Minimum permission required to set configuration values.
+   */
+  // TODO: PLAT-91672 Remove Deprecated in 8.5 Ann.Config authz and secretAuthz
+  @deprecated(finalVersion='8.5', details="use maxOverride to restrict the level a config can be set.")
+  authz: string enum ConfigAuthz
+
+  /**
+   * Minimum permission required to read and set secret values.
+   */
+  // TODO: PLAT-91672 Remove Deprecated in 8.5 Ann.Config authz and secretAuthz
+  @deprecated(finalVersion='8.5', details="use maxOverride to restrict the level a config can be set.")
+  secretAuthz: string enum ConfigAuthz
+
+  /**
+   * Indicates if config collection field should be merged from all elements in overrides. Only valid for collection
+   * fields.
+   */
+  @deprecated(finalVersion="8.4", details="Please use Ann.Merge to facilitate merge behavior")
+  merge: string enum CollectionMerge = REPLACE
+}

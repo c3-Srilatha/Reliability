@@ -1,0 +1,184 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for {@link Cache#histo}.
+ *
+ * ## Default Output (group: 'cache')
+ *
+ * ```
+ * Cache                        | Entries |    Self |    Deep
+ * -----------------------------+---------+---------+---------
+ * TypeMeta#cache               |    1500 | 15.3 MB | 25.3 MB
+ * MethodType#instances         |     800 |  8.0 MB | 12.1 MB
+ * ```
+ *
+ * ## Grouping Examples
+ *
+ * ### group: 'cache, kind'
+ * Add kind column:
+ * ```
+ * Cache                        | Kind                 | Entries |    Self |    Deep
+ * -----------------------------+----------------------+---------+---------+---------
+ * TypeMeta#cache               | Cache                |    1500 | 15.3 MB | 25.3 MB
+ * MethodType#instances         | SimpleSingletonCache |     800 |  8.0 MB | 12.1 MB
+ * ```
+ *
+ * ### group: 'cache, javaClass'
+ * Expand each cache by Java class (shows Self/Deep memory):
+ * ```
+ * Cache                        | Java Class                   | Entries |    Self |    Deep
+ * -----------------------------+------------------------------+---------+---------+---------
+ * TypeMeta#cache               | c3.platform.typesys.TypeMeta |    1500 | 15.3 MB | 25.3 MB
+ * TypeMeta#cache               | java.lang.String             |     100 |  0.5 MB |  0.5 MB
+ * MethodType#instances         | c3.platform.typesys.Method   |     800 |  8.0 MB | 12.1 MB
+ * ```
+ *
+ * ### group: 'javaClass'
+ * Aggregate by Java class across all caches:
+ * ```
+ * Java Class                      | Entries |    Self |    Deep
+ * --------------------------------+---------+---------+---------
+ * c3.platform.typesys.TypeMeta    |    2300 | 20.5 MB | 38.5 MB
+ * c3.platform.typesys.MethodType  |    1200 | 10.2 MB | 18.2 MB
+ * java.lang.String                |    5000 |  2.1 MB |  2.1 MB
+ * ```
+ *
+ * ### group: 'app, javaClass'
+ * Aggregate by app and Java class:
+ * ```
+ * App              | Java Class                   | Entries |    Self |    Deep
+ * -----------------+------------------------------+---------+---------+---------
+ * prod-us-platform | c3.platform.typesys.TypeMeta |    2300 | 20.5 MB | 38.5 MB
+ * prod-us-platform | java.lang.String             |    5000 |  2.1 MB |  2.1 MB
+ * prod-us-myApp    | myApp.Customer               |     200 |  3.2 MB |  5.2 MB
+ * ```
+ *
+ * ### group: 'pkg'
+ * Aggregate by package:
+ * ```
+ * Pkg      | Entries |    Self |    Deep
+ * ---------+---------+---------+---------
+ * platform |    3500 | 30.5 MB | 50.5 MB
+ * myApp    |     200 |  3.2 MB |  5.2 MB
+ * ```
+ *
+ * @see Cache#histo
+ * @see Cache.Histo
+ */
+type Cache.Histo.Spec {
+
+  /**
+   * Maximum number of entries to return. Use -1 for all entries. Default is 25.
+   */
+  limit: int = 25
+
+  /**
+   * Comma-separated list of fields to group by. Controls both grouping AND which columns are shown.
+   *
+   * Available fields:
+   * - 'cache' - cache name (default)
+   * - 'kind' - cache kind (Cache, SimpleCache, Static.Map, etc.)
+   * - 'appAware' - whether cache is app-aware
+   * - 'root' - whether cache is a ROOT (authoritative source)
+   * - 'javaClass' - Java class of cached entries
+   * - 'app' - app-id for cache entry (format: `<cluster>-<env>-<app>`)
+   * - 'pkg' - package name (single word)
+   * - 'path' - nested path (implies 'cache'). If {@link Cache.Histo.Spec#levels} is unset, depth is unbounded.
+   *
+   * Default: 'cache' (group by cache name)
+   *
+   * Memory semantics:
+   * - Cache-level grouping (no javaClass/path): shows both `memorySelf` and `memoryDeep` (deep is the total, correctly apportioned).
+   * - Element-level grouping (javaClass, path, etc.): uses `memorySelf`/`memoryDeep` (may overlap when aggregated).
+   *
+   * Examples:
+   * - 'cache' - default, one row per cache
+   * - 'cache, javaClass' - expand each cache by Java class
+   * - 'javaClass' - aggregate by Java class across all caches
+   * - 'app, javaClass' - aggregate by app and Java class
+   * - 'cache, kind' - show cache name and kind columns
+   * - 'path' - same as 'cache, path' (path implies cache). If levels is unset, depth is unbounded.
+   */
+  group: string = 'cache'
+
+  /**
+   * Sort order for entries (e.g., "descending(memoryDeep)", "descending(entries)").
+   * Default is by memoryDeep descending (or memorySelf if deep memory is skipped).
+   */
+  order: string serialized SortOrder
+
+  /**
+   * Expression to filter entries (e.g., "contains(cache, 'Type')").
+   */
+  filter: string serialized Expr
+
+  /**
+   * If true, includes empty caches. Default is false.
+   */
+  empty: boolean
+
+  /**
+   * If true, includes inactive/disabled caches. Default is false.
+   */
+  inactive: boolean
+
+  /**
+   * If true, skips scanning Java static fields. Default is false.
+   */
+  skipJavaStatics: boolean
+
+  /**
+   * If true, skips expensive memory measurement. Default is false.
+   */
+  skipMemory: boolean
+
+  /**
+   * If true, skips deep memory traversal (Deep column). Only shallow memory (Self) is computed.
+   * Faster than full measurement but less accurate. Default is false.
+   */
+  skipMemoryDeep: boolean
+
+  /**
+   * If true, shows full Java class names (e.g., 'c3.platform.typesys.type.TypeMeta').
+   * Default is false (shortened names like 'c.p.t.t.TypeMeta').
+   */
+  fullJavaClass: boolean
+
+  /**
+   * Number of nested levels to include in output. Default is 0 (no nesting).
+   * When set, shows nested object paths within cache entries with their memory usage.
+   * Each nested entry includes a 'path' field showing the traversal path (e.g., ".fields[]").
+   * When grouping by 'path' via {@link Cache.Histo.Spec#group} and levels is unset, depth is unbounded.
+   *
+   * Example with levels: 2:
+   * ```
+   * Cache                        | Path       | Entries |    Self |    Deep
+   * -----------------------------+------------+---------+---------+---------
+   * TypeMeta#cache               |            |    1500 | 15.3 MB | 25.3 MB
+   * TypeMeta#cache               | .fields    |    1500 |  3.2 MB |  8.2 MB
+   * TypeMeta#cache               | .fields[]  |   12000 | 15.1 MB | 15.1 MB
+   * TypeMeta#cache               | .methods   |    1500 |  2.4 MB |  6.4 MB
+   * TypeMeta#cache               | .methods[] |    8000 | 12.3 MB | 12.3 MB
+   * ```
+   */
+  levels: int
+
+  /**
+   * Time-to-live in seconds for cached stats. Default is 60 seconds.
+   * Stats collection is expensive (memory measurement, static field scanning), so results
+   * are cached and reused within the TTL window.
+   * Set to 0 to disable caching.
+   */
+  ttl: int = 60
+
+  /**
+   * If true, forces refresh of cached stats regardless of TTL. Default is false.
+   */
+  refresh: boolean
+}

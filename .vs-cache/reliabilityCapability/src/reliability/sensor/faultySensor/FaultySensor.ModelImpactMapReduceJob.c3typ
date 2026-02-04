@@ -1,0 +1,347 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * For an overview of the faulty sensor module, see {@link FaultySensor}.
+ *
+ * This type represents a map-reduce job over all {@link ReliabilityAssetToRiskModelRelation}s. This job will
+ * identify which relations are affected by updates to a [sensor's operational status](Sensor#operationalStatus).
+ * It will also validate if those models can be retrained or if the faulty sensors are critical to the viability
+ * of the model.
+ *
+ * Map Reduce Parametric types:
+ * - Target Type - ReliabilityAssetToRiskModelRelation - Fetch relations to see which models should be retrained.
+ * - Out Key Type - string - The {@link ReliabilityRiskMlModel} of a model to retrain or which cannot be retrained.
+ * - Inter Val Type - {@link FaultySensor.ModelImpactMapReduceJob.InterValType} - The intermediate value type and result
+ *   of the #map function.
+ * - Out Val Type - {@link FaultySensor.ModelRetrainValidationResult} - Result per model ID.
+ *
+ * See #map and #reduce for more details.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type FaultySensor.ModelImpactMapReduceJob extends MapReduce<ReliabilityAssetToRiskModelRelation, string, FaultySensor.ModelImpactMapReduceJob.InterValType, FaultySensor.ModelRetrainValidationResult> type key 'FSMIMRJ' {
+
+  /**
+   * The list of sensors that have had their {@link Sensor#operationalStatus} updated. The updates are being processed
+   * in this map-reduce job.
+   */
+  updatedSensors: [!Sensor]
+
+  /**
+   * If true, then during #reduce, fetch the full list of {@link ReliabilityAssetToRiskModelRelation}. Otherwise
+   * assume that {@link FaultySensor.ModelRetrainValidationInput#allRelations} contains just a single relation.
+   */
+  multipleAssetRelationsPerModel: boolean = false
+
+  /**
+   * Use only for testing. If this is true, then call the mock APIs defined on this type. Those functions will throw
+   * exceptions, but if they are mocked it can allow for testing.
+   */
+  callMockMapApis: private boolean = false
+
+  /**
+   * Use only for testing. If this is true, then call the mock APIs defined on this type. Those functions will throw
+   * exceptions, but if they are mocked it can allow for testing.
+   */
+  callMockReduceApis: private boolean = false
+
+  /**
+   * Iterate over the batch of {@link ReliabilityAssetToRiskModelRelation}s and identify which of the relations were
+   * impacted by the #updatedSensors. This means that those relations are using the faulty sensors in their models or
+   * now that a sensor is operational, this model should start using it.
+   *
+   * See #filterRelationsImpactedBySensorsBatch for more details.
+   *
+   * **Note:** relations for which it was not possible to verify if they are impacted
+   * ({@link FaultySensor.ImpactedRelationsBatchResult#unverifiable}) will not be passed to the #reduce function. They
+   * are treated as if they were not impacted (except in logging).
+   *
+   * This function's flow is:
+   * - Receive a batch of relations.
+   * - Call {@link FaultySensor.RiskModelSourceOfTruthRelation#getSourceOfTruthForModelsBatch} to get the source of
+   *  truth models for the relations.
+   * - Call #filterRelationsImpactedBySensorsBatch to categorize the relations.
+   * - Create a resulting map of {@link FaultySensor.ModelImpactMapReduceJob.InterValType}s
+   */
+  map: ~ py-py4j
+
+  /**
+   * Take the single model with ID equal to the `outKey` and validate that this model can be retrained given it's
+   * {@link ReliabilityAssetToRiskModelRelation}. The validation is independent of the #updatedSensors as previously
+   * marked faulty sensors are still important to handle. Validation should take into account the
+   * {@link FaultySensor.ModelImpactMapReduceJob.InterValType#sourceOfTruthModel}.
+   *
+   * See #validateModelCanBeRetrained for more details.
+   *
+   * This function's flow is:
+   * - Receive a model and a list of {@link FaultySensor.ModelImpactMapReduceJob.InterValType}s
+   * - Flatten the list of impacted relations
+   * - If #multipleAssetRelationsPerModel is true, then fetch all the relations for the model
+   * - Call #validateModelCanBeRetrained to validate the model
+   * - Return the result
+   */
+  reduce: ~ py-py4j
+
+  /**
+   * Given a completed map-reduce job, fetch the results from the job and return it as an array of model IDs that need
+   * retraining to the validation result for that model. See {@link FaultySensor.ModelRetrainValidationResult} for
+   * more details.
+   *
+   * This function is useful when the map-reduce job is called as part of a larger workflow. For example
+   * {@link FaultySensor.Orchestrator}.
+   *
+   * Note: If the map-reduce job did not complete successfully or if the results are in an unexpected format,
+   * an AssertionError will be thrown.
+   *
+   * @param mapReduceJob - The completed map-reduce job to retrieve the results from.
+   * @return A map from the model ID to the validation result for that model.
+   */
+  retrieveMapReduceResults: function(mapReduceJob: !FaultySensor.ModelImpactMapReduceJob): map<string, FaultySensor.ModelRetrainValidationResult> py
+
+  /**
+   * This function will filter the provided relations in batch. It filters down to the relations to those that use
+   * the updated sensors. It must check the source of truth models for each of the relations.
+   *
+   * If the source of truth model for a relation does not have a {@link ReliabilityRiskMlModel#datasetPreparationRun},
+   * then the relation is marked `unverifiable`. Otherwise, the dataset preparation runs are validated with
+   * {@link ReliabilityMlDatasetPreparationSpec#wereSensorsUsedInSpecsBatch} before the relevant relations are
+   * output by this function.
+   *
+   * Overview of categorization:
+   * - `unverifiable`
+   *   - The relation's source of truth model does not have a dataset preparation run.
+   *   - The relation's source of truth model has a dataset preparation run that has target sensors.
+   *   - And several more edge cases.
+   * - `notImpacted`
+   *    - The relation's source of truth model has a dataset preparation run that does not use the updated sensors.
+   * - `impacted`
+   *    - The relation's source of truth model has a dataset preparation run that uses the updated sensors.
+   *
+   * The list of sensors that impact each relation are stored together in an impactedSensors field. Each of the
+   * relations on this list MUST have the field `to` populated.
+   * @see FaultySensor.ImpactedRelationsBatchResult#impactedSensors
+   *
+   * Helper functions:
+   * - #_generate_populated_relations_to_sot_model_map
+   * - #_source_of_truth_model_include
+   * - #_add_relations_for_runs_to_arr
+   *
+   * @param relations - The relations to filter.
+   * @param modelIdsToSourceOfTruthModels - A map of model IDs to the
+   *    [source of truth models](FaultySensor.RiskModelSourceOfTruthRelation). This keys of this map must contain all
+   *    the model IDs of the models in the `relations` array `to` field.
+   * @param updatedSensors - The sensors that have had their {@link Sensor#operationalStatus} updated.
+   * @return The result categorizing the relations into `unverifiable`, `notImpacted`, and `impacted`.
+   */
+  filterRelationsImpactedBySensorsBatch: function(
+    relations: ![!ReliabilityAssetToRiskModelRelation],
+    modelIdsToSourceOfTruthModels: !map<string, ReliabilityRiskMlModel>,
+    updatedSensors: ![!Sensor]
+  ): !FaultySensor.ImpactedRelationsBatchResult py-py4j
+
+  /**
+   * Validate a single model to see if it can be retrained given it's source of truth and the current state of
+   * [faulty sensors](Sensor#operationalStatus).
+   *
+   * The base application only supports validation and retraining for models that were created during using a
+   * {@link ReliabilityMlDatasetPreparationRun}. This function will call
+   * #doValidateModelWithDatasetPrepCanBeRetrained. See that function for more details.
+   *
+   * @param validationSpec - The input to validate the model retraining. It is assumed that the source of truth model
+   *    provided in this input is populated with {@link ReliabilityRiskMlModel#datasetPreparationRun}.this.
+   * @return validation result. See {@link FaultySensor.ModelRetrainValidationResult} for more details.
+   */
+  validateModelCanBeRetrained: function(
+    validationSpec: !FaultySensor.ModelRetrainValidationInput
+  ): !FaultySensor.ModelRetrainValidationResult py-py4j
+
+  /**
+   * Perform validation on the {@link FaultySensor.ModelRetrainValidationInput#sourceOfTruthModel} assuming that
+   * it was created with an {@link ReliabilityMlDatasetPreparationRun}.
+   *
+   * The list of potential errors can be found in {@link FaultySensor.ModelRetrainValidationErrorEnum}. This function
+   * checks:
+   * - {FaultySensor.ModelRetrainValidationErrorEnum#NO_FEATURES} - If the
+   *      {@link ReliabilityMlDatasetPreparationRunCommon#includeSensors} will be empty after removing faulty sensors.
+   * - {FaultySensor.ModelRetrainValidationErrorEnum#SINGLE_FEATURE} - If the
+   *      {@link ReliabilityMlDatasetPreparationRunCommon#includeSensors} will have only one sensor after removing faulty
+   *      sensors.
+   * - {FaultySensor.ModelRetrainValidationErrorEnum#LAMBDA_MASK} - If the
+   *      {@link ReliabilityMlDatasetPreparationRun#maskDatasets} uses a lambda feature set.
+   * - {FaultySensor.ModelRetrainValidationErrorEnum#NON_METRIC_BACKED_MASK} - If the
+   *      {@link ReliabilityMlDatasetPreparationRun#maskDatasets} uses a feature that is
+   *      not [backed by a metric](Feature#isLegacyMetricBacked).
+   * - {FaultySensor.ModelRetrainValidationErrorEnum#NO_DATASET_PREP_RUN} - If the source of truth model does not
+   *      have a {@link ReliabilityRiskMlModel#datasetPreparationRun}.
+   * - {FaultySensor.ModelRetrainValidationErrorEnum#MASK_USES_FAULTY_SENSOR} - If the
+   *      {@link ReliabilityMlDatasetPreparationRun#maskDatasets} has any features that use one of the faulty
+   *      sensors.
+   *
+   * See #validateDatasetPrepRunMasks and #validateDatasetPrepRunFeatures for more details.
+   */
+  doValidateModelWithDatasetPrepCanBeRetrained: inline function(
+    validationSpec: !FaultySensor.ModelRetrainValidationInput
+  ): !FaultySensor.ModelRetrainValidationResult py-py4j
+
+  /**
+   * Validate that the source of truth model mask features are not using any faulty sensors and do not have any
+   * special cases like lambda features.
+   *
+   * Checks for the following [error types](FaultySensor.ModelRetrainValidationErrorEnum): `LAMBDA_MASK`,
+   * `NON_METRIC_BACKED_MASK`, and `MASK_USES_FAULTY_SENSOR`.
+   *
+   * See #doValidateModelWithDatasetPrepCanBeRetrained for more details.
+   *
+   * @param validationSpec - The input to validate the model retraining.
+   * @param run - The dataset preparation run to validate.
+   * @param faulty_sensor_metric_safe_ids - [string] - A list of {@link Sensor#metricSafeId}s that are faulty and
+   *        on the run's asset.
+   * @param faulty_sensor_expected_sensor_ids - [string] - A list of {@link ExpectedSensor#id}s that are faulty and
+   *        on the run's asset.
+   * @param faulty_sensor_ids - [string] - A list of {@link Sensor#id}s that are faulty and on the run's asset.
+   * @return a result with errors if there are issues or `null` if the mask can be used in retraining.
+   */
+  validateDatasetPrepRunMasks: inline function(
+    validationSpec: !FaultySensor.ModelRetrainValidationInput,
+    run: !ReliabilityMlDatasetPreparationRun,
+    faulty_sensor_metric_safe_ids: native,
+    faulty_sensor_expected_sensor_ids: native,
+    faulty_sensor_ids: native
+  ): FaultySensor.ModelRetrainValidationResult py-py4j
+
+  /**
+   * Validate that the source of truth model will have enough remaining features for retraining after removing faulty
+   * sensors.
+   *
+   * Checks for the following [error types](FaultySensor.ModelRetrainValidationErrorEnum): `NO_FEATURES` and
+   * `SINGLE_FEATURE`.
+   *
+   * See #doValidateModelWithDatasetPrepCanBeRetrained for more details.
+   *
+   * @param validationSpec - The input to validate the model retraining.
+   * @param run - The dataset preparation run to validate.
+   * @param faulty_sensor_ids - [string] - A list of {@link Sensor#id}s that are faulty and on the run's asset.
+   * @return a result with errors if there are issues or `null` if the features can be used in retraining.
+   */
+  validateDatasetPrepRunFeatures: inline function(
+    validationSpec: !FaultySensor.ModelRetrainValidationInput,
+    run: !ReliabilityMlDatasetPreparationRun,
+    faulty_sensor_ids: native
+  ): FaultySensor.ModelRetrainValidationResult py-py4j
+
+  /**
+   * Retrieves the {@link Sensor#metricSafeId} and {@link ExpectedSensor#id}s of faulty sensors associated with a
+   * {@link ReliabilityAsset}.
+   *
+   * @param reliability_asset - The reliability asset for which to retrieve the faulty sensor IDs.
+   * @param maximum_faulty_sensors - The maximum number of faulty sensors to retrieve. If there are more faulty sensors
+   *         then an exception is thrown.
+   * @return A tuple containing three lists:
+   *    - Index 0: faultySensorIds - A list of {@link Sensor#id}s of faulty sensors.
+   *    - Index 1: faultySensorMetricSafeIds - A list of {@link Sensor#metricSafeId}s of faulty sensors.
+   *    - Index 2: faultySensorExpectedSensorIds - A list of {@link ExpectedSensor#id}s of faulty sensors.
+   */
+  _get_faulty_sensor_ids: private inline function(
+    reliability_asset: !ReliabilityAsset,
+    maximum_faulty_sensors: int = 2000
+  ): native py-py4j
+
+  /**
+   * Checks if sensor IDs are used in the given expression.
+   *
+   * @param expr - The expression to check. This is a {@link Metric} `path` or `expression` field.
+   * @param all_sensor_related_ids - [string] - A list of {@link Sensor#metricSafeId}s, {@link ExpectedSensor#id}s,
+   *       and {@link Sensor#id}s that are faulty as any of those IDs can be used in the expression.
+   * @return Return the id used in the expression if it is found, otherwise None.
+   */
+  _are_sensor_ids_used_in_metric_str: private inline function(
+    expr: string,
+    all_sensor_related_ids: native
+  ): string py-py4j
+
+  /**
+   * This function takes in a list of runs that have been processed to match a certain criteria. It will
+   * then find which {@link ReliabilityAssetToRiskModelRelation}s used this run before adding those relations to the
+   * provided array. This modifies the array passed and returns nothing.
+   *
+   * @param runs - A list of runs to be added to `array_to_add_to`.
+   * @param run_id_to_relation_ids_map - A map of {@link ReliabilityMlDatasetPreparationRun#id}s to the IDs of the
+   *        {@link ReliabilityAssetToRiskModelRelation}s that use the run.
+   * @param relation_id_to_relations_map - A map of {@link ReliabilityAssetToRiskModelRelation#id}s to the full object
+   *        of the relation.
+   * @param array_to_add_to - An array of {@link ReliabilityAssetToRiskModelRelation}s that is accumulating the
+   *       relations.
+   */
+  _add_relations_for_runs_to_arr: private inline function(
+    runs: [!ReliabilityMlDatasetPreparationRun],
+    run_id_to_relation_ids_map: map<string, string>,
+    relation_id_to_relations_map: map<string, [!ReliabilityAssetToRiskModelRelation]>,
+    array_to_add_to: native
+  ) py-py4j
+
+  /**
+   * This function takes in a list of runs that have been processed to match a certain criteria. It will
+   * then find which {@link ReliabilityAssetToRiskModelRelation}s used this run before adding those relations to the
+   * impacted sensors array. This modifies the array passed and returns nothing.
+   *
+   * @param run_to_sensors - A list of pairs of one run to its sensors, these will be added to `impacted_sensors_arr`.
+   * @param run_id_to_relation_ids_map - A map of {@link ReliabilityMlDatasetPreparationRun#id}s to the IDs of the
+   *        {@link ReliabilityAssetToRiskModelRelation}s that use the run.
+   * @param relation_id_to_relations_map - A map of {@link ReliabilityAssetToRiskModelRelation#id}s to the full object
+   *        of the relation.
+   * @param impacted_sensors_arr - An array of <{@link ReliabilityAssetToRiskModelRelation}, [string]> that is
+   *        accumulating the relations with sensor ids.
+   */
+  _add_relations_for_impacted_sensors: private inline function(
+    run_to_sensors: [Pair<!ReliabilityMlDatasetPreparationRun, [string]>],
+    run_id_to_relation_ids_map: map<string, string>,
+    relation_id_to_relations_map: map<string, [!ReliabilityAssetToRiskModelRelation]>,
+    impacted_sensors_arr: native
+  ) py-py4j
+
+  /**
+   * Create a map from each relation to it's source of truth model with included fields populated
+   * (see #_source_of_truth_model_include).
+   * The function will get all `to` models for the relations and then fetch the source of truth models for those models
+   * before creating the output map.
+   *
+   * @param relations - The relations for which we need the source of truth models.
+   * @param modelIdsToSourceOfTruthModels - A map from {@link ReliabilityRiskMlModel#id} to the source of truth model
+   *        for the model with that ID.
+   * @return A map from {@link ReliabilityAssetToRiskModelRelation#id} to the source of truth model for the
+   *        [model in the relation](ReliabilityAssetToRiskModelRelation#to).
+   */
+  _generate_populated_relations_to_sot_model_map: private inline function(
+    relations: [!ReliabilityAssetToRiskModelRelation],
+    modelIdsToSourceOfTruthModels: map<string, ReliabilityRiskMlModel>
+  ): map<string, ReliabilityRiskMlModel> py-py4j
+
+  /**
+   * @return The include string for the source of truth models of type {@link ReliabilityRiskMlModel} fetched in
+   * #_generate_populated_relations_to_sot_model_map.
+   */
+  _source_of_truth_model_include: private inline function(): !string py-py4j
+
+  /**
+   * Takes two dictionaries as input, where each dictionary has lists as its values. It combines these dictionaries by
+   * appending the lists of any keys that appear in both dictionaries. If a key appears in only one dictionary, its
+   * list is added as is.
+   *
+   * @param dict1 - The first dictionary to merge. Each value in the dictionary is a list.
+   * @param dict2 - The second dictionary to merge. Each value in the dictionary is a list.
+   * @return A new dictionary containing all keys from both input dictionaries.
+   */
+  _merge_dictionaries_with_lists: private inline function(dict1: native, dict2: native): native py-py4j
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

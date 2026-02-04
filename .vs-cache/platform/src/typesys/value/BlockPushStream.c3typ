@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A block push stream wraps a raw push stream and provides larger block writes to process
+ * the low-level stream more efficiently.
+ *
+ * @var E the fundamental values of the stream
+ * @var B the aggregate (block) value
+ */
+abstract type BlockPushStream<E, B> mixes PushStream<E>, Value {
+
+  /**
+   * Default size of the block when writing
+   */
+  DEFAULT_BLOCK_SIZE: const int = 1024
+
+  /**
+   * Creates new block push stream based on logic in provided callbacks.
+   */
+  createBlock: abstract function(onWrite: !lambda(block: B, s: mixing BlockPushStream<E, B>),
+                                 onClose: lambda(s: mixing BlockPushStream<E, B>),
+                                 blockSize: int32 = 1024): !mixing BlockPushStream<E, B>
+
+  /**
+   * Write the next block of values into push stream.
+   *
+   * This is generally the more efficient way to process the push stream than using
+   * the {@link write} methods.
+   */
+  writeBlock: abstract member function(blockValue: !?B)
+}

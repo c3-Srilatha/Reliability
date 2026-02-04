@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized {@link Workflow.Vertex} that represents a coordinator of batches of asynchronous {@link Workflow}
+ * runs. Semantically, a coordinator is a periodic task that launches and monitors {@link Workflow}s according to
+ * some custom logic. The periodic task is considered finished when there are no more new {@link Workflow} to launch
+ * and all launched {@link Workflow}s are completed.
+ * For more details on the abstract "coordinator" interface, see {@link Workflow.Coordinatable}.
+ *
+ * Every {@link Workflow.Coordinator} has 2 input ports: a port "$start" and a port "coord". The "coord" input port
+ * accepts an instance of type {@link #coordType}.
+ * Every {@link Workflow.Coordinator} has 3 output ports: a port "out", a port "$success", and a port "error". The "out"
+ * output port returns an instance of type {@link #coordType}.
+ * See {@link Workflow} for more details on ports "$start", "$success", and "error".
+ * ```
+ *                                             --------------------------
+ *                     ... ----------> $start  |                        | $success --------> ...
+ *                                             |                        |
+ *                                             |  Workflow.Coordinator  | error -----------> ...
+ * -------------------                         |                        |                       -------------------
+ * | Workflow.Input  | out ----------> coord   |                        | out -------------> in | Workflow.Output |
+ * -------------------                         --------------------------                       -------------------
+ * ```
+ */
+type Workflow.Coordinator mixes Workflow.Vertex, JobOptions {
+
+  /**
+   * Concrete type for {@link Workflow.Coordinatable} that will implement the custom launch-and-monitor coordination logic.
+   */
+  coordType: !Type<<Workflow.Coordinatable>>
+
+  /**
+   * Suggested constructor for creating a {@link Workflow.Coordinator}.
+   *
+   * @param coordType
+   *           see {@link #coordType}.
+   * @param name
+   *           name for this vertex.
+   * @param options
+   *           specializations for the batched execution (e.g. `maxConcurrency`).
+   * @param timeout
+   *           Timeout for the execution of this vertex. After timeout time has passed,
+   *           the vertex execution fails if not successfully completed or failed already.
+   * @return a constructed instance of {@link Workflow.Coordinator}.
+   */
+  fromCoordType: function(coordType: !Type<<Workflow.Coordinatable>>,
+                          name: string,
+                          options: JobOptions,
+                          timeout: Duration): !mixing Workflow.Coordinator
+
+  requiresPolling: ~
+}

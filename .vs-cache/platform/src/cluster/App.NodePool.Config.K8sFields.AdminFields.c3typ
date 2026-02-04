@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to capture admin level permitted ranges and values for various fields in {@link App.NodePool.Config.K8sFields}
+ */
+@beta
+type App.NodePool.Config.K8sFields.AdminFields {
+
+  /**
+   * Specifies the deployment strategy to be used.
+   * NOTE: Effects the deployment strategy only when new replicaset is created, and not during disruptions on the pod directly.
+   * NOTE: For SNE backed by PVC, deploymentStrategy will always be `Recreate` and nodePool config won't be respected.
+   *
+   * Possible values:
+   * - 'RollingUpdate': Gradually replace old pods belonging to old replicaset with new ones.
+   * - 'Recreate': Terminate all pods of previous replicaset before creating pods of the new replicaset.
+   */
+  deploymentStrategy: string enum('RollingUpdate', 'Recreate') = "Recreate"
+}

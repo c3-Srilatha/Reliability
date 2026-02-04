@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Simplified version of {@link UiSdlEpic}.
+ *
+ * Simple epics are synchronous, operate on a single action (instead of on an observable of actions)
+ * and return a collection of actions (instead of an observable of actions)
+ *
+ * It is recommended to use UiSdlSimpleEpic when you are only interested in one action at a time
+ * and you don't need any RxJs operators (like delay, skipUntil, throttle, etc).
+ */
+@typeScript(sourceCodeType="Script")
+type UiSdlSimpleEpic mixes UiSdlEpic {
+
+  /**
+   * Do not implement! Simple epics should overload `simpleEpic`.
+   */
+  epic: private ~ ts-client
+
+  /**
+   * Allows mapping actions without applying any Rx observable operators.
+   *
+   * This is useful if you don't need complex logic and only want to map a single action to other actions
+   * @param action
+   *          A redux action object
+   * @param state
+   *          The current Redux state
+   * @return A collection of redux actions
+   */
+  simpleEpic: abstract function(action: UiSdlReduxAction, state: UiSdlReduxState) : [UiSdlReduxAction]
+}

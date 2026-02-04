@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * ECS task definition is the configuration of tasks running on AWS ECS
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='REQUIRED',
+       cloudFunc='ecstd')
+type AwsEcsTaskDefinition mixes AwsResource, AwsIamRoleMember {
+
+  /**
+   * Family of this task definition
+   */
+  family: string
+
+  /**
+   * The status of the task definition
+   */
+  status: string enum AwsEcsTaskDefinitionAndClusterStatus
+
+  /**
+   * A list of container definitions in JSON format that describe the different containers that make up your task
+   */
+  containerDefinitions: [AwsEcsDockerContainerDefinition]
+
+  /**
+   * The Docker networking mode to use for the containers in the task
+   */
+  networkMode: string enum AwsEcsTaskDefinitionNetworkMode
+
+  /**
+   * An array of placement constraint objects to use for tasks
+   */
+  placementConstraints: [AwsEcsPlacementConstraint]
+
+  /**
+   * The container instance attributes required by your task
+   */
+  requiresAttributes: [AwsEcsAttribute]
+
+  /**
+   * The revision of the task in a particular family. If the value is <= 0, then a new revision is created by
+   * incrementing the latest active revision
+   */
+  revision: int
+
+  /**
+   * The Amazon Resource Name (ARN) of the IAM role that containers in this task can assume
+   */
+  taskRoleArn: string
+
+  /**
+   * The list of volumes in a task
+   */
+  volumes: [AwsEcsTaskVolume]
+
+  /**
+   * Returns the latest active revision of a task definition family
+   */
+  latestActiveRevision: function(family: !string): AwsEcsTaskDefinition
+
+  /**
+   * Returns the latest active revision appropriate for a provided cloud resource
+   */
+  revisionFor: function(resource: !CloudId, spec: CloudResourceOperationSpec): string
+
+  /**
+   * List of task definition families registered in this account
+   * @param prefix
+   *            Prefix used to filter the results of ListTaskDefinitionFamilies
+   * @param limit
+   *            The maximum number of task definition families returned in a single API call
+   * @param marker
+   *            The marker value returned from a previous listTaskDefinitionFamilies request
+   * @return List of task definition families and marker for next listing request if available
+   */
+  listTaskDefinitionFamilies: private function(prefix: string,
+                                               limit: int,
+                                               marker: string,
+                                               spec: CloudListResourcesSpec): !AwsEcsListTaskDefinitionFamiliesResult
+
+  hasTags:              ~
+  generateResourceName: ~
+  nextAvailableSeq:     ~
+}

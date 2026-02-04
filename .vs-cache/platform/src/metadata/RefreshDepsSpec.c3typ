@@ -1,0 +1,158 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec passed to {@link Persistable#refreshDeps} to control its behavior.  Also
+ * mixed in to {@link AppRebuildSpec} to control the behavior of {@link App#rebuild}.
+ */
+type RefreshDepsSpec mixes JobOptions, Spec {
+
+  /**
+   * True if the created or updated function should be called.  If true and the type being refreshed
+   * has both the created and updated function defined, only the updated function will be called.  If only
+   * one of the functions is defined, then it will be called.
+   */
+  createdOrUpdated: boolean = false
+
+  /**
+   * True if stored calc dependencies should be refreshed.
+   */
+  storedCalcs: boolean = false
+
+  /**
+   * True if hierarchy denorm dependencies should be refreshed.
+   */
+  hierarchies: boolean = false
+
+  /**
+   * True if acl dependencies should be refreshed.
+   */
+  acls: boolean = false
+
+  /**
+   * True if partitionable types should be compacted. This is important for initial load since it will re-arrange (compact)
+   * all the columns for types that are {@link Partitionable} and are stored in kv stores. This will directly impact
+   * read performance from these types
+   */
+  partitionableCompaction: boolean
+
+  /**
+   * True if dependent timeseries should be normalized.
+   */
+  normalizedTimeseries: boolean = false
+
+  /**
+   * True if metric dependencies should be refreshed.
+   */
+  metricDeps: boolean = false
+
+  /**
+   * True if analytics for source Objs identified by metrics should be refreshed.
+   */
+  analytics: boolean = false
+
+  /**
+   * True if cached metrics should be refreshed.
+   */
+  metrics: boolean = false
+
+  /**
+   * Number of entries to submit to the invalidation queue at one time for async call.
+   */
+  invalidationsBatchSize: int = 100
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link createdOrUpdated}.
+   */
+  createdOrUpdatedBatchSize: int = 1000
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link storedCalcs}.
+   */
+  storedCalcsBatchSize: int = 1000
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link hierarchies}.
+   */
+  hierarchiesBatchSize: int = 1000
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link acls}.
+   */
+  aclsBatchSize: int = 1000
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link partitionableCompaction}.
+   */
+  partitionableCompactionBatchSize: int = 100
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link normalizedTimeseries}.
+   */
+  normalizedTimeseriesBatchSize: int = 100
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link metricDeps}.
+   */
+  metricDepsBatchSize: int = 100
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call to {@link analytics}.
+   */
+  analyticsBatchSize: int = 100
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for {@link metrics}.
+   */
+  metricsBatchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link createdOrUpdated}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  createdOrUpdatedSubBatchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link storedCalcs}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  storedCalcsSubBatchSize: int = 1000
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link hierarchies}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  hierarchiesSubBatchSize: int = 1000
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link acls}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  aclsSubBatchSize: int = 1000
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link partitionableCompaction}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  partitionableCompactionSubBatchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link normalizedTimeseries}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  normalizedTimeseriesSubBatchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link metricDeps}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  metricDepsSubBatchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link analytics}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  analyticsSubBatchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call for {@link metrics}.  When specified in async call, the value is passed in to subsequent synchronous call.
+   */
+  metricsSubBatchSize: int = 100
+}

@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A library of location-based functions that mix in functionalities from {@link MetricFunctionLibrary} and {@link Value}.
+ *
+ * This library includes functions for calculating geographic distances and determining the central point
+ * of a set of latitude/longitude coordinates.
+ */
+type LocationFunctionLibrary mixes MetricFunctionLibrary, Value {
+
+  /**
+   * Calculates the Haversine distance between two geographic points.
+   * The Haversine formula is used to calculate the shortest distance over the Earth's surface.
+   * 
+   * @param xLat
+   *           Latitude of the first point (in decimal degrees).
+   * @param xLon
+   *           Longitude of the first point (in decimal degrees).
+   * @param yLat
+   *           Latitude of the second point (in decimal degrees).
+   * @param yLon
+   *           Longitude of the second point (in decimal degrees).
+   * 
+   * @return the exact Haversine distance between the points (typically in kilometers or miles).
+   */
+  singleHaversineDistance: function(xLat: decimal,
+                                    xLon: decimal,
+                                    yLat: decimal,
+                                    yLon: decimal): ExactDimension js-server
+
+  /**
+   * Calculates the geographic center (midpoint) of a set of latitude/longitude coordinates.
+   * The center is calculated as the average of the provided latitudes and longitudes.
+   * 
+   * @param latLongs
+   *           An array of latitude/longitude coordinates.
+   * 
+   * @return the latitude and longitude of the center point.
+   */
+  latLongCenter: function(latLongs: [LatLong]): LatLong js-server
+}

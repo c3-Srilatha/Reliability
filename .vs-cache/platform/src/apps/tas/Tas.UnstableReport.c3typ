@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Data for each unique Jira Ticket + test failure in the Unstable Test Trend Report on the Jenkins build page.
+ * @see Tas.UnstableReport.History
+ */
+type Tas.UnstableReport {
+
+  /**
+   * Jira Ticket Key
+   */
+  jiraKey: !string
+
+  /**
+   * Link to ticket
+   */
+  jiraLink: !string serialized Url
+
+  /**
+   * Ticket title/summary
+   */
+  jiraSummary: !string
+
+  /**
+   * Failed test matched by the jira ticket
+   */
+  testSuiteName: !string
+
+  /**
+   * The trend, an array of previous successes and failures for the branch
+   */
+  trend: ![Tas.UnstableReport.History]
+}

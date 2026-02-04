@@ -1,0 +1,129 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the sensor association specification used in reliability project agnostic workflows.
+ * This type provides configuration and execution options for associating sensors
+ * with reliability assets, leveraging correlation-based analysis and job parallelization.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@beta
+type ReliabilityOrchestrator.SensorAssociation mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  /**
+   * The main type identifier for this sensor association specification.
+   */
+  name: ~ = 'Reliability_SensorAssociation'
+
+  /**
+   * Control the inputs to be used for sensor association.
+   */
+  spec: !ReliabilityAssetSensorAssociationSpec
+
+  /**
+   * Use this field to specify the id to be used when creating the {@link ReliabilityAssetSensorAssociationJob}
+   */
+  sensorAssociationJobId: string
+
+  /**
+   * Control the parallelization of sensor association with {@link MapReduceOptions}.
+   */
+  sensorAssociationJobOptions: MapReduceOptions
+
+  /**
+   * Specify whether or not to create {@link ReliabilityAssetSensorRelation}s using the results of the completed
+   * sensor association job that is run as a part of the same workflow.
+   */
+  createSensorRelations: boolean
+
+  /**
+   * If {@link #createSensorRelations} is set to true, use this field to specify how to retrieve the top correlated
+   * {@link Sensor}s for each {@link ReliabilityAsset}, so that corresponding {@link ReliabilityAssetSensorRelation}s
+   * can be created.
+   */
+  sensorSelectionSpec: ReliabilityAssetSensorSelectionSpec
+
+  /**
+   * If {@link #createSensorRelations} is set to true, use this field to specify whether or not to remove existing
+   * {@link ReliabilityAssetSensorRelation}s that were created from earlier {ReliabilityAssetSensorAssociationJob}s,
+   * before creating the sensor relations corresponding to the {@link ReliabilityAsset#latestSensorAssociationRun}
+   * for each asset.
+   */
+  removeRelations: boolean
+
+  /**
+   * If {@link #createSensorRelations} is set to true,  use this field to control the parallelization of the
+   * {@link ReliabilityAssetCreateSensorRelationsJob} that is used to create {@link ReliabilityAssetSensorRelation}s
+   * for each {@link ReliabilityAsset}.
+   */
+  sensorSelectionJobOptions: MapReduceOptions
+
+  /**
+   * This method generates {@link Feature}s corresponding to each {@link ReliabilityAsset} that will be used for
+   * sensor association.
+   */
+  getFeaturesForAssets: function(
+    assets: [ReliabilityAsset],
+    expectedSensors: [ExpectedSensor],
+    start: datetime,
+    end: datetime,
+    interval: string
+  ): ![Feature] py
+
+  /**
+   * This method generates {@link Feature}s corresponding to the external {@link Sensor}s that will be used for
+   * sensor association.
+   */
+  getFeaturesForExternalSensors: function(
+    start: datetime,
+    end: datetime,
+    interval: string
+  ): ![Feature] py
+
+  /**
+   * This method takes in a {@link ReliabilityAssetSensorAssociationSpec} and constructs a correpsonding
+   * {@link ReliabilityAssetSensorAssociationJob} from the provided spec.
+   * If provided, `workflowId` will be used to get the {@link Workflow.Run} that is running the sensor association job.
+   * This run will be put on the job's `workflowRun` field.
+   */
+  createSensorAssociationJob: private member function(
+    spec: !ReliabilityAssetSensorAssociationSpec,
+    workflowId: string
+  ): !ReliabilityAssetSensorAssociationJob py-data
+
+  /**
+   * This method takes in a {@link ReliabilityAssetSensorAssociationJob} and wraps it in a {@link Workflow}
+   * that can be used in the construction of the larger workflow inside {@link #createWorkflow}.
+   */
+  startSensorAssociationWorkflow: private function(
+    sensorAssociationJob: !ReliabilityAssetSensorAssociationJob,
+    options: MapReduceOptions
+  ): !Workflow.Run py
+
+  /**
+   * Creates and orchestrates the sensor association workflow.
+   *
+   * This workflow consists of multiple steps:
+   * 1. Validation
+   * 2. Creating the Sensor Association Job
+   * 3. Executing the Sensor Association Workflow
+   * 4. Refreshing Relevant Fields
+   * 5. Creating Sensor Relations
+   *
+   *
+   * @returns A new instance of `Workflow` that executes the sensor association process.
+   */
+  createWorkflow: ~ py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

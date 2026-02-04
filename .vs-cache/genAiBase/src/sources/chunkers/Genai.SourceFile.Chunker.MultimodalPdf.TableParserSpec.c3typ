@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the specs for the table parser used in {@link Genai.SourceFile.Chunker.MultimodalPdf}.
+ */
+type Genai.SourceFile.Chunker.MultimodalPdf.TableParserSpec mixes Spec {
+  /**
+   * Defines the table verbalizer spec used to verbalize the tables.
+   */
+  tableVerbalizerSpec: !Genai.SourceFile.Chunker.MultimodalPdf.TableVerbalizerSpec
+
+  /**
+   * Defines the table detector spec used to detect the tables.
+   */
+  tableDetectorSpec: !Genai.SourceFile.Chunker.MultimodalPdf.TableDetectorSpec
+
+  /**
+   * The number of threads to use for parallel verbalization of images for API-based models.
+   * If it is a local visual language model, this is ignored since the verbalization will be performed serially.
+   */
+  numThreadsForVerbalization: int = 1
+
+  /**
+   * The page height ratio used to approximate title/ header bounding boxes. Default value is 0.1.
+   */
+  bboxOverlapRatio: float = 0.1
+
+  /**
+   * Keyword arguments to pass to `camelot.read_pdf`. The default is dict(flavor='stream', row_tol=10).
+   *
+   * - `row_tol`: row merging tolerance, higher value will lead to text spaced further apart to get merged.
+   * - `flavor`: 'stream' for tables split by whitespace characters, 'lattice' for tables with explicit line segments.
+   *
+   * See {@link https://camelot-py.readthedocs.io/en/master/user/how-it-works.html#lattice}
+   * and {@link https://camelot-py.readthedocs.io/en/master/api.html#camelot.read_pdf} for more details.
+   */
+  camelotKwargs: json
+
+  /**
+   * Whether to extract table metadata such as title and header from the table.
+   */
+  disableTitleHeaderExtraction: boolean
+
+  /**
+   * The maximum token length of a chunk
+   */
+  splitLength: int = 500
+}

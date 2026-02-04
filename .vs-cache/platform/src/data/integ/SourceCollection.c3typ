@@ -1,0 +1,573 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a collection of data from the {@link SourceSystem} which can be serialized using a {@link Source}
+ *
+ * e.g 1) {@link FileSourceCollection} is a collection of files in a {@link FileSourceSystem}
+ *     2) {@link SqlSourceCollection} is a table in a database {@link SqlSourceSystem}
+ *     3) {@link CloudMessageSourceCollection} is a collection of messages received in a {@link CloudQueueSourceSystem}
+ *
+ * #archiveUrl is managed by C3 data integrator for persisting stats, failedContent, failedSources, completedContent
+ * and rejectedContent based on parameters specified in #SourceProcessOptions
+ *
+ * For a SourceCollection, the default folder structure in the archiveUrl is configured as below
+ *
+ *   archiveUrl           = "<FileSystemMount.DATA_LOAD>/<SourceCollection name>/archive"
+ *   statsUrl             = "<archiveUrl>/stats/<source-content-meta-id>.json.gz"
+ *   chunkUrl             = "<archiveUrl>/stats/<source-content-meta-id>/<chunk-id>"
+ *   archivedContentUrl   = "<archiveUrl>/content"
+ *   failedSourcesUrl     = "<archiveUrl>/failed/sources"
+ *
+ * Additionally, archiveUrl location can be changed for a SourceCollection using #archiveUrlOverride
+ */
+/*
+ * // TODO: PLAT-34041 enable with declaration here or on Metadata
+ * beforeCreate: ~
+ * beforeUpdate: ~
+ * beforeRemove: ~
+ */
+@cache(dependencies=[
+                      'FileSourceCollection',
+                      'CloudMessageSourceCollection',
+                      'ExternalSourceCollection',
+                      'SqlSourceCollection',
+                      'ContentSourceCollection',
+                      'ApiSourceCollection'
+                    ])
+type SourceCollection<C: SourceCollection.Config> mixes Configurable<C>, Metadata, Named, MetricEvaluatable, WithDescription, SourceCollection.Stageable, SourceCollection.Cdc {
+
+  /**
+   * Structure defined to serialize the content from the SourceCollection {@see Source}
+   */
+  source: Type
+
+  /**
+   * Source system for the source collection
+   */
+  sourceSystem: !SourceSystem
+
+  /**
+   * Indicates that the source collection is not managed by c3
+   * e.g. in case of FileSourceCollection we do manage the inboxUrl
+   *      in case of CloudMessageSourceCollection we do not create or manage the queue.
+   */
+  external: boolean
+
+  /**
+   * If true, incoming data for this canonical would be processed sequentially.
+   * otherwise, the incoming data would be processed in parallel.
+   */
+  sequential: boolean
+
+  /**
+   * Indicator of whether this instance is currently being configured
+   */
+  state: string enum('test', 'draft', 'configured')
+
+  /**
+   * Triggers the action in the lambda function after each individual abstract content is processed. The source collection may be used to obtain any parameters necessary for the after-processing of the content.
+   *
+   * @param sourceCollection
+   *    The {@see SourceCollection} from which parameters are needed for after-processing.
+   * @param sources
+   *    The {@see Sources} object that may be used in after-processing.
+   */
+  afterProcess: private Lambda<function(sourceCollection: SourceCollection, sources: Sources)> schema name 'APRO'
+
+  /**
+   * List of transforms to skip for SourceCollection.
+   */
+  // TODO: PLAT-39834 opt in instead of opt out
+  skippedTransforms: [string serialized Transform]
+
+  /**
+   * Deserializes content from file into a stream of C3 Type instances.
+   *
+   * @param spec
+   *    The {@see ObjsOperSpec} to provide various options for reading objs.
+   * @return stream of objects
+   */
+  readObjs: abstract member function(spec: ObjsOperSpec): stream<Obj>
+
+  /**
+   * Reads the raw content from source and converts it into an array of tuples.
+   *
+   * @param spec
+   *    The {@see SourceCollectionReadTuplesSpec} to provide various options for reading tuples.
+   * @return array of {@link Tuple}
+   */
+  readTuples: member function(spec: SourceCollectionReadTuplesSpec): [Tuple]
+
+  /**
+   * Infer data type from the source
+   *
+   * @return the type with name, fields with suggested value types, annotations, etc. based on the source.  Returns
+   *         null if there's no source in this SourceCollection
+   */
+  inferSourceType: member function(): json
+
+  /**
+   * @return null if there's no source in this SourceCollection
+   * Will not be upserted to the App. The user is responsible to upsert it but please note that any application
+   * metadata (seed/metadata/type) can only be upserted when the app is in {@link AppMode.DEV} mode.
+   *  @see AppMode
+   */
+  // TODO: PLAT-9433 JS Type-system fails if function returns new in memory (transient) Type
+  inferSourceType2: abstract member function(spec: InferTypeSpec): TypeMeta
+
+  /**
+   * Start action trigger for source collection on event arrival
+   */
+  startOnArrivalMode: optional member function()
+
+  /**
+   * Stop action trigger for source collection on event arrival
+   */
+  stopOnArrivalMode: optional member function()
+
+  /**
+   * Start action trigger for source collection on periodic schedule
+   */
+  startOnScheduleMode: member function()
+
+  /**
+   * Stop action trigger for source collection on periodic schedule
+   */
+  stopOnScheduleMode: member function()
+
+  /**
+   * Optional Lambda function that builds the FileObjsOperSpec object for the content
+   * This is optional and if defined something like below
+   * ```
+   * var func = function f(file){
+   *  if(file.fileName === 'abc.csv')
+   *    return FileObjsOperSpec.make({skipExtraFields:true, serType:'CanonicalTestUser'});
+   *  else
+   *    return FileObjsOperSpec.make({skipExtraFields:false, serType:'CanonicalTestUser'});
+   *  };
+   *  var sc = SourceCollection.get("mySourceCollection");
+   *  sc = sc.putField("patchObjsOperSpec", Lambda.fromJavaScript(func));
+   *  sc.upsert();
+   * ```
+   * Note what is defined here will only be used and user should handle cases for parsing the content.
+   * otherwise FileObjsOperSpec will be generated from the SourceCollection
+   * {@see #fileObjsOperSpec}
+   */
+  patchObjsOperSpec: private lambda(content: Content): FileObjsOperSpec
+
+  /**
+   * Returns SourceCollections for the source type
+   * @param sourceName
+   *        source type name
+   * @param include
+   *        specifies which fields to bring back values for in the returned SourceCollection.
+   */
+  @java(returnWildcardVarBindings=true)
+  collectionsForSourceType: function(sourceType: !Type, include: string): stream<mixing SourceCollection<C>>
+
+  /**
+   * checks if processSchedule is set if not then it will return
+   * the default cron job e.g. daily_sync_sourceFiles
+   * {@see SourceCollectionProcessMode#ON_SCHEDULE} for more details
+   *
+   * @return cron job for the SourceCollection
+   */
+  processCron: member function(): CronJob
+
+  /**
+   * Always use this method to get the schedule for the SourceCollection
+   * @return CronSchedule for the SourceCollection
+   */
+  safeProcessSchedule: member function(): CronSchedule
+
+  /**
+   * Function to be implemented in specific SourceCollection
+   */
+  process: member function(spec: DataIntegSpec)
+
+  /**
+   * Location at which {@link SourceContentMeta} serialized object is stored for each source content
+   *
+   * @return the stats url for all the processed content
+   */
+  statsUrl: inline member function(): !string
+
+  /**
+   * Location at which source content is stored after the processing
+   * e.g input file for a {@link FileSourceCollection} or input message for a {@link CloudMessageSourceCollection}
+   *
+   * @return the url for all the archived content
+   */
+  archivedContentUrl: inline member function(): !string
+
+  /**
+   * @return archived file in SourceCollection with matching name
+   */
+  @deprecated(finalVersion="8.10", details="Use SourceFile.forId() instead")
+  archivedSourcesFileForId: inline member function(id: !string): File
+
+  /**
+   * Location at which serialized {@link FailedSource} is stored if processing failed
+   *
+   * @return the url for all the files failed for a file source collection
+   */
+  failedSourcesUrl: inline member function(): !string
+
+  /**
+   * Always use this method to get the file source system for the FileSourceCollection
+   */
+  safeSourceSystem: member function(): SourceSystem
+
+  /**
+   * @return SourceCollection after setting the priority
+   */
+  @java(returnWildcardVarBindings=true)
+  setPriority: member function(priority: !int): !mixing SourceCollection<C>
+
+  /**
+   * @return SourceCollection after clearing the priority
+   */
+  @java(returnWildcardVarBindings=true)
+  clearPriority: member function(): !mixing SourceCollection<C>
+
+  /**
+   * This is c3 managed location to store stats, content and source
+   *
+   * @return the archive root url for the source collection
+   */
+  archiveUrl: private inline member function(): !string
+
+  /**
+   * @return {@link Url} instance from the rootUrl for the source collection
+   */
+  parseRootUrl: private member function(): !Url
+
+  /**
+   * @return {@link Url} instance from the archiveUrl for the source collection
+   */
+  parseArchiveUrl: private member function(): !Url
+
+  /**
+   * Builds the FileObjsOperSpec object for the source content
+   */
+  fileObjsOperSpec: private member function(content: Content, spec: DataIntegSpec): FileObjsOperSpec
+
+  /**
+   * returns {@link FileSourceCollection}
+   */
+  file: member function(): FileSourceCollection<C>
+
+  /**
+   * returns {@link CloudMessageSourceCollection}
+   */
+  cloudMessage: member function(): CloudMessageSourceCollection<C>
+
+  /**
+   * returns {@link ContentSourceCollection}
+   */
+  content: member function(): ContentSourceCollection<C>
+
+  /**
+   * returns {@link ApiSourceCollection}
+   */
+  api: member function(): ApiSourceCollection<C>
+
+  /**
+   * returns {@link SqlSourceCollection}
+   */
+  sql: member function(): SqlSourceCollection<C>
+
+  /**
+   * @return true if the SourceCollection is a {@link FileSourceCollection}
+   */
+  isFile: member function(): !boolean
+
+  /**
+   * @return string identifier for the source
+   */
+  sourceIdentifier: member function(): map<string, string>
+
+  /**
+   * @return datastore type for this source collection (e.g., "s3", "ApacheKafkaTopic", "postgres")
+   */
+  // TODO PLAT-130160: Create an inventory of the source system kind
+  sourceSystemDataStoreKind: private member function(): string
+
+  /**
+   * @return true if the SourceCollection is a {@link ContentSourceCollection}
+   */
+  isContent: private member function(): !boolean
+
+  /**
+   * @return true if the SourceCollection is a {@link CloudMessageSourceCollection}
+   */
+  isCloudMessage: private member function(): !boolean
+
+  /**
+   * @return true if the SourceCollection is a {@link ApiSourceCollection}
+   */
+  isApi: private member function(): !boolean
+
+  /**
+   * @return true if the SourceCollection is a {@link SqlSourceCollection}
+   */
+  isSql: private member function(): !boolean
+
+  /**
+   * @return true if the SourceCollection is external based on this order of priority:
+   *    {@link DataIntegSpec#externalOverride}
+   *    {@link SourceCollection.Config#externalOverride}
+   *    {@link SourceCollection#external}
+   */
+  isExternal: private member function(spec: DataIntegSpec): !boolean
+
+  /**
+   * @return file source collection for the source collection if it exists
+   */
+  asFileSourceCollection: private member function(refresh: boolean, failIfMissing: boolean): FileSourceCollection<C>
+
+  /**
+   * @return default source collection from source
+   */
+  dfltFromSource: function(source: Type): !ContentSourceCollection<C>
+
+  /**
+   * prevents these sources for this source collection to be transformed and persisted.
+   */
+  pause: member function(): !mixing SourceCollection<C>
+
+  /**
+   * resumes the sources for this source collection to be processed.
+   */
+  resume: member function(): !mixing SourceCollection<C>
+
+  /**
+   * reads the source and returns a stream of Sources
+   */
+  sources: optional member function(): stream<Sources>
+
+  /**
+   * returns an inferType spec for the Source Collection
+   */
+  inferTypeSpec: member function(spec: InferTypeSpec): InferTypeSpec
+
+  /**
+   * returns the chunkSize for the Sources
+   */
+  safeChunkSize: member function(): int
+
+  /**
+   * skip #transform for the source collection.
+   */
+  skipTransform: member function(transformId: string): !mixing SourceCollection<C>
+
+  /**
+   * skip #transform for the source collection.
+   */
+  skipTransformBatch: member function(transformIds: !?[string]): !mixing SourceCollection<C>
+
+  /**
+   * skip #transform for the source collection.
+   */
+  clearSkippedTransforms: member function(transformsId: !?[string]): !mixing SourceCollection<C>
+
+  /**
+   * skip #transform for the source collection.
+   */
+  clearAllSkippedTransforms: member function(): !mixing SourceCollection<C>
+
+  /**
+   * reads from failedSourcesUrl and returns a stream of FailedSource
+   */
+  failedSources: member function(): stream<FailedSource>
+
+  /**
+   * delete all FailedSources from failedSourcesUrl and return count of deleted FailedSources.
+   */
+  deleteAllFailedSources: member function(confirm: boolean): !int
+
+  /**
+   * Evaluate actionDecl metrics on SourceCollection.
+   */
+  /*
+   * TODO PLAT-24149 TOOLS-8141 this function, sourceStatusMetricData, sourceChunkStatusMetricData,
+   * TODO and targetStatusMetricData should be removed when the metrics are rewritten to use timeseries data.
+   */
+  @beta
+  evalStatusMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Helper function for {@link evalStatusMetric} that handles metrics based on {@link SourceFile}
+   * or {@link SourceStatus}.
+   */
+  @beta
+  sourceStatusMetricData: private function(id: !string, tsEvalSpec: !TSEvalSpec, metricName: !string): Timeseries js
+
+  /**
+   * Helper function for {@link evalStatusMetric} that handles metrics based on {@link SourceChunkStatus}.
+   */
+  @beta
+  sourceChunkStatusMetricData: private function(id: !string,
+                                                tsEvalSpec: !TSEvalSpec,
+                                                metricName: !string): Timeseries js
+
+  /**
+   * Helper function for {@link evalStatusMetric} that handles metrics based on {@link TargetStatus}.
+   */
+  @beta
+  targetStatusMetricData: private function(id: !string, tsEvalSpec: !TSEvalSpec, metricName: !string): Timeseries js
+
+  /**
+   * Helper function for {@link evalStatusMetric} that handles metrics base on {@link SourceFileStatNotification}
+   */
+  @beta
+  sourceFileStatNotificationData: private function(id: !string,
+                                                   tsEvalSpec: !TSEvalSpec,
+                                                   metricName: !string): Timeseries js
+
+  /**
+   * Evaluate actionDecl metric on SourceCollection for calculating data loading ETA.
+   * The metric will return all missing if there is no DataMonitoringUtil type defined
+   * (it is in the dataMonitoring package).
+   */
+  // TODO PLAT-24149 TOOLS-8141 remove this function when the metric is rewritten to use timeseries data.
+  @beta
+  evalEtaMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Evaluate the ProcessRate metric on SourceCollection for calculating the process rate.
+   * The metric will return the rolled up rate as the only value in the timeseries.
+   */
+  // TODO PLAT-24149 TOOLS-8141 remove this function when the metric is rewritten to use timeseries data.
+  @beta
+  evalProcessRateMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Evaluate the DataAwaiting metric on SourceCollection for calculating the data that has not been processed.
+   * The metric will return the rolled up rate as the only value in the timeseries.
+   */
+  // TODO PLAT-24149 TOOLS-8141 remove this function when the metric is rewritten to use timeseries data.
+  @beta
+  evalDataAwaitingMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Evaluate the DataProcessed metric on SourceCollection for calculating the amount of data processed.
+   * The metric will return the rolled up rate as the only value in the timeseries.
+   */
+  // TODO PLAT-24149 TOOLS-8141 remove this function when the metric is rewritten to use timeseries data.
+  @beta
+  evalDataProcessedMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Evaluate the DataLastReceived metric on SourceCollection for determining when the last SourceFile was updated.
+   */
+  // TODO PLAT-24149 TOOLS-8141 remove this function when the metric is rewritten to use timeseries data.
+  @beta
+  evalDataLastReceivedMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Evaluate the ItemErrors metric on SourceCollection for calculating the number of errors generated.
+   * The metric will return the rolled up rate as the only value in the timeseries.
+   */
+  // TODO PLAT-24149 TOOLS-8141 remove this function when the metric is rewritten to use timeseries data.
+  @beta
+  evalItemErrorsMetric: private function(obj: Obj, spec: !TSEvalSpec, metric: !Metric): Timeseries js
+
+  /**
+   * Reads the objs from the source collection and applies the specified transforms on the loaded objs.
+   * @param transforms
+   *           list of Transforms.
+   * @param spec
+   *           various parameters that control the operation of function.
+   * @return a {@link TransformObjsResult} instance containing the objs.
+   */
+  transformObjs: member function(transforms: ![Transform], spec: TransformObjsSpec): TransformObjsResult
+
+  /**
+   * Surface any issues related to this source collection being out of sync with the source of truth. This can be
+   * casued by data degradation over time, such as missing fields, extra fields, or other changes in schema to the
+   * incoming data.
+   */
+  validateSourceData: member function(spec: ValidateSourceDataSpec): [DataIssue.SourceCollection]
+
+  /**
+   * Hold common logic of ValidateSourceData for SourceCollection subtype
+   */
+  doValidateSourceData: private member function(issues: [DataIssue.SourceCollection],
+                                                spec: ValidateSourceDataSpec): [DataIssue.SourceCollection]
+
+  /**
+   * @return sources based on the last checkpoint for the source collection
+   * This function should be implemented per instance of SourceCollection.
+   */
+  cdcSources: optional member function(checkpoint: SourceCollection.Cdc.Checkpoint): stream<Source>
+
+  /**
+   * Override the default orderedCdcSources function to provide custom logic for reading sources based on the provided checkpoint.
+   * This is useful when the default cdcSources does not meet the requirements of the specific source collection.
+   * E.g. for ApiSourceCollection, the default cdcSources may not be able to handle all API-specific logic for reading for different Source Collections
+   * @param checkpoint
+   *        The checkpoint from which to read sources.
+   * @return
+   *        Sources based on the provided checkpoint.
+   */
+  cdcSourcesOverride: Lambda<function(checkpoint: SourceCollection.Cdc.Checkpoint): stream<Source>>
+
+  /**
+   * Capture data changes from the last timestamp based checkpoint for a source collection and stores them in
+   * source files
+   * @return
+   *       If SourceCollection.Config#stage is true, then the Staged object based on StagingKind otherwise null.
+   */
+  doStageCdc: private member function(): File | any
+
+  /**
+   * Gets the stored checkpoint for this source collection.
+   */
+  cdcCheckpoint: member function(): SourceCollection.Cdc.Checkpoint
+
+  /**
+   * Generates a checkpoint based on CDC order {@see SourceCollection.Cdc#cdcOrder} and values of its
+   * corresponding fields by comparing it to the last checkpoint for this source collection.
+   * @param values
+   *           map of cdc order fields to value to be used to generate the checkpoint.
+   * @return
+   *        {@link SourceCollection.Cdc.Checkpoint} based on the CDC order and values.
+   */
+  generateCdcCheckpoint: private member function(values: map<string, any>): !SourceCollection.Cdc.Checkpoint
+
+  dependencies: ~: !SourceCollectionDeps
+
+  /**
+   * Function to be called in the cronJob created in onSchedule mode
+   */
+  doOnSchedule: private member function(spec: DataIntegSpec)
+
+  /**
+   * Returns the dataLake catalog associated with the default dataLake pipeline of this source collection.
+   * The default catalog is used when no specific catalog is provided.
+   *
+   * @return The default DataLake.Catalog instance.
+   */
+  defaultDataLakeCatalog: property(): DataLake.Catalog
+
+  /**
+   * Returns the dataLake table associated with the default dataLake pipeline of this source collection.
+   *
+   * @return The default DataLake.Table instance.
+   */
+  defaultDataLakeTable: property(): DataLake.Table
+
+  /**
+   * Returns default dataLake pipeline id of this source collection.
+   *
+   * @return The string representation of the default pipeline ID.
+   */
+  defaultDataLakePipelineId: private property(): string
+}

@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for types that implement custom JavaScript-source-code-based data serialization.
+ */
+abstract type JsSerializable {
+
+  SRC:  private const !string = "$src"
+  DATA: private const !string = "data"
+
+  /**
+   * Build the canonical JavaScript source code representation of this instance.  After running the produced JavaScript
+   * source code, the `data` variable in JavaScript should point to the instance.
+   *
+   * Simple example of the returned JavaScript source code that does not use `$src` variable (See {@link #toJsSource}):
+   * ```js
+   * data = { firstName: 'John', lastName: 'Doe' }
+   * ```
+   *
+   * One use of this method is for saving a serialized instance to an application package.
+   * To support overriding configs and remixing metadata / seed data, one may want to create more than one metadata
+   * / seed / config file for the same id or name.  The caller may supply a `src` instance so that the output captures
+   * the differences between this instance and the `src` instance.
+   *
+   * If we call this API like:
+   * ```js
+   * var src = User.make({ firstName: "John", lastName: "Doe" })
+   * src.withEmail('john@doe.com').toJsSource(src)
+   * ```
+   * the output JavaScript source code could be something like:
+   * ```js
+   * data = { ...$src, email: 'john@doe.com' }
+   * ```
+   *
+   * @param src
+   *     If provided, the JavaScript source code will only contain field changes as compared to `src`.  The `src`
+   *     instance is typically the config / metadata / seed instance that we are overriding or remixing, so that
+   *     the output only captures the diff between the current instance and the `src` instance.
+   * @return a JavaScript source code representation of this instance.  One use of this source code is to put in `*.js`
+   *     file as seed data (see {@link SeedData}).
+   *
+   * @see #fromJsSource
+   */
+  toJsSource: abstract member function(src: mixing JsSerializable): !string
+
+  /**
+   * Parse and evaluate the JavaScript source code representation and reconstruct the corresponding instance.
+   *
+   * @param js
+   *     JavaScript source code used to reconstruct this instance.
+   * @param src
+   *     If provided, the JavaScript source code will have the `$src` variable in scope set to this parameter during its
+   *     execution.  The JavaScript source code should merge or override fields on the instance referenced by the
+   *     `$src` variable to return the new instance.
+   * @return an instance created from the source code representation.
+   *
+   * @see #toJsSource
+   */
+  fromJsSource: abstract function(js: !?string, src: mixing JsSerializable): mixing JsSerializable
+}

@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Marker type for the model to be used to anonymize primitive values. It should be specialized to implement different
+ * kind of anonymization strategies, which should be used to anonymize data in C3 Type System. It is the most granular
+ * form of anonymization and would be used in {@link Anonymizer.anonymize} based on the context and the need. e.g
+ * {@link Anonymizer.FakerModel} is used in {@link PII} anonymization, whereas, {@link Anonymizer.GeneralizationModel}
+ * is used in {@QuasiId} anonymization.
+ *
+ * @see Anonymizer.GeneralizationModel
+ * @see Anonymizer.FakerModel
+ * @see PrimitiveType.anonymize
+ */
+abstract type Anonymizer.Model {
+
+  // @return `true` if an instance of {@link Anonymizer.FakerModel}
+  isFaker: cached member function(): !boolean
+
+  // @return `true` if an instance of {@link Anonymizer.GeneralizationModel}
+  isGeneralization: cached member function(): !boolean
+
+  /**
+   * @return a lambda to anonymize values belonging to the provided {@link PrimitiveType}. This should be implemented
+   * by subTypes of {@link Anonymizer.Model} to provide a concrete anonymization strategy.
+   *
+   * @see Anonymizer.GeneralizationModel
+   * @see Anonymizer.FakerModel
+   */
+  anonFunc: abstract member function<E>(pt: !PrimitiveType): !lambda(e: !?E): E
+}

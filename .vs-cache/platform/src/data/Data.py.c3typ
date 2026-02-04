@@ -1,0 +1,348 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This native remix augments the {@link Data} type by adding pandas-like APIs, to be used specifically
+ * in python.
+ */
+// TODO: PLAT-28574 should not have to explicitly say Stateful here
+@beta
+native py remix type Data {
+
+  /**
+   * Return the dimensionality of the {@link Data}.
+   *
+   * Example usage:
+   * ```py
+   * >>> data = c3.Data.dataFrame({"a" : [1, 2, 3, 4],
+   * ...                    "b" : [10, 20, 30, 40],
+   * ...                    "c" : ["foo", "bar", "foo", "bar"]})
+   * >>> data.shape
+   * (4, 3)
+   * ```
+   */
+  // TODO PLAT-45687: Decide on return type of Data.shape
+  shape: ~: native py
+
+  /**
+   * Not implemented; Use infer_dtypes instead.
+   */
+  dtypes: ~ py
+
+  /**
+   * Infer the `dtypes` of columns using pandas inference logic on first 10 rows. This does NOT represent what data type is used for storage of this {@link Data}.
+   *
+   * To see the actual types used for storage of each column use `fieldValueType(column_name)`
+   */
+  infer_dtypes: private property(): Data.Series py
+
+  /**
+   * Access properties or column values.
+   */
+  fieldValue: private ~ py
+
+  /**
+   * Not Implemented.
+   */
+  sparse: private abstract property(): native
+
+  /**
+   * @return python generator that produces (label of row, materialized row).
+   *
+   * Example usage:
+   * ```py
+   * >>> df = pd.DataFrame({"a" : [1, 2, 3, 4],
+   * ...                    "b" : [10, 20, 30, 40],
+   * ...                    "c" : ["foo", "bar", "foo", "baz"],
+   * ...                    "d" : pd.date_range('2021-01-01', freq='1d', periods=4)})
+   * >>> dt = c3.Data.from_pandas(df)
+   * >>> for i, row in dt.iterrows():
+   * ...      print(row)
+   *    a   b    c          d
+   * 0  1  10  foo 2021-01-01
+   *    a   b    c          d
+   * 1  2  20  bar 2021-01-02
+   *    a   b    c          d
+   * 2  3  30  foo 2021-01-03
+   *    a   b    c          d
+   * 3  4  40  baz 2021-01-04
+   * ```
+   */
+  iterrows: ~ py
+
+  /**
+   * Iterate over (column name, Series) pairs.
+   *
+   * Iterates over the DataFrame columns, returning a tuple with the column name and the content as a Series.
+   */
+  items: ~ py
+
+  /**
+   * Alias for items(). Deprecated in pandas 1.5.0.
+   */
+  iteritems: ~ py
+
+  /**
+   * Iterate over DataFrame rows as namedtuples.
+   */
+  itertuples: ~ py
+
+  _iter_: ~ py
+
+  /**
+   * Constructor of a {@link Data} from a python-native `numpy.ndarray`.
+   * Example usage:
+   * ```py
+   * >>> np_array = np.array([[1, 10, 'foo', pd.Timestamp('2021-01-01 00:00:00')],
+   * ...                      [2, 20, 'bar', pd.Timestamp('2021-01-02 00:00:00')],
+   * ...                      [3, 30, 'foo', pd.Timestamp('2021-01-03 00:00:00')],
+   * ...                      [4, 40, 'baz', pd.Timestamp('2021-01-04 00:00:00')]])
+   * >>> dt = c3.Data.from_numpy(np_array)
+   * >>> dt
+   *    0   1    2          3
+   * 0  1  10  foo 2021-01-01
+   * 1  2  20  bar 2021-01-02
+   * 2  3  30  foo 2021-01-03
+   * 3  4  40  baz 2021-01-04
+   *
+   * >>> type(dt)
+   * DataRef
+   * ```
+   *
+   * If the native `numpy.ndarray` is multi-dimensional (i.e. has greater than 2 dimensions), then calling
+   * {@link #from_numpy} will unpack the first dimension into separate rows and subsequently store each
+   * inner array into a separate cell. Calling {@link #to_numpy} on the result of this method will return
+   * the original multi-dimensional `numpy.ndarray`.
+   * Example usage:
+   * ```py
+   * >>> np_array = np.arange(12).reshape(3, 2, 2)
+   * >>> dt = c3.Data.from_numpy(np_array)
+   * >>> dt
+   *    0
+   * 0  [[0, 1], [2, 3]]
+   * 1  [[4, 5], [6, 7]]
+   * 2  [[8, 9], [10, 11]]
+   *
+   * ```
+   *
+   * @param ndarray
+   *           the `numpy.ndarray` native object.
+   * @return {@link Data} representing the given data frame.
+   */
+  from_numpy: function(ndarray: !native, dataset_id: string, name: string): Data py
+
+  /**
+   * Example usage:
+   * ```
+   * pdt = c3.Data.makeHelper([
+   *   ("a", c3.PrimitiveType.ofInt(), [100, 400, 200]),
+   *   ("b", c3.PrimitiveType.ofInt(), [200, 300, 100]),
+   *   ("c", c3.PrimitiveType.ofInt(), [300, 200, 400]),
+   *   ("d", c3.PrimitiveType.ofInt(), [400, 100, 300]),
+   * ])
+   * ```
+   * This gives a {@link Data} that is equivalent to the following `pandas.DataFrame`:
+   * ```
+   * df = pd.DataFrame([
+   *   {'a': 100, 'b': 200, 'c': 300, 'd': 400},
+   *   {'a': 400, 'b': 300, 'c': 200, 'd': 100},
+   *   {'a': 200, 'b': 100, 'c': 400, 'd': 300}
+   * ])
+   * ```
+   *
+   * @param multi_index
+   *           list of column names we want to turn into indices. Only supported in Data.Modin execution mode
+   */
+  makeHelper: private inline function(nameTypeAndData: [native],
+                                      multi_index: [any],
+                                      dataset_id: string,
+                                      table_name: string): !Data py
+
+  /**
+   * Helper function to convert a (list of) python object (or primitive) into a pandas dataframe.
+   * @param obj
+   *           the object to convert to pandas.
+   * @param column_names
+   *           ordered list of column names
+   * @param value_types
+   *           ordered list of column ValueTypes
+   * @return pandas.dataFrame.
+   */
+  pandas_from_obj: private function(datatable_rows: !any,
+                                    column_names: ![string],
+                                    value_types: map<string, ValueType>): native py
+
+  /**
+   * Converts a ValueType to a Pandas dtype.
+   * @return A Pandas dtype
+   */
+  // TODO PLAT-45651 Remove inline claim
+  valueType_to_pandas_dtype: private inline function(): map<ValueType, string> py
+
+  /**
+   * Helper function get the memory usage of 1D and multidimensional native pandas objects- a wrapper around the native
+   *    pandas member function memory_usage
+   * @param df
+   *           native pandas DataFrame, Series or Index
+   * @param deep
+   *           whether to calculate memory usage of object columns
+   * @param index
+   *           whether to include memory usage of the index
+   * @return memory usage of df in bytes
+   */
+  _memory_usage: private inline function(df: native, deep: boolean, index: boolean): int py
+
+  /**
+   * A conversion table for converting a Pandas dtype to a ValueType.
+   * @return A map from string representation of dtype to a ValueType
+   */
+  pandas_dtype_to_ValueType: private cached function(): map<string, ValueType> py
+
+  /**
+   * A conversion table for converting a python primitives to a ValueType.
+   * @return A map from string representation of primitive types to a ValueType
+   */
+  python_primitive_to_ValueType: private function(): map<string, ValueType> py
+
+  /**
+   * Matches a pandas period to a c3 period.
+   *
+   * @param rule
+   *      A string identifying a period. For example, '2d' to identify 2 days.
+   * @return a string of a matching period expressed in a format supported by c3.
+   */
+  pandas_to_c3_period: private function(rule: string): string py
+
+  /**
+   * @param data
+   *           instance of data to check.
+   * @return whether the given data is a python native type that {@link Data} supports conversion to/from.
+   */
+  is_supported_native_py_type: private function(data: !native): !boolean py
+
+  /**
+   * Convert `pd.Timestamp` in a numpy array to python datetime objects
+   */
+  _map_numpy_array: private function(data: !native): !native py
+
+  /**
+   * Replace C3 values with native python values to be used as input to native Pandas or Modin methods
+   */
+  _convert_py_src_execution_args: private function(vars: !native): !native py
+
+  /**
+   * Given a nested array where each entry in the array contains the name, type, and data for a single column,
+   * construct and return a pandas DataFrame. See {@link Data.Pandas#fromArray} and {@link Data.Modin#fromArray}
+   * for input examples
+   *
+   * @param name_type_and_data
+   *    2-D array. Each inner array contains the name, DataType, and data for a particular column.
+   * @param multi_index
+   *    list of column names we want to turn into indices in the result DataFrame
+   * @return a pandas dataframe
+   */
+  _df_from_array: private function(name_type_and_data: ![any], multi_index: [any]): !native py-data_312 | py-data
+
+  /**
+   * If filepath is local, read and return {@link ContentValue} at that filepath. Otherwise, return provided filepath.
+   * Used as a helper method for {@link Data#read_csv}.
+   */
+  _local_filepath_to_content: private function(filepath: !string): !(string | ContentValue) py
+
+  /**
+   * This function accepts a collection of {@link Obj}s, {@link Tuple}s or {@link Data.Column}s fetched from database,of
+   * which each element is a entity record. This function deconstructs each record into the column names, values and
+   * corresponding value types, which will be used to create the correct Pandas DataFrame. The returned values could be
+   * column based if the input is a collection of {@link Tuple}s or {@link Data.Column}s, row based if the input is a
+   * collection of {@link Obj}s.
+   */
+  _collection_to_native: private function(col: !?Collection<any>): !native py
+
+  logicalAnd: abstract ~: !mixing Data
+  logicalOr:  abstract ~: !mixing Data
+  toNegative: abstract ~: !mixing Data
+  toPositive: abstract ~: !mixing Data
+  toAbsolute: abstract ~: !mixing Data
+  toInverted: abstract ~: !mixing Data
+  toRounded:  abstract ~: !mixing Data
+  equals:     member function(other: !Data): !boolean py
+  read_csv:   ~ py
+  _bool_:     ~ py
+
+  /**
+   * Align two objects on their axes with the specified join method.
+   *
+   * Join method is specified for each axis Index.
+   * see: https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.align.html
+   */
+  align: ~: native py
+
+  /**
+   * Read SQL query or database table into a DataFrame.
+   *
+   * @param sql
+   *        Name of the sql table we are reading
+   * @param con
+   *        sqlalchemy-databricks connector
+   * @param parse_dates
+   *        list of column names to parse as dates
+   */
+  read_sql_query: private function(sql: !string, con: !native, parse_dates: any): ?Data py
+
+  /**
+   * Convert this Data instance to an numpy 2D array where each row corresponds to a
+   * column from the current data instance. This is equivalent to to_numpy().T
+   */
+  to_numpy_columnar: abstract member function(): @py(class="numpy.ndarray") native py
+
+  /**
+   * Convert this Data instance to an arrow Table
+   */
+  to_arrow: abstract member function(): @py(class="pyarrow.Table") native py
+
+  /**
+   * @return true if the given value is a python native type that {@link Data} can convert to a Canonical Data Format.
+   * This works in conjunction with {@link #convertValue} which does the actual conversion into bytes, which can
+   * consumed by any process understanding the Canonical Data Format.
+   */
+  is_convertible: function(value: !native): boolean py
+
+  /**
+   * Convert the provided value into bytes after serializing into the Canonical Data Format and @return the resulting
+   * bytes which can be consumed by any process understanding the Canonical Data Format. It the value cannot be
+   * converted, then an empty value (**None**) will be returned and an error will be thrown if **failIfInvalid** is set.
+   *
+   * @return an array with two elements: [the Arrow schema, the Arrow table] of the Canonical Data Format
+   * // TODO: Change this to return binary or a tuple with binary if we need additional fields
+   */
+  convert_native: function(value: !native, failIfInvalid: boolean): [native] py
+
+  /**
+   * Write Arrow table with given schema to a file.
+   *
+   * @param schema
+   *        Schema (pyarrow.Schema) of the Arrow table to write
+   * @param table
+   *        Actual Arrow table (pyarrow.Table) to write
+   * @return a tuple including the file path where the table was written and the kind of the written table, which is "arrow"
+   */
+  write_arrow: private function(schema: !native, table: !native): { path: !string, kind: !string } py
+
+  /**
+   * Concat native dataframes in a list into a single dataframe. Pandas, Arrow Table and Polars dataframe are supported
+   * for concatenation.
+   * Its an "error condition" if:
+   * 1. The list is empty, OR
+   * 2. The list does not contain any of the above supported dataframe types, OR
+   * 3. The list contains a mix of different dataframe types, OR
+   * 4. The runtime does not have the right dependencies to support the dataframe type
+   *
+   * None will be returned if an "error condition" is met or an error will be thrown if **failIfInvalid** is set.
+   */
+  concat_native_dfs: function(dataframes: ![native], failIfInvalid: boolean): !native py
+}

@@ -1,0 +1,143 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link LukeWebElement} implemented by {@link BrowserEngine}
+ */
+@beta
+type LukeBrowserWebElement mixes LukeWebElement<LukeBrowserWebElement> {
+
+  click:                    ~ js-client
+  rightClick:               ~ js-client
+  doubleClick:              ~ js-client
+  scrollTo:                 ~ js-client
+  scrollIntoView:           ~ js-client
+  moveTo:                   ~ js-client
+  search:                   ~ js-client
+  searchAll:                ~ js-client
+  setValue:                 ~ js-client
+  getValue:                 ~ js-client
+  text:                     ~ js-client
+  visible:                  ~ js-client
+  enabled:                  ~ js-client
+  selected:                 ~ js-client
+  classNames:               ~ js-client
+  innerHTML:                ~ js-client
+  innerText:                ~ js-client
+  cssProperty:              ~ js-client
+  uploadFile:               ~ js-client
+  uploadFiles:              ~ js-client
+  selectByIndex:            ~ js-client
+  selectByValue:            ~ js-client
+  getElementAttribute:      ~ js-client
+  trigger:                  ~ js-client
+  parentElement:            ~ js-client
+  runLambda:                ~ js-client
+  runAsyncLambda:           ~ js-client
+  pressEnterKey:            ~ js-client
+  searchForElementWithText: ~ js-client
+  webElementSelector:       string
+
+  /**
+   * Gets the selector of this element. Luke currently accepts CSS and XPath selectors.
+   * @return A {@link LukeAsyncQueueNode} that will resolve upon returning this element's selector.
+   */
+  selector: inline member function(): LukeAsyncQueueNode js-client
+
+  /**
+   * Gets the root element of this element, which is the body element.
+   * @return A {@link LukeBrowserWebElement} that will be resolved upon finding the root element.
+   */
+  rootElement: inline member function(): LukeBrowserWebElement js-client
+
+  /**
+   * Gets the element tag name in CAPS.
+   * @return A {@link LukeAsyncQueueNode} that will be resolved upon finding the tag name.
+   */
+  tagName: inline member function(): LukeAsyncQueueNode js-client
+
+  /**
+   * Triggers the event of pressing a key on the element.
+   * @param key
+   *           The key value for the key being pressed
+   *           The list of key values: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values
+   * @param withCtrl
+   *           If true, press the (left) Ctrl key first
+   * @param withAlt
+   *           If true, press the (left) Alt key first
+   * @param withShift
+   *           If true, press the (left) shift key first
+   * @param withMeta
+   *           If true, press the (left) meta key first
+   * @return A {@link LukeBrowserWebElement} that will be resolved when a key is pressed.
+   */
+  pressKey: inline member function(key: !string,
+                                   withShift: boolean,
+                                   withCtrl: boolean,
+                                   withAlt: boolean,
+                                   withMeta: boolean): LukeBrowserWebElement js-client
+
+  /**
+   * Simulates user typing when inputting a value. There should be a delay between each character.
+   * @param value
+   *           The value to input
+   * @param delay
+   *           Delay time in milliseconds between each character of value
+   * @return A {@link LukeBrowserWebElement}.
+   */
+  inputValue: inline member function(value: string, delay: int): LukeBrowserWebElement js-client
+
+  /**
+   * Adds a breakpoint to pause on the current node (must be a LukeBrowserWebElement) for inspecting the DOM element.
+   * @return A {@link LukeBrowserWebElement}.
+   */
+  inspectElement: inline member function(): LukeBrowserWebElement js-client
+
+  /**
+   * Changes the scroll position inside the web element.
+   * Note that {@link #scrollTo} changes the scroll position of the window to the position of the target element.
+   *
+   * @param xOffset
+   *          offset in x direction
+   * @param yOffset
+   *          offset in y direction
+   * @return A {@link LukeWebElement} that will be resolved when the internal scroll position is updated.
+   */
+  internalScrollTo: inline member function(xOffset: int = 0, yOffset: int = 0): LukeBrowserWebElement js-client
+
+  /**
+   * Clicks the element with additional Pointer Events dispatched.
+   */
+  pointerClick: inline member function(): Promise<json> js-client
+
+  toggle: ~ js
+
+  /**
+   * Gets the bounding client rectangle of this element.
+   * @return A {@link LukeBrowserWebElement} that will be resolved with the bounding client rectangle of this element.
+   */
+  getBoundingClientRect: inline member function(): LukeBrowserWebElement js-client
+
+  /**
+   * This uses the Chrome DevTools Protocol to move the mouse to the specified element, which is treated as a trusted event.
+   * @return A {@link LukeBrowserWebElement} that will be resolved with the element.
+   */
+  realHover: inline member function(): LukeBrowserWebElement js-client
+
+  /**
+   * This uses the Chrome DevTools Protocol to click the specified element, which is treated as a trusted event.
+   * @return A {@link LukeBrowserWebElement} that will be resolved with the element.
+   */
+  realClick: inline member function(): LukeBrowserWebElement js-client
+
+  /**
+   * This uses the Chrome DevTools Protocol to move the mouse from this element to the specified coordinates, which is treated as a trusted event.
+   * @return A {@link LukeBrowserWebElement} that will be resolved with the element.
+   */
+  realDrag: inline member function(endClientX: !int, endClientY: !int): LukeBrowserWebElement js-client
+}

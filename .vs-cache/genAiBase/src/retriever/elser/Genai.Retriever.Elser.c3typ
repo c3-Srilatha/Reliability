@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of an elastic search vector store.
+ */
+@db(unique=['name'])
+entity type Genai.Retriever.Elser extends Genai.Retriever mixes Genai.Retriever.ConfigFields,
+    Configurable<Genai.Retriever.Elser.Config> type key 'ELSR' {
+    indexPassages: ~ py-elser-server-py4j
+    unindexPassages: ~ py-elser-server-py4j
+    similaritySearch: ~ py-elser-server-py4j
+    purgeIndex: ~ py-elser-server-py4j
+    passageCount: ~ py-elser-server-py4j
+    indexedSourceFiles: ~ py-elser-server-py4j
+    indexedSourcePassages: ~ py-elser-server-py4j
+    initialize: ~ py-elser-server-py4j
+    supportsIncrementalIndexing: ~ py-elser-server-py4j
+
+    /**
+     * Description of Elastic index store of documents.
+     */
+    description: string
+
+    /**
+     * The name of the index store to be created within Elasticsearch
+     */
+    indexName: !string
+
+    /**
+     * Optional other indexes to search in similarity search. If specified,
+     * #similaritySearch will run the search on #indexName plus any specified
+     * here. You may use the `cluster_one:my-index-000001` syntax when
+     * specifying cross-cluster search.
+     */
+    otherSearchIndexNames: [string]
+
+    /**
+     * Other parameters to pass to Elasticsearch.search inside similaritySearch. See the search function in
+     * {@link https://elasticsearch-py.readthedocs.io/en/v8.13.0/api/elasticsearch.html}
+     */
+    otherSearchParams: map<string, any>
+
+    /**
+     * Defines index field mappings to store ELSER vector data.
+     * Allows for configurable index mappings and an optional configurable procesor for data vectorization.
+     * See {@link https://elasticsearch-py.readthedocs.io/en/v8.13.0/quickstart.html}
+     */
+    createIndex: member function() py-elser-server-py4j
+
+    /**
+     * Check if the index has already been created.
+     */
+    indexExists: private member function(): boolean py-elser-server-py4j
+
+    /**
+     * Can be called manually on any new deployment to ensure the model specified by
+     * {@link Genai.Retriever.Elser.Config#elserModelId} (by default ".elser_model_2") is deployed
+     * and fully started.
+     * @return if the model was successfully deployed
+     */
+    deployElserModel: private member function(): boolean py-elser-server-py4j
+}

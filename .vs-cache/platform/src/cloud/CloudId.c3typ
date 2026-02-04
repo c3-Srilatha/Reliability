@@ -1,0 +1,333 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Canonical C3 cloud identifier.
+ *
+ * Format: _clusterId_`-`_envName_`-`_appName_`-`_function_[`-`_role_]`-`_sequenceNumber_[`-`_subsequenceNumber_]
+ *
+ * E.g. "prod-c3-crm-app-l-0001":
+ * - cluster: prod
+ * - env: c3
+ * - app: crm
+ * - func: app
+ * - role: l
+ * - seq: 0001
+ *
+ * @see #id
+ * @see CloudRef
+ */
+inline type CloudId mixes Identified {
+
+  /**
+   * Canonical C3 Identifier for this Cloud Resource in the format of <cluster>-<env>-<app>-<func>[-<role>]-<seq>[-<subseq>].
+   */
+  id: ~
+
+  /**
+   * C3 Cluster ID component (first) in {@link #id}
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod
+   */
+  cluster: string
+
+  /**
+   * C3 Environment name (second) component in {@link #id}; e.g. srv,ui,c3.
+   * E.g. prod-c3-crm-app-l-0001
+   * => c3
+   * An Environment name must be unique within a Cluster.
+   */
+  env: string
+
+  /**
+   * C3 Application name (third) component in {@link #id}; e.g. c3,crm,lightbulb
+   * E.g. prod-c3-crm-app-l-0001
+   * => crm
+   * An Application name must be unique within an Environment.
+   */
+  app: string
+
+  /**
+   * Cloud function abbreviation; e.g. app, awsemr, awsvpc, azvm.
+   * E.g. prod-c3-crm-app-l-0001
+   * => app
+   *
+   * @see CloudResource#cloudFunc
+   * @see CloudResource#allCloudFuncs
+   */
+  func: string
+
+  /**
+   * C3 role; e.g. m, w; cannot be number only.
+   * E.g. prod-c3-crm-app-l-0001
+   * => l
+   *
+   * @see CloudResource#cloudRoles
+   */
+  role: string
+
+  /**
+   * Sequence number - should only contain numbers - it is recommended to have fixed number of digits for a
+   * `<func>-<role>` with 0 left padding so that list of resources are naturally ordered; can be 2, 3, 4 or 5 digits.
+   * E.g. prod-c3-crm-app-l-0001
+   * => 0001
+   *
+   * @see CloudResource#cloudSeqLength
+   */
+  seq: string
+
+  /**
+   * Sub-sequence alphanumeric string (dot allowed)
+   * E.g. prod-c3-crm-app-t-0001-kk03
+   * => 001
+   */
+  subseq: string
+
+  /**
+   * Construct a cloud ID from a cluster ID
+   */
+  fromClusterId: function(clusterId: !string,
+                          env: !string,
+                          app: !string,
+                          func: !string,
+                          role: string,
+                          seq: string,
+                          subseq: string): !mixing CloudId
+
+  /**
+   * Construct a cloud ID from an environment ID
+   * envId should be a combination of <cluster>-<env> to uniquely identify an Environment across all C3 clusters
+   */
+  fromEnvId: function(envId: !string,
+                      app: !string,
+                      func: !string,
+                      role: string,
+                      seq: string,
+                      subseq: string): !mixing CloudId
+
+  /**
+   * Construct a cloud ID from an application ID
+   * appId should be a combination of <cluster>-<env>-<app> to uniquely identify an Application across all C3 clusters
+   */
+  fromAppId: function(appId: !string, func: !string, role: string, seq: string, subseq: string): !mixing CloudId
+
+  /**
+   * Verify if the CloudId has all the necessary components.
+   * Individual components are not validated.
+   *
+   * @return true if this resource has all required components of Canonical C3 Identifier.
+   */
+  hasId: member function(): boolean
+
+  /**
+   * Verify if the CloudId instance requires a cloudRole.
+   *
+   * @return whether this CloudId instance requires a cloudRole.
+   */
+  isRoleRequired: member function(): boolean
+
+  /**
+   * Verify if the CloudId instance requires a subsequence number.
+   *
+   * @return whether this CloudId instance requires a subsequence number.
+   */
+  isSubseqRequired: member function(): boolean
+
+  /**
+   * Fields in CloudId should not contain special characters and must abide to certain regex rules.
+   * If a field requires a value but one is not provided, validation will fail.
+   * If seq and subseq digits do not match the length specified by {@link Ann.Cloud#hasRole}, validation will fail.
+   * If the individual fields (e.g. cluster, env, app) do not add up to the resulting ID string, validation will fail.
+   *
+   * @return true if every component for this resource has valid values.
+   */
+  isValidId: member function(): boolean
+
+  /**
+   * Validates if the {@link Cluster} ID for this CloudId is correctly formatted.
+   *
+   * @return true if this resource has a correctly formatted Cluster ID.
+   */
+  validateCluster: member function(): boolean
+
+  /**
+   * Validates if the {@link Env} name for this CloudId is correctly formatted.
+   *
+   * @return true if this resource has a correctly formatted Env name.
+   */
+  validateEnv: member function(): boolean
+
+  /**
+   * Validates if the {@link App} name for this CloudId is correctly formatted.
+   *
+   * @return true if this resource has a correctly formatted App name.
+   */
+  validateApp: member function(): boolean
+
+  /**
+   * Validates if the cloudFunc for this CloudId is correctly formatted.
+   *
+   * @return true if this resource has a correctly formatted cloudFunc.
+   */
+  validateFunc: member function(): boolean
+
+  /**
+   * Validates if the cloudRole for this CloudId is correctly formatted.
+   *
+   * @return true if this resource has a correctly formatted cloudRole.
+   */
+  validateRole: member function(): boolean
+
+  /**
+   * Validates if the sequence number for this CloudId is correctly formatted.
+   * If applicable, also matches if this resource has the correct number of digits as specified by {@link Ann.Cloud}.
+   *
+   * @return true if this resource has a correctly formatted sequence number.
+   */
+  validateSeq: member function(): boolean
+
+  /**
+   * Validates if this resource has the correct number of digits as specified by {@link Ann.Cloud}.
+   *
+   * @return true if this resource has the correct number of digits for sequence number.
+   */
+  validateSeqLength: member function(): boolean
+
+  /**
+   * Validates if the subsequence number for this CloudId is correctly formatted.
+   * If applicable, also matches if this resource has the correct number of digits as specified by {@link Ann.Cloud}.
+   *
+   * @return true if this resource has a correctly formatted subsequence number.
+   */
+  validateSubseq: member function(): boolean
+
+  /**
+   * Validates if this resource has the correct number of digits as specified by {@link Ann.Cloud}.
+   *
+   * @return true if this resource has the correct number of digits for subsequence number.
+   */
+  validateSubseqLength: member function(): boolean
+
+  /**
+   * C3 Cluster ID that manages this resource. Will return #cluster (sequence of characters before the first "-")
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod
+   */
+  clusterId: member function(): string
+
+  /**
+   * C3 Environment ID that manages this resource. Will return unique ID of the environment <cluster>-<env>
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod-c3
+   */
+  envId: member function(): string
+
+  /**
+   * C3 Application ID that manages this resource. Will return unique ID of the application <cluster>-<env>-<app>
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod-c3-crm
+   */
+  appId: member function(): string
+
+  /**
+   * @return C3 ID value for this instance based on available fields.
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod-c3-crm-app-l-0001
+   */
+  safeId: member function(): !string
+
+  /**
+   * @return C3 cluster ID value for this instance based on available fields.
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod
+   */
+  safeCluster: member function(): !string
+
+  /**
+   * @return C3 environment name for this instance based on available fields.
+   * Note: It will not contain any "-" nor any #cluster component
+   * E.g. prod-c3-crm-app-l-0001
+   * => c3
+   */
+  safeEnv: member function(): !string
+
+  /**
+   * @return C3 environment ID for this instance based on available fields.
+   * Note: It will always contain #cluster component and "-"
+   * @see #safeEnv
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod-c3
+   */
+  safeEnvId: member function(): !string
+
+  /**
+   * @return C3 application name for this instance based on available fields.
+   * Note: It will not contain any "-" nor any #cluster or #env components
+   * E.g. prod-c3-crm-app-l-0001
+   * => crm
+   */
+  safeApp: member function(): !string
+
+  /**
+   * @return C3 application ID for this instance based on available fields.
+   * Note: It will always contain #cluster and #env components and "-"
+   * @see #safeEnv
+   * E.g. prod-c3-crm-app-l-0001
+   * => prod-c3-crm
+   */
+  safeAppId: member function(): !string
+
+  /**
+   * @return C3 function value for this instance based on available fields.
+   * E.g. prod-c3-crm-app-l-0001
+   * => app
+   */
+  safeFunc: member function(): !string
+
+  /**
+   * Cloud Credentials that should be used to access this resource.
+   */
+  safeCredentials: member function(): !CloudCredentials
+
+  /**
+   * Cloud Provider for this Cloud Resource or Service.
+   */
+  cloudProvider: member function(): !CloudProvider
+
+  /**
+   * @return canonical C3 identifier of this Cloud Resource in the format of <cluster>-<env>-<app>-<func>-<role>-<seq>[-<subseq>].
+   */
+  toString: ~ java
+
+  /**
+   * Constructs Cloud Resource instance based on provided Cloud Reference string and available Cloud Configuration.
+   *
+   * @see CloudRef
+   * @see #toString
+   */
+  fromString: function(s: !?string, failIfInvalid: boolean): mixing CloudId
+
+  fromString: ~ java
+
+  /**
+   * Populate default values for all uninitialized Cloud Identifier fields in this Cloud Resource.
+   */
+  withDefaultId: member function(): !mixing CloudId
+
+  /**
+   * Converts this CloudId to be a valid id satisfying all naming conventions and constraints.
+   */
+  sanitize: member function(): !mixing CloudId
+
+  /**
+   * Sanitizes the given Cloud ID component by converting it to a lower case and removing non alphanumeric characters.
+   *
+   * @return sanitized Cloud ID component.
+   */
+  sanitizeComponent: function(cloudIdComponent: !?string): string
+}

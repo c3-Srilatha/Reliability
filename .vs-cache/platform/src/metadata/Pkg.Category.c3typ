@@ -1,0 +1,143 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enumeration of Pkg path category.
+ */
+enum type Pkg.Category {
+
+  /**
+   * Source code of the C3 application. Includes c3 type files, js, py, R and metadata (such as Metrics).
+   */
+  SRC = 'src'
+
+  /**
+   * Metadata of the C3 application. E.g. Metric.
+   */
+  METADATA = 'metadata'
+
+  /**
+   * Seed data of the C3 application. E.g. CronJob.
+   */
+  SEED = 'seed'
+
+  /**
+   * Seed config of the C3 application. E.g. MailConfig.
+   */
+  CONFIG = 'config'
+
+  /**
+   * C3 Notebook / .c3nb and Jupyter Notebook files.
+   */
+  NOTEBOOK = 'notebook'
+
+  /**
+   * UI code, metadata and resources for C3 application.
+   */
+  UI = 'ui'
+
+  /**
+   * Generic resource for C3 application.
+   */
+  RESOURCE = 'resource'
+
+  /**
+   * Sample data for a C3 Application. This includes entity types that are intended to be stateless E.g. demo data
+   */
+  DATA = 'data'
+
+  /**
+   * Migration scripts for the C3 application packages to be run when bumping dependency to a specific version of this
+   * package. E.g. when application developer uses C3 VS Code IDE to bump the version of `platform` package dependency
+   * from v8.4 to v8.5 then all the migration scripts from `/platform/migration/8.5/` will be run.
+   *
+   * Migration scripts can be a `.js` or `.py` source code or `.json` serialized version of a `lambda(pkg: !Pkg)`.
+   * The lambda will be called with the writable application package and expectation is that script will migrate
+   * package artifacts that are declared in the provided package as needed. Artifacts declared in the depending packages
+   * will be read only.
+   *
+   * Migration scripts are run in the order of their names. E.g. `001-format-c3typ.js` will be run before
+   * `002-migrate-py-runtimes.py`.
+   *
+   * Migration script names can contain action requirement as a secondary file extension. E.g.
+   * `003-migrate-ui.node.js`.
+   *
+   * A given migration script has to complete without errors before next migration script is run. If a migration script
+   * fails the migration process will be aborted and the package will be left in the partially migrated state.
+   *
+   * Status of each migration script is stored in the `migration/status/<pkg>.<version>.json` files. E.g. every
+   * application package that has been upgraded to v8.5 platform will have a `migration/status/platform.8.5.json` file.
+   * This file is instance of {@link Pkg.MigrationStatus.c3typ} and contains the status of each migration script from
+   * `/platform/migration/8.5/`.
+   *
+   * @see {@link Pkg.Store#migratePkg}
+   */
+  MIGRATION = 'migration'
+
+  /**
+   * Category for API Version compatibility transforms.
+   */
+  COMPAT = 'compat'
+
+  /**
+   * These types of file define a package (*.c3pkg.json file).
+   */
+  PACKAGE = '*.c3pkg.json'
+
+  /**
+   * These types of file define a partial dependency lock for a set of packages.
+   * During dependency resolution, this file can fix dependencies to exact versions.
+   * Extension is (*.c3pkg.lock.json)
+   */
+  PACKAGE_LOCK = '*.c3pkg.lock.json'
+
+  /**
+   * Catch all category
+   */
+  OTHER = 'other'
+
+  /**
+   * See {@link TestRunnerKind} Server side jasmine test files.
+   */
+  JASMINE = 'jasmine'
+
+  /**
+   * See {@link TestRunnerKind} Server side pytest test files.
+   */
+  PYTEST = 'pytest'
+
+  /**
+   * See {@link TestRunnerKind} Client side (browser) jasmine test resources.
+   */
+  BROWSER = 'browser'
+
+  /**
+   * See {@link /zoo/test/poly/doc/poly-test.c3doc.md} poly test files.
+   */
+  POLY = 'poly'
+
+  /**
+   * See {@link TestRunnerKind} Canonical data integration test files.
+   */
+  CANONICAL = 'canonical'
+
+  /**
+   * See {@link TestRunnerKind} Performance test files.
+   */
+  PERF = 'perf'
+
+  /**
+   * See {@link TypeMetaDeps} Cached files for TypeMeta dependencies.
+   */
+  CACHE = 'cache'
+
+  /**
+   * @return true if given category is used for testing; e.g. UNIT_TEST or FUNCTIONAL_TEST
+   */
+  isTest: inline function(value: !string enum Pkg.Category): boolean
+}

@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The config for controlling when the nodes should combine into groups.
+ */
+type UiSdlGraphVisualizationCombineConfig {
+
+  /**
+   * Number of levels of grouping.  For example, if facilities contain systems, and systems contain subsystems, you
+   * have three possible levels of grouping: facilities, systems, and subsystems.  With `combineLevel` set to 1,
+   * only the facilities would be grouped; the systems and subsystems under the facilities would remain as individual
+   * nodes.
+   */
+  combineLevel: int
+
+  /**
+   * Whether or not to initial render the graph in a combined / grouped state.  When true the nodes will be rendered in
+   * their groups in a closed state.
+   */
+  collapseCombinedNodesOnLoad: boolean = true
+
+  /**
+   * The hex or rgb outline color for the combine group.
+   */
+  combineOutlineColor: string serialized Color
+
+  /**
+   * Fields to group nodes by, ordered from lowest-level grouping to highest.
+   */
+  combineProperties: [UiSdlFieldBasedDataSpecSetting]
+
+  /**
+   * The shape the combined node will be.
+   */
+  combineShape: string enum UiSdlGraphVisualizationCombineConfigShapeOption = CIRCLE
+
+  /**
+   * The hex or rgb color for the summary links.
+   */
+  summaryLinkColor: string serialized Color
+
+  /**
+   * The line style of the summary links.
+   */
+  summaryLinkLineStyle: string enum UiSdlGraphVisualizationSummaryLinkLineStyleOption = SOLID
+
+  /**
+   * The width of the summary link.
+   */
+  summaryLinkWidth: int = 1
+
+  /**
+   * Configuration to control if multiple links between 2 groups should be displayed as a single link.
+   */
+  useSummaryLinks: boolean = true
+
+  /**
+   * When true, users may drag nodes into or out of a combined group.
+   */
+  enableDragNodesIntoOrOutOfCombo: boolean
+
+  /**
+   * When true, users may select multiple nodes, and click a button to combine them into a new combo group.
+   */
+  enableSelectMultipleNodesForNewCombo: boolean
+}

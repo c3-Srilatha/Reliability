@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type enables partial matching on the type's value. The matching rule is that every element in this type's value
+ * field must be present in the array from the {@link ActionMock} callArg.
+ *
+ * For example, the following expecation would pass:
+ * ```javascript
+ * var spy = TestApi.spyOn(context, 'SomeType', 'spiedApi');
+ * SomeType.spiedApi([1, 2, 3, 4])
+ * expect(spy.toHaveBeenCalledWith({
+ *   someArgName: TestApiPartialMatcherArrayContaining.from([1, 2, 3])
+ * });
+ * ```
+ *
+ * While this expectation would fail:
+ * ```javascript
+ * var spy = TestApi.spyOn(context, 'SomeType', 'spiedApi');
+ * SomeType.spiedApi([1, 2, 3])
+ * expect(spy.toHaveBeenCalledWith({
+ *   someArgName: TestApiPartialMatcherArrayContaining.from([1, 2, 3, 4])
+ * });
+ * ```
+ */
+type TestApiPartialMatcherArrayContaining mixes TestApiPartialMatcher {
+
+  partialMatcherValueType: ~ = 'array'
+  from:                    ~
+}

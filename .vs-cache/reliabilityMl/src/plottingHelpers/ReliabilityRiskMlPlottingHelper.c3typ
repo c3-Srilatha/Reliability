@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type to generate plots of features, reconstructions, and risk
+ * scores given the input and output data of a {@link ReliabilityRiskMl} model.
+ * The member functions are only meant to be used within Jupyter notebooks.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+type ReliabilityRiskMlPlottingHelper {
+
+  /**
+   * Given a 0/1 time-series mask as a pandas Series, this function
+   * produces a list of datetime intervals when the mask is 1.
+   *
+   * @param mask
+   *    Native 0/1 pandas Series with subject, timestamp as its index.
+   *
+   * @return
+   *    A list of (start, end) datetime pairs where mask is 1 from
+   *    start to end inclusive.
+   */
+  getMaskIntervals: inline function(mask: !native): [Pair<datetime, datetime>] py
+
+  /**
+   * Helper function to identify the min and max of an array after
+   * excluding extremes. By default, coverage is 0.99 meaning
+   * only the middle 99% of the data in arr are considered.
+   *
+   * @param arr
+   *    A list of doubles.
+   *
+   * @return
+   *    A pair of doubles corresponding to the robust min and max of arr.
+   */
+  getRobustMinMax: inline function(arr: ![double], coverage: double = 0.99): Pair<double, double> py
+
+  /**
+   * Creates time-series plots of features with mask periods shaded.
+   *
+   * @param df
+   *    Native DataFrame of features with subject and timestamp in the index.
+   * @param maskIntervals
+   *    A list of (start, end) datetime pairs where mask is 1 from
+   *    start to end inclusive. Should be created using getMaskIntervals.
+   */
+  plotFeatures: inline function(df: !native, maskIntervals: [Pair<datetime, datetime>]) py
+
+  /**
+   * Creates time-series plots overlaying feature data with their
+   * corresponding reconstructions. Mask periods are shaded and any alerts
+   * are shown as well.
+   *
+   * @param df
+   *    Native DataFrame of features with subject and timestamp in the index.
+   * @param predDf
+   *    Native DataFrame of reconstructions with subject and timestamp in the index.
+   *    The columns of predDf should be the same as df except with a "_reconstruction"
+   *    suffix.
+   * @param maskIntervals
+   *    A list of (start, end) datetime pairs where mask is 1 from
+   *    start to end inclusive. Should be created using getMaskIntervals.
+   * @param alertDf
+   *    Native DataFrame of 0/1 alerts with subject and timestamp in the index.
+   * @param start
+   *    The earliest datetime to be plotted. If not provided, the earliest timestamp
+   *    in predDf will be used.
+   * @param end
+   *    The latest datetime to be plotted. If not provided, the latest timestamp
+   *    in predDf will be used. endDate is exclusive.
+   */
+  plotReconstructions: inline function(
+    df: !native,
+    predDf: !native,
+    maskIntervals: [Pair<datetime, datetime>],
+    alertDf: native,
+    start: datetime,
+    end: datetime
+  ) py
+
+  /**
+   * Creates time-series plots showing risk scores. Mask periods are shaded and
+   * any alerts are shown as well.
+   *
+   * @param riskDf
+   *    Native DataFrame of risk scores with subject and timestamp in the index.
+   *    The columns should be either riskScore or riskScoreNormalized.
+   * @param maskIntervals
+   *    A list of (start, end) datetime pairs where mask is 1 from
+   *    start to end inclusive. Should be created using getMaskIntervals.
+   * @param alertDf
+   *    Native DataFrame of 0/1 alerts with subject and timestamp in the index.
+   * @param start
+   *    The earliest datetime to be plotted. If not provided, the earliest timestamp
+   *    in predDf will be used.
+   * @param end
+   *    The latest datetime to be plotted. If not provided, the latest timestamp
+   *    in predDf will be used. endDate is exclusive.
+   */
+  plotRiskScores: inline function(
+    riskDf: !native,
+    maskIntervals: [Pair<datetime, datetime>],
+    alertDf: native,
+    start: datetime,
+    end: datetime
+  ) py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

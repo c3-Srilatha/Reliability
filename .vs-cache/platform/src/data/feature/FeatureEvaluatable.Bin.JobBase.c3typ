@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides the common functions to be used in feature metastore related jobs, including {@link Feature.Store.MaterializationJob}
+ * and {@link Feature.Set.CreateSnapshotJob}.
+ */
+abstract private type FeatureEvaluatable.Bin.JobBase mixes Value {
+
+  /**
+   * This function is called to intercept the {@link MapReduce#scanTargetType} to increase the probability of subjects belonging to
+   * the same bin ending up in the same map task / batch.
+   * @param objs
+   *        source subjects to be processed
+   * @param subjectType
+   *        Persistable subjectType of the subjects
+   * @param strategy
+   *        The strategy to be used for the binning of the subjects
+   * @return
+   *        If feature metastore is used, return a new subjects stream that will be iterated in batches determined by the input binning strategy,
+   *        otherwise return the original subjects stream.
+   */
+  doScanTargetType: function(objs: !stream<Obj>,
+                             subjectType: !Type,
+                             strategy: !FeatureEvaluatable.Bin.Strategy): stream<Obj>
+}

@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base value type for all numeric value types.
+ */
+type NumberType mixes PrimitiveType {
+
+  /**
+   * Get a double value which represents the smallest distinguishable difference between values of this numeric type.
+   * For integer types, this is `0.5`, representing rounding to an integer. For inexact types, it is the smallest
+   * value distinguishable across the entire range of representable values.
+   */
+  epsilon: member function(): !double
+
+  guessType:            ~: NumberType java | js
+  guessConvertibleType: ~: NumberType
+  isEmptyValue:         ~ java | js | py
+  valueFromJson:        ~ java | py | js
+  valueFromString:      ~ java | py
+  makeValue:            ~ java | py | js
+  defaultEmptyValue:    ~ java | js | py
+
+  /**
+   * Returns the widest NumberType of all of the passed NumberTypes. NumberTypes are ordered from narrowest to widest
+   * as follows: ByteType, Int16Type, Int32Type, IntType, FloatType, DoubleType, DecimalType. Returns null if no args
+   * are given or all args are null.
+   */
+  widest: function(types: !NumberType ...): NumberType
+
+  /**
+   * Returns the narrowest NumberType that the given number could be represented as based on its value (not
+   * necessarily its actual type!) NumberTypes are ordered from narrowest to widest as follows: ByteType, Int16Type,
+   * Int32Type, IntType, DoubleType. FloatType is omitted due to the complexity of differentiating between floats and
+   * doubles. Defaults to double if the number doesn't fit into any other type. This differs from NumberType.guessType
+   * in the following sense: NumberType.guessType(5L) -> Long; NumberType.narrowest(5L) -> Byte
+   */
+  narrowest: function(num: !number): !NumberType
+
+  valueConverter: ~
+}

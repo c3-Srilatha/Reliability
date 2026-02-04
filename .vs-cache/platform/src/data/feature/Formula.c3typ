@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * As a feature store concept, analogous to legacy {@link Metric}, a {@link Formula} is an "abstract" feature
+ * without data but with expression to construct a concrete feature
+ *
+ * Formula is seeded and cached data at package provision but also allows for live creation for new instances in db,
+ * forming a mathematical expression provided from customers and computing a concrete feature given appropriate
+ * subject type and timeseries interval
+ *
+ * see {@ink Feature}
+ * see {@link Metric}
+ * see {@link Interval}
+ * see {@link FeatureEvaluatable}
+ */
+entity type Formula mixes SeedData {
+
+  /**
+   * Name of the formula
+   */
+  name: !string
+
+  /**
+   * Formula expression from {@link Metric}, either id of {@link CompoundMetric} or name of {@link SimpleMetric}
+   */
+  legacyExpression: !string
+
+  /**
+   * {@link Interval} of formula
+   */
+  interval: !string enum Interval
+
+  /**
+   * Create {@link Formula} from the given metric.
+   * If @param interval is not specified, default is DAY
+   * If @param name is not specified, default is name of this formula
+   */
+  createFeature: member function(subjectType: !Type<<FeatureEvaluatable>>, name: string): !Feature
+}

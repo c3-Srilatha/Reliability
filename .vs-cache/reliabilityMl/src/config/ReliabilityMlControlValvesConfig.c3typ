@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the configuration for setting up a model that works with control valves.
+ * The configuration specifies various sensor types associated with control valves,
+ * such as sensors for the valve's percent open, process variable, setpoint, and mode. It also includes lists
+ * of sensors that should be modeled or excluded from specific tasks like dataset preparation for correlation jobs.
+ *
+ * This type is typically used to define how control valve data should be processed and integrated into machine
+ * learning models aimed at predicting or analyzing control valve behaviors and performance.
+ */
+type ReliabilityMlControlValvesConfig mixes Singleton, Config {
+
+  /**
+   * The {@link ExpectedSensor} corresponding to the percent open {@link Sensor} instrumented on a control valve.
+   * This sensor measures how much the valve is open, typically represented as a percentage.
+   */
+  percentOpenExpectedSensor: string = 'PERCENT_OPEN'
+
+  /**
+   * The {@link ExpectedSensor} corresponding to the process variable {@link Sensor} instrumented on a control valve.
+   * This sensor measures the process variable (e.g., pressure, temperature) that the valve is controlling.
+   */
+  processVariableExpectedSensor: string = 'PROCESS_VARIABLE'
+
+  /**
+   * The {@link ExpectedSensor} corresponding to the setpoint {@link Sensor} instrumented on a control valve.
+   * This sensor measures the setpoint value that the control system is trying to maintain for the process.
+   */
+  setpointExpectedSensor: string = 'SETPOINT'
+
+  /**
+   * The {@link ExpectedSensor} corresponding to the mode {@link Sensor} instrumented on a control valve.
+   * This sensor tracks the mode of the control valve (e.g., manual, automatic).
+   */
+  modeExpectedSensor: string = 'MODE'
+
+  /**
+   * A list of {@link ExpectedSensor}s that can be modeled on a control valve {@link ReliabilityAsset}.
+   * This list specifies the sensors that will be used for modeling the valve's behavior or performance.
+   * The sensors selected here are crucial to the machine learning model that will be trained on the data from
+   * these sensors.
+   */
+  targetExpectedSensors: [ExpectedSensor] = ['PERCENT_OPEN', 'PROCESS_VARIABLE']
+
+  /**
+   * A list of {@link ExpectedSensor}s to exclude from data preparation, specifically for correlation jobs
+   * where data preparation happens automatically with model configuration.
+   * This is useful when certain sensors (e.g., mode) should not be considered for correlation analysis or
+   * should be excluded from the automatic data processing pipeline.
+   */
+  excludedExpectedSensorsFromDataPrep: [ExpectedSensor]  = ['MODE']
+}

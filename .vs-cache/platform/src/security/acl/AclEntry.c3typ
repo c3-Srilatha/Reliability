@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines various actions an authorized user can perform on an ACL-enabled Type. See also:
+ * @see AclEnabled
+ * @see AclPrivilege
+ * @see EnableAclPrivilege
+ * @see AclEnabledTypes
+ */
+type AclEntry {
+
+  /**
+   * If true, the member granted access can update the entry.
+   */
+  canUpdate: boolean
+
+  /**
+   * If true, the member granted access can remove the entry.
+   */
+  canRemove: boolean
+
+  /**
+   * If true, the member granted access can modify the acl entries for the entry.
+   */
+  canModifyAcl: boolean
+
+  /**
+   * Member that is granted access.
+   */
+  member: !AccessControlEntity
+
+  /**
+   * Source for the entry.  If this is null, the entry was manually created and will never be removed/updated
+   * automatically by the system.  If it isn't null, then it may be removed/updated by {@link AclEnabled.populateAcl}.
+   *
+   * @see AclSource
+   */
+  source: string enum AclSource
+
+  /**
+   * @return true if this entry is for the given member.
+   */
+  isFor: inline member function(member: !?AccessControlEntity): boolean
+
+  /**
+   * @return true if this entry is for any of the specified member (or the "Public" member).
+   */
+  isForAny: inline member function(members: !?[AccessControlEntity]): boolean
+}

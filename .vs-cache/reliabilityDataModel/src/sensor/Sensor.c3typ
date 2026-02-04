@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type to represent a real sensor in a production {@link Facility}. This is a timeseries which may be partitioned
+ * across multiple timeseries headers.
+ *
+ * Evaluating a timeseries should be done with the provided Quantity compound metric, which will
+ * perform inter-partition interpolation to ensure correctness and simulate evaluation as if all
+ * measurements were under the same header.
+ *
+ * Partitioning across multiple timeseries headers is recommended for timeseries of very high volume,
+ * e.g. minute-level data for more than six months, or hour-level data for several years.
+ *
+ * **Details about the reliability usage of sensors:**
+ *
+ * You can find details about how sensors are used in reliability by looking at the reliability dev guide topic titled
+ * "Tags and Sensors".
+ */
+remix type Sensor mixes AssetOnboardingMeta, FilterableByFacility {
+
+  /**
+   * Display name which attempts to use {@link Sensor#tag tag} field; otherwise, uses the {@link Sensor#name name} field.
+   * Falls back on id, if neither tag nor name exists.
+   */
+  displayName: string stored calc exists(tag) ? tag : exists(name) ? name : id;
+
+  /**
+   * Sensor time series are usually used directly as features in several machine learning models. To be used
+   * as a feature, a sensor should have a metric written against it from the {@link ReliabilityAsset} source Type.
+   * This implies that there needs to exist one unique metric, i.e., {@link Metric#name}, per Sensor.
+   *
+   * The {@link id} is an unbounded string, i.e., it may have special characters or it may start with a number.
+   * The Metric Engine does not support {@link Metric#name}s which follow this pattern. To ensure that there
+   * are safe ids to be used within metrics, use this field within the {@link SimpleMetric#path} to filter
+   * for the correct Sensor.
+   *
+   * For all {@link ReliabilityAssetSensorRelation} objects that do not have the
+   * {@link ReliabilityAssetSensorRelation#expectedSensor} field populated, it is suggested
+   * to use this field within the {@link SimpleMetric#path} and {@link SimpleMetric#name} so that
+   * it is guaranteed that all metrics will evaluate.
+   *
+   * Furthermore, since this field is persisted in the table, developers can use this Type as a map
+   * between the `metricSafeId` and the {@link id}. For example, in the UI, if the feature contributions
+   * of the Sensor have to be displayed, the metric name will be determined by this field. However, logic
+   * can be added to dynamically change the display id of the sensor by fetching the id based on a filter
+   * on this field.
+   */
+  @constraint(condition='matchesRegex(metricSafeId, "^[A-Za-z](?:[A-Za-z0-9_])*(?:[A-Za-z0-9_])$")')
+  metricSafeId: string = "S_" + replace(id, "[^A-Za-z0-9]", "_")
+
+  /**
+   * All related {@link ReliabilityAssetSensorRelation}. See {@link ReliabilityAssetSensorRelation} for more details
+   * about these relations.
+   */
+  assetRelations: [ReliabilityAssetSensorRelation](to)
+
+  /**
+   * Currently related {@link ReliabilityAssetSensorRelation}. See #assetRelations.
+   */
+  @db(filter='(!exists(end) || end > now()) && (!exists(start) || start < now())')
+  currentReliabilityAssetSensorRelations: [ReliabilityAssetSensorRelation](to)
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["currentReliabilityAssetSensorRelations.from.facility"]
+
+  /**
+   * All incoming {@link ReliabilityAssetSensorHierarchicalRelation}s. See #assetRelations.
+   */
+  @db(order='descending(toUTC(start)), descending(toUTC(end))')
+  parentRelations: [ReliabilityAssetSensorHierarchicalRelation](to)
+
+  /**
+   * Current incoming {@link ReliabilityAssetSensorHierarchicalRelation}s. See #assetRelations.
+   */
+  @db(filter='(!exists(end) || end > now()) && (!exists(start) || start < now())')
+  currentParentRelations: [ReliabilityAssetSensorHierarchicalRelation](to)
+
+  /**
+   * The {@link ReliabilityAsset} which is currently the direct parent of this {@link Sensor}. See #assetRelations.
+   */
+  parentAsset: ReliabilityAsset stored calc currentParentRelations[0].from
+
+  /**
+   * The function to know if a {@link Sensor} is normalized.
+   */
+  isNormalized: member function(asOf: datetime): boolean js-rhino
+
+   /**
+   * Helper type to evaluate User-Defined Metrics of {@link ReliabilityMetric} type.
+   */
+  evaluator: ReliabilityMetricEvaluator = {id: 'Evaluator'}
+}

@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type which represents the default settings inside either the global scatter plot or the scatter plot on the Asset Details Page.
+ *
+ * {@link ScatterPlotChartDataSpec#assetId} field goes into filter panel for global scatter plot but specifies which Asset these
+ * are the default settings for on Asset Detail Page.
+ */
+entity type ScatterPlotDefaultSettings  mixes ScatterPlotChartDataSpec {
+  /**
+   * The period of time that was plotted in the Scatter Plot Chart when the user saved the Scatter Plot Chart settings.
+   * The period is rounded up to the nearest number of hours if less than a day is plotted and rounded up to the nearest
+   * numbers of days otherwise.
+   *
+   * Used to fill out the start and end time (from now until now - period) of the Scatter Plot Chart when the chart initially renders.
+   */
+  period: Period
+
+  /**
+   * Specifies whether or not the {@link ScatterPlotDefaultSettings} is for the global analyzer Scatter Plot or not.
+   *
+   * There should only ever be one instance with this field set to true.
+   */
+  isGlobal: boolean = false
+
+  /**
+   * Retrieve the period of time plotted in the Scatter Plot rounded to nearest HOUR or DAY.
+   */
+  getPlotPeriod: private inline function(millis: !int): Period js-rhino
+}

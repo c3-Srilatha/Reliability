@@ -1,0 +1,119 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to store info from a {@link Workflow.Run} being used for Model Config
+ */
+entity type ModelConfigRun {
+
+  /**
+   * The {@link ReliabilityAsset}s for this Model Config Run
+   */
+  assetRelations: [ReliabilityAssetToModelConfigRunRelation](to)
+
+  /**
+   * The underlying {@link Workflow.Run} being used
+   */
+  workflowRun: Workflow.Run
+
+  /**
+   * The status of the Model Config Run
+   */
+  status: ReliabilityOrchestrator.RunStatus = NOT_STARTED
+
+  /**
+   * The models created by this run
+   */
+  models: [ReliabilityMlModel]
+
+  /**
+   * Represents the number of {@link ReliabilityAsset}s for this Model Config Run
+   * This field is used to display the number of assets in the UI
+   */
+  assetRelationsCount: int calc count(assetRelations)
+
+  /**
+   * Represents the last time that the model change the status
+   * This field is used to display the number of models in the UI
+   */
+  lastUpdated: datetime
+
+  /**
+   * The {@link ReliabilityMl.Project} related to this Model Config Run
+   */
+  project: ReliabilityMl.Project
+
+  /**
+   * Error message that will be populated with its corresponding error in the worfklow in the case of failure.
+   */
+  errorMessage: string stored calc status == 'FAILED' ? parseJobErrorMessage(workflowRun.id,true) : ""
+
+  /**
+   * The {@link ReliabilityOrchestrator.TrainingJobRun} that trains the models for this run.
+   * Will not be populated for Reliability Risk Model Config Runs.
+   */
+  trainingJobRun: ReliabilityOrchestrator.TrainingJobRun
+
+  /**
+   * Whether or not the associated workflow has a post-training step.
+   * Used for determining if the run is complete in the updateAfterWorkflow function.
+   */
+  hasPostTraining: boolean = false
+
+  /**
+   * Helper method to set the models field for this {@link ModelConfigRun}.
+   * Used in {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining#createWorkflow}.
+   * Cached hyperparameters are updated for the models, using
+   * {@link ModelConfigHyperparams#updateCachedHyperparameters}.
+   * @param models
+   *           The {@link ReliabilityRiskMlModel}s that will be set on the run.
+   */
+  setModels: member function(models: [ReliabilityRiskMlModel]) js-rhino
+
+  /**
+   * Function to update the model config run, for use in the training workflows as a workflow vertex action.
+   * If the run has a training job attached, it will link the trained models, if they are not already linked,
+   * and update the cached hyperparameters for the models using
+   * {@link ModelConfigHyperparams#updateCachedHyperparameters}.
+   * @param jobType
+   *           The type of job. Either 'training' or 'postTraining'. Used to determine if the run is complete.
+   */
+  updateAfterWorkflow: member function(jobType: string) js-rhino
+
+  /**
+   * Helper method to fetch {@link ModelConfigRun}s with the updated status.
+   * The method updates the runs with inconsistent {@link ModelConfigRun#status} and persists them in db.
+   *
+   * @param spec
+   *           The {@link FetchSpec} for the fetch.
+   * @return A {@link FetchResult} containing the model config runs with updated status.
+   */
+  fetchWithStatus: function(spec: FetchSpec): FetchResult js-rhino
+
+  /**
+   * Custom fetchCount to get the count of {@link ModelConfigRun}s with the updated status.
+   * The method updates the runs with inconsistent {@link ModelConfigRun#status} and persists them in db.
+   *
+   * @param spec
+   *           The {@link FetchFilterSpec} for the fetchCount.
+   * @return The count of model config runs with updated status.
+   */
+  fetchCountWithStatus: function(spec: FetchFilterSpec): int js-rhino
+
+  /**
+   * Updates this run with {@link #status} and {@link #models} based on the given results.
+   * These results should have the {@link ReliabilityOrchestrator.TrainingJobResult#model}
+   * {@link ReliabilityOrchestrator.TrainingJobResult#errorCount} populated. If a result has `errorCount` greater than
+   * 0 or no model, the run status will be set to `FAILED`. If all results have models, the run status will be set to
+   * `COMPLETED`.
+   * @param results
+   *           Array of training job results to update the run from.
+   */
+  updateFromTrainingJobResults: inline member function(results: [ReliabilityOrchestrator.TrainingJobResult]) py
+}

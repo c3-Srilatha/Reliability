@@ -1,0 +1,19 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.management.keyvault.NetworkRuleSet',
+      runtimeFieldMapper='JavaC3StyleFieldMapper')
+type AzureKeyVaultNetworkRuleSet {
+
+  bypass:              @java(runtimeClassName='com.microsoft.azure.management.keyvault.NetworkRuleBypassOptions') string enum AzureKeyVaultNetworkRuleBypassOptions
+  defaultAction:       @java(runtimeClassName='com.microsoft.azure.management.keyvault.NetworkRuleAction') string enum AzureKeyVaultNetworkRuleAction
+  ipRules:             @java(runtimeClassName='java.util.List') [AzureKeyVaultIPRule]
+  virtualNetworkRules: @java(runtimeClassName='java.util.List') [AzureKeyVaultVirtualNetworkRule]
+  fromJava:            function(javaObj: @java(class="java.lang.Object") !?native): AzureKeyVaultNetworkRuleSet
+  toJava:              member function(): native
+}

@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used to get/set MBean attributes across the C3 Cluster.
+ */
+type JMXCluster mixes Value {
+
+  /**
+   * Get an MBean attribute across the C3 Cluster.
+   *
+   * @param nameSpec
+   *          MBean name specification.
+   * @param attribute
+   *          MBean attribute name.
+   *
+   * @return the Arry of MBeanAttribute objects (one per node)
+   */
+  getMBeanAttribute: function(nameSpec: string, attribute: string): [MBeanAttribute]
+
+  /**
+   * Set an MBean attribute value across the C3 Cluster.
+   *
+   * @param nameSpec
+   *          MBean name specification.
+   * @param attribute
+   *          MBean attribute name.
+   * @param value
+   *          The new value for the attribute, it will be coerced from string
+   *          the the actual primitive type
+   *
+   * @return the Arry of modified MBeanAttribute objects (one per node)
+   */
+  @action(authz='always')
+  setMBeanAttribute: function(nameSpec: string, attribute: string, value: string): [MBeanAttribute]
+
+  /**
+   * Find a given MBean across the C3 Cluster. This function is handy for
+   * finding the attribute names of a given MBean.
+   *
+   * @param nameSpec
+   *          MBean name specification.
+   *
+   * @return An Arry of MBeans, one per node in the C3 Cluster.
+   */
+  find: function(nameSpec: string): [MBean]
+}

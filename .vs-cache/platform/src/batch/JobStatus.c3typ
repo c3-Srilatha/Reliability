@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type JobStatus {
+
+  started:   datetime
+  startedby: string
+  completed: datetime
+  status:    string enum JobStatusEnum
+  progress:  string
+  info:      string
+
+  /**
+   * If job is executing, returns duration since the job has started executing.
+   * If the job has been completed/failed/canceled, it returns the duration taken for overall execution.
+   */
+  duration: property(): !Duration
+
+  /**
+   * @return true if the job is in the "initial" state.
+   */
+  isInitial: inline member function(): !boolean
+
+  /**
+   * @return true if the job is in the "running" state.
+   */
+  isRunning: inline member function(): !boolean
+
+  /**
+   * @return true if the job is in the "completed" state.
+   */
+  isCompleted: inline member function(): !boolean
+
+  /**
+   * @return true if the job is in the "failing" state.
+   */
+  isFailing: inline member function(): !boolean
+
+  /**
+   * @return true if the job is in the "failing" state.
+   */
+  isFailed: inline member function(): !boolean
+
+  /**
+   * @return true if the job is in the "canceling" state.
+   */
+  isCanceling: inline member function(): !boolean
+
+  /**
+   * @return true if the job is in the "canceled" state.
+   */
+  isCanceled: inline member function(): !boolean
+}

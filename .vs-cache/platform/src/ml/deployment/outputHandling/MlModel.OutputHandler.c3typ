@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An output handler is responsible to process the output of a {@link MlPipeline} in the context of a deployed
+ * {@link MlModel}.
+ * Typically, a handler converts the output and store it in a persistent location (database, file system) or forward
+ * it to an external system (e.g. Kafka Queue).
+ *
+ * This type is abstract and subtypes must implement the {@link process} and {@link validate} methods.
+ */
+abstract type MlModel.OutputHandler mixes MlModel.OutputHandlerMetaColumns {
+
+  /**
+   * The {@link MlPipeline#outNames pipeline outputs} that are processed by this handler.
+   * If `null` and if there are multiple outputs to the pipeline, an error is thrown.
+   */
+  outputNames: [string]
+
+  /**
+   * Process the output of a {@link MlPipeline} (returned by {@link MlPipeline#process})
+   * using the provided metadata in argument.
+   *
+   * @param subjects
+   *          the {@link MlSubject subjects} on which the input data for the pipeline was computed
+   * @param route
+   *          the route referencing the {@link MlModel} used to process the data
+   *          (contains the {@link MlModel.Route.Status status} of the route)
+   * @param output
+   *          the output of the pipeline (see {@link MlPipeline#process});
+   *          if empty, the process returns immediately (no-op)
+   * @param start
+   *          the start of the {@link Feature} evaluation for the pipeline input (see {@link MlModel#process})
+   * @param end
+   *          the end of the {@link Feature} evaluation for the pipeline input (see {@link MlModel#process})
+   */
+  process: abstract member function(subjects: ![MlSubject],
+                                    route: !MlModel.Route,
+                                    output: Tuple,
+                                    start: datetime,
+                                    end: datetime)
+
+  /**
+   * Validates compatibility of this handler with outputs of a given {@link MlModel model}.
+   * Throws an exception if the handler is incompatible with the {@link #model}.
+   */
+  validate: abstract member function(model: !MlModel, op: !MlDataOpName)
+}

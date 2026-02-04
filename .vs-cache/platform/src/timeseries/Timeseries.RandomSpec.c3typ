@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for generating random timeseries data.
+ *
+ * @see Timeseries#randomTimeseries
+ */
+type Timeseries.RandomSpec mixes Spec {
+
+  /**
+   * The process used for generating samples.
+   */
+  process: !string enum Timeseries.RandomProcess = Timeseries.RandomProcess.UNIFORM
+
+  /**
+   * Lower bound for the data.
+   */
+  origin: !double = 0
+
+  /**
+   * Upper bound for the data.
+   */
+  bound: !double = 100
+
+  /**
+   * Value for the first sample, used for stochastic processes. If not specified, a value will be generated near
+   * the midpoint of #origin and #bound (in the middle third of the range).
+   */
+  initial: double
+
+  /**
+   * The probability of an upward change instead of downward on each successive point when using stochastic processes.
+   * A value of 0.6 would mean a 60% chance of positive deltas and a 40% chance of negative.
+   */
+  positiveFraction: !double = 0.5
+
+  /**
+   * The maximum change for each successive point, when using the random walk process. If null, 1% of the range is used.
+   * If specified, this must be >= #deltaMin. This value is inclusive.
+   */
+  deltaMax: double
+
+  /**
+   * The minimum change for each successive point, when using the random walk process.
+   */
+  deltaMin: !double = 0
+
+  /**
+   * The source of the timeseries data series, if not specified by the caller.
+   *
+   * @see TimeseriesSourceInfo#source
+   */
+  source: string = "random"
+
+  /**
+   * The expression for the timeseries data points, if not specified by the caller.
+   *
+   * @see TimeseriesSourceInfo#expr
+   */
+  expr: string = "value"
+
+  /**
+   * The unit to use for the timeseries.
+   */
+  unit: Unit
+}

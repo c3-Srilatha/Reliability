@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Metric to identify all orphaned documentation files on a package.
+ * An orphaned documentation can be identified as a document that is not referenced on any of the Documentation guides.
+ */
+type BaseCodeAnalysis.Metric.OrphanedDocumentation {
+
+  /**
+   * Function to perform code analysis for a package for one specific metric, and package the results into
+   * {@link BaseCodeAnalysis.Result}s.
+   *
+   * @param fileSpecs
+   *           The {@link BaseCodeAnalysis.FileSpec}s containing the filenames and contents of the package.
+   * @param options
+   *           An optional JSON with any additional information needed to calculate results.
+   * @return An array of {@link BaseCodeAnalysis.Result}s representing the metric values for files in the package.
+   */
+  calculateResults: private function(fileSpecs: [BaseCodeAnalysis.FileSpec], options: json): [BaseCodeAnalysis.Metric.Result] js-server
+
+	/**
+	 * Function to get a map of the guides with their links of a specific package.map<string, set<string>>
+	 */
+	getPackageGuideLinks: private inline function(): map<string, set<string>> js-rhino
+
+	/**
+	 * Function to identify all orphaned documents from a list of {@link BaseCodeAnalysis.FileSpec}.
+	 *
+	 * @param fileSpec
+	 *           The file spec to analyze.
+	 * @return A list of {@link BaseCodeAnalysis.Metric.Message}s corresponding to any orphaned documents.
+	 */
+	searchForOrphanedDocs: private inline function(fileSpec: BaseCodeAnalysis.FileSpec, packageGuideLinks: map<string, set<string>>): [BaseCodeAnalysis.Metric.Message] js-server
+}

@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Remote invalidator for `FacadedDbChangeLog`.
+ */
+private type FacadedDbChangeLogInvalidator {
+
+  /**
+   * Id of app where invalidations should be sent to
+   */
+  appId: string
+
+  /**
+   * Invalidations for the CalcFieldsQueue
+   */
+  calcDeps: private map<string, map<string, [FacadedDbChangeLogDep]>>
+
+  /**
+   * Invalidations for the PopulateAclQueue
+   */
+  aclDeps: private map<string, map<string, [FacadedDbChangeLogDep]>>
+
+  /**
+   * Invalidations for the MetricDepsQueue
+   */
+  metricDeps: private map<string, map<string, [FacadedDbChangeLogDep]>>
+
+  /**
+   * Performs the invalidations (e.g. creates ChangeLogQueue entries) in the appropriate app
+   */
+  @call(app='this.appId')
+  invalidate: member function()
+}

@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Intermediate type used in {@link MlPipeline} authoring. This is a placeholder that represents a trained pipe, used
+ * primarily for expressing pipe sharing. The {@link #vertex} references the "parent" shared vertex.
+ */
+type MlPipeline.PipeVar mixes MlCallable, FlowGraph.Port.Authoring<MlPipeline.Vertex> {
+
+  _call_: ~ py
+
+  /**
+   * Used to describe training, when authoring an {@link MlPipeline} flow.
+   * @param x
+   *           single value, list, or map of input(s) for x.
+   * @param y
+   *           single value, list, or map of input(s) for y.
+   * @return a placeholder representing a trained pipeline during authoring.
+   */
+  train_var: member function(x: any, y: any): !MlPipeline.PipeVar py
+
+  /**
+   * Used to describe processing, when authoring an {@link MlPipeline} flow.
+   * @param x
+   *           single value, list, or map of input(s) for x.
+   * @param spec
+   *            customizations for changing behavior of the pipe.
+   * @return a single {@link MlVar} if single output or a map of {@link MlVar} if multi-output.
+   */
+  process_var: member function(x: any, spec: MlConvertSpec): !any py
+
+  /**
+   * Used to describe scoring, when authoring an {@link MlPipeline} flow.
+   * @param x
+   *           single value, list, or map of input(s) for x.
+   * @param y
+   *           single value, list, or map of input(s) for y.
+   * @param context
+   *           single value, list, or map of input(s) for context.
+   * @param spec
+   *           customizations for changing behavior of the pipe.
+   * @return a single {@link MlVar} if single output or a named tuple of {@link MlVar} if multi-output.
+   */
+  score_var: member function(x: any, y: any, context: any, spec: MlConvertSpec): !any py
+
+  /**
+   * Used to describe interpreting, when authoring an {@link MlPipeline} flow.
+   * @param x
+   *           single value, list, or map of input(s) for x.
+   * @param spec
+   *           customizations for changing behavior of the pipe.
+   * @return a single {@link MlVar} if single output or a map of {@link MlVar} if multi-output.
+   */
+  interpret_var: member function(x: any, spec: MlConvertSpec): !any py
+}

@@ -1,0 +1,122 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to report {@link UiBundler} performance profiling results.
+ */
+@db(unique=['job'])
+entity type UiBundlerPerformanceProfile schema name 'UIBPP' {
+
+  /**
+   * Reference to the corresponding {@link UiBundler} job.
+   */
+  job: !UiBundler
+
+  /**
+   * The time spent setting up the shared runtime executor, in seconds.
+   */
+  sharedRuntimeExecutorSetupTime: int
+
+  /**
+   * An array of {@link SetupWorkingDirPerformanceProfile} objects.
+   */
+  setupWorkingDirTimes: [SetupWorkingDirPerformanceProfile](uiBundlerPerformanceProfile)
+
+  /**
+   * The grand total of all setupWorkingDir times, in seconds.
+   */
+  totalSetupWorkingDirTime: int stored calc sum(setupWorkingDirTimes.setupWorkingDirTime)
+
+  /**
+   * An array of {@link WebpackPerformanceProfile} objects.
+   */
+  bundlingTimes: [WebpackPerformanceProfile](uiBundlerPerformanceProfile)
+
+  /**
+   * The grand total time to run the bundler, in seconds.
+   */
+  totalBundlerRunTime: int stored calc sum(bundlingTimes.bundlerRunTime)
+
+  /**
+   * The grand total of all bundling times, in seconds.
+   */
+  totalBundlingTime: int stored calc sum(bundlingTimes.bundlingTime)
+
+  /**
+   * The grand total of all {@link Webpack} times, in seconds.
+   */
+  totalWebpackTime: int stored calc sum(bundlingTimes.webpackTime)
+
+  /**
+   * The grand total of all file uploading times, in seconds.
+   */
+  totalFileUploadTime: int stored calc sum(bundlingTimes.fileUploadTime)
+
+  /**
+   * The grand total of all write contents times, in seconds.
+   */
+  totalWriteContentsTime: int stored calc sum(bundlingTimes.writeContentsTime)
+
+  /**
+   * The total number of files upldoaded.
+   */
+  totalFileNumbers: int stored calc sum(bundlingTimes.fileNumbers)
+
+  /**
+   * The size of the uploaded files.
+   */
+  totalFileUploadSize: int stored calc sum(bundlingTimes.fileUploadSize / (1024 * 1024))
+
+  /**
+   * The time at which this job's batch processing phase was started.
+   */
+  batchProcessingStartTime: datetime
+
+  /**
+   * The time at which this job's batch processing phase was completed.
+   */
+  batchProcessingEndTime: datetime
+
+  /**
+   * The total time spent processing batches, in seconds.
+   */
+  totalBatchProcessingTime: int stored calc floor((batchProcessingEndTime - batchProcessingStartTime) / 1000)
+
+  /**
+   * The time it took for {@link UiBundler#allComplete} to run, in seconds.
+   */
+  allCompleteTime: int
+
+  /**
+   * The time at which this job was started.
+   */
+  jobStartTime: datetime
+
+  /**
+   * The time at which this job was completed.
+   */
+  jobEndTime: datetime
+
+  /**
+   * The total duration of the job, in seconds.
+   */
+  totalTime: int stored calc floor((jobEndTime - jobStartTime) / 1000)
+
+  /**
+   * Converts the performance profile to a map of custom measurement fields to be used by a performance test.
+   * All measurements are in seconds.
+   */
+  toPerformanceTestResultCustomMeasurementFields: private member function()
+                                                                   : UiBundlerPerformanceProfileCustomMeasurementFields js
+
+  /**
+   * The total number of batches processed.
+   */
+  batchNumber: int
+
+}

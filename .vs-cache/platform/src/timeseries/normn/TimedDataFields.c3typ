@@ -1,0 +1,282 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is a platform-generated Type. It is read-only for the applications.
+ */
+type TimedDataFields<TDP> {
+
+  /**
+   * Populated on normalization. Indicates the earliest data point across various timeseries fields.
+   */
+  @deprecated(finalVersion="8.5", details="use earliestTsDp instead")
+  earliest: private datetime
+
+  /**
+   * Populated on normalization. Indicates the latest data point across various timeseries fields.
+   */
+  @deprecated(finalVersion="8.5", details="use latestTsDp instead")
+  latest: private datetime
+
+  /**
+   * Populated on normalization. Indicates the earliest data point for each {@link Ann.Ts} fields.
+   */
+  earliestTsDp: map<string, TSDataPoint>
+
+  /**
+   * Populated on normalization. Indicates the latest data point for each {@link Ann.Ts} fields.
+   */
+  latestTsDp: map<string, TSDataPoint>
+
+  /**
+   * The interval (grain) at which data should be normalized.
+   *
+   * If this field is not specified, the algorithm looks at the first 100 raw data points and deduces the interval.
+   * However, when determining the interval based on first 100 raw data points, the finest granularity that will be
+   * assigned automatically is QUARTER_HOUR, even though these first 100 raw data points may have an interval of,
+   * for example, a minute. If you need an interval finer than QUARTER_HOUR, then you must set the interval manually
+   * by setting this field.
+   */
+  interval: string enum Interval
+
+  /**
+   * If set, the time series will be normalized in the specified zone.
+   */
+  timeZone: string serialized TimeZone
+
+  /**
+   * If set, disables normalizing this time series. Invalidations will still continue to happen for this series normally.
+   */
+  doNotNormalize: boolean
+
+  data: [TDP] schema suffix 'D'
+
+  /**
+   * Use this field to specify the interpolation mechanism to be applied for gaps in interval timeseries. Default: `ZERO_INTERPOLATOR`.
+   */
+  interpolator: string enum('LINEAR_INTERPOLATOR', 'ZERO_INTERPOLATOR')
+
+  /**
+   * Use this field to specify how normalization should handle duplicate data points. A duplicate point is one that has the same start, end, value, unit, and {@link TimedDataPointFields#isEstimated} values. Default: `IGNORE`.
+   */
+  duplicateHandling: string enum('IGNORE', 'KEEP')
+
+  /**
+   * Used to specify how normalization should handle overlapping data points. Default: `AVG`.
+   */
+  overlapHandling: string enum('SUM', 'AVG', 'MIN', 'MAX')
+
+  /**
+   * Normalized time series is a series of continuous values. In order to optimize the reads the C3 AI Suite buckets the values into specific intervals (for example, MONTH) and stores all the data values for the month in that bucket. Use this field to change the underlying storage for much more optimal reads (reading less data).
+   *
+   * If the normalization interval (#interval) is coarser than the `bucketInterval`, then `bucketInterval` will be adjusted to be the normalization interval. This will be an automatic operation and a warning will be logged.
+   */
+  bucketInterval: string enum Interval
+
+  /**
+   * Describes partitioning strategy for NormalizedTimeseries tables indicating how much data lives in what storage
+   * Takes precedence over the provided config in {@link NormalizationConfig#partitionStrategy}
+   */
+  normalizationPartitionStrategy: NormalizationPartitionStrategy
+
+  /**
+   * Computes partition strategy in the following order:
+   * 1. #normalizationPartitionStrategy - if set, then reads from this field
+   * 2. NormalizationConfig#partitionStrategy - if set for the given type
+   * 3. NormalizationConfig#partitionStrategy - with key ALL that is applied to all types
+   */
+  finalNormalizationPartitionStrategy: member function(): NormalizationPartitionStrategy
+
+  /**
+   * This field, `computeTimeRange`, is very similar to evaluate on normalizedTimeseries. It does all the work that evaluate will do except for fetching the actual  datapoints.
+   *
+   * @param spec The spec for the time series. In the {@link TSEvalSpec}:
+   * - The `start`, `end` and `grain` can all be null.
+   * - If `start` and `end` are null, the returned {@link TimeRange} will contain the earliest and latest for the time series.
+   * - If `start` and/or `end` is null, the returned {@link TimeRange} will be an "intersection" of the provided time range and the time range of the time series.
+   * - If the `grain` parameter is null, then the time calculations will be performed based on the default grain for the time series.
+   * - If the `grain` parameter is not null, time calculations will be performed using the specified `grain`.
+   * @param rawParent Required. The parent for which data is desired.
+   * @return The time range available.
+   */
+  computeTimeRange: function(spec: TSEvalSpec, rawParent: !Obj): TimeRange
+
+  /**
+   * Returns the normalized data object.
+   *
+   * @param spec The spec must specify the start / end / grain / filter / projection for the time series.
+   * @param rawParent The parent for which normalized data should be fetched.
+   * @return Contains the normalized data.
+   */
+  @action(group+='read')
+  fetchNormalizedData: function(spec: TSEvalSpec, rawParent: !Obj): Timeseries
+
+  /**
+   * This function triggers the normalization asynchronously.
+   *
+   * @param timeseries The time series header for which normalization should be called.
+   * @param start The start period of normalization.
+   * @param end The end period of normalization.
+   * @param overrideGrain Grain to be used for normalization.
+   * @param forceGrainDetection Force normalization to detect the grain.
+   * @param force Force normalization even if the series has been previously normalized and valid.
+   */
+  triggerNormalizeTimeseries: function(timeseries: !Obj,
+                                       start: datetime,
+                                       end: datetime,
+                                       overrideGrain: string,
+                                       forceGrainDetection: boolean,
+                                       force: boolean)
+
+  /**
+   * This is an event handler. It is typically called asynchronously some time after the raw timed data is updated. Its behavior is idempotent and also resilient to abnormal or race conditions.
+   *
+   * @param txn The transaction that caused the event.
+   */
+  timeRangeUpdated: function(txn: Transaction)
+
+  /**
+   * This is an event handler. It is typically called asynchronously some time after the raw timed data is removed. Its behavior is idempotent and also resilient to abnormal or race conditions.
+   *
+   * @param txn The transaction that caused the event.
+   */
+  timeRangeRemoved: function(txn: Transaction)
+
+  /**
+   * This function, `normalizeTimeseries` is called asynchronously by #triggerNormalizeTimeseries.
+   *
+   * This function can also be used to normalize only a part of the time series by supplying start and end. However, the `overrideGrain` and `forceGrainDetection` are not valid when used in this way.
+   *
+   * @param timeseries The timeseries header for which normalization should to be called.
+   * @param start The start period of normalization.
+   * @param end The end period of normalization.
+   * @param overrideGrain Grain to be used for normalization.
+   * @param force Force normalization to detect grain.
+   * @param forceNormalize Force normalization even if the series has been previously normalized and valid.
+   */
+  normalizeTimeseries: function(timeseries: TimedDataFields<TDP>,
+                                start: datetime,
+                                end: datetime,
+                                overrideGrain: string,
+                                forceGrainDetection: boolean,
+                                force: boolean)
+
+  /**
+   * This function normalizes the time series on the fly for all time series fields without persisting the normalized values. It returns a map of `tsField -> Timeseries`.
+   *
+   * This function currently ignores the `start`, and `end` values, and instead fetches all raw data points and normalizes them. This function also ignores the timezone requests / per `tsField` requests. It always returns data in `timeZone=NONE` for all `tsField`s for a header.
+   *
+   * @param timeseries The time series header for which normalization should be called.
+   * @param start The start period of normalization.
+   * @param end The end period of normalization.
+   * @param overrideGrain Grain to be used for normalization.
+   * @param forceGrainDetection Force normalization to detect grain.
+   * @return The result containing a list of all time series fields for the header and the corresponding normalized values.
+   */
+  normalize: function(timeseries: TimedDataFields<TDP>,
+                      start: datetime,
+                      end: datetime,
+                      overrideGrain: string,
+                      forceGrainDetection: boolean): NormalizationResult
+
+  /**
+   * This function invalidates the time series headers. That is, it marks the normalization state as invalid so that the subsequent calls to normalized data can retrieve the correct values.
+   *
+   * @param headerIds
+   *        Header IDs to invalidate. If empty, no headers will be invalidated.
+   *
+   * @return IDs of the header type that were not marked invalid as {@link NormalizedTimeseriesState} did not exist for them.
+   */
+  invalidateTimeseries: function(headerIds: [string]): set<string>
+
+  /**
+   * This function invalidates the time series headers with time ranges. That is, it marks the normalization state as invalid so that the subsequent calls to normalized data can retrieve the right values.
+   *
+   * **Note:**`` If data is removed, there will be no incremental normalization, but the series will be fully normalized at the appropriate time as defined in the {@link NormalizationMode}.
+   *
+   * @param headers
+   *        Header IDs to invalidate along with their time ranges. If empty, no headers will be invalidated.
+   *
+   * @return IDs of the header type that were not marked invalid since {@link NormalizedTimeseriesState} did not exist for them.
+   */
+  invalidateTimeseriesWithTimeRanges: function(headers: [NormalizationInvalidationSpec]): set<string>
+
+  /**
+   * This function refreshes/renormalizes the time series for objs based on a spec. This should only be called on Types that represent a time series header.
+   *
+   * @param spec
+   *           Spec that indicates which time series headers to renormalize, along with other options that control the operation.
+   * @return If `spec.sync` ({@link RefreshNormalizationSpec#sync}) is not set to true, returns the {@link BatchJob} that was created/used for processing the request. Null otherwise.
+   */
+  refreshNormalization: function(spec: RefreshNormalizationSpec): Obj
+
+  /**
+   * Returns the ID of the {@link NormalizedTimeseries} and {@link NormalizedTimeseriesState} object.
+   *
+   * @param headerId
+   *              ID of the time series header.
+   * @param tsField
+   *              Time series field that was normalized.
+   * @return ID used to store the state and the normalized time series.
+   */
+  normalizedTimeseriesKey: function(headerId: !string, tsField: !string): !string
+
+  /**
+   * This function indicates if the given time series has been normalized.
+   *
+   * @param tsField
+   *            If provided, only checks the normalized state for that particular `tsField`. If not set, provides the normalized state across all `tsField`s. This function will return false even if a single `tsField` has not been normalized for this header.
+   * @return If the time series has been normalized across all or the given `tsfield`.
+   */
+  @action(group+='read')
+  isNormalized: member function(tsField: string): boolean
+
+  /**
+   * Returns the normalization unit for the `tsfield` on the raw header.
+   * @param rawHeader
+   *               The time series header object for the given `tsField`.
+   * @param tsField
+   *               The time series field for which unit should be determined.
+   * @return The unit for the `tsfield` on the given header. Null if no unit could be found.
+   */
+  normalizationUnit: function(rawHeader: !TimedDataFields<TDP>, tsField: !string): Unit
+
+  /**
+   * This function returns the normalization treatment for the time series.
+   *
+   * @param rawHeader
+   *               The time series header object for the given `tsField`.
+   * @param tsField
+   *               The time series field for which the treatment should be determined.
+   * @return The treatment for the `tsField` on the given header. Default values will be returned if nothing is set.
+   */
+  normalizationTreatment: function(rawHeader: !TimedDataFields<TDP>, tsField: !string): !string
+
+  /**
+   * This function invalidates the time series and invokes any other downstream analytic invalidations if async processing is enabled.
+   */
+  invalidate: member function(timeRange: TimeRange)
+
+  /**
+   * This function removes the normalized values for the given header.
+   *
+   * @param tsField
+   *            If specified, the normalized data for only this `tsField` is removed.
+   * @return If the normalized values were removed.
+   */
+  removeNormalized: member function(tsField: string): boolean
+
+  /**
+   * This function compares the existing normalized data with on-the-fly full normalization results. In order to obtain the normalized data, the #fetchNormalizedData function is called, and all the rules for {@link NormalizationMode} will be followed in order to normalize the time series. The result will be compared with the results from {@link normalize}.
+   *
+   * @param tsField
+   *            If specified, the normalized data for only this `tsField` is compared. If not specified, all the `tsField`s on this header are checked for.
+   * @return A map of `tsField -> comparison` of two time series (null if they are equal). First series in the object will be already normalized time series and second object will be the one that was normalized on-the-fly.
+   */
+  compareNormalizedTs: private member function(tsField: string): map<string, EditList>
+}

@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for a {@link Persistable#scan} call.
+ */
+type ScanSpec mixes Spec {
+
+  /**
+   * Specifies which fields to populate in Obj instances before passing them to a scan callback function. Include spec follow the same rules as those in
+   * {@link FetchSpec#include}.
+   */
+  include: string = "'id'"
+
+  /**
+   * Filter expression to specify which obj instances should be processed/evaluated.  Filters follow the same rules as those in
+   * {@link FetchSpec#filter}.
+   */
+  filter: string
+
+  /**
+   * Javascript callback function. Should take two parameters array of Obj and context.
+   */
+  // TODO : replace with lambda valuetype
+  callback: !string
+
+  /**
+   * Context that will be passed over to a callback function.
+   */
+  context: Obj
+
+  /**
+   * Number of object per each calback call.
+   */
+  batchSize: int = 100
+
+  /**
+   * Number of suggested parallel threads.
+   */
+  numThreads: int = 1
+}

@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for a {@link GenAiGenerativeProxy}.
+ *
+ * To configure this config, copy {@link App.PublicKey} from client app to the service app
+ * (`copy(C3.app().publicKeyContent)`) and configure its access by executing {@link Genai.ChatService#allowAccess} in
+ * the service app:
+ * ```javascript
+ * Genai.ChatService.allowAccess('<client-app-id>', '<client-app-public-key>');
+ * ```
+ *
+ * Then configure client side by calling {@link GenAiGenerativeProxyMicroservice#setServiceAppId} in the client
+ * cluster.
+ *
+ * Please note that the service {@link App} should be started with 'genAiCodeAssistant' pkg or with pkg that depends on it.
+ *
+ * You can check connectivity by calling `GenAiGenerativeProxy.forName('<proxy-name>').validate()` from the client app.
+ *
+ * Note that Microservice does not support multiple backends configured simultaneously. Therefore, {@link GenAiGenerativeProxy}
+ * is a singleton that depends only on `Microservice.Config.forName('GenAiGenerativeProxyMicroservice')`.
+ */
+@beta
+type GenAiGenerativeProxy.Config mixes GenerativeProxy.Config<GenAiGenerativeProxy>

@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Relationship indicating the {@link Genai.SourcePassage} was retrieved by the Query
+ * Chain as a relevant file for the {@link Genai.Query.Result#searchQuery}
+ * and that the passage was used by the language model as a source in the
+ * {@link Genai.Query.Result#rationale}.
+ */
+entity type Genai.Query.ResultToSourceFileRelation extends Genai.Query.Result.Relation mixes Genai.Query.Result.Source.UnstructuredSourceFields type key "SRCFL" {
+  /**
+   * Stores the order in which cited passages appear in the UI.
+   *
+   * An index of -1 means that the llm did not use this passage and therefore it did not appear in the UI.
+   *
+   * NOTE: this is 1-indexed
+   */
+  passageUiDisplayIndex: private int
+}

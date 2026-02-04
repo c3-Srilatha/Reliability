@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An evaluation of {@link ProtectionLoop} health at a point in time.
+ */
+entity type ProtectionLoopHealthHistory mixes TimedValueHistory<ProtectionLoop> schema name 'PLHH' {
+
+  /**
+   * The alert in the health history, if it was a bad enough health to raise an alert.
+   */
+  alert: ProtectionLoopAlert(healthStatus)
+
+  /**
+   * The overall risk level for this evaluation of the {@link ProtectionLoop}.
+   */
+  risk: string enum ProtectionLoopRiskStatus
+
+  /**
+   * Translated {@link ProtectionLoopHealthHistory#risk}, to be displayed in the UI.
+   */
+  translatedRisk: string translate by risk
+
+  /**
+   * The number of "unhealthy" sensors found.
+   */
+  numUnhealthySensors: !int
+
+  /**
+   * All the sensors with a sensor health issue (e.g. missing data, flatlining). Includes threshold issues.
+   */
+  sensorsWithHealthIssuesRelations: [SensorHealthIssueRelation](from)
+
+  /**
+   * All the sensors which deviate from at least one other sensor in the loop.
+   * Does not include any sensors with sensor health or threshold issues.
+   */
+  numSensorsWithDeviation: !int
+}

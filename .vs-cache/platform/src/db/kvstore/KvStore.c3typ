@@ -1,0 +1,364 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type KvStore<C: KvStoreConfig> mixes DefaultInstance, Datastore<C, KvStore.Credentials> {
+
+  /**
+   * The default kv store name
+   */
+  @deprecated(finalVersion="8.10", details="Use Datastore.KV instead")
+  DEFAULT_KV_CONFIG: const string = "kv"
+
+  /**
+   * The default column name.
+   */
+  DEFAULT_COL_NAME: const string = "dflt"
+
+  /**
+   * Retrieves in-memory key value store.
+   */
+  inMemory: function(caps: KvStoreCapabilities): !InMemoryKvStore
+
+  /**
+   * Get the object by id.
+   */
+  @action(group+='read')
+  getObj: member function(tableName: !string, id: !string, spec: KvStoreGetSpec): Obj
+
+  /**
+   * Put the object.
+   */
+  @action(group+='write')
+  putObj: member function(tableName: !string, obj: !Obj)
+
+  /**
+   * Get the data
+   */
+  @action(group+='read')
+  get: abstract member function(tableName: !string, id: !string, spec: KvStoreGetSpec): KvRow
+
+  /**
+   * Get Batch of KvRow. This is helpful when optimizing io from the underlying kv store
+   */
+  @action(group+='read')
+  getBatch: member function(tableName: !string, ids: ![string], spec: KvStoreGetSpec): stream<KvRow>
+
+  /**
+   * Scan data in the kv store
+   * prefix-match search on #tableName.
+   */
+  @action(group+='read')
+  scan: abstract member function(tableName: !string, spec: KvStoreScanSpec): stream<KvRow>
+
+  /**
+   * Gets a stream of all internal partition ids for the table
+   * @param tableName
+   *            The name of the table to scan
+   * @param spec
+   *            Optional specifications for the scan. Only offset and limit are supported.
+   * @return Stream of names of all internal ids corresponding to the table
+   */
+  @action(group+='read')
+  scanPartitionKeys: member function(tableName: !string, spec: KvStoreScanSpec): stream<string>
+
+  /**
+   * Returns a list of column names for the given row. Helpful when debugging. This can also be used to retrieve a list of cols
+   * without the actual data for the columns for performance reasons. Override this implementation to push down retrieval
+   * of column names to the underlying kv store
+   */
+  @action(group+='read')
+  getColumnNames: private member function(tableName: !string, id: !string, limit: int): stream<string>
+
+  /**
+   * Returns a content pointing to the specified row in the specified table.
+   */
+  @action(group+=['read', 'write'])
+  getContent: member function(tableName: !string, id: !string, columnName: !string): KvContent
+
+  /**
+   * Put data.
+   *
+   * @param id
+   *         Id for the object
+   * @param updatedColumns
+   *         Columns that need to be updated. Input in the form of either columnName -> values or
+   *         namespaced column name in case the concept of grouping column by feature exists in the datastore
+   *         for example: in HBase namespaced column name will be column_family:column_name
+   *         Data types supported for values are -> String, Boolean, Number, ByteBuffer
+   * @param removedColums
+   *         Columns that need to be removed. Column names are either the name of the column itself or or
+   *         namespaced column name in case the concept of grouping column by feature exists in the datastore
+   *         for example: in HBase namespaced column name will be column_family:column_name
+   * @param spec
+   *         More details about the update operation if any
+   *
+   * @return if the put operation was successful or not. If the engine was not able to write, it will return false
+   */
+  @action(group+='write')
+  put: abstract member function(tableName: !string,
+                                id: !string,
+                                updatedColumns: map<string, any>,
+                                removedColumns: set<string>,
+                                spec: KvStorePutSpec): !boolean
+
+  /**
+   * Put data in the KvStore. This will not remove any existing columns from the kv row but simply overwrite the columns
+   * provided as a part of the KvRow object
+   * @param id
+   *         Id for the object
+   * @param row
+   *        KvRow to insert
+   * @param spec
+   *         More details about the update operation if any
+   *
+   * @return if the put operation was successful or not. If the engine was not able to write, it will return false
+   */
+  @action(group+='write')
+  put: member function(tableName: !string, row: !KvRow, spec: KvStorePutSpec): !boolean
+
+  /**
+   * Put data in multiple rows.
+   * data to be put in each row is defined in each element in batch (KvStorePut)
+   * @param tableName
+   *         Name of the table where data needs to be put
+   * @param batch
+   *         List of KvStorePut objects. Each KvStorePut object contains the id of the row and the data to be put in that row
+   * @param removedRows
+   *         List of row ids that need to be removed
+   * @param spec
+   *         More details about the update operation if any
+   */
+  @action(group+='write')
+  putBatch: member function(tableName: !string,
+                            batch: !?[KvStorePut],
+                            removedRows: set<string>,
+                            spec: KvStorePutSpec): !boolean
+
+  /**
+   * remove columns from the datastore.
+   * @param columns
+   *         this is a list of column names which can either be column names itself or
+   *         namespaced column name in case the concept of grouping column by feature exists in the datastore
+   *         for example: in HBase namespaced column name will be column_family:column_name
+   */
+  @action(group+='delete')
+  removeColumns: member function(table: !string, id: !string, columns: [string]): !boolean
+
+  /**
+   * Remove the object from the store
+   */
+  @action(group+='delete')
+  remove: abstract member function(tableName: !string, id: !string)
+
+  /**
+   * Copies row from srcTableId (srcTableName, srcId) to destTableId (destTableName, destId)
+   *
+   * @return if the copyRow operation was successful or not. If the engine was not able to write, it will return false
+   */
+  @action(group+='write')
+  copyRow: member function(srcTableId: !Pair<string, string>, destTableId: !Pair<string, string>): !boolean
+
+  /**
+   * Copies a batch of rows from the source kvStore table to the destination kvStore table. Each row in the source table
+   * and the dest table is determined and found by a pair including the table name and the row Id. This api has a default
+   * implementation in KvStore, but may need to be overwritten by special subtypes such as {@KvStore.FileSystem#copyRows}.
+   * Note that if some source rows don't exist in kvStore, the `copyRows` will not fail, instead it only copies the existing
+   * rows and returns false.
+   *
+   * @return true if the all the rows are copied successfully, otherwise return false
+   */
+  @action(group+='write')
+  copyRows: member function(srcTableIds: ![!Pair<string, string>], destTableIds: ![!Pair<string, string>]): !boolean
+
+  /**
+   * This is helper function to copy one single source table row to multiple identical new destination table rows of the same content.
+   */
+  @action(group+='write')
+  copyRow: member function(srcTableId: !Pair<string, string>, destTableIds: [!Pair<string, string>]): !boolean
+
+  /**
+   * Remove the rows from the source table as specified by the ids.
+   */
+  @action(group+='delete')
+  removeBatch: member function(tableName: !string, ids: ![string])
+
+  /**
+   * @return capabilities of this key value store
+   */
+  capabilities: abstract member function(): !KvStoreCapabilities
+
+  /**
+   * Synchronize schema for this type
+   */
+  @action(group+='write')
+  upsertCollection: abstract member function(tableName: !string)
+
+  /**
+   * Remove all entries from the this collection
+   */
+  @action(authz='always', group='delete')
+  clearCollection: abstract member function(tableName: !string)
+
+  /**
+   * Delete the table
+   */
+  @action(authz='always', group='cluster-admin')
+  deleteCollection: abstract member function(tableName: !string, confirm: !boolean)
+
+  /**
+   * This private method that accepts an encoded c3id and returns an unencoded C3Id for object
+   */
+  fromInternalId: private inline function(id: !string): string
+
+  /**
+   * This private method to encoded object Id from unencoded C3 Id
+   */
+  toInternalId: private inline function(id: !string): string
+
+  /**
+   * This private method to provide partition key prefix for current app
+   */
+  partitionKeyPrefix: private inline function(): string
+
+  /**
+   * @return valid c3 instance id from a given unencoded partition key and object key within partition.
+   */
+  c3Id: inline function(partitionKey: string, key: string): string
+
+  /**
+   * @return pair of unencoded partition key and object key within partition from valid c3 instance id.
+   */
+  parseC3Id: inline function(id: string): Pair<string, string>
+
+  /**
+   * Generate full table name for the given type. This should include column family name along with the keyspace name.
+   * E.g. "customer_data.my_table_name" - where `customer_data` is the keyspace name & `my_table_name` is the table name
+   * Different kv stores may call different terminology for keyspace & column family name. The above example is for
+   * Cassandra kv store. For dynamo db, there is no keyspace name and table name will simply be a unique table name
+   * Any kv store specific name constraints can go here.
+   * @param typeRef
+   *           TypeRef for which table name needs to be generated
+   */
+  tableName: cached abstract inline member function(typeRef: !Type): !string
+
+  /**
+   * Generates schema name for the given type. This is typically for {@see Persistable} types where table names are
+   * specified via the schema suffix on the type
+   */
+  schemaName: private inline function(typeRef: !Type): !string
+
+  /**
+   * Retrieve raw row data for the given persistable object. Useful for debugging raw state
+   * @param obj
+   *        If persistable object contains only the partition key, then the kv row for that partition key will be retrieved.
+   *        If persistable object contains id, then KvRow will only contain a single column containing the the object with that id
+   * @param include
+   *        If specified, will include only the columns on the raw kv row. This should be a comma separated list of string containing exact kv row column names that need to be retrieved e.g. "0,state"
+   * @return raw row data for the given obj
+   */
+  @action(group+='read')
+  @beta
+  rowData: private member function(obj: !Persistable, include: string): KvRow
+
+  /**
+   * Retrieves raw data from the row corresponding to the given persistable object. Irrespective of the internal representation,
+   * this should return what data is stored in each column in a human readable form (deserialized). Useful for debugging
+   * @param obj
+   *        If persistable object contains only the partition key, then all objs for that partition key will be retrieved.
+   *        If persistable object contains id, then KvRow will only contain a single column containing the the object with that id
+   * @return cols for the given persistable object in a human readable form. Format <column_name, human readable representation>
+   */
+  @action(group+='read')
+  @beta
+  deserialize: private member function(obj: !Persistable, include: string): KvRow
+
+  /**
+   * Serialize the given persistable objs into kv row. Useful for debugging how these objects will be serialized
+   * **CAUTION** if the objects are partitionable then they should belong for the same partition key
+   * @param objs
+   *        Objs that need to be serialized and persisted in the kv store
+   * @param serType
+   *        Type the persistable objects need to be serialized in. If not specified, it will be the type of objs. Can be used
+   *        to serialize objects in a columnar format
+   * @return KvRow containing serialized values with the new column name (always creates new column name) as it would be written in the kv row
+   */
+  @beta
+  serialize: private member function(objs: ![Persistable], serType: Type): KvRow
+
+  /**
+   * Serialize and put row data in kv row. This will overwrite the existing kv row (if any)
+   * **CAUTION** if the objects are partitionable then they should belong for the same partition key
+   * @param objs
+   *        Objs that need to be serialized and persisted in the kv store
+   * @param serType
+   *        Type the persistable objects need to be serialized in. If not specified, it will be the type of objs. Can be used
+   *        to serialize objects in a columnar format if the
+   */
+  @action(group+='write')
+  @beta
+  putRowData: private member function(objs: ![Persistable], serType: Type)
+
+  /**
+   * @return KvStore instance from the provided config
+   */
+  fromConfig: function(config: !KvStoreConfig): KvStore
+
+  /**
+   * Note: If the value of the config for a particular name is changed, then we require a node / app restart since looking
+   * up the value each time is extremely expensive
+   */
+  forName: cached ~
+
+  /**
+   * Ping KvStore instance. Return true if the KvStore instance is available.
+   */
+  ping: optional member function(): boolean
+
+  /**
+   * @param kvContentUrl
+   *        This url is used to retrieve the kvStore tableName, rowId and columnName for the {@link KvContent} represented by the kvContentUrl. To successfully
+   *        return the correct information, the url has to follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**.
+   * @param failIfInvalid
+   *        If set, the api will fail if the input url does not follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**, otherwise, return **null**.
+   * @return a Tuple containing the tableName, rowId and colName in the same order.
+   */
+  tableNameRowIdAndCol: private inline member function(kvContentUrl: !string,
+                                                       failIfInvalid: boolean)
+                                                : { tableName: !string, rowId: !string, colName: !string }
+
+  /**
+   * Helper function to return the "kvContentUrl" of the KvContent. This "kvContentUrl" has the format **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}** and it is used as the contentLocation
+   * of the target KvContent. This "kvContentUrl" can be persisted and used to obtain the right {@link KvStore kvStore}, tableName and rowId of the corresponding {@link KvRow} when needed.
+   *
+   * @return the "kvContentUrl" of the KvContent with the meta fields equal to the provided {@link KvRowMeta meta-fields}.
+   */
+  kvContentUrl: private inline member function(store: !KvStore,
+                                               tableName: !string,
+                                               rowId: !string,
+                                               columnName: !string): !string
+
+  /**
+   * @param kvContentUrl
+   *        This url is used to get the corresponding KvStore. To successfully return the correct KvStore,
+   *        the url has to follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**.
+   * @param failIfInvalid
+   *        If set, the api will fail if the input url does not follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**, otherwise, return **null**.
+   * @return the correct {@link KvStore} by parsing the {@link #kvContentUrl}.
+   */
+  storeFromKvUrl: private inline member function(kvContentUrl: !string, failIfInvalid: boolean): !KvStore
+
+  /**
+   * Deletes the contents associated with the given KvContent urls.
+   * @param kvContentUrls
+   *        The list of KvContent urls for which kvContents will be deleted.
+   *        This url is used to get the corresponding KvStore. To successfully return the correct KvStore,
+   *        the url has to follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**.
+   */
+  @action(group+='delete')
+  deleteContents: member function(kvContentUrls: !?[string])
+}

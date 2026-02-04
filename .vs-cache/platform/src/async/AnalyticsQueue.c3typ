@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue for analytic invalidation processing.  Entries are added whenever data changes that a
+ * {@link SimpleMetric} used by an analytic depends on.  The appropriate time range information is included in the
+ * entry to enable the analytic to be processed for only the affected time range.
+ *
+ * @see AnalyticsQueueEntry
+ */
+@invalidationQueueOptions(grouping='targetObjId, context.metricGroup',
+                          defaultReportGrouping='targetTypeId, status',
+                          detailReportGrouping='targetTypeId, status',
+                          defaultErrorReportGrouping='targetTypeId, errorCode, review',
+                          detailErrorReportGrouping='targetTypeId, errorCode, review')
+type AnalyticsQueue mixes InvalidationQueue<AnalyticsQueueEntry>, MergeableInvalidationQueue<AnalyticsQueueEntry>, Value {
+
+  /**
+   * Creates entries in the queue to invalidate analytics.  When processed, these entries will be used
+   * to call {@link AnalyticsContainer.invalidateSources}.
+   *
+   * @param tag
+   *           Target tag to invalidate analytics sources for
+   * @param srcs
+   *           Specification of the source objs to invalidate along with various parameters
+   */
+  invalidateSources: function(tag: Tag, srcs: [MetricGroupInvalidationSpec])
+
+  dataIssueTypes: ~
+}

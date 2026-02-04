@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A simple representation of a key pair (a {@link CryptoPublicKey publicKey} and a {@link CryptoPrivateKey privateKey}).
+ * To use this type, your {@link CryptoPrivateKey privateKey} and {@link CryptoPublicKey publicKey} (or
+ * {@link X509Certificate X509Certificate}) should be configured in {@link Config config} and both have the same id.
+ */
+type CryptoKeyPair mixes Identifiable {
+
+  /**
+   * Get the {@link CryptoPrivateKey cryptoPrivateKey} key of this key pair from {@link Config config} by this key
+   * pair's id. (ex: if this key pair id is "c3123", then the {@link CryptoPrivateKey cryptoPrivateKey} with id "c3123"
+   * in {@link Config config} will be returned.
+   *
+   * @return {@link CryptoPrivateKey cryptoPrivateKey}
+   */
+  @action(group+='cluster-admin')
+  privateKey: member function(): !CryptoPrivateKey
+
+  /**
+   * Get the {@link CryptoPublicKey cryptoPublicKey} key of this key pair from {@link Config config} by this key
+   * pair's id. (ex: if this key pair id is "c3123", then either the {@link CryptoPrivateKey cryptoPublicKey} with id "c3123"
+   * in {@link Config config} will be returned, or the public key of {@link X509Certificate x509Certificate } with id "c3123"
+   * will be returned.
+   *
+   * @param fromCert
+   *           to indicate if the public key is embedded in the {@link X509Certificate x509Certificate};
+   *
+   * @return {@link CryptoPublicKey cryptoPublicKey}
+   */
+  publicKey: member function(fromCert: boolean): !CryptoPublicKey
+}

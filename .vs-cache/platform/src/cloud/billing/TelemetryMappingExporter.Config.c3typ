@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides config related to Telemetry Mapping
+ */
+@config(authz=ConfigAuthz.CLUSTER_ADMIN, minOverride=CLUSTER)
+type TelemetryMappingExporter.Config mixes Config, Singleton {
+
+  /**
+   * Indicates the intermediate file path, where the telemetry mapping per app csv will be published,
+   */
+  intermediatePath: string
+
+  /**
+   * Indicates the list of paths where the combined telemetry mapping csv will be published,
+   */
+  destPaths: [string]
+
+  /**
+   * Flag to control the enablement of the telemetry label mapping export feature.
+   */
+  enabled: boolean
+
+  /**
+   * Indicates the file name to which the combined csv data is published.
+   * Final file structure will be {link @TelemetryMappingExporter.Config#baseDirPath}_<Time stamp>
+   */
+  clusterMappingExportPrefix: string = "combinedTelemetryMapping"
+
+  /**
+   * Indicates the most recent date suffixed file name to which the combined csv data is published.
+   * Final file structure will be {link @TelemetryMappingExporter.Config#baseDirPath}_<Time stamp>
+   */
+  latestPublishedClusterMappingFileName: string = "combinedTelemetryMapping"
+}

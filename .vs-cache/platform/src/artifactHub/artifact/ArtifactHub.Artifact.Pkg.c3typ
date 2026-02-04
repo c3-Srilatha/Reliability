@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A subtype of {@link ArtifactHub.Artifact} used to describe {@link Pkg} artifacts registered in {@link ArtifactHub}.
+ */
+@deprecated(finalVersion='8.11', details='Replaced by ArtifactHub.Artifact')
+type ArtifactHub.Artifact.Pkg mixes ArtifactHub.Artifact {
+
+  /**
+   * A deployable set of metadata which can be used to define the {@link Pkg} of an {@link App}.
+   */
+  content: ~
+
+  /**
+   * The dependencies specified by the developer in the .c3pkg.json.
+   * Ex:
+   * ```
+   * {
+   *   "dep1": "8.1",
+   *   "dep2": "5.1",
+   * }
+   * ```
+   */
+  dependencies: ~
+
+  /**
+   * Content containing only the root package source code. Does not contain
+   * any generated files, only what is committed to the package's source code.
+   */
+  rootSourceContent: ArtifactHub.Artifact.Content
+
+  rootSourceContentId:              private function(artifact: !ArtifactHub.Artifact): !string
+  rootSourceContentSemanticVersion: private function(artifact: !ArtifactHub.Artifact): !string
+}

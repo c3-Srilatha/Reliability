@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * @inheritdoc
+ */
+remix type ReliabilityAssetToModelRelation {
+
+  /**
+   * Shows the count of open alerts triggered by this {@link ReliabilityMlModel}
+   * for this {@link ReliabilityAsset}
+   */
+  openAlertsCount: int stored calc count((to.triggeredAlerts.currentState.id == "Open" || to.triggeredAlerts.currentState.id == "Case") && from.id == to.triggeredAlerts.parent.id)
+
+  /**
+   * Shows the date of the last alert triggered by this {@link ReliabilityMlModel}
+   * for this {@link ReliabilityAsset}
+   */
+  lastAlertActivity: datetime calc latest(to.triggeredAlerts.timestamp)
+
+  /**
+   * The {@link ReliabilityOrchestrator.TrainingJobRun} that created this relation.
+   */
+  trainJobRun: private ReliabilityOrchestrator.TrainingJobRun
+
+  /**
+   * Identifier of the {@link ReliabilityOrchestrator.TrainingJob} that produced this {@link ReliabilityAssetToModelRelation} relation.
+   * This field links the current model-to-asset relationship to the specific {@link ReliabilityOrchestrator.TrainingJob} that generated it.
+   * It is populated when models are retrained as part of an automated workflow and subsequently deployed. This association
+   * enables traceability between retraining runs and resulting {@link ReliabilityMlModel} deployments, allowing for
+   * {@link ReliabilityOrchestrator.PostTrainingJob} evaluation, auditability, and workflow integration.
+   */
+  automatedRetrainingJobId: string
+}

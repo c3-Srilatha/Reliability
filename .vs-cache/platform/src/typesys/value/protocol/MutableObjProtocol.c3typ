@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Marker type indicating support for implementation language attribute syntax e.g. accessor via `.`.
+ * Supports mutation operations.
+ * Every method here is intended to unconditionally implement its language syntax, unless otherwise specified.
+ */
+// TODO: PLAT-26185 rename fields to be non-private and without underscore, reconcile with MutableObj
+@deprecated
+abstract type MutableObjProtocol mixes ObjProtocol, Mutable, Value {
+
+  /**
+   * Implements the `obj.name = value` syntactic sugar in js and py.
+   * Also, conditionally implements the square bracket `[]` syntactic sugar in js and py for key-type string.
+   * @param name
+   *         name associated with the desired attribute.
+   * @param value
+   *         value associated with the desired attribute.
+   */
+  setFieldValue: abstract member function(name: !?string, value: !?any)
+
+  /**
+   * Implements the `del` built-in for py.
+   * Also, conditionally implements the square bracket `[]` syntactic sugar in js and py for key-type string.
+   * @param name
+   *         name associated with the desired attribute to remove.
+   */
+  removeField: abstract member function(name: !?string)
+}

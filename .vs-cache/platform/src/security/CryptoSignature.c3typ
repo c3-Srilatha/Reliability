@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Signature provides functionality of a digital signature algorithm for authentication and integrity assurance of
+ * digital data.
+ */
+type CryptoSignature mixes Value {
+
+  /**
+   * Signed the data with a {@link PrivateKey PrivateKey}.
+   *
+   * @param privateKey
+   *           The privateKey used to sign the data.
+   * @param data
+   *           The well known data to be signed with the privateKey.
+   * @param algorithm
+   *           The applied {@link SignatureAlgorithm algorithm} when signing.
+   *
+   * @return The signature bytes of all the data updated.
+   */
+  sign: function(privateKey: !CryptoPrivateKey,
+                 @constraint(length=-1)
+                 data: !binary,
+                 algorithm: !string): @constraint(length=-1) binary
+
+  /**
+   * Verify the signature with the specified data.
+   *
+   * @param publicKey
+   *           The publicKey used to verify the signature.
+   * @param data
+   *           The well know data.
+   * @param signature
+   *           The content that signed by the authentic entity with the private key.
+   * @param algorithm
+   *           The applied {@link SignatureAlgorithm algorithm} when signing.
+   *
+   * @return result of verifying the signature with the well know data.
+   */
+  verify: function(publicKey: !CryptoPublicKey,
+                   @constraint(length=-1)
+                   data: !binary,
+                   @constraint(length=-1)
+                   signature: !binary,
+                   algorithm: !string): boolean
+}

@@ -1,0 +1,154 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration of Genai.UnstructuredQuery.Engine execution.
+ *
+ * * To view all currently available configurations by name, use `Genai.UnstructuredQuery.Engine.Config.listConfigKeys()`.
+ * * To view the values set in a specific config, use `Genai.UnstructuredQuery.Engine.Config.forConfigKey({{ NAME OF CONFIG }})`
+ * * To update an existing config,
+ *      1. Retrieve it via `Genai.UnstructuredQuery.Engine.Config.forConfigKey`, set field values as you would with any other Obj
+ *         (e.g. `withFields`), and then call `setConfig()` to persist your changes.
+ *       OR
+ *      2. Set individual fields via `setConfigValue()`
+ * * To create a new config, simply use `Genai.UnstructuredQuery.Engine.Config.make( ... ) with your desired configuration. If you would
+ *   like to reuse most of an existing config, you can
+ *      1. Retrieve the existing config: `var myConfig = Genai.UnstructuredQuery.Engine.Config.forConfigKey("c3DocumentationV6")`
+ *      2. Change the name (so that you do not overwrite the existing config): `myConfig = myConfig.withName(...)`
+ *      3. Update other config values via `with` or `withFields`
+ *      4. Persist your config via `myConfig.setConfig()`
+ * * To set any config as the default for the app, use `Genai.UnstructuredQuery.Engine.Config.setDefault({{ CONFIG NAME}})`
+ * * Note: only the default Genai.UnstructuredQuery.Engine.Config (set via #setDefault) will affect the behavior of the application.
+ *
+ * Note: If you have already started the Genai.UnstructuredQuery.Engine in your app, you will have to run Genai.UnstructuredQuery.Engine.stop()
+ * after setting the config for the new value to take effect.
+ */
+type Genai.UnstructuredQuery.Engine.Config mixes DefaultInstance, Named, Config, Genai.UnstructuredQueryHandler.BaseParams, Genai.ParentConfig, Genai.WithDeploySpec {
+  /**
+   * Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} that should be used by the Genai.UnstructuredQuery.Engine.
+   */
+  modelConfigName: !string
+
+  /**
+   * Name of {@link Genai.UnstructuredQuery.Engine.REA.ChatMemoryConfig} that should be used by the Genai.UnstructuredQuery.Engine for chat memory (if applicable)
+   */
+  chatMemoryConfigName: string
+
+  /**
+   * Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} that should be used by the Genai.UnstructuredQuery.Engine for extraction (if applicable)
+   */
+  extractionModelConfigName: string
+
+  /**
+   * The Question Answerer Config {@link Genai.UnstructuredQuery.Engine.REA.QuestionRewritingConfig} name.
+   */
+  questionRewritingConfigName: !string
+
+  /**
+   * Parameters to be passed to the executor
+   */
+  executorParams: !json
+
+  /**
+   * The Retriever config {@link Genai.UnstructuredQuery.Engine.REA.RetrieverConfig} name.
+   */
+  retrieverConfigName: !string
+
+  /**
+   * The Extractor config {@link Genai.UnstructuredQuery.Engine.REA.ExtractorConfig} name.
+   * If empty, the extractor step will be skipped.
+   */
+  extractionConfigName: string
+
+  /**
+   * The Reranker config {@link Genai.UnstructuredQuery.Engine.REA.RerankerConfig} name.
+   * If empty, the reranking step will be skipped.
+   */
+  rerankerConfigName: string
+
+  /**
+   * The {@link Genai.UnstructuredQuery.Engine.REA.ContextualQaConfig} name.
+   */
+  questionAnsweringConfigName: !string
+
+  /**
+   * Whether to use the full history of chat in REA question answering.
+   * By default, a new standalone question (with sufficient context) is created (re-written) based on the chat history and passed to the LLM.
+   * If this is set to true, the full chat history can be passed to the LLM, along with the latest (non-rewritten) question.
+   */
+  chatWithFullHistory: boolean
+
+  /**
+   * Spec for {@link Genai.Agent.Tool.Util.Attributor#attribute}.
+   * If not set, new attribution with corroboration will not run.
+   */
+  attributionSpec: Genai.Agent.Tool.Util.Attributor.Spec
+
+  /**
+   * Configuration for {@link Engine.DeploySpec#threadPool} for {@link Genai.UnstructuredQuery.Engine}.
+   * Any fields specified here will override the defaults.
+   */
+  @deprecated(finalVersion='6.0', details='Use `deploySpec` instead.')
+  engineThreadPoolSpec: App.Node.ThreadPool.Spec
+
+  /**
+   * For any response that is streamed, consider it failed after this many seconds.
+   */
+  streamTimeoutSeconds: int = 90
+
+  /**
+   * Set the config with the specified name as the default for the app (via {@link Genai.UnstructuredQuery.Engine.DefaultConfig}).
+   */
+  setDefault: function(configName: !string) js-rhino
+
+  /**
+   * Helper function to get the number of sources that will be used.
+   * This is defined on {@link Genai.UnstructuredQuery.Engine.REA.RetrieverConfig#numRetrievedPassages}
+   */
+  numSources: private member function(): !int js
+
+  /**
+   * Set the {@link Genai.UnstructuredQuery.Engine.REA.ExtractorConfig}
+   * and {@link Genai.UnstructuredQuery.Engine.REA.ContextualQaConfig}
+   * and {@link Genai.UnstructuredQuery.Engine.REA.QuestionRewritingConfig} needed for the
+   * Genai.UnstructuredQuery.Engine to use a specific configuration suffix.
+   *
+   * @param suffix
+   *           The suffix to use, or blank/null to reset to the default. Currently-supported:
+   *           * '_aws_claude_v2'
+   *           * '_gpt4'
+   *           * '_gcp'
+   *           * '_vllm'
+   *
+   * Return the original versions of the configs that this function updated.
+   *
+   */
+  setReaConfigsBySuffix: private function(suffix: string):
+    ![Genai.UnstructuredQuery.Engine.REA.RerankerConfig |
+      Genai.UnstructuredQuery.Engine.REA.ExtractorConfig |
+      Genai.UnstructuredQuery.Engine.REA.ContextualQaConfig |
+      Genai.UnstructuredQuery.Engine.REA.QuestionRewritingConfig] js
+
+  /**
+   * Set the configs for the REAEngine from the QueryEngineConfig.
+   * The following modelConfigNames are supported:
+   * * 'azureGpt35'
+   * * 'awsBedrock'
+   * * 'azureGpt4'
+   * * 'azureGpt4o'
+   * * 'gcpPalm'
+   * * 'gemini'
+   * * 'hosted'
+   */
+  populateReaEngineConfigs: private member function() js-rhino
+
+  inst: ~ js-rhino
+
+  childConfigFields: ~ js
+}

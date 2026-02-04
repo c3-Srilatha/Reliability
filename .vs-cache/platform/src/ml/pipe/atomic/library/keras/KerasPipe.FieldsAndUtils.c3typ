@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util methods common for {@link KerasPipe} which implements {@link MlAtomicPipe} and template pipe
+ * implementation. For example see {@link KerasPipe}.
+ */
+type KerasPipe.FieldsAndUtils<DX, DY> {
+
+  /**
+   * Mapping that indicates which (if any) y inputs should come from which x input. This is useful in cases where the
+   * underlying architecture contains an autoencoder. See {@link KerasConvertSpec#yFromX}.
+   */
+  yFromX: private map<string, string>
+
+  /**
+   * A mapping of sanitized output names to original output names. Since Keras allows model output names to contain
+   * periods but {@link MlPipe}'s Tuple variable bindings do not, this field stores the link between the sanitized
+   * names on this {@link KerasPipe} to the names in the native Keras model.
+   */
+  sanitizedNames: private map<string, string>
+
+  /**
+   * Arguments passed to Keras's [fit](https://keras.io/api/models/model_training_apis/) method. Many of these arguments
+   * are hyperparameters, and should be instantiated using {@link KerasConvertSpec#trainArgs} or modified using the
+   * {@link #withHyperparams} API. Note that {@link KerasFitArgs#batch_size} and {@link KerasFitArgs#shuffle} set here
+   * are ignored in favor of the respective fields set on {@link #generator}.
+   */
+  @ML(containsHyperparams=true)
+  trainArgs: !KerasFitArgs
+
+  /**
+   * Arguments passed to Keras's [predict](https://keras.io/api/models/model_training_apis/) method. Many of these
+   * arguments are hyperparameters, and should be instantiated using {@link KerasConvertSpec#processArgs} or modified
+   * using the {@link #withHyperparams} API. Note that {@link KerasPredictArgs#batch_size} and
+   * {@link KerasPredictArgs#shuffle} set here are ignored in favor of the respective fields set on
+   * {@link #processGenerator}.
+   */
+  @ML(containsHyperparams=true)
+  processArgs: !KerasPredictArgs
+
+  /**
+   * The keras model's history.
+   */
+  history: KerasPipe.KerasHistory
+
+  /**
+   * Determines the type of data provided for Ml Training and Process and how to process it. Numerical is for 1-d numerical data, text
+   * is for string data.
+   */
+  dataType: private string enum('numerical', 'text')
+
+  /**
+   * Create a {@link KerasHistory} using native keras history object.
+   */
+  fromKerasHistory: function(history: native): KerasPipe.KerasHistory py
+
+  /**
+   * The keras model's data generator for sampling data for model training. Use {@link #withHyperparams} with the prefix
+   * 'generator' to define any custom arguments that should be provided for a custom generator.
+   *
+   * ```
+   * pipe = pipe.withHyperparams({'generator/batch_size': 32, 'generator/custom_arg1': 50})
+   * ```
+   */
+  @ML(containsHyperparams=true)
+  generator: !KerasGenerator<DX, DY>
+
+  /**
+   * The keras model's data generator for sampling data for inference. Use {@link #withHyperparams} with the prefix
+   * 'processGenerator' to define any custom arguments that should be provided for a custom generator.
+   *
+   * ```
+   * pipe = pipe.withHyperparams({'processGenerator/batch_size': 32, 'processGenerator/custom_arg1': 50})
+   * ```
+   */
+  @ML(containsHyperparams=true)
+  processGenerator: KerasGenerator<DX, DY>
+
+  /**
+   * @return an instance of a {@link KerasGenerator}.
+   */
+  createGenerator: abstract member function(batch_size: int,
+                                            prefetchFileCount: int,
+                                            shuffle: boolean,
+                                            dx_name: string,
+                                            dy_name: string,
+                                            nativeGenerator: native): !KerasGenerator<DX, DY>
+}

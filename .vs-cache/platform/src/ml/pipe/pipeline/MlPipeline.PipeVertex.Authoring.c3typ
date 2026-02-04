@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functional authoring type for {@link MlPipeline.PipeVertex}. For example usage, see {@link MlPipeline.Authoring}.
+ */
+type MlPipeline.PipeVertex.Authoring mixes MlPipeline.Vertex.Authoring<MlPipeline.Vertex> {
+
+  toVertex: ~ py
+
+  /**
+   * If true, then the pipe should only be used to process, instead of the default train-then-process.
+   * Only one of this, {@link #trainOnly}, {@link #scoreOnly}, and {@link #interpretOnly} should be set at a time.
+   */
+  processOnly: private boolean
+
+  /**
+   * If true, then the pipe should only be used to train, instead of the default train-then-process.
+   * Only one of this, {@link #processOnly}, {@link #scoreOnly}, and {@link #interpretOnly} should be set at a time. should be set at a time.
+   */
+  trainOnly: private boolean
+
+  /**
+   * If true, then the pipe should only be used to score. Only one of this, {@link #processOnly}, {@link #trainOnly},
+   * and {@link #interpretOnly} should be set at a time.
+   */
+  scoreOnly: private boolean
+
+  /**
+   * If true, then the pipe should only be used to interpret. Only one of this, {@link #processOnly}, {@link #trainOnly},
+   * and {@link #scoreOnly} should be set at a time.
+   */
+  interpretOnly: private boolean
+
+  /**
+   * {@link MlConvertSpec} used by shared {@link #pipe} in {@link #processOnly} vertices
+   */
+  convertSpec: private MlConvertSpec
+
+  /**
+   * Reference to machine learning model.
+   */
+  pipe: private MlPipe
+
+  /**
+   * Whether the vertex has nested-input ports for x.
+   */
+  isXNestedInput: private boolean
+
+  /**
+   * Whether the vertex has nested-input ports for y.
+   */
+  isYNestedInput: private boolean
+
+  /**
+   * Whether the vertex has nested-output ports.
+   */
+  isNestedOutput: private boolean
+
+  /**
+   * Helper constructor for an authoring vertex.
+   * @param name
+   *           required name for the vertex.
+   * @param pipe
+   *           machine learning model.
+   * @param xNames
+   *           names of x input ports that the new vertex will have.
+   * @param yNames
+   *           names of y input ports that the new vertex will have.
+   * @param contextNames
+   *           names of context input ports that the new vertex will have.
+   * @param outNames
+   *           names of output ports that the new vertex will have.
+   * @param scoreNames
+   *           names of score output ports that the new vertex will have.
+   * @param interpretNames
+   *           names of interpret output ports that the new vertex will have.
+   * @param isXNestedInput
+   *           Whether the vertex has nested input port(s) for x.
+   * @param isYNestedInput
+   *           Whether the vertex has nested input port(s) for y.
+   * @param isNestedOutput
+   *           Whether the vertex has nested output port(s).
+   * @return constructed vertex.
+   */
+  fromPipe: function(name: string,
+                     pipe: MlPipe,
+                     xNames: [string],
+                     yNames: [string],
+                     contextNames: [string],
+                     outNames: [string],
+                     scoreNames: [string],
+                     interpretNames: [string],
+                     isXNestedInput: boolean,
+                     isYNestedInput: boolean,
+                     isNestedOutput: boolean,
+                     spec: MlConvertSpec): MlPipeline.PipeVertex.Authoring py
+}

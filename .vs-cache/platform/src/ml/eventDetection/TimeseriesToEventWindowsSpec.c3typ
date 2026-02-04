@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This spec describes how to create {@link EventWindow} from {@link Timeseries}.
+ */
+type TimeseriesToEventWindowsSpec mixes Spec {
+
+  /**
+   * Eval metric on this type.
+   */
+  source: Type
+
+  /**
+   * Id of obj that we evaluating metric on.
+   */
+  objId: !string
+
+  /**
+   * Start timestamp to begin checking timeseries for {@link EventWindow}s.
+   */
+  startTimestamp: !datetime
+
+  /**
+   * End timestamp for period of checking timeseries for the existence of {@link EventWindow}s
+   */
+  endTimestamp: !datetime
+
+  /**
+   * Interval to evaluate metrics.
+   */
+  interval: string enum Interval = DAY
+
+  /**
+   * Expression to detect start and end of {@link EventWindow}.
+   * Expression should return 1 for start and -1 for end.
+   * A simple example: "rollingDiff(PowerConsumptionEWTest > 0.35 && PowerConsumptionEWTest < 0.45)".
+   */
+  startAndEndExpression: !string
+}

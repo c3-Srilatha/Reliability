@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Builder of Histogram
+ * @var VT type of examined values
+ */
+type HistogramBuilder<H: Histogram> mixes StatsBuilder<H, HistogramBuilder<H>>, Value {
+
+  /**
+   * Intelligently builds a Histogram depending on the type of values evaluated
+   */
+  build: ~
+
+  /**
+   * Builds a Histogram with a bin for all unique character evaluated
+   */
+  buildCharHistogram: member function(): CharHistogram
+
+  /**
+   * Builds a Numeric Histogram with bins depending on {@see HistogramSpec}
+   */
+  buildNumHistogram: member function(): NumericHistogram
+
+  /**
+   * Builds a 2 bins histogram that shows the ratio of true to false booleans
+   */
+  buildBoolHistogram: member function(): BooleanHistogram
+
+  /**
+   * @return this HistogramBuilder with the provided HistogramSpec
+   */
+  spec: member function(spec: HistogramSpec): HistogramBuilder<H>
+}

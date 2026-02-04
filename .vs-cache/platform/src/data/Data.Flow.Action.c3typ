@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Vertex in an {@link Data.Flow} which represents an action that returns a {@link Data}, {@link Data.Series}, or
+ * another {@link Data}-related type such as {@link Data.GroupBy}
+ */
+@beta
+private type Data.Flow.Action mixes Data.Flow.Vertex {
+
+  /**
+   * Name of the action which this vertex represents
+   */
+  actionName: !string
+
+  /**
+   * Map from argument name to value for all arguments which are not {@link Data}, {@link Data.Series}, or another
+   * {@link Data}-related type such as {@link Data.GroupBy} - those arguments will be represented by named ports and
+   * inputs to this vertex
+   */
+  args: map<string, any>
+
+  /**
+   * The calling type of the action represented by this vertex.
+   */
+  callingType: !Type
+
+  /**
+   * The return type of the action represented by this vertex. Will always be one of {@link Data}, {@link Data.Series},
+   * or another {@link Data}-related type such as {@link Data.GroupBy}
+   */
+  returnType: !Type
+
+  /**
+   * Optional field which holds cached Data, if {@link DataImpl.Lazy} from which this vertex was created was cached.
+   * Used to avoid re-materializing Data once we have converted Data to Data.Flow representation.
+   */
+  cache: DataImpl
+
+  /**
+   * @return whether cache field is populated on this vertex
+   */
+  isCached: member function(): boolean
+
+  /**
+   * Creates new {@link Data.Flow.Action} vertex from provided {@link DataImpl.Lazy}. Throws an error if given
+   * {@link DataImpl} is not a DataImpl.Lazy.
+   */
+  fromData: ~
+
+  /**
+   * Helper to retrieve non-{@link DataImpl} arg from this vertex. Returns null if missing or throws error if
+   * failIfMissing is true.
+   */
+  arg: private member function<T>(argName: !string, failIfMissing: boolean): !T
+
+  /**
+   * Helper method which returns whether this vertex represents a static action, as opposed to member
+   */
+  isStatic: private member function(): boolean
+}

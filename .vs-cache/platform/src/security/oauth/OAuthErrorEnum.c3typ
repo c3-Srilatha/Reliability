@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Values that can be returned in the {@link OAuthErrorResponse.error} field of an {@link OAuthErrorResponse}
+ */
+private enum type OAuthErrorEnum {
+
+  /**
+   * The request is missing a parameter so the server can’t proceed with the request.
+   * This may also be returned if the request includes an unsupported parameter or repeats a parameter.
+   */
+  invalid_request
+
+  /**
+   * Client authentication failed, such as if the request contains an invalid client ID or secret.
+   * Sends an HTTP 401 response in this case.
+   */
+  invalid_client
+
+  /**
+   * Token Validation failed, such as if the token has expired.
+   */
+  invalid_token
+
+  /**
+   * The authorization code (or user’s password for the password grant type) is invalid or expired.
+   * This is also the error you would return if the redirect URI given in the authorization grant
+   * does not match the URI provided in this access token request.
+   */
+  invalid_grant
+
+  /**
+   * For access token requests that include a scope (password or client_credentials grants), this error
+   * indicates an invalid scope value in the request.
+   */
+  invalid_scope
+
+  /**
+   * This client is not authorized to use the requested grant type. For example, if you restrict which
+   * applications can use the Implicit grant, you would return this error for the other apps.
+   */
+  unauthorized_client
+
+  /**
+   * If a grant type is requested that the authorization server doesn’t recognize, use this code.
+   * Note that unknown grant types also use this specific error code rather than using the invalid_request above.
+   */
+  unsupported_grant_type
+}

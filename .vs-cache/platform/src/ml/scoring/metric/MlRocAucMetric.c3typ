@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The {@link MlRocAucMetric} computes the AUC-ROC score, which is the Area Under Curve (AUC)
+ * score of the Receiver Operating Characteristic (ROC) curve. This metric only works for binary classification.
+ * This score is used to measure the ability of a binary classifier to distinguish between
+ * classes. To find the ROC curve, we find true positive rates (TPR) and false positive rates (FPR) for a
+ * number of thresholds. The curve is then used to find the AUC score.
+ * The `modelOutput` is expected to be two-dimensional with predicted probabilities for class '0' and '1'.
+ * The `targetOutput` is expected to be single-dimensional with binary (i.e. 0 and 1) data.
+ * Column '1' will be used for scoring. This metric supports `sampleWeights` as `context`.
+ * The `sampleWeights` is single-dimensional with same number of samples as the `modelOutput`. It represents
+ * a per-sample weighting when aggregating for AUC-ROC score calculation. This metric is a wrapper around the sklearn
+ * version of (roc_auc_score)[https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html]
+ */
+@beta
+type MlRocAucMetric mixes MlScoringMetricSupportingPd<Data, Data, { sampleWeights: Data }> {
+
+  /**
+   * The `average` is a string that defines the behavior when aggregating the metric values for different classes.
+   * The `average` supports 'micro', 'macro', 'weighted', 'sample' or None. It defaults to 'macro',
+   * which calculates metrics for each label, and find their unweighted mean.
+   * 'micro': Calculate metrics globally by considering each element of the label indicator matrix as a label.
+   * 'weighted': Calculate metrics for each label, and find their average, weighted by support (the number of true
+   * instances for each label). 'samples': Calculate metrics for each instance, and find their average.
+   */
+  average: string enum('macro', 'micro', 'weighted', 'sample', 'None') = "macro"
+
+  doScore:        ~ py
+  noTarget:       ~ py
+  contextNames:   ~ py
+  higherIsBetter: ~ py
+}

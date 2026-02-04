@@ -1,0 +1,106 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The result of an {@link IdsDeploymentUtil.setUpDevCluster} call. These flags indicate whether or not the matching function on
+ * {@link IdsDeploymentUtil} succeeded or failed. The errors that occurred can be seen in {@link #errors}.
+ */
+type IdsDevClusterSetupResult mixes IdsSetupResult {
+
+  /**
+   * Whether or not the {@link Tenant} and {@link Tag} for the IDS deployment exist.
+   */
+  createControlTenantTag: !boolean = false
+
+  /**
+   * Whether or not IDS was successfully deployed to the specified control tag.
+   */
+  deployIdsControlTag: !boolean = false
+
+  /**
+   * Whether or not a {@link VanityUrl} was successfully created for the IDS control tag.
+   */
+  createIdsControlVanityUrl: !boolean = false
+
+  /**
+   * Whether or not {@link IdsDeploymentUtil.createIdsControlVanityUrl} registered the DNS entry for
+   * {@link IdsDevClusterSetupSpec.controlVanityUrl}.
+   */
+  registeredIdsControlVanityUrlDns: !boolean = false
+
+  /**
+   * Whether or not the documentation tag for the IDS control tag was successfully configured.
+   */
+  setUpIdsDocumentationTag: !boolean = false
+
+  /**
+   * Whether or not the {@link EnableAclPrivilege}s for the IDS control tag were successfully set.
+   */
+  setUpIdsControlAclPrivileges: !boolean = false
+
+  /**
+   * Whether or not {@link PackageManager} was successfully configured.
+   */
+  configureIdsControlPackageManager: !boolean = false
+
+  /**
+   * Whether or not the IDS control tag's development {@link Pod} was successfully registered in the control tag.
+   */
+  registerDevelopmentPodInIdsControl: !boolean = false
+
+  /**
+   * Whether or not the IDS control tag's {@link PlatformOrganization} was successfully registered in the control tag.
+   */
+  registerPlatformOrganizationInIdsControl: !boolean = false
+
+  /**
+   * Whether or not the 'c3euser' for the IDS control tag was successfully created.
+   */
+  registerC3euser: !boolean = false
+
+  /**
+   * Whether or not {@link AllEnvRemote} was successfully configured.
+   */
+  configureAllEnvRemote: !boolean = false
+
+  /**
+   * Whether or not {@link C3AllEnvRemote} was successfully configured.
+   */
+  configureC3AllEnvRemote: !boolean = false
+
+  /**
+   * Whether or not {@link DevEnvironmentConfig} was successfully configured.
+   */
+  setDevEnvironmentConfig: !boolean = false
+
+  /**
+   * Whether or not {@link MarketplaceConfig.readArtifactsEnabled} was set successfully.
+   */
+  configureIdsDeploymentMode: !boolean = false
+
+  /**
+   * Whether or not the {@link FileSystem} mount for Jenkins and the {@link Jenkins} config for the specified
+   * Jenkins instance were successfully configured.
+   */
+  configureIdsJenkins: !boolean = false
+
+  /**
+   * Whether or not {@link DeploymentPipelineConfig} was successfully configured.
+   */
+  configureDeploymentPipelines: !boolean = false
+
+  /**
+   * Whether or not the {@link IdsSetupSpec.idsControlCanonicalUrl} was whitelisted for tunneled requests.
+   */
+  configureHttpTunnelConfig: !boolean = false
+
+  /**
+   * Whether or not a {@link Twilio} account was successfully configured.
+   */
+  configureTwilioAccount: !boolean = false
+}

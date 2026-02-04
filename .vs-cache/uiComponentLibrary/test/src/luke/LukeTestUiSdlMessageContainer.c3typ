@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlMessageContainer} component for testing purposes.
+ */
+type LukeTestUiSdlMessageContainer mixes LukeTestComponent {
+
+  /**
+   * Selector for the entire message container
+   */
+  parentSelector: ~ = '.c3-sdl-message-container-view'
+
+  /**
+   * Selector for a message banner
+   */
+  bannerSelector: string = '.c3-sdl-message-banner'
+
+  /**
+   * Selector for a message banner's icon
+   */
+  bannerIconSelector: string = 'i.c3-sdl-message-banner-icon'
+
+  /**
+   * Selector for a message banner's primary text
+   */
+  bannerPrimaryTextSelector: string = '.c3-sdl-message-banner-content h1'
+
+  /**
+   * Selector for a message banner's secondary text
+   */
+  bannerSecondaryTextSelector: string = '.c3-sdl-message-banner-content h2'
+
+  /**
+   * Selector for a message banner's close button
+   */
+  bannerCloseButtonSelector: string = 'button.c3-sdl-message-banner-close-button'
+
+  /**
+   * Checks to make sure that the banner at index is of the correct type.
+   *
+   * @param index
+   *    The 1-based index of the banner. NOTE: banner order is column-reverse
+   * @param bannerType
+   *    The expected banner type
+   */
+  assertBannerTypeAt: inline member function(index: int,
+                                             bannerType: string enum UiSdlMessageBannerType): LukeAsyncQueueNode js
+
+  /**
+   * Grabs the primary text of a banner at the given index
+   *
+   * @param index
+   *    The 1-based index of the banner. NOTE: banner order is column-reverse
+   */
+  bannerPrimaryTextAt: inline member function(index: int): LukeAsyncQueueNode js
+
+  /**
+   * Grabs the secondary text of a banner at the given index
+   *
+   * @param index
+   *    The 1-based index of the banner. NOTE: banner order is column-reverse
+   */
+  bannerSecondaryTextAt: inline member function(index: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the close button for the banner at the given index
+   *
+   * @param index
+   *    The 1-based index of the banner. NOTE: banner order is column-reverse
+   */
+  closeBannerAt: inline member function(index: int): LukeAsyncQueueNode js
+
+  /**
+   * Generates a selector for a message banner at the given index
+   *
+   * @param index
+   *    The 1-based index of the banner. NOTE: banner order is column-reverse
+   * @return
+   *    A selector for a message banner at the given index
+   */
+  bannerSelectorForInex: inline member function(index: int): string js
+
+  /**
+   * Checks there is no message banner showing
+   * @return An async node that resolves when its assertion becomes true
+   */
+  assertNoMessageBannerExists: inline member function(): LukeAsyncQueueNode js
+}

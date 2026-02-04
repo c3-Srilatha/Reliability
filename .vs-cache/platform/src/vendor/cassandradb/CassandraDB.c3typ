@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(cloudFunc='k8scass')
+@k8s(templateFieldTypes={'overlay.replicaCount': 'int', 'overlay.config.cluster_size': 'int'},
+     templateArrayFields={imagePullSecrets: ".overlay.global.imagePullSecrets"},
+     operator=true)
+type CassandraDB mixes CloudService<CassandraDB_Config> {
+
+  /**
+   * Ping the service to check if it is up and running. Returns `true` if the service is up and running.
+   */
+  ping: private property(): boolean
+
+  // Endpoint of the Cassandra instance
+  serverEndpoint: private member function(): string
+
+  /**
+   * Runs a native Cassandra compaction for this instance of Cassandra based on {@link CassandraDB.CompactionSpec} spec.
+   * @param spec CassandraDB.CompactionSpec
+   *          Spec to be used for compaction. Will fail unless called sets 'confirm' to true.
+   * @return CassandraDB.CompactionStatus
+   *         Return an {@link CassandraDB.CompactionStatus}.
+   */
+  compact: member function(spec: !CassandraDB.CompactionSpec): !CassandraDB.CompactionStatus
+
+  /**
+   * Fetches the current status of the compaction job for this instance of Cassandra.
+   */
+  compactionStatus: member function(): !CassandraDB.CompactionStatus
+
+  /**
+   * Runs a native Cassandra repair for this instance of Cassandra based on {@link CassandraDB.RepairSpec} spec.
+   * @param spec CassandraDB.RepairSpec
+   *          Spec to be used for repair. Will fail unless called sets 'confirm' to true.
+   * @return CassandraDB.RepairStatus
+   *         Return an {@link CassandraDB.RepairStatus}.
+   */
+  repair: member function(spec: !CassandraDB.RepairSpec): !CassandraDB.RepairStatus
+
+  /**
+   * Fetches the current status of the repair job for this instance of Cassandra.
+   */
+  repairStatus: member function(): !CassandraDB.RepairStatus
+
+  status:             ~
+  isConfigured:       ~
+  ensureConfig:       ~
+  afterTerminate:     ~
+  afterEnsureService: ~
+  beforeStop:         ~
+  terminate:          ~
+  beforeTerminate:    ~
+}

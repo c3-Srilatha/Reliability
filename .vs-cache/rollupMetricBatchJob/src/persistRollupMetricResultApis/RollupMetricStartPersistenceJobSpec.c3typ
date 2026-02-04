@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used by {@link RollupMetricPersistedResult#startRollupMetricBatchJob}
+ */
+type RollupMetricStartPersistenceJobSpec mixes Spec {
+
+  /**
+   * Type name to run rollupMetrics on
+   */
+  srcType: !string
+
+  /**
+   * {@link RollupMetricSpec#filter}
+   */
+  filter: !string
+
+  /**
+   * {@link RollupMetricSpec#rollupFunc}
+   */
+  rollupFunc: !string
+
+  /**
+   * {@link RollupMetricSpec#interval}
+   */
+  interval: !string enum Interval
+
+  /**
+   * {@link RollupMetricSpec#expressions}
+   */
+  expressions: ![string]
+
+  /**
+   * {@link RollupMetricSpec#bindings}
+   */
+  bindings: map<string, any> | [map<string, any>]
+
+  /**
+   * {@link RollupMetricSpec#unitId}
+   */
+  unitId: string
+
+  /**
+   * Optional override for {@link RollupMetricCacheConfig#timeZones}.
+   */
+  timeZones: @indexed set<TimeZone>
+
+  /**
+   * {@link EvalMetricsOptions#fullTSDeclTimeRange}
+   */
+  fullTSDeclTimeRange: boolean
+
+  /**
+   * If `true`, the existing {@link RollupMetricPersistedResult} will be
+   * replaced with the new result.
+   *
+   * If `false`, the existing {@link RollupMetricPersistedResult} will be
+   * concatenated with the new result. For example, if the existing
+   * `RollupMetricPersistedResult` has the {@link Timeseries} from `2023-01-01`
+   * to `2023-03-01` and the new result has the timeseries from `2023-02-01` to
+   * `2023-04-01`, `2023-01-01` to `2023-02-01` from the existing
+   * `RollupMetricPersistedResult` will be concatenated with the new result. As
+   * a result, the timeseries in `RollupMetricPersistedResult` will grow in length.
+   */
+  replace: boolean
+
+  /**
+   * The number of [intervals](interval) before today that #expressions should
+   * be evaluated for. If left empty, the metric will be evaluated starting
+   * from `2000-01-01T00:00:00Z`.
+   *
+   * The number of data points generated is equal to `pastIntervals + futureIntervals + 1`.
+   * For example, if `interval = "DAY", pastIntervals = 4, futureIntervals = 2`,
+   * there will be 7 data points:
+   *
+   *   - 4 days ago
+   *   - 3 days ago
+   *   - 2 days ago
+   *   - 1 day ago
+   *   - Today
+   *   - 1 day in the future
+   *   - 2 days in the future
+   */
+  @constraint(condition="pastIntervals >= 0")
+  pastIntervals: int
+
+  /**
+   * The number of [intervals](interval) after today that #expressions should be
+   * evaluated for.
+   */
+  @constraint(condition="futureIntervals >= 0")
+  futureIntervals: int
+}

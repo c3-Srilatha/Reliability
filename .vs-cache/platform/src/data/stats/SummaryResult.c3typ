@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type SummaryResult {
+
+  /**
+   * number of processed points in the time series
+   */
+  count: int
+
+  /**
+   * percentage(!) of effective range covered by TS intervals
+   *
+   * Effective range is calculated this way:
+   *
+   * if date range is specified (!=null) and LeadingandTrailingGaps == true then effective range is range
+   *
+   * else if range is specified and trailingGaps==false then it is intersection of TS range with the date range
+   *
+   * else it is TS range
+   */
+  coverage: double
+
+  numberOfTimeGaps:      int
+  effectiveRangeStart:   datetime
+  effectiveRangeEnd:     datetime
+  attributeCompleteness: map<string, AttributeCompleteness>
+}

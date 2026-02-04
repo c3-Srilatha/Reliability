@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The base interface for embedders, used to encode text into embedding vectors that can be used
+ * for retrieval, clustering, and more.
+ *
+ * Embedders should always be {@link initialize}d before use, because most will require loading a model.
+ * For the same reason, embedders should generally be used in an {@link Engine}, whether that's standalone
+ * {@link GenaiCore.Embedder.Engine} or as part of another engine.
+ */
+abstract type GenaiCore.Embedder mixes WithId, WithName {
+
+  /**
+   * The default kwargs for this embedder. Caller-provided kwargs values will be merged and take precedence.
+   */
+  defaultKwargs: json
+
+  /**
+   * Encodes a single text into its corresponding embedding.
+   *
+   * @param text
+   *          A string text to be encoded
+   * @param kwargs
+   *          The kwargs to be passed to the embedding function. Will take precedence and be merged with the default kwargs.
+   * @return An array of floats representing the embedding of the input text.
+   */
+  encode: member function(text: !string, kwargs: json): ![float] py
+
+  /**
+   * Encodes a list of texts into their corresponding embeddings.
+   *
+   * @param texts
+   *          An array of strings to be encoded
+   * @param kwargs
+   *          The kwargs to be passed to the embedding function. Will take precedence over the default kwargs.
+   * @return A 2D array of floats representing the embeddings of the input texts.
+   */
+  // Developer Note: this is `inline` so that we can detect and throw an error when `string` is passed to `texts`
+  encodeBatch: inline member function(texts: ![string], kwargs: json): ![[float]] py
+
+  /**
+   * This API is the same as {@link #encodeBatch} and is called from the default implementation of {@link #encodeBatch}.
+   * This function must be overridden by concrete implementations of {@link GenaiCore.Embedder}, because {@link #encodeBatch}
+   * has extra boiler-plate implementation that does, for example, logging.
+   *
+   * @param texts
+   *          An array of strings to be encoded
+   * @param kwargs
+   *          The kwargs to be passed to the embedding function. Will take precedence over the default kwargs.
+   * @return A 2D array of floats representing the embeddings of the input texts.
+   */
+  doEncodeBatch: member function(texts: ![string], kwargs: json): ![[float]] py
+
+  /**
+   * Initializes the embedder.
+   *
+   * @param force
+   *          If true, the embedder will be re-initialized even if it has already been initialized.
+   *          This is mostly necessary when changing some of the field values of an embedder without
+   *          creating a new instance.
+   *
+   * @return The initialized instance
+   */
+  initialize: optional abstract member function(force: boolean): mixing GenaiCore.Embedder
+}

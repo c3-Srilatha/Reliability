@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A representation of a {@link RelationshipInferrer.DataFrame} column. This type contains helper methods to compute features important for
+ * primary and foreign key inference.
+ */
+type RelationshipInferrer.Column {
+
+  /**
+   * The DataFrame that this column is a part of.
+   */
+  dataframe: RelationshipInferrer.DataFrame
+
+  /**
+   * The index (zero-indexed) of the column within the DataFrame.
+   */
+  index: int
+
+  /**
+   * Returns the {@link Data} associated with the this column's DataFrame.
+   */
+  data: member function(): Data
+
+  /**
+   * Returns the data for THIS COLUMN ONLY.
+   */
+  colData: member function(): Data
+
+  /**
+   * Returns whether or not all the values in this column are unique.
+   */
+  unique: member function(): boolean
+
+  /**
+   * Returns whether or not the values in this column are of type int or string.
+   */
+  intOrStringType: member function(): boolean
+
+  /**
+   * Returns the type of values in this column.
+   */
+  dType: member function(): ValueType
+
+  /**
+   * Returns the name of this column.
+   */
+  colName: member function(): string
+
+  /**
+   * Columns with primary keys, in practice, often come from a pool of keywords (See http://ceur-ws.org/Vol-1885/106.pdf).
+   * Returns whether or not the column name contains a common keyword.
+   */
+  containsKeyword: member function(): boolean
+
+  /**
+   * Returns true if all the values in other are in this column (i.e. other is a subset of this column).
+   * Ordinality is used as a proxy to determine this. It is possible
+   * that this will return true even though it is not a real inclusion dependency.
+   */
+  includes: member function(other: !RelationshipInferrer.Column): boolean
+
+  /**
+   * Returns the cardinality of this column.
+   */
+  cardinality: member function(): int
+
+  /**
+   * Returns the cardinality ratio of other column / this column.
+   */
+  cardinalityRatio: member function(other: !RelationshipInferrer.Column): double
+
+  /**
+   * See https://www.microsoft.com/en-us/research/wp-content/uploads/2016/04/FKPowerPivot.pdf.
+   * Given two strings x and y (where x and y could be column names or table names), we tokenize x and y into two
+   * sets of tokens {x1, x2, ..., xm} and {y1, y2, ..., yn} respectively. The tokenization procedure uses typical
+   * delimiters: whitespaces or symbols mark the boundary of tokens (‘_’,’-‘, etc.). We also consider the change
+   * from lower case to upper case as a boundary of tokens. For each token yj, we find the unmapped token xi that
+   * has the largest similarity according to a given string distance function, and map xi to yj, and cumulatively sum
+   * that similarity score.
+   */
+  similarity: function(x: !string, y: !string): double
+}

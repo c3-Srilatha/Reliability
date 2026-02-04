@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Transform {@link Data} to {@link UiSdlChartData}.
+ */
+@typeScript
+type UiSdlTransformDataToUiSdlChartData mixes UiSdlDataTransform<Data, UiSdlChartData> {
+
+  /**
+   * Override abstract function to transform {@link Data} to {@link UiSdlChartData}.
+   */
+  transform: function(data: !Data): UiSdlChartData ts-client
+
+  /**
+   * Generate unique series id being used by SDLChart.
+   *
+   * @param id
+   *        Source id.
+   * @param projectionName
+   *        Projection name the series is used for.
+   *
+   * @return Unique series id used by SDLChart.
+   */
+  generateSeriesId: function(id: !string, metricName: !string, bindingsSuffix: string = ''): string ts-client
+
+  /**
+   * Generate a string interval from two adjacent timestamp labels
+   */
+  getIntervalFromTimestamps: function(timestamp1: !string, timestamp2: !string): string ts-client
+
+   /**
+   * Convert the number of milliseconds between two timestamps to an interval
+   */
+  getIntervalFromMS: function(milliseconds: !number): string ts-client
+}

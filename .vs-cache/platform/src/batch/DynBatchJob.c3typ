@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Dynamically run a batch job without having to create a dedicated type and provision it.
+ * Good use cases include experiments and one off executions.
+ * For production purposes, please create a dedicated type extending {@link BatchJob}.
+ *
+ * Trivial example batching users with JavaScript lambdas:
+ *
+ * ```javascript
+ * var job = DynBatchJob.make({
+ *    doStartLambda: Lambda.fromJsSrc(function(job, options) {
+ *       var users = User.fetch().objs;
+ *       var batches = users.map(u => DynBatchJobBatch.make({
+ *           batchContext: u
+ *       }));
+ *       job.scheduleBatches(batches);
+ *   }),
+ *   processBatchLambda: Lambda.fromJsSrc(function(batch, job, options) {
+ *       // Processing logic. Access the batch value through batch.batchContext.
+ *   }),
+ *   allCompleteLambda: Lambda.fromJsSrc(function(job, options){
+ *       return 'all done';
+ *   }),
+ * }).create();
+ *
+ * job.start();
+ * ```
+ *
+ * Same example with Python lambdas:
+ * ```python
+ * job = c3.DynBatchJob.make({
+ *      "doStartLambda": c3.Lambda.fromPyFunc("lambda job, options: job.scheduleBatches([c3.DynBatchJobBatch(batchContext=user) for user in c3.User.fetch().objs])"),
+ *      "processBatchLambda": c3.Lambda.fromPyFunc("lambda batch, job, options: #Processing logic"),
+ *      "allCompleteLambda": c3.Lambda.fromPyFunc("lambda job, options: 'pydone'")
+ *  }).create();
+ * job.start()
+ * ```
+ *
+ * Mixing different lambda languages is supported.
+ */
+entity type DynBatchJob extends BatchJob<DynBatchJob, DynBatchJobSpec, DynBatchJobBatch> mixes DynBatchJobLambda type key 'DYN' {
+
+  /**
+   * Create an instance of {@link DynBatchJob} from a spec and start the job.
+   *
+   * @param spec
+   *        spec that defines the job
+   * @return the instance of the job that has been started
+   */
+  startFromSpec: function(spec: !DynBatchJobSpec): !DynBatchJob
+
+  /**
+   * Optional object to store an eventual result
+   */
+  result: Obj
+
+  doStart:      ~
+  processBatch: ~
+  allComplete:  ~
+}

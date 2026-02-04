@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all components that process unstructured data.
+ *
+ * Each component performs a specific processing step on input data,
+ * e.g. parsing input files or chunking parsed documents
+ *
+ * When used sequentially in a {@link GenaiCore.Unstructured.Processor}, the output of one
+ * component should be in a format that can be handled by the next component and the output of the last component must
+ * be in the format of a list of {@link GenaiCore.Unstructured.Processor.OutputChunk}.
+ */
+abstract type GenaiCore.Unstructured.ProcessorComponent mixes WithName {
+
+  /**
+   * Performs a processing step on the input data.
+   * @param input
+   *        The input to process.
+   * @return The processed output.
+   */
+  process: abstract inline member function(input: !native): !native
+
+  /**
+   * Performs a processing step on a batch of input data. The default implementation simply iterates over the inputs
+   * and calls {@link #process} on each.
+   * @param inputs
+   *          The batch of inputs to process, formatted as a map from input source file path to input data.
+   * @return The processed output, which should be a dictionary with two keys `results` and `errors`.
+   *          See {@link GenaiCore.Unstructured.ProcessorComponent.BatchOutput} for details on the format.
+   */
+  processBatch: inline member function(inputs: !map<string, native>): !native py
+}

@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Builder for authoring a code module.
+ *
+ * @see Code.Authoring
+ */
+type Code.Authoring.DefinedModule mixes Code.DefinedModule, Code.Authoring.WithName {
+
+  /**
+   * Add a new compilation unit to this module.
+   */
+  compileUnit: member function(fileName: string): !Code.Authoring.CompileUnit
+
+  /**
+   * Add a class in a new compilation unit to this module. This is a convenience function for the two steps:
+   *  - add a compilation unit to this module
+   *  - add a class to that compilation unit
+   *
+   * The compilation unit file will be named after the class name (if provided).
+   *
+   * @see Code.Authoring.CompileUnit#class
+   */
+  class: member function(name: string): !Code.Authoring.DefinedClass
+}

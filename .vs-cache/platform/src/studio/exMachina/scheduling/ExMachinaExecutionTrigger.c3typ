@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for different pipeline execution triggers.
+ */
+entity abstract extendable type ExMachinaExecutionTrigger mixes AclEnabled, ExMachinaUserGroupShareable<ExMachinaExecutionTrigger, ExMachinaExecutionTriggerOwnership, ExMachinaExecutionTriggerShareHistory> schema name 'EXM_TRIG' {
+
+  /**
+   * Trigger name
+   */
+  name: !string
+
+  /**
+   * State of trigger
+   */
+  state: !string enum ExMachinaTriggerState
+
+  /**
+   * Specifies parameters for pipeline execution
+   */
+  spec: !ExMachinaPipelineRunSpec
+
+  /**
+   * ExMachina pipeline runs associated with given trigger
+   */
+  @db(order='descending(meta.created)')
+  runs: [ExMachinaPipelineRun](trigger)
+
+  /**
+   * Execution time of the latest {@link ExMachinaPipelineRun}
+   */
+  lastExecutionDateTime: datetime
+
+  /**
+   * Pipeline properties bindings
+   */
+  propertiesBindings: json
+
+  /**
+   * The memory size to use when starting an ExMachinaSession for the scheduled execution
+   */
+  sessionSize: ExMachinaMemorySize
+
+  /**
+   * Re-start stopped trigger
+   */
+  resume: member function() js-server
+
+  /**
+   * Stop trigger
+   */
+  pause: member function() js-server
+
+  /**
+   * Start an {@link ExMachinaSession} for the execution schedule
+   * @return true if the session started successfully
+   */
+  startSession: member function(): !ExMachinaSession js-server
+
+  /**
+   * Update/remove existing executions based on changes to {@link state}
+   */
+  onStateChange: abstract member function(): ExMachinaExecutionTrigger js-server
+
+  /**
+   * Account members to be notified when a {@link ExMachinaExecutionSchedule} is updated.
+   */
+  @db(filter='!exists(end)')
+  accountMembersToNotify: [ExMachinaUser] schema suffix 'MBRS_TO_NFY'
+
+  /**
+   * TODO: VAD-16871 - Add a common afterCreate for all shareable types after PLAT-51996 fix
+   * Common logic to run after creation of any types that mixin {@link ExMachinaUserGroupShareable}
+   */
+  @dependency(include='isPubliclyAccessible, meta.createdBy, acl.member.id')
+  afterCreate: ~ js-server
+}

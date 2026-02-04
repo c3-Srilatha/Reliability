@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to define how to create the alertContext for training and deployment for any
+ * {@link MlProject}. See {@link ReliabilityMlDatasetPreparationHelper#prepareAlertContext} and
+ * {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets}. Both the creation of the {@link Feature}s
+ * and the preprocessing of those {@link Feature}s can be dictated by the various fields on this Type.
+ */
+type ReliabilityMlAlertContextPreparationSpec {
+
+  /**
+   * Use this field to define the {@link Feature}s which represents how to fetch the alertContext, if custom user
+   * specified alertContext is needed. If this field is not specified,
+   * NOTE: The {@link Feature} MUST be upserted, otherwise an error will be raised by
+   * {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets}.
+   */
+  overrideFeatures: [Feature]
+}

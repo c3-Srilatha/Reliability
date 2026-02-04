@@ -1,0 +1,1034 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a file system interface.
+ */
+abstract type FileSystem mixes DefaultInstance<FileSystem>, FileSystemNotificationRegistration {
+
+  /**
+   * If called directly on FileSystem then returns default FileSystem. If called directly on a sub-type then returns
+   * instance of that FileSystem. Given C3 server may have access to multiple different FileSystems so it's important to
+   * correctly use #fromScheme and #fromUrlOrEncodedPath in most of the cases and only in special cases #inst.
+   */
+  inst: ~
+
+  /**
+   * @return configuration of a default file-systems.
+   */
+  defaultFileSystemConfig: inline function(secrets: boolean): !FileSystemConfigChild
+
+  /**
+   * @return configuration of all file-systems.
+   */
+  fileSystemConfig: inline function(secrets: boolean): !FileSystemConfig
+
+  /**
+   * @return specific configuration of this file-systems.
+   */
+  configChild: member function(secrets: boolean): !FileSystemConfigChild
+
+  /**
+   * @return the file system notification configuration for input urlOrEncodedPathPrefix.
+   */
+  notificationConfig: optional function(urlOrEncodedPathPrefix: !string): FileSystemNotificationConfig
+
+  /**
+   * Checks if this file system type is enabled in the environment.
+   */
+  enabled: inline member function(): boolean
+
+  /**
+   * Enable the file system on the environment
+   */
+  @action(group+='cluster-admin')
+  enable: member function(): boolean
+
+  /**
+   * Checks if this file system type supports content type. If filesystem does support persisting content type then
+   * it should also implement #replaceContentTypeAndEncodingBatch.
+   */
+  supportsContentType: abstract inline member function(): boolean
+
+  /**
+   * Scheme for this file system. E.g. 'file' for Local FS, 's3', 'hdfs' etc.
+   */
+  scheme: abstract inline member function(): !string
+
+  /**
+   * Cloud Service Provider for the FileSystem.
+   */
+  cloudProvider: abstract inline member function(): !CloudProvider
+
+  /**
+   * Returns the CloudResource type name that handles credentials for this FileSystem.
+   * E.g. 'AwsS3Bucket' for S3FileSystem, 'BoxAccount' for BoxFileSystem.
+   * Returns null if this FileSystem does not support cloud credentials.
+   */
+  cloudResourceTypeName: private abstract inline member function(): string
+
+  /**
+   * Returns file-system for a given scheme or fails if scheme is not supported.
+   */
+  fromScheme: final inline function(scheme: !string): !FileSystem java | js
+
+  /**
+   * Returns file-system for a given url or encoded path or fails if url contains un-supported scheme.
+   *
+   * path can be a fully qualified URL or relative encoded path using '/' as a separator with or without leading '/'
+   * character. path is expected to be Url encoded.
+   *
+   * If encoded path starts with a leading '/' then it's expected to contain "mount", root folder or remote host
+   * (depending on file system).
+   */
+  fromUrlOrEncodedPath: inline function(urlOrEncodedPath: string): !FileSystem
+
+  /**
+   * @return root url for this file-system.
+   */
+  rootUrl: inline member function(): !string serialized Url
+
+  /**
+   * @return parsed root url for this file-system.
+   */
+  parseRootUrl: inline member function(): !Url
+
+  /**
+   * Returns fully qualified Url for a given relative encoded path. If path is not relative i.e. starts with '/' then
+   * it needs to match one of accessible file system mount urls. If path is relative then it will be relative to a
+   * default mount url.
+   */
+  urlFromEncodedPath: inline member function(encodedPath: string): !string
+
+  /**
+   * Returns fully qualified Url for a given mount. If the mount is not provided, then `default` will be used.
+   * e.g for {@link FileSystem.s3} if default mount is pointing to "s3://dev-c3/foo/bar", then
+   * - FileSystem.s3().urlFromMount(FileSystemMount.DEFAULT)
+   * - FileSystem.s3().urlFromMount("DEFAULT")
+   * - FileSystem.s3().urlFromMount("/")
+   * will all return "s3://dev-c3/foo/bar".
+   */
+  urlFromMount: final inline member function(mount: string enum FileSystemMount): !string
+
+  /**
+   * Returns fully qualified Url for a given mount and path components. If the mount is not provided, then `default`
+   * will be used. e.g. for S3 if DEFAULT mount is pointing to "s3://dev-c3/foo/bar" and path is
+   * ["my-dir", "my file.txt"] then will return "s3://dev-c3/foo/bar/my-dir/my%20file.txt".
+   *
+   * PLAT-12089 - Inline methods in c3.typ file do not support variable arguments
+   *
+   * urlFromMountAndPath: final inline member function(mount: string, path: string ...): !string
+   */
+  urlFromMountAndPath: final member function(mount: string enum FileSystemMount, path: string ...): !string
+
+  /**
+   * Returns fully qualified Url for a given mount and encoded path. If the mount is not provided, then `default` will
+   * be used. e.g. for S3 if DEFAULT mount is pointing to "s3://dev-c3/foo/bar" and path is "/my-dir/my-file.txt" then
+   * will return "s3://dev-c3/foo/bar/my-dir/my-file.txt".
+   */
+  urlFromMountAndRelativeEncodedPath: final inline member function(mount: string enum FileSystemMount,
+                                                                   relativeEncodedPath: string): !string
+
+  /**
+   * Returns fully qualified Url for a given host (part of the valid mount path) and decoded path. E.g.
+   * for S3 if DEFAULT mount is pointing to "s3://dev-c3/foo/bar" is a valid mount then for
+   * "dev-c3" and "foo/bar/my-dir/my file.txt" will return "s3://dev-c3/foo/bar/my-dir/my%20file.txt".
+   * Will fail if resulting URL does not have a valid mount url.
+   */
+  urlFromHostAndPath: final inline member function(host: !?string, path: !?string): !string
+
+  /**
+   * @return all available mounts i.e. mount to external URL mapping.
+   */
+  mounts: inline member function(): map<string, string>
+
+  /**
+   * File system mount url (a.k.a. root folder | remote host). If mount parameter is null then returns default mount
+   * url for current environment and app. Can be null if file system doesn't support pre-defined mount.
+   */
+  mountUrl: private final inline member function(mount: string): string
+
+  /**
+   * Validates and returns url if valid otherwise throws exception.
+   */
+  validateUrl: final inline member function(url: !?string): string
+
+  /**
+   * Extracts mount url and encoded path from url.
+   */
+  mountUrlAndEncodedPathFromUrl: final inline member function(url: !string, validate: boolean): !Pair<string, string>
+
+  /**
+   * Extracts mount from url.
+   */
+  mountFromUrl: final inline member function(url: !string, validate: boolean): string
+
+  /**
+   * @return true if ACL is enabled for provided mount.
+   *
+   * @see FileMeta
+   */
+  isAclEnabled: final inline member function(mount: !string): boolean
+
+  /**
+   * @return true if provided mount is read only.
+   */
+  isReadOnly: final inline member function(mount: !string): boolean
+
+  /**
+   * @return true if provided url is valid; i.e. for a valid mount
+   */
+  isValidUrl: final inline member function(url: !?string): boolean
+
+  /**
+   * @return true if provided mount url is valid.
+   */
+  isValidMountUrl: private final inline member function(mountUrl: !?string): boolean
+
+  /**
+   * Truncates given mount by deleting all the files. Requires confirm parameter to be true.
+   */
+  truncateMount: final member function(mount: string, confirm: boolean, spec: FileOperationSpec): !int
+
+  /**
+   * Creates instance of file from url or encoded path. Path can be relative, absolute or fully qualified url.
+   * Doesn't read metadata nor checks if file exists or not.
+   */
+  makeFile: inline member function(urlOrEncodedPath: !?string, contentType: string, contentEncoding: string): !File
+
+  /**
+   * Creates new file. If file exists truncates it's content.
+   */
+  createFile: final member function(file: !File, spec: FileOperationSpec): !File
+
+  /**
+   * Creates new directory. If the directory already exists, returns false.
+   * Returns true if the directory was created.
+   */
+  createDir: final member function(urlOrEncodedPath: !?string, spec: FileOperationSpec): boolean
+
+  /**
+   * Creates new ZIP file based on provided list of files.
+   *
+   * @param zipUrlOrEncodedPath
+   *          url or encoded path for a resulting ZIP file
+   * @param files
+   *          list of files to ZIP
+   * @param filesRootUrl
+   *          root url for files; entry name in the ZIP file will be relative decoded path to this root; if not provided
+   *          then entry name will be decoded path of the file
+   */
+  zipFiles: member function(zipUrlOrEncodedPath: !string,
+                            files: ![File],
+                            filesRootUrl: string,
+                            spec: FileOperationSpec): !File
+
+  /**
+   * Opens file and reads it's metadata. Returns null if file doesn't exist.
+   */
+  openFile: final member function(file: !File, spec: FileOperationSpec): File
+
+  /**
+   * Opens files and reads their metadata. Elements in resulting array will be null if that file doesn't exist.
+   */
+  openFiles: final member function(files: ![File], spec: FileOperationSpec): [File]
+
+  /**
+   * Lists files starting with given url or encoded path and marker.
+   *
+   * @param urlOrEncodedPath
+   *          path prefix to that would be used to get all files underneath it.
+   * @param limit
+   *          number of files to return; if -1 all files will be retrieved, defaults is file-system specific.
+   *          always check for ListFilesResult.nextMarker.
+   */
+  listFiles: final member function(urlOrEncodedPath: string,
+                                   limit: int,
+                                   marker: string,
+                                   readMetadata: boolean,
+                                   spec: ListFilesOperationSpec): !ListFilesResult
+
+  /**
+   * List of files and directories just one level down from given url or encoded path.
+   * E.g. with given object paths as following, using / as delimiter:
+   * - North America/countyList.csv
+   * - North America/Canada/Quebec/Montreal
+   * - North America/Canada/Quebec/Montreal/population.csv
+   * - North America/USA/Washington/Bellevue
+   * - North America/USA/Washington/Seattle
+   * ...
+   *
+   * With 'North America` passed as `urlOrEncodedPath`, the returned value would be a ListFilesAndDirsResult instance
+   * which contains:
+   * - files: [North America/countyList.csv] (entries are File instances)
+   * - dirs:  [North America/Canada/,North America/USA/,...] (entries are names of direct child)
+   * NOTE: all files and dirs included in result are direct children of the passed `urlOrEncodedPath`.
+   *       And for deeper level children, like file "North America/Canada/Quebec/Montreal/population.csv", or dir
+   *       "North America/USA/Washington/Bellevue", are excluded from the returned result.
+   *
+   * @param urlOrEncodedPath
+   *          path prefix to that would be used to get all files underneath it.
+   * @param limit
+   *          number of files to return; if -1 all files will be retrieved, defaults is file-system specific.
+   *          always check for ListFilesResult.nextMarker.
+   */
+  listDirectChildren: final member function(urlOrEncodedPath: string,
+                                            limit: int,
+                                            marker: string,
+                                            readMetadata: boolean,
+                                            spec: ListFilesOperationSpec): !ListFilesAndDirsResult
+
+  @action(group='app-admin')
+  doListDirectChildren: private abstract member function(urlOrEncodedPath: string,
+                                                         limit: int,
+                                                         marker: string,
+                                                         readMetadata: boolean,
+                                                         spec: ListFilesOperationSpec): !ListFilesAndDirsResult
+
+  /**
+   * Lists files starting with given url or encoded path and marker.
+   *
+   * @param urlOrEncodedPath
+   *          path prefix to that would be used to get all files underneath it.
+   * @param limit
+   *          number of files to return; if -1 all files will be retrieved, defaults is -1.
+   */
+  listFilesStream: final member function(urlOrEncodedPath: string,
+                                         limit: int,
+                                         marker: string,
+                                         readMetadata: boolean,
+                                         spec: ListFilesOperationSpec): stream<File>
+
+  /**
+   * Lists directories starting with given url or encoded path and marker.
+   *
+   * @param urlOrEncodedPath
+   *          path prefix to that would be used to get all directories underneath it.
+   * @param limit
+   *          number of directories to return; if -1 all directories will be retrieved, defaults is -1.
+   */
+  listDirsStream: final member function(urlOrEncodedPath: string,
+                                        limit: int,
+                                        marker: string,
+                                        depth: int,
+                                        spec: ListFilesOperationSpec): stream<string>
+
+  /**
+   * Determine which files have changed since the last state known to the caller. The method takes a path prefix
+   * and finds all matching files. It compares the last modified time of the files to the values in the `lastSeen` map
+   * to determine if the file has changed.
+   *
+   * @param urlOrEncodedPath directory path
+   * @param lastSeen last state known to caller
+   * @param filter lambda that will be called for each file before checking
+   * @return summary of the changes, including a new version of the map
+   */
+  listChanges: member function(urlOrEncodedPath: !string serialized FileUrl,
+                               lastSeen: !?map<!string serialized FileUrl, !datetime with millis>,
+                               filter: lambda(file: !File): boolean): !FileSystem.Changes
+
+  /**
+   * API to execute the lambda function in a distributed batch mode. This api will listFiles at the given `path` and
+   * call processBatch grouped by the `batchSize`. Within the processBatch, the lambda function will be executed on one
+   * file at a time.
+   * Kindly note that file metadata will not be read. One will have to explicitly read it in the lambda action passed if
+   * required.
+   * @param urlOrEncodedPath
+   *            urlOrEncodedPath at which files should be listed
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the files in distributed mode.
+   *            E.g. (file) -> S3.copyFile("s3://bucket/some/other/location/file.name()) Checkout {@link Lambda} on how to create a lambda
+   *            If you want to pass any arguments to it they should match the underlying lambda function
+   * @param spec
+   *           Spec for batch operation.
+   * @return the distributed batch job
+   */
+  eachFile: final member function(urlOrEncodedPath: string,
+                                  action: !Lambda<function(file: !File)>,
+                                  spec: BatchFileOperationSpec): !FileSystemBatchJob
+
+  /**
+   * API to execute the lambda function in a distributed batch mode. This api will listFiles at the given `path` and
+   * call processBatch grouped by the `batchSize`. Within the processBatch, the lambda function will be executed on a batch of files at a time.
+   * Kindly note that file metadata will not be read. One will have to explicitly read it in the lambda action passed if
+   * required.
+   * @param urlOrEncodedPath
+   *            urlOrEncodedPath at which files should be listed
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the files in distributed mode.
+   *            E.g. (file) -> S3.copyFile("s3://bucket/some/other/location/file.name()) Checkout {@link Lambda} on how to create a lambda
+   * @param spec
+   *           Spec for batch operation.
+   * @return the distributed batch job
+   */
+  eachFileBatch: final member function(urlOrEncodedPath: !?string,
+                                       action: !Lambda<function(files: ![File])>,
+                                       spec: BatchFileOperationSpec): !FileSystemBatchJob
+
+  /**
+   * Executes map-reduce algorithm for a list of file. This api will listFiles at the given `path` and call mapped for
+   * each file batch based on `options.batchSize` and will persist intermediate results. Once all files are processed,
+   * it will call reduce for each intermediate result and persist the final result.
+   *
+   * @param urlOrEncodedPath
+   *         urlOrEncodedPath at which files should be listed
+   * @param mapper
+   *         The lambda function can be anything piece of code that needs to be applied to the files to produce
+   *         intermediate results by logical key. See {@link Lambda} on how to create a lambda
+   * @param reducer
+   *         The lambda for processing all intermediate results for a given key
+   * @param options
+   *         options for this operation.
+   * @return the distributed map reduce job
+   *
+   * @see MapReduceFilesOptions#context
+   */
+  mapReduceFiles: final member function(urlOrEncodedPath: !?string,
+                                        mapper: !Lambda<function(file: ![File], context: any): map<string, any>>,
+                                        reducer: !?Lambda<function(interKey: !?string,
+                                                                   interValues: !?[any],
+                                                                   context: any): any>,
+                                        options: MapReduceFilesOptions): !FileSystemMapReduce
+
+  /**
+   * Return the total number of files in the given urlOrEncodedPath.
+   *
+   * @param urlOrEncodedPath
+   *          path prefix that would be used to get count of all files underneath it.
+   * @param spec
+   *          file operation spec.
+   * @return total number of files under the given path prefix.
+   */
+  countFiles: final member function(urlOrEncodedPath: string, spec: ListFilesOperationSpec): !int
+
+  /**
+   * Updates files access and modification times.
+   *
+   * @param paths
+   *           list of files to touch.
+   * @return list of updated Files in the same order as input.
+   */
+  touchFilesBatch: final member function(files: !?[File], spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Updates access and modification times for files that start with provided url or encoded path.
+   *
+   * @param urlOrEncodedPath
+   *           path prefix for files to touch.
+   * @return number files deleted.
+   */
+  touchFiles: final member function(urlOrEncodedPath: string, confirm: boolean, spec: ListFilesOperationSpec): !int
+
+  /**
+   * Truncates files.
+   *
+   * @param files
+   *           list of files to truncate.
+   */
+  truncateFilesBatch: final member function(files: !?[File], spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Truncates files.
+   *
+   * @param urlOrEncodedPath
+   *           path prefix for files to truncate.
+   */
+  truncateFiles: final member function(urlOrEncodedPath: string, confirm: boolean, spec: ListFilesOperationSpec): !int
+
+  /**
+   * Deletes files.
+   *
+   * @param files
+   *           list of files to delete.
+   */
+  deleteFilesBatch: final function(files: !?[File], spec: DeleteFileOperationSpec)
+
+  /**
+   * Deletes multiple files; confirm parameter should be set to true otherwise action fails.
+   *
+   * @param  urlOrEncodedPath
+   *           path prefix for files to delete.
+   * @return number files deleted.
+   */
+  deleteFiles: final member function(urlOrEncodedPath: string, confirm: boolean, spec: DeleteFileOperationSpec): !int
+
+  /**
+   * Copies files from one path to another. The content type of the destination will not change from the content
+   * type of the source file.
+   *
+   * @param srcFiles
+   *             files to copy.
+   * @param destPaths
+   *             list of paths to a new destinations in the same order as srcFiles.
+   * @return list of copied Files in the same order as input.
+   */
+  copyFilesBatch: final function(srcFiles: !?[File],
+                                 destUrlsOrEncodedPaths: !?[string],
+                                 spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Copies files from one path to another.
+   *
+   * @param srcUrlOrEncodedPath
+   *             path prefix to source file(s).
+   * @param destUrlOrEncodedPath
+   *             path prefix to destination file(s).
+   * @return number files copied.
+   */
+  copyFiles: final member function(srcUrlOrEncodedPath: !string,
+                                   destUrlOrEncodedPath: !string,
+                                   spec: ListFilesOperationSpec): !int
+
+  /**
+   * Move files from one path to another.
+   *
+   * @param srcFiles
+   *             files to move.
+   * @param destUrlsOrEncodedPaths
+   *             list of paths to a new destinations in the same order as srcFiles.
+   * @return list of copied Files in the same order as input.
+   */
+  moveFilesBatch: final function(srcFiles: !?[File],
+                                 destUrlsOrEncodedPaths: !?[string],
+                                 spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Moves the files from one path to another.
+   *
+   * @param srcUrlOrEncodedPath
+   *             path prefix to source file(s).
+   * @param destUrlOrEncodedPath
+   *             path prefix to destination file(s).
+   * @return number files copied
+   */
+  moveFiles: final member function(srcUrlOrEncodedPath: !string,
+                                   destUrlOrEncodedPath: !string,
+                                   spec: ListFilesOperationSpec): !int
+
+  /**
+   * Replaces the content type and encoding without modifying the content of the files.
+   *
+   * Not every file sustem supports persisting content type and content encoding.
+   *
+   * @param files
+   *            source files for which the content type and content encoding needs to be replaced.
+   * @param contentType
+   *            new content type.
+   * @param contentEncoding
+   *            new content encoding.
+   */
+  replaceContentTypeAndEncodingBatch: final member function(files: !?[File],
+                                                            contentType: !string,
+                                                            contentEncoding: !string,
+                                                            spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Replaces the content type and encoding without modifying the content of the files obtained by filePrefix.
+   *
+   * @param urlOrEncodedPathPrefix
+   *            path prefix to source file(s) for which the content type and content encoding needs to be replaced.
+   * @param contentType
+   *            new content type.
+   * @param contentEncoding
+   *            new content encoding.
+   */
+  replaceContentTypeAndEncoding: final member function(urlOrEncodedPathPrefix: !string,
+                                                       contentType: !string,
+                                                       contentEncoding: !string,
+                                                       spec: ListFilesOperationSpec): !int
+
+  /**
+   * Deserializes content from various files led to by the path prefix into a list of C3 Type instances.
+   * @urlOrEncodedPathPrefix
+   *           Path to the files to stream data from
+   * @see FileObjsOperSpec.targetType
+   *
+   * @return list of objects
+   */
+  readObjs: final member function(urlOrEncodedPathPrefix: !string, spec: FileObjsOperSpec): stream<Obj>
+
+  /**
+   * Checks if the provided url or encoded path is empty or a folder/file exists.
+   *
+   * @param urlOrEncodedPath
+   *          prefix path for file(s).
+   * @return whether the path is empty or not.
+   */
+  isPathEmpty: final member function(urlOrEncodedPath: string, spec: FileOperationSpec): boolean
+
+  /**
+   * @return true if path is a directory; i.e. weather or not it ends with '/';
+   */
+  isPathDirectory: final inline member function(urlOrEncodedPath: string): boolean
+
+  /**
+   * @return the file system capabilities for {@link FileOperationSpec}.
+   */
+  capabilities: cached property(): !FileSystem.Capabilities
+
+  /**
+   * @return instance of S3 file system
+   */
+  s3: function(): !S3FileSystem
+
+  /**
+   * @return instance of Azure Blob File system
+   */
+  azure: function(): !AzureFileSystem
+
+  /**
+   * @return instance of Azure Data Lake File system
+   */
+  adl: function(): !AdlFileSystem
+
+  /**
+   * @return instance of C3 file system
+   */
+  c3: function(): !C3FileSystem
+
+  /**
+   * @return instance of GCS file system
+   */
+  gcs: function(): !GcsFileSystem
+
+  /**
+   * @return instance of GitHub file system
+   */
+  github: function(): !GitHubFileSystem
+
+  /**
+   * @return instance of Http file system
+   */
+  http: function(): !HttpFileSystem
+
+  /**
+   * @return instance of Https file system
+   */
+  https: function(): !HttpsFileSystem
+
+  /**
+   * @return instance of Local file system
+   */
+  local: function(): !LocalFileSystem
+
+  /**
+   * @return instance of tmp file system
+   */
+  tmp: function(): !TmpFileSystem
+
+  /**
+   * @return instance of archive file system
+   */
+  archive: function(): !ArchiveFileSystem
+
+  /**
+   * @return instance of hdfs file system
+   */
+  hdfs: function(): !Hdfs
+
+  /**
+   * @return instance of MsGraph file system
+   */
+  msgraph: function(): !MsGraphFileSystem
+
+  /**
+   * @return instance of Google Drive file system
+   */
+  gdrive: function(): !GoogleDriveFileSystem
+
+  /**
+   * @return instance of Box file system
+   */
+  box: function(): !BoxFileSystem
+
+  isC3:      inline member function(): boolean
+  isS3:      inline member function(): boolean
+  isAzure:   inline member function(): boolean
+  isAdl:     inline member function(): boolean
+  isHttp:    inline member function(): boolean
+  isHttps:   inline member function(): boolean
+  isGcs:     inline member function(): boolean
+  isLocal:   inline member function(): boolean
+  isTmp:     inline member function(): boolean
+  isArchive: inline member function(): boolean
+  isHdfs:    inline member function(): boolean
+  isMsGraph: inline member function(): boolean
+  isGDrive:  inline member function(): boolean
+  isBox:     inline member function(): boolean
+  asC3:      inline member function(failIfNot: boolean): C3FileSystem
+  asS3:      inline member function(failIfNot: boolean): S3FileSystem
+  asAdl:     inline member function(failIfNot: boolean): AdlFileSystem
+  asHttp:    inline member function(failIfNot: boolean): HttpFileSystem
+  asHttps:   inline member function(failIfNot: boolean): HttpsFileSystem
+  asTmp:     inline member function(failIfNot: boolean): TmpFileSystem
+  asLocal:   inline member function(failIfNot: boolean): LocalFileSystem
+  asArchive: inline member function(failIfNot: boolean): ArchiveFileSystem
+  asHdfs:    inline member function(failIfNot: boolean): Hdfs
+  asMsGraph: inline member function(failIfNot: boolean): MsGraphFileSystem
+  asGDrive:  inline member function(failIfNot: boolean): GoogleDriveFileSystem
+  asBox:     inline member function(failIfNot: boolean): BoxFileSystem
+
+  /**
+   * Make this instance of file system as default.
+   */
+  @action(authz='always')
+  makeDefault: member function(override: string enum ConfigOverride)
+
+  /**
+   * Set mount URL on this file system.
+   *
+   * WARNING: Please DO NOT set mounts without ACL to any directory containing sensitive info or secrets
+   *
+   * @param mount can by any of `FileSystemMount` enum values or any other identifier.
+   * @param url a fully qualified url with a valid file system scheme. Check {@link FileSystemScheme} for all possible file system schemes.
+   *
+   * Also, see {@link file-system.c3doc} for instructions on adding external buckets/blobs as mounts on FileSystem.
+   * It may only be applicable to FileSystem(s) which supports having buckets/blobs. e.g S3FileSystem, AdlFileSystem.
+   */
+  @action(authz='always', group='app-admin')
+  setMount: member function(mount: !string, url: !string, override: string enum ConfigOverride)
+
+  /**
+   * Remove mount from this file system.
+   */
+  @action(authz='always')
+  removeMount: member function(mount: !string, override: string enum ConfigOverride)
+
+  /**
+   * Reads raw (possibly compressed) binary content of a file. It is highly recommended to use File type for accessing
+   * content.
+   *
+   * @param file
+   *           existing file to read content from.
+   * @return the content if file exists or null if it doesn't.
+   */
+  fileEncodedStream: private final member function(file: !File, spec: FileOperationSpec): Pair<File, ByteStream>
+
+  /**
+   * Truncates file and returns push stream for writing encoded binary content into it. It is highly recommended to
+   * use File type for writing content.
+   *
+   * @param file
+   *           existing or new file to write to.
+   * @return push stream for new content.
+   */
+  fileEncodedPushStream: private final member function(file: !File,
+                                                       spec: FileOperationSpec): !Pair<File, BytePushStream>
+
+  /**
+   * Internal helper function to check for confirm flag used in truncateBucket, touchFiles and deleteFiles.
+   */
+  confirm: private final inline function(action: !string, confirm: boolean)
+
+  /**
+   * Extracts mount path and relative path from file path.
+   */
+  parseUrlOrEncodedPath: final inline member function(urlOrEncodedPath: !?string): FileUrl
+
+  /**
+   * Extracts authority/host and relative (decoded) path from mount.
+   */
+  hostAndPathFromMount: private final inline member function(mount: !?string,
+                                                             validate: !boolean): Pair<string, string>
+
+  /**
+   * Extracts authority/host (part of mount url) and relative (decoded) path from C3 file url.
+   */
+  hostAndPathFromUrlOrEncodedPath: private inline member function(urlOrEncodedPath: !?string,
+                                                                  validate: !boolean): Pair<string, string>
+
+  /**
+   * Extracts scheme, authority/host (part of mount url) and relative (decoded) path from url.
+   */
+  schemeHostAndPathFromUrlOrEncodedPath: private final inline member function(urlOrEncodedPath: !?string,
+                                                                              validate: !boolean)
+                                                                       : Triple<string, string, string>
+
+  /**
+   * Extracts authority/host (part of mount url) and relative (decoded) path from external url (i.e. content location
+   * of C3 File).
+   */
+  hostAndPathFromExternalUrl: private final inline member function(url: !?string): Pair<string, string>
+
+  /**
+   * Extracts scheme, authority/host (part of mount url) and relative (decoded) path from external url (i.e. content
+   * location of C3 File).
+   */
+  schemeHostAndPathFromExternalUrl: private final inline member function(url: !?string)
+                                                                  : Triple<string, string, string>
+
+  /**
+   * Validates authority/host; throws exception or return host that should be used. If `exclusive` check is also
+   * requested, then validates that corresponding mount URL doesn't have any relative path. E.g. this is helpful when
+   * implementing "truncate host" functionality.
+   */
+  validateHost: private final inline member function(host: !?string, exclusive: boolean): !string
+
+  /**
+   * Validate (and translate if needed) C3 File URL or encoded path to external / mounted URL.
+   */
+  urlToExternalUrl: private inline member function(urlOrEncodedPath: !?string, validate: boolean): string
+
+  /**
+   * Validate (and translate if needed) external / mounted URL to C3 File URL.
+   */
+  urlFromExternalUrl: private inline member function(url: !string, validate: boolean): string
+
+  /**
+   * Scheme that should be used by external URL.
+   */
+  externalScheme: private inline member function(): !string
+
+  /**
+   * Throws ObjNotFound exception.
+   */
+  throwFileNotFoundException: private final inline member function(urlOrEncodedPath: !string)
+
+  /**
+   * @return cached copy i.e. local file with same metadata and content.
+   */
+  @action(group+='read')
+  cachedCopy: private final member function(file: !File, spec: FileOperationSpec): !File
+
+  /**
+   * @return cached file content or null if not cached.
+   */
+  cachedFileContent: private final member function(url: !?string, cacheUrlOrEncodedPath: !?string): Pair<File, binary>
+
+  /**
+   * Caches file content.
+   */
+  cacheFileContent: private final member function(file: !File,
+                                                  encodedContent: !?binary,
+                                                  cacheUrlOrEncodedPath: !?string,
+                                                  cacheTtlSec: int)
+
+  /**
+   * Opens file and reads it's metadata. Returns null if file doesn't exist.
+   */
+  @action(group='app-admin')
+  doOpenFile: private abstract member function(file: !File, spec: FileOperationSpec): File
+
+  /**
+   * Opens files and reads their metadata. Elements in resulting array will be null if that file doesn't exist.
+   */
+  @action(group='app-admin')
+  doOpenFiles: private optional member function(files: ![File], spec: FileOperationSpec): [File]
+
+  /**
+   * Lists files starting with given url or encoded path and marker.
+   *
+   * @param urlOrEncodedPath
+   *        Fully qualified URL or relative encoded path.
+   *        Note: If encoded path starts with a leading '/' then it's expected to contain "mount", root folder or
+   *              remote host (depending on file system).
+   * @param limit
+   *        number of files to return; if -1 all files will be retrieved, default is file-system specific.
+   *        always check for ListFilesResult.nextMarker.
+   * @param marker
+   * @param readMetadata
+   * @param spec
+   */
+  @action(group='app-admin')
+  doListFiles: private abstract member function(urlOrEncodedPath: string,
+                                                limit: int,
+                                                marker: string,
+                                                readMetadata: boolean,
+                                                spec: ListFilesOperationSpec): !ListFilesResult
+
+  @action(group='app-admin')
+  doListFilesStream: private member function(urlOrEncodedPath: string,
+                                             limit: int,
+                                             marker: string,
+                                             readMetadata: boolean,
+                                             spec: ListFilesOperationSpec): stream<File>
+
+  @action(group='app-admin')
+  doListDirsStream: private member function(urlOrEncodedPath: string,
+                                            limit: int,
+                                            marker: string,
+                                            depth: int,
+                                            spec: ListFilesOperationSpec): stream<string>
+
+  @action(group='app-admin')
+  doTruncateMount: private member function(mount: string, confirm: boolean, spec: FileOperationSpec): !int
+
+  /**
+   * Deletes batch of files.
+   *
+   * @param files
+   *        List of files to delete.
+   * @param spec
+   *        Configuration options. {@see FileOperationSpec}
+   */
+  @action(group='app-admin')
+  doDeleteFilesBatch: private abstract member function(files: !?[File], spec: DeleteFileOperationSpec)
+
+  /**
+   * Replaces the content type and encoding without modifying the content of the files.
+   */
+  @action(group='app-admin')
+  doReplaceContentTypeAndEncodingBatch: private member function(files: !?[File],
+                                                                contentType: !string,
+                                                                contentEncoding: !string,
+                                                                spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Reads raw (possibly compressed) binary content of a file. It is highly recommended to use File type for accessing
+   * content.
+   *
+   * @param file
+   *        existing file to read content from.
+   * @return the content if file exists or null if it doesn't.
+   */
+  @action(group='app-admin')
+  doFileEncodedStream: private abstract member function(file: !File, spec: FileOperationSpec): Pair<File, ByteStream>
+
+  /**
+   * Truncates file and returns push stream for writing encoded binary content into it. It is highly recommended to
+   * use File type for writing content.
+   *
+   * @param file
+   *        existing or new file to write to.
+   * @return push stream for new content.
+   */
+  @action(group='app-admin')
+  doFileEncodedPushStream: private abstract member function(file: !File,
+                                                            spec: FileOperationSpec): Pair<File, BytePushStream>
+
+  /**
+   * Creates new file. If file exists truncates it's content.
+   * Default implementation uses fileEncodedPushStream and openFile pattern.
+   */
+  @action(group='app-admin')
+  doCreateFile: private member function(file: !File, spec: FileOperationSpec): !File
+
+  /**
+   * Creates new folder. If the folder already exists, returns false.
+   * Returns true if the folder was created.
+   */
+  @action(group='app-admin')
+  doCreateDir: private abstract optional member function(urlOrEncodedPath: !string, spec: FileOperationSpec): boolean
+
+  /**
+   * Touches files by updating their timestamps. Default implementation uses fileEncodedPushStream pattern.
+   */
+  @action(group='app-admin')
+  doTouchFilesBatch: private member function(files: !?[File], spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Truncates files to zero length. Default implementation uses fileEncodedPushStream pattern.
+   */
+  @action(group='app-admin')
+  doTruncateFilesBatch: private member function(files: !?[File], spec: ListFilesOperationSpec): [File]
+
+  /**
+   * Returns true if this FileSystem supports Files that correspond to directories.
+   */
+  supportsDirs: abstract member function(): boolean
+
+  /**
+   * Generates pre-signed URL that can be used to upload/download files to/from object storage using HTTP.
+   *
+   *   1. Content-Type has to be specified for PUT operation.
+   *   2. Content-Length has to be specified for PUT operation.
+   *   3. x-ms-blob-type has to be specified for PUT operation on AzureFile. <BlockBlob | PageBlob | AppendBlob>
+   *
+   * @param urlOrEncodedPath
+   *          Fully qualified URL or relative encoded path.
+   * @param httpMethod
+   *          Type of HTTP request, could be GET, PUT, POST, PATCH, or DELETE.
+   * @param duration
+   *          Specifies how long the presignedUrl is valid. See Duration.fromString for more details.
+   * @param spec
+   *          Provides options for various File actions.
+   */
+  generatePresignedUrl: optional member function(urlOrEncodedPath: !string,
+                                                 method: string = 'GET',
+                                                 expiration: string = '1h',
+                                                 spec: FileOperationSpec): !string
+
+  /**
+   * Whether the error is retryable for a specific file system.
+   */
+  shouldRetry: private function(ex: @java(class='java.lang.Throwable') !native): boolean
+
+  /**
+   * Copy a file to the destUrl
+   *
+   * @param src
+   *    The file to be copied
+   * @param destUrl
+   *    Path to a new destination
+   * @param spec
+   *    The spec for the operations on the file being transferred
+   */
+  copyFile: private function(src: !File, destUrl: !string, spec: FileOperationSpec): File
+
+  /**
+   * Checks if a file is locked/leased.
+   *
+   * @param file
+   *    The file to check
+   * @param spec
+   *    The spec for the operations on the file
+   * @return true if the file is locked/leased.
+   *
+   * Throws an exception if FileSystem does not provide file locking capabilities.
+   */
+  @action(group='app-admin')
+  doIsFileLocked: private abstract optional member function(file: !File, spec: FileOperationSpec): boolean
+
+  /**
+   * Breaks the lock/lease on the file (or its blob), if it is locked/leased.
+   *
+   * @param file
+   *    The file whose lock/lease needs to be broken.
+   * @param spec
+   *    The spec for the operations on the file
+   *
+   * Throws an exception if FileSystem does not provide file locking capabilities.
+   */
+  @action(group='app-admin')
+  doBreakLockOnFile: private abstract optional member function(file: !File, spec: FileOperationSpec)
+
+  /**
+   * Checks if a file is locked/leased.
+   *
+   * @param file
+   *    The file to check
+   * @param spec
+   *    The spec for the operations on the file
+   * @return true if the file is locked/leased.
+   *
+   * Throws an exception if FileSystem does not provide file locking capabilities.
+   */
+  isFileLocked: final member function(file: !File, spec: FileOperationSpec): boolean
+
+  /**
+   * Breaks the lock/lease on the file (or its blob), if it is locked/leased.
+   *
+   * @param file
+   *    The file whose lock/lease needs to be broken.
+   * @param spec
+   *    The spec for the operations on the file
+   *
+   * Throws an exception if FileSystem does not provide file locking capabilities.
+   */
+  breakLockOnFile: final member function(file: !File, spec: FileOperationSpec)
+
+  /**
+   * Cache of all FileSystem instances.
+   */
+  instanceCache: private cached function(): map<string, FileSystem>
+
+  /**
+   * Cache of all FileSystem instances by corresponding URL scheme.
+   */
+  schemeCache: private cached function(): map<string, FileSystem>
+}

@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+private type DataToPyAstVisitor mixes Workflow.Visitor<DataToPyAstVisitorCtx> {
+
+  /**
+   * Prefix used for name of variables defined in PyAst output
+   */
+  PY_TEMP_VAR_PREFIX: const string = "tmp_df"
+
+  /**
+   * The name of the python variable in `pySrc` that should contain the end result caller is interested in
+   */
+  PY_RET_VAR: const string = "ret"
+
+  /**
+   * Map of method names to Pandas method names. If a method is not present, then assume that it already matches the
+   * correct pandas method name
+   */
+  actionNameMap: cached function(): map<string, string>
+
+  /**
+   * Convert "left" to pandas and calls "right" on it.
+   * Useful when an execution engine does not properly support a Pandas API but has conversion logic to pandas.
+   */
+  toPandas: abstract function(left: !PyAst.Expr2, right: !PyAst.Expr2): !PyAst.Expr2
+
+  /**
+   * Convert a PyAst.Expr2 corresponding to a Data.X, in which X is an execution engine, into a Pandas DataFrame if we
+   * want to use Pandas to execute the parent action.
+   */
+  toPandas: abstract function(actionName: !string, expr: !PyAst.Expr2): !PyAst.Expr2
+
+  /**
+   * Convert `expr` back to equivalent data structure in current execution engine
+   */
+  toNative: abstract function(expr: !PyAst.Expr2): !PyAst.Expr2
+
+  /**
+   * Return true for the operators that need to default to native pandas execution
+   */
+  shouldDefaultToPandas: abstract function(actionName: !string): !boolean
+
+  /**
+   * Deciding whether output of each statement should be converted back to its native data structure
+   */
+  skipConvert: abstract function(actionName: !string): !boolean
+
+  /**
+   * Generate final "ret = " assignment to be added to the generated PyAst
+   */
+  generateReturnNode: function(nVertices: !int): !PyAst.Assign
+
+  /**
+   * Generate a {@link DataToPyAstVisitorCtx} which contains the constructed Python AST captured by the provided data workflow.
+   */
+  generatePyAstCtx: function(wf: !Workflow,
+                             names: map<Workflow.Vertex, string>,
+                             data: set<DataImpl>,
+                             vars: map<any, string>,
+                             ioMethod: !string,
+                             skipConvert: !boolean,
+                             visitorType: !Type): !DataToPyAstVisitorCtx
+
+  /**
+   * Generates executable pySrc for applying a single Action to a single DataImpl
+   */
+  pySrcFromAction: private function(action: !Action): !string
+}

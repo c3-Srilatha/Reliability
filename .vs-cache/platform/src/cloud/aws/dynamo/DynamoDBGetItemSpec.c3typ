@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type DynamoDBGetItemSpec mixes Spec {
+
+  /**
+   * A map of attribute names to AttributeValue objects, representing the primary key of the item to retrieve.
+   */
+  primaryKeys: map<string, any>
+
+  /**
+   * Determines the read consistency model: If set to true, then the operation uses strongly consistent reads;
+   * otherwise, the operation uses eventually consistent reads.
+   */
+  consistentRead: boolean
+
+  /**
+   * A string that identifies one or more attributes to retrieve from the table. These attributes can include scalars,
+   * sets, or elements of a JSON document. The attributes in the expression must be separated by commas.
+   *
+   * If no attribute names are specified, then all attributes will be returned. If any of the requested attributes are not
+   * found, they will not appear in the result.
+   */
+  projectionExpression: string
+
+  /**
+   * One or more substitution tokens for attribute names in an expression.
+   */
+  expressionAttributeNames: Pair<string, string>
+}

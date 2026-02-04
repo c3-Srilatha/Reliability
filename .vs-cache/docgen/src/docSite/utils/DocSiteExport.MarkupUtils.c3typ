@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for traversing and/or modifying {@link DocumentationMarkup} nodes produced by the
+ * {@link DocumentationRenderer}.
+ */
+private type DocSiteExport.MarkupUtils mixes Value js-rhino {
+
+  /**
+   * Helper function to traverse through {@link DocumentationMarkup} and do the following:
+   *
+   * - Enrich any {@link DocumentationReference}s by adding the following attributes
+   *   to the references:
+   *   - `pkgName`
+   *   - `pkgVersion`
+   *   - `exists` (boolean indicating whether the reference points to an existing resource)
+   * - Enrich any {@link DocumentationImage}s by converting any relative [src paths](DocumentationImage#src)
+   *   to absolute paths.
+   *
+   * @param markup
+   *           The parsed documentation markup to traverse and enrich.
+   * @param linkBuilder
+   *           The link builder to use to enrich {@link DocumentationReference}s and
+   *           {@link DocumentationImage}s.
+   * @returns The enriched markup.
+   */
+  enrichMarkup: inline function(
+    markup: !?DocumentationMarkup,
+    linkBuilder: !DocSiteLinkBuilder
+  ): json
+}

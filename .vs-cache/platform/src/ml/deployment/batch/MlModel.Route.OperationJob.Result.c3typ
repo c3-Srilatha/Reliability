@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Holds metadata and results for the operations defined on a {@link MlModel.Route}, as part of {@link MlModel.Route.OperationJob.Run}.
+ */
+@beta
+type MlModel.Route.OperationJob.Result extends MlWorkflowCoordinatableResult type key 'MMROJRES' {
+
+  /**
+   * The route for which the operations were performed. The route holds information about the model, as well as
+   * the output handlers, if any.
+   */
+  route: !MlModel.Route
+
+  /**
+   * The operations that were performed for the route.
+   * The keys are the names of the operations, and the values are the inputs to the operations.
+   */
+  operations: !map<string serialized MlDataOpName, MlModel.Input>
+
+  /**
+   * The results of the operation performed for the route.
+   * The keys are the names of the operations, and the values are the results of the operations. The keys here
+   * should match the keys in {@link #operations}.
+   */
+  operationResults: map<string, any>
+
+  startWorkflow: ~
+
+  /**
+   * Helper method for {@link #startWorkflow}. Gathers x features and y features and pipeline for each of the operations
+   * and effectively calls `pipeline.<operation>(x, y, spec)` for each.
+   *
+   * @return handle to the asynchronous execution.
+   */
+  doOperations: private member function(): !MlOperationRun
+
+  /**
+   * Helper method for {@link #startWorkflow}. Takes the operation output of {@link #doOperations} and
+   * uses the output handlers on {@link #route} to handle it.
+   *
+   * @param operationOutput
+   *           the output of the operation in {@link #doOperations}.
+   * @return the operationOutput.
+   */
+  handleOperationOutput: private member function(operationOutput: !any): any
+
+  /**
+   * Helper method for {@link #startWorkflow}. Takes the operation output of {@link #doOperations} and
+   * updates this with the results of the operations.
+   *
+   * @return this, updated with the results of the operations.
+   */
+  updateResult: private member function(): !mixing MlModel.Route.OperationJob.Result
+
+  /**
+   * Helper function for deduplicating and evaluating the feature set data for the operations.
+   *
+   * @param model
+   *           the model to evaluate feature set data for.
+   * @param operations
+   *           the key is the model operation name and value is the input for the operation (e.g. start, end, subject filter...).
+   * @param spec
+   *           operation spec for all operations.
+   * @return a pair of data groups. The first element in the pair are the data groups for x, and the second element is for y.
+   *           Each group is a pair of list of deduplicated operation names that share the data and the data itself.
+   */
+  evaluateOperationFeatures: private function(model: !MlModel,
+                                              operations: !map<string, MlModel.Input>,
+                                              spec: MlOperationSpec)
+                                       : Pair<[Pair<[string], any>], [Pair<[string], any>]>
+}

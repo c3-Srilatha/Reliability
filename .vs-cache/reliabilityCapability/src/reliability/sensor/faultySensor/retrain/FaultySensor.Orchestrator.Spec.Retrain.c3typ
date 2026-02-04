@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * See {@link FaultySensor} for details about the overall faulty sensor process.
+ *
+ * Trains a new model without the faulty sensors, if necessary. This is a sub-process of the
+ * {@link FaultySensor.Orchestrator.Spec.Process} process.
+ *
+ * See #createWorkflow to understand how this retraining workflow executes.
+ */
+type FaultySensor.Orchestrator.Spec.Retrain mixes ReliabilityOrchestrator.WorkflowConvertable {
+  /**
+   * The name of the created workflow
+   */
+  jobName: string = "FaultySensor_Retrain"
+
+  /**
+   * The current model. This model's source of truth will be retrained without any currently faulty sensors.
+   */
+  model: ReliabilityRiskMlModel
+
+  /**
+   * The relation between the model and the asset, if applicable. This is the relation to the asset for which it's
+   * {@link Sensor} was faulty.
+   *
+   * This process currently does not support multiple assets for a single model.
+   */
+  relation: ReliabilityAssetToRiskModelRelation
+
+  /**
+   * The Model Config Run to associate with the retraining. This is used for training the job and eventually
+   * providing the user notifications about this retraining.
+   *
+   * See #createWorkflow
+   */
+  modelConfigRun: ModelConfigRun
+
+  /**
+   * @inheritdoc
+   *
+   * Workflow that will do the following:
+   * - Identify the source of truth (sot) model for #model.
+   * - Get the list of faulty sensors for the sot with #getFaultySensorsForModel.
+   * - Create a {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.DatasetPreparation} workflow to prepare a new
+   *   dataset without the faulty sensors.
+   * - Create a {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining} workflow using the sot model
+   *   pipelines and templates.
+   * - Create an output vertex named 'TrainedModels' to output the retrained models.
+   */
+  createWorkflow: ~ py
+
+  /**
+   * Get the faulty sensors related to the model, by looking at the include/exclude sensors on the dataset,
+   * and reading their status from {@link Sensor#operationalStatus}.
+   *
+   * If a relation is provided, it will only take into account the sensors on the
+   * {@link ReliabilityAsset} associated with the relation.
+   */
+  getFaultySensorsForModel: function(
+    sourceModel: !ReliabilityRiskMlModel,
+    relation: ReliabilityAssetToRiskModelRelation
+  ): [Sensor] py
+}

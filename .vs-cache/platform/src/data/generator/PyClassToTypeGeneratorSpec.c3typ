@@ -1,0 +1,220 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification of the options/parameters for {@link PyClassToTypeGenerator}
+ */
+private type PyClassToTypeGeneratorSpec mixes Spec {
+
+  /**
+   * Block of python source code that provides context for python type hints. For instance, if the following method
+   * exists in `PySource: def foo(self, x: X)` and typeHintContext contains the definition
+   * of `X` (e.g. `X = Union[str, int]`), we can use the definition of `X` from typeHintContext to properly type
+   * argument `x` in `foo`
+   *
+   * Only top-level {@link PyAst.Expr} are considered when using a typeHintContext. Resolved
+   * ValueTypes are added to the `customTypeHints` map.
+   */
+  pyTypeHintContexts: [string]
+
+  /**
+   * If True, ignores all generated default values
+   */
+  ignoreAllDefaultValues: boolean
+
+  /**
+   * Indicates whether the generated type should be abstract
+   */
+  _abstract: boolean
+
+  /**
+   * Name of the type we are generating. will default to the python class name if null
+   */
+  typeNameDefault: string
+
+  /**
+   * Names of types to mixin to created type
+   */
+  mixins: [string]
+
+  /**
+   * Map of method names to ValueTypes. Will overwrite method names to have the specified ValueType
+   */
+  returnOverload: map<string, ValueType>
+
+  /**
+   * Map of parameter names to ValueTypes. All parameters with a matching name will have the specified ValueType.
+   * {@link #paramOverloadsForMethod} takes priority over this method
+   */
+  paramOverload: map<string, ValueType>
+
+  /**
+   * Map of method names to Annotations to be applied to that method
+   */
+  annotation: map<string, Annotation>
+
+  /**
+   * set of method names to be declared private on the generated type
+   */
+  privateMethods: set<string>
+
+  /**
+   * Map of method names to a Map of Strings to ValueTypes. Allows you to manually set parameter type hints
+   * for specific methods. This method of setting type hints takes priority over the paramOverload method
+   */
+  paramOverloadsForMethod: map<string, map<string, ValueType>>
+
+  /**
+   * Map of method names to a list of pairs containing the parameter name and its value type. The parameters will
+   * be generated in the same order as they appear in this list. This takes precedence over inferred parameter types.
+   */
+  paramsForMethod: map<string, [Pair<string, ValueType>]>
+
+  /**
+   * The name of the current method being generated. Used to resolve paramOverloadsForMethod
+   */
+  currentMethodName: string
+
+  /**
+   * Map of strings to ValueTypes used to resolve python type hints for method parameters.
+   * Useful for when you want to map specific python classes to c3 types
+   */
+  customTypeHintsDefaults: map<string, ValueType>
+
+  /**
+   * If true, ignore private python methods (method names prefixed with "_") and aren't
+   * double underscore methods
+   */
+  ignorePrivateMethods: boolean = true
+
+  /**
+   * Skip the generation of any methods whose names are in this set
+   */
+  methodsToSkip: set<string>
+
+  /**
+   * If true, ignore python methods prefixed and suffixed with a double underscore,
+   * e.g. `__init__`
+   */
+  ignoreDoubleUnderscoreMethods: boolean = true
+
+  /**
+   * Indicates whether or not the spec is for a method parameter
+   */
+  methodParameter: boolean = false
+
+  /**
+   * Indicates whether the spec is for a member method
+   */
+  pyMethodType: string enum('instance', 'static', 'class')
+
+  /**
+   * ValueType modifier for value types that would normally be set to `PRESERVES_EMPTY`
+   */
+  preservesEmptyModifierOverride: string enum ValueModifier = PRESERVES_EMPTY
+
+  /**
+   * ValueType modifier for value types that would normally be set to `NON_OPTIONAL_PARAM`
+   */
+  nonOptionalParamModifierOverride: string enum ValueModifier = NON_OPTIONAL_PARAM
+
+  /**
+   * Map of strings to any used to set the default value of parameters where the python default value is a
+   * {@link PyAst.Attribute} or {@link PyAst.Name}
+   */
+  defaultValueMap: map<string, any>
+
+  /**
+   * Map of method names to a Map of Strings to any. Allows you to manually set default values
+   * for specific methods. This method of setting type hints takes priority over the defaultValueMap field
+   */
+  defaultValueOverrideForMethod: map<string, map<string, any>>
+
+  /**
+   * Set of method names for which we want to skip default value generation
+   */
+  skipDefaultValuesForMethod: set<string>
+
+  /**
+   * {@link VarReferenceType}s to add to generated Type
+   */
+  declaredVars: [VarReferenceType]
+
+  /**
+   * Pkg to assign to the new TypeMetas, will use the default pkg if not specified
+   */
+  pkgDefault: Pkg
+
+  /**
+   * Returns pkg if pkg is not null, otherwise returns the default pkg
+   */
+  pkg: cached member function(): !Pkg
+
+  /**
+   * Returns `typName` if `typName` is not null. Returns clsName otherwise.
+   */
+  typeNameForCls: cached member function(clsName: !string): !string
+
+  /**
+   * Map of python type hints to their corresponding ValueTypes
+   */
+  typeMap: cached member function(): !map<string, ValueType>
+
+  /**
+   * Returns the ValueType that corresponds to the python type hint. Will first check the typeMap, then
+   * the pyTypeHintContexts, then the customTypeHints. If no match is found, the type for that parameter will be set
+   * to "any"
+   */
+  typeForHint: member function(hint: !string): !ValueType
+
+  /**
+   * List used to determine the names of variables used in lambda functions
+   */
+  lambdaParams: cached member function(): ![string]
+
+  /**
+   * Look up a lambda param given an index
+   */
+  lambdaParamForIndex: member function(index: !int): !string
+
+  /**
+   * returns the default value for a corresponding string
+   */
+  defaultValueForName: member function(attributeName: !string): ?any
+
+  /**
+   * returns the default value for a corresponding string
+   */
+  customTypeHints: cached member function(): map<string, ValueType>
+
+  /**
+   * Return true if we should ignore the method
+   */
+  ignoreMethod: member function(methodName: !string): !boolean
+
+  /**
+   * Given a default value modifier, return the correct ValueModifier.
+   * Default function behavior is to just return "defaultValue"
+   */
+  valueTypeModifier: member function(defaultValue: !string enum ValueModifier): string enum ValueModifier
+
+  /**
+   * Given a {@link PyAst.Functiondef}, return its return ValueType
+   */
+  returnTypeForFunction: member function(functionName: !string, returns: PyAst.Expr2): ValueType
+
+  /**
+   * Given a {@link PyAst.Arg} return its corresponding ValueType
+   */
+  paramTypeForArg: member function(arg: !PyAst.Arg): ValueType
+
+  /**
+   * Whether or not the c3typ should be considered private or not
+   */
+  declaredPrivate: boolean
+}

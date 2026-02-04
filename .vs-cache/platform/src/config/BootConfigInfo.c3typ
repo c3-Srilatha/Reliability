@@ -1,0 +1,125 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Details about the boot configuration
+ */
+type BootConfigInfo mixes CloudCredentials {
+
+  /**
+   * Root folder for the configuration
+   */
+  root: !string
+
+  /**
+   * Owner of this configuration
+   */
+  owner: !string = "c3"
+
+  // TODO: PLAT-31316 - V8 - Integrate Config Framework ExternalVault
+  // The following fields are required configuration to be able to bootstrap access to ExternalVault
+
+  /**
+   * Type of ExternalVault (hashicorp, etc)
+   * If set, config will be stored in @link{ExternalVault}. If not set, config values will be stored in c3-platform supported
+   * config store.
+   */
+  vaultKind: string enum ExternalVaultKind
+
+  /**
+   * The URL of the ExternalVault
+   */
+  url: string
+
+  /**
+   * The namespace of the ExternalVault
+   */
+  namespace: string
+
+  /**
+   * The method to use to authenticate with Vault.
+   */
+  // TODO: PLAT-85231 Make HashiCorpVaultAuthKind mix ExternalVaultAuthKind
+  authKind: string enum HashiCorpVaultAuthKind = TOKEN
+
+  /**
+   * The path for the authentication method.
+   * Used for AppRole and Custom authentication
+   */
+  authPath: string
+
+  /**
+   * The key names need to be flattened, i.e. no directory hierarchy just a top level one
+   */
+  @deprecated(finalVersion="8.5")
+  flatPath: boolean
+
+  /**
+   * Configured role name for kubernetes authentication
+   */
+  role: string
+
+  /**
+   * The RoleId for AppRole authentication
+   */
+  roleId: string
+
+  /**
+   * The SecretId for AppRole authentication
+   * Only used in non-k8s deployments
+   */
+  @config(secret=true)
+  secretId: string
+
+  /**
+   * The JSON payload used for custom auth
+   * Only used in non-k8s deployments
+   */
+  @config(secret=true)
+  authPayload: string
+
+  /**
+   * The actual token to authenticate against Vault. Required if token auth is used
+   * Only used in non-k8s deployments
+   */
+  @config(secret=true)
+  token: string
+
+  /**
+   * Enabled hard delete for the ExternalVault
+   */
+  hardDeleteEnabled: boolean
+
+  /**
+   * The path to the root of the migration source
+   */
+  migrateSourceRoot: string
+
+  /**
+   * Determines if the input host is the root host i.e. the passed in host is the same as {@link #root} field.
+   * @param host
+   *        host address being checked E.g. file:///usr/local/share/c3/server/config
+   * @return true if passed in host address matches {@link BootConfigInfo#root}
+   */
+  isRootHost: member function(host: !string): boolean
+
+  /**
+   * The default custom_metadata that will be set for secrets written to Hashicorp Vault
+   * ie: "{\"metadata_key\":\"value\"}"
+   */
+  customMetadata: string
+
+  /**
+   * Indicates whether workload identity should NOT be used for accessing this ConfigStore.
+   * When false (default), workload identity is enabled and controls:
+   * (1) c3-c3 app using workload identity to access the config store,
+   * (2) engine that creates/updates the service account to share credentials with other apps/envs,
+   * (3) engine on other apps/envs to fetch credentials from this service account and cache them for config store access.
+   */
+  doNotUseWorkloadIdentity: boolean
+}

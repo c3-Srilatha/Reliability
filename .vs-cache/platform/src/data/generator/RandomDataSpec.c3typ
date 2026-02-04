@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Random data specification used in {@link GenerateDataSpec#randomData} by {@link Persistable#generateData}.
+ */
+type RandomDataSpec mixes Spec {
+
+  /**
+   * Number of objects to generate. This field is considered only when dealing with the root Type.
+   *
+   * ```js
+   * RandomDataSpec.make({objCount: 100})
+   * ```
+   */
+  objCount: int = 1
+
+  /**
+   * Defines the numerical range for generated IDs, applicable only to Types that allow user-defined ID ranges.
+   * Not supported by Types with inherently short IDs, like timeseries.
+   */
+  idPrefix: string
+
+  /**
+   * Range value for generated IDs. Only valid for Type that supports user specified IDs
+   * (for example, Types with short IDs such as timeseries don't support this);
+   *
+   * Only meaningful for entity Types.
+   */
+  idRange: int
+
+  /**
+   * Prefix for the generated names. Relevant primarily for the root Type and reference Types.
+   */
+  namePrefix: string
+
+  /**
+   * Specifies the allowable values for generation. This is relevant for primitive Types, external references (used as
+   * IDs), and collections such as arrays and maps.
+   */
+  possibleValues: [string]
+
+  /**
+   * Defines valid keys for maps, providing structure to the generated data within map collections.
+   */
+  possibleKeys: [string]
+
+  /**
+   * Dictates the fill rate for optional fields, as a percentage (0-100). This determines how many optional fields
+   * in root Types, included Types, and their arrays/maps will be populated with values.
+   */
+  optionalFieldsPercent: int = 100
+
+  /**
+   * The minimum size for generated array and map fields. Applies to root Types, included Types, and their collections.
+   */
+  arrayAndMapMinSize: int = 3
+
+  /**
+   * The maximum size for generated array and map fields. This parameter is used to limit the size of arrays and maps
+   * for root Types, included Types, and their collections.
+   */
+  arrayAndMapMaxSize: int = 3
+
+  /**
+   * Allows for custom specifications of fields, offering flexibility in defining the data generation rules
+   * for root Types, included Types, and their collections.
+   */
+  overrides: map<string, RandomDataSpec>
+
+  /**
+   * Specifies a custom data shape, enabling more detailed and structured data generation patterns.
+   */
+  dataShape: string
+
+  /**
+   * A specialized Carbon script designed to generate data. If specified, it overrides all other parameters,
+   * becoming the sole basis for data generation.
+   */
+  carbon: string
+}

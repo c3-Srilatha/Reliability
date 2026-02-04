@@ -1,0 +1,110 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for plotting the charts on the Analysis Detail page.
+ *
+ * This spec will be populated using the values selected in the Reliability.AnalysisFilterPanel
+ * and sent to the charting API.
+ */
+type AnalysisPageFilterPanelSpec mixes Spec {
+
+  /**
+   * Start date selected in the filter panel for plotting the values.
+   */
+  start: !datetime
+
+  /**
+   * End date selected in the filter panel for plotting the values.
+   */
+  end: !datetime
+
+  /**
+   * The {@link Interval} selected in the filter panel.
+   */
+  interval: !Interval
+
+  /**
+   * The {@link ReliabilityMl.Project} selected in the filter panel.
+   */
+  project: string serialized ReliabilityMl.Project
+
+  /**
+   * The {@link ReliabilityAsset}s selected in the filter panel.
+   */
+  assets: [string serialized ReliabilityAsset]
+
+  /**
+   * The model-outputs selected in filter panel which will be plotted as sepaarate lines on the chart.
+   */
+  modelOutputs: [string]
+
+  /**
+   * Setting this as true will render the charts with alerts plotted.
+   */
+  showAlerts: boolean
+
+  /**
+   * Setting this as true will render the charts with unplanned events plotted.
+   */
+  showUnplannedEvents: boolean
+
+  /**
+   * Setting this as true will render the charts with work orders plotted.
+   */
+  showWorkOrders: boolean
+
+  /**
+   * Setting this as true will show the feature contribution->modelOutput mapping on chart if field set to `true`.
+   */
+  showFeatureContributions: boolean
+
+  /**
+   * Selected features to be plotted per asset. The keys of the map are asset IDs, and the values are arrays of feature names for that asset.
+   */
+  assetToFeatures: map<string, [string]>
+
+  /**
+   * Will show the {@link ReliabilityMl.PredictionHeader} data corresponding to a mix from selected features and the
+   * selected featureSpecificOutputs according to start, end, and interval
+   */
+  featureSpecificOutputs: [string]
+
+  /**
+   * List of selected sensors in the filter panel.
+   */
+  sensors: [string serialized Sensor]
+
+  /**
+   * Will plot the metric according to start, end and interval
+   */
+  metrics: [string serialized ReliabilityMetric]
+
+  /**
+   * Executes this spec to generate data for the Analysis Detail page based on the spec fields.
+   *
+   * This function constructs the appropriate queries for different data components:
+   * - Sensor measurements via {@link ReliabilitySensorTimedDataQuery}
+   * - Reliability metrics via {@link ReliabilityMetricTimedDataQuery}
+   * - Model outputs via {@link ReliabilityModelOutputsTimedDataQuery} (risk scores, feature contributions)
+   * - Feature values via {@link ReliabilityFeatureTimedDataQuery}.
+   * - Event data via {@link ReliabilityEventTimedDataQuery} (alerts, unplanned events, work orders)
+   *
+   * All individual queries are combined into a global {@link ReliabilityTimedDataQuery}
+   * which is executed with the configured time parameters.
+   *
+   * @returns {map<string, any>} A map containing structured with the following keys and values:
+   *   - 'sensorData': Sensor measurements over time
+   *   - 'metricData': Reliability metrics over time
+   *   - 'modelOutputs': Model predictions and feature contributions
+   *   - 'featureData': Raw and reconstructed feature values
+   *   - 'eventData': Alerts, unplanned events, and work orders
+   */
+  executeSpec: inline member function(): map<string, any> js-rhino
+}

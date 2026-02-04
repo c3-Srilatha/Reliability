@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a base for trainable and processable python native keras object.
+ *
+ * `GEN` is a type of the {@link KerasGenerator} to use.
+ * `CGEN` is a type of custom generator to use, see {@link KerasCustomGenerator}
+ */
+@beta
+abstract type KerasPipe.Base<DX, DY, DO, GEN, CGEN> extends MlAtomicPipe<DX, DY, DO> mixes KerasPipe.FieldsAndUtils<DX, DY> type key 'KERPB' {
+
+  afterConvert:               ~ py
+  saveModel:                  ~ py
+  loadModel:                  ~ py
+  convertPipeInputsToNative:  ~ py
+  convertNativeToNative:      ~ py
+  convertNativeToPipeOutputs: ~ py
+  nativeInputFormats:         ~ py
+
+  @dependency(include='this')
+  doTrain: ~ py-tf
+
+  @dependency(include='this')
+  doProcess: ~ py-tf
+
+  createGenerator: ~ py-tf
+}

@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+remix type TestApi {
+
+  /**
+   * Sets up the VanityUrl defaultContent to point to the application's namespace index.html
+   * @param context
+   *           the TestApi context
+   * @param namespace
+   *            the namepace of the uiInfrastructure based application
+   * @param obj
+   *           The VanityUrl object
+   * @return The vanity url string
+   */
+  setupUiInfrastructureBasedVanityUrl: function(context: !TestApiContext,
+                                                obj: VanityUrl,
+                                                namespace: string = 'c3'): VanityUrl js
+
+  /**
+   * Executes Jasmine test cases which check that the given component type can
+   * be used in UI Designer.
+   *
+   * For resolving missing translation test case failures, see the documentation
+   * for {@link validateTranslations}.
+   *
+   * For resolving other metadata issues, check the test failure message for
+   * instructions.
+   *
+   * @param testDescription
+   *           A description for the test. This will be passed to Jasmine's
+   *           `describe` function.
+   * @param componentType
+   *           The component type to validate.
+   * @param locales
+   *           The list of locales that you intend to support in UI Designer.
+   */
+  validateUiComponentDesignability: function(testDescription: !string, componentType: !Type, locales: [Locale]) js
+
+  /**
+   * Executes a Jasmine test case which checks that all of the given component
+   * type's designable fields and the given annotation fields
+   * have the required {@link Translation} metadata.
+   *
+   * Rather than calling this function directly, component developers should
+   * use {@link validateUiComponentDesignability}, which wraps this function and
+   * also performs other important designability checks.
+   *
+   * In case of failing test cases, component developers should do the following:
+   *
+   * 1. Check the test failure message for the list of missing translations,
+   *    which includes the field path that requires the translation.
+   * 2. For each field path, verify whether the field *should* be designable,
+   *    i.e. check the written component specification and ask the appropriate
+   *    stakeholder.
+   *     - If the field *should* be designable, add a new {@link Translation}
+   *       to your package's metadata, using the id that is mentioned in test
+   *       failure message. The {@link Translation#locale} and
+   *       {@link Translation#key} must be derived from this
+   *       {@link Translation#id}.
+   *     - If the field *should not* be designable, then mark the field as
+   *       private.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @param locales
+   *           The list of locales that you intend to support in UI Designer.
+   */
+  validateTranslations: private function(componentType: !Type, locales: [Locale]) js
+
+  /**
+   * Returns all the missing translations
+   *
+   * @param missingTranslations
+   *           the TestApi context
+   * @return the ids of the missing translations
+   */
+  getMissingTranslationIds: private function(missingTranslations: [json]) js-server
+}

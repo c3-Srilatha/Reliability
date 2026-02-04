@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util to call Generative AI backend services
+ */
+type GenAiUtil {
+
+  /**
+   * Returns a list of all types that mix in {@link ChatAgentUi} in the app, transformed to {@link StudioGenAiState.ChatAgentUi}s.
+   */
+  chatAgents: function(): [StudioGenAiState.ChatAgentUi] js-server
+
+  /**
+   * Asks a question to Generative Ai and returns the response. see {@link AiAssistant} for more details.
+   * @param askParams
+   *        The parameters to ask a question to Generative Ai.
+   * @param agentTypeName
+   *       The type name of the agent to call "ask" on. Must mix {@link ChatAgentUi}.
+   * @param context
+   *      The context to add to the question when using the Studio agent. The context is added to the question as a set of statements.
+   */
+  askGenAiQuestion: function(askParams: !ChatAgentUi.AskParams, agentTypeName: !string): !ChatAgentUi.Answer js-server
+
+  /**
+   * Submit a feedback to Generative Ai. See {@link AiAssistantFeedback} for more details.
+   * @param feedbackSpec
+   *        Feedback spec containing general information about the feedback made, passed to the submitFeedback function of types that extend {@link ChatAgentUi}
+   * @param agentTypeName
+   *        The type name of the agent to call "submitFeedback" on. Must mix {@link ChatAgentUi}.
+   */
+  submitGenAiFeedback: function(feedbackSpec: !ChatAgentUi.FeedbackSpec,
+                                agentTypeName: !string): !StudioUIActionResponse js-server
+
+  /**
+   * Wrapper for getting the server version and endpoint of the current app. Calls {@link App#endpoint}
+   */
+  currentAppVersionAndEndpoint: function(): json js-server
+}

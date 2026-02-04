@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the result of each batch of {@link ReliabilityAssetClassDefinitionParserJob}.
+ */
+@db(index+=['status', 'trackingId', 'alreadyPersisted', 'job'])
+entity type ReliabilityAssetClassDefinitionParserJobBatchResult {
+
+  /**
+   * The job that was executed to produce this result. This will always be the job with `id`
+   * equal to "ReliabilityAssetClassDefinitionParserJob", since this type is a singleton.
+   */
+  job: !ReliabilityAssetClassDefinitionParserJob
+
+  /**
+   * Indicates whether the batch was successfully processed or not.
+   */
+  status: !string enum ReliabilityAssetClassDefinitionParserJobBatchResultStatus
+
+  /**
+   * The definition version that this batch should parse and persist.
+   */
+  definitionVersion: !ReliabilityAssetClassDefinitionVersion
+
+  /**
+   * If true, this batch did nothing since an {@link AssetClass} was already persisted with the
+   * `definitionVersion.file` of this batch. If {@link ReliabilityAssetClassDefinitionParserJobOptions#shouldOverwrite}
+   * is true, this will always be false.
+   */
+  alreadyPersisted: boolean
+
+  /**
+   * The {@link AssetClass} that was persisted as a result of this batch. If empty, an error occurred.
+   */
+  assetClass: AssetClass
+
+  /**
+   * An identifier to give this result. Used to aggregate the result of the parser job
+   * for a particular {@link Workflow.Run} of {@link ReliabilityAssetClassDefinitionParser}.
+   */
+  trackingId: !string
+
+  /**
+   * The error message that occurred during the processing of this batch. If empty, the batch was
+   * processed successfully. This will most likely be an error caused by running
+   * {@link ReliabilityAssetClassDefinitionVersion#persistVersion}.
+   */
+  error: string
+}

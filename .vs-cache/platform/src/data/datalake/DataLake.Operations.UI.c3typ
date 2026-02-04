@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type that provides necessary api operations for Lakehouse page
+ */
+private type DataLake.Operations.UI {
+
+  /**
+   * Construct Data.Spark.DataFrame based on the query from SQL Query Editor
+   */
+  executeSql: function(query: string,
+                       catalog: string,
+                       namespace: string = "dfl",
+                       limit: int = -1,
+                       cluster: string = "dflt"): ?Data.Spark.DataFrame
+
+  /**
+   * Get the size of query results and convert the first 1000 rows of SQL results into JSON string
+   * returns the size of the query results and the json string of the first 1000 rows in json format
+   */
+  queryResultsPreview: function(query: string,
+                                catalog: string,
+                                namespace: string = "dfl",
+                                cluster: string = "dflt"): ?Data.Spark.Preview
+
+  /**
+   * Export the query results to a directory of csv files.
+   * Returns the full url of the exported directory.
+   */
+  exportToCsv: function(query: string,
+                        catalog: string,
+                        namespace: string,
+                        filePath: string,
+                        numberOfFiles: int,
+                        cluster: string = "dflt"): string
+
+  /**
+   * Export the query results into a DataLake.Table
+   */
+  exportToTable: function(query: string,
+                          catalog: string,
+                          namespace: string,
+                          table: DataLake.Table,
+                          spec: DataLake.Table.WriteSpec,
+                          cluster: string = "dflt")
+
+  /**
+   * Create new table based on the results of the query.
+   */
+  createTableFromQuery: function(query: string,
+                                 catalog: string,
+                                 namespace: string,
+                                 spec: DataLake.CreateTableSpec,
+                                 cluster: string = "dflt")
+
+  /**
+   * Fetch DataLake.Catalog instances and apply filtering from FetchSpec
+   */
+  fetchFilteredCatalogs: function(spec: FetchSpec): !FetchResult js-server
+
+  /**
+   * Get schema information for all tables in a catalog and namespace.
+   */
+  getTablesAndSchemaInfo: function(catalog: string, namespace: string = "dfl"): map<string, string>
+
+  /**
+   * Custom fetch method for composition of DataLake.Table.Managed.Iceberg & DataLake.UserPreferences records.
+   * Returns Iceberg tables with current user preferences populated.
+   */
+  @action(group='read')
+  fetchTablesWithUserPreferences: function(spec: FetchSpec,
+                                           catalogName: string = 'datasets'): FetchResult<json> js-server
+}

@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type that build DataLake.Table from a SourceCollection
+ */
+@beta
+type DataLake.Operations {
+
+  profile: function(table: !DataLake.Table.Identifier, cluster: string): DataLake.Operations.ProfileResult
+
+  /**
+   * Load the content of a list of SourceFile into given DataLake.Table.
+   * There is a helper method {@link DataLake.CreateTableSpec#fromSource} to easily create a table backs a Source type.
+   * It's expected that all of the SourceFile in the collection have the same schema as defined with the Source type.
+   * It could contain different MediaType, supported types are: CSV, PARQUET, JSON, AVRO, XML, TEXT, ORC
+   */
+  writeToDataLake: function(sources: ![SourceFile],
+                            table: !DataLake.Table,
+                            spec: DataLake.Table.WriteSpec): DataLake.Table.Snapshot
+
+  /**
+   * Rewrite the data files of the given {@link DataLake.Table}.
+   * Generally used for optimizing the sizing and layout of data files within a table.
+   */
+  rewriteDataFiles: function(table: !DataLake.Table, spec: DataLake.RewriteDataFilesSpec): DataLake.RewriteResult
+
+  /**
+   * Return a list of orphaned file locations after deletion.
+   */
+  deleteOrphanedFiles: function(table: !DataLake.Table,
+                                spec: DataLake.DeleteOrphanedFilesSpec): DataLake.DeleteOrphanedFilesResult
+}

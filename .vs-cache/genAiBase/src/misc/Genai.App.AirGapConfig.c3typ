@@ -1,0 +1,158 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configs for C3 Generative AI deployments in airgapped environments.
+ * For each of these configs, if not set, the system will try to download the associated tokenizer/model from the internet.
+ */
+type Genai.App.AirGapConfig mixes Config, Singleton {
+    /**
+     * Path to zip containing tokenizer used in {@link Genai.Llm.Guide}.
+     * Must be set to do query orchestration in an airgapped environment.
+     */
+    guideTokenizerPath: string serialized FileUrl
+
+    /**
+     * The path to the tokenizer files used for the attributor.
+     */
+    attributorTokenizerPath: string serialized FileUrl
+
+    /**
+     * Name of the to e5 embedder model `intfloat/multilingual-e5-small` used in {@link Genai.Agent.Tool.Util.FewShotRetriever}
+     */
+    fewShotEmbedderModelName: string
+
+    /**
+     * Path to embedder model used in {@link Genai.Agent.Tool.Util.FewShotRetriever}. The top-level contents of this
+     * folder should include files/folders called config.json, modules.json, 1_Pooling/..., etc.
+     */
+    fewShotEmbedderPath: string serialized FileUrl
+
+    /**
+     * Path to e5 embedder model
+     */
+    e5EmbedderPath: string serialized FileUrl
+
+    /**
+     * Path to mxbai embedder model
+     */
+    mxbaiEmbedderPath: string serialized FileUrl
+
+    /**
+     * Path to tasb embedder model
+     */
+    tasbEmbedderPath: string serialized FileUrl
+
+    /**
+     * Path to the embedder model used in {@link Genai.Retriever.PgVector}. The top-level contents of this folder
+     * should include files/folders called config.json, modules.json, 1_Pooling/..., etc.
+     */
+    pgVectorEmbedderPath: string serialized FileUrl
+
+    /**
+     * Corresponds to nltk_sentence_tokenizer_model_file_path - the file path to NLTK punkt model (e.g. english.pickle file)
+     * Used in attribution (on unstructured query).
+     */
+    nltkSentenceTokenizerModelFilePath: string serialized FileUrl
+
+    /**
+     * Corresponds to the resources used in nltk for collocations, abbreviations, etc.
+     * https://huggingface.co/spaces/drewThomasson/ebook2audiobook/tree/de460b84ccb9ff8468121263a6f4bb7d6b7b6bc8/nltk_data/tokenizers/punkt_tab/english
+     */
+    nltkResourcesFilePath: string serialized FileUrl
+
+    /**
+     * Corresponds to averaged_perceptron_tagger - used in pos tagging
+     */
+    nltkTaggersFilePath: string serialized FileUrl
+
+    /**
+     * The file path to the TASB model and tokenizer for the Rationale Embedder.
+     * Used in attribution (on unstructured query).
+     */
+    msmarcoDistilbertBaseTasBFilePath: string serialized FileUrl
+
+    /**
+     * Tokenizer used in {@link Genai.SourceFile.Chunker} when determining token length.
+     * Used in file chunking (unstructured data).
+     */
+    sourceFileChunkerTokenizerPath: string serialized FileUrl
+
+    /**
+     * Tokenizer used in the TableTextSplitter used in chunking.
+     * Used in file chunking (unstructured data).
+     */
+    tableTextSplitterEncoderPath: string serialized FileUrl
+
+    /**
+     * Used in `SpacyTextSplitter` and {@link Genai.SourceFile.Metadata.Tagging}
+     */
+    spacyModelPath: string serialized FileUrl
+
+    /**
+     * Tokenizer used in `TokenTextSplitter`
+     * Should contain the zip to encoder.json and vocab.bpe
+     * For gpt2 it can be downloaded from:
+     * vocab_bpe_file="https://openaipublic.blob.core.windows.net/gpt-2/encodings/main/vocab.bpe",
+     * encoder_json_file="https://openaipublic.blob.core.windows.net/gpt-2/encodings/main/encoder.json",
+     * The files in the zip should be renamed to the hash which can be obtained by running `hashlib.sha1(<url>.encode()).hexdigest()`
+     */
+    tokenTextSplitterEncoderPath: string serialized FileUrl
+
+    /**
+     * Path to zip containing Table Transformer (TATR) model.
+     * Used in file chunking (unstructured data), when using the TablePdf chunker ({@link Genai.SourceFile.Chunker.TablePdf}).
+     * While downloading the pretrained model make sure to include `revision="no-timm"` and use the updated zip
+     * Post on "Unable to load model offline" https://huggingface.co/microsoft/table-transformer-structure-recognition/discussions
+     */
+    tatrZipPath: string serialized FileUrl
+
+    /**
+     * Path to zip containing Nougat model.
+     * Used in file chunking (unstructured data), when using the TablePdf chunker ({@link Genai.SourceFile.Chunker.TablePdf}) and {@link Genai.SourceFile.Chunker.MultimodalPdf}.
+     */
+    nougatZipPath: string serialized FileUrl
+
+    /**
+     * Path to zip containing the Detectron2LayoutModel's model_final.pth and config.yml.
+     * Used in file chunking (unstructured data), when using {@link Genai.SourceFile.Chunker.MultimodalPdf} without the layout parsing.
+     */
+    detectronZipPath: string serialized FileUrl
+
+    /**
+     * Path to zip containing question encoder used in {@link Genai.Retriever.Dense.Embedder#DPR}.
+     */
+    dprQuestionEncoderPath: string serialized FileUrl
+
+    /**
+     * Path to zip containing context encoder used in {@link Genai.Retriever.Dense.Embedder#DPR}.
+     */
+    dprContextEncoderPath: string serialized FileUrl
+
+    /**
+     * Path to zip containing tokenizer used in MIS.
+     */
+    misTokenizerPath: string serialized FileUrl
+
+    /**
+     * Path to the LLaVA model.
+     */
+    llavaModelPath: string serialized FileUrl
+
+    /**
+     * Validates all configs are set to valid, reachable files.
+     * @return a map of the config field to its status i.e. Validated or Warning
+     */
+    validateConfigs: inline function(): !map<string, string> py
+
+    /**
+     * Deletes tmp file contents from zip files set in {@link Genai.App.AirGapConfig} config fields and unzipped in {@link Genai.PyUtil#loadModelTokenizer}.
+     */
+    clearTmpFiles: inline function() py
+}

@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utilities for interacting with UI metadata.
+ */
+type UiSdlMetadataUtil {
+
+  /**
+   * Returns a mapping of component metadata by component id within an application package
+   *
+   * @param packageName
+   *           The name of the application package. Uses root package in tag if not specified.
+   *
+   * @return A mapping of component metadata by component id
+   */
+  getUiMetadata: function(packageName: string): json js-server
+
+  /**
+   * Save ui metadata from redux entities to user tag metadata store.
+   *
+   * @param uiMetadata
+   *        The ui metadata from redux entities in the format of {components: [], pages: [], dataSources: []}
+   * @return the save result
+   */
+  saveChangesToUiMetadata: function(uiMetadata: json, packageName: string): Pkg.ResultWithIssues js-server
+
+  /**
+   * A helper for generating metadata content from a json
+   * @param json
+   *        The json for generating the file content
+   * @param indentation
+   *        The indentation for formatting the file
+   *
+   * @return The generated file content
+   */
+  generateUiMetadataFileContent: function(json: !json, indentation: int = 2): string js
+
+  /**
+   * Remove the given UI metadata from the tag metadata store.
+   *
+   * @param uiMetadata
+   *        The UI metadata to remove, in the format:
+   * ```json
+   * {
+   *   "components": [],
+   *   "pages": [],
+   *   "dataSources": []
+   * }
+   * @return the save result
+   */
+  removeUiMetadata: function(uiMetadata: json, packageName: string): Pkg.ResultWithIssues js-server
+
+  /**
+   * Read the UI metadata as a JSON.
+   *
+   * @param file
+   *        The UI Pkg.File
+   *
+   * @return The parsed JSON content of the UI Pkg.File.
+   */
+  readUiFileMetadata: private function(file: Pkg.File): json js-server
+
+  /**
+   * Reads the Ui metadata of a given metadataId
+   * @param metadataId
+   *          The name of the metadata file to fetch
+   * @return the json metadata of the file
+   */
+  readUiMetadataFile: function(metadataId: string): json js-server
+
+  /**
+   * Obtain the UI {@link Pkg#File} file name.
+   *
+   * @param file
+   *        The UI Pkg.File
+   *
+   * @return The file name of the UI Pkg.File.
+   */
+  uiMetadataFileName: private function(file: Pkg.File): string js-server
+
+}

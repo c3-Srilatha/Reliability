@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type stores a single comment read from a DSL file. Special "documentation comments" contain public
+ * documentation of the structure, as opposed to others which are implementation notes.
+ */
+type DslComment mixes Typesys {
+
+  /**
+   * The entire comment, including delimiters and newlines as extracted from the DSL file.
+   */
+  source: !string
+
+  /**
+   * The style of comment.
+   */
+  kind: property(): !string enum DslComment.Kind
+
+  /**
+   * The contents of the comment, with delimters removed and leading/trailing whitespace trimmed.
+   */
+  content: property(): string
+
+  /**
+   * Whether this is a documentation comment, with the leader "/**". These type of comments contain public
+   * documentation of the structure, as opposed to implementation notes.
+   *
+   * @see Documentable
+   */
+  isDoc: member function(): boolean
+
+  /**
+   * Whether this comment contains "TODO" and a ticket number.
+   */
+  isToDo: member function(): boolean
+
+  /**
+   * If this is a to-do comment, extract the ticket number.
+   */
+  toDoTicket: member function(): string
+
+  /**
+   * Whether this is the top-level file copyright comment. This is true if the comment starts on the first line of the
+   * file, is not a documentation comment, and the first word is "Copyright".
+   */
+  isCopyrightComment: member function(): boolean
+}

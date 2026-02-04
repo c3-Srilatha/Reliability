@@ -1,0 +1,253 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper task for executing retryable action.
+ * Usage:
+ * To retry an action a maximum of five times (totally six times including the first attempt), try
+ * ```
+ * Retry.action(() -> {
+ *    <action/lambda you wish to retry multiple times until success>
+ * }).withMaxRetries(5).now();
+ * ```
+ * Note that {@see #now} begins the execution of the action and that you can configure other parameters such as the
+ * initial sleep time, exponential backoff properties, etc. below.
+ */
+@java(codeGenImplBase=true)
+inline type Retry mixes Mutable {
+
+  /**
+   * The action that is retried based on the specs provided. This is a private variable. Do NOT populate this field
+   * manually; use {@see #action} below populate this field. The {@see #action} also fills the default values that the
+   * user may not otherwise provide. See usage above.
+   */
+  actionLambda: private lambda(): any
+
+  /**
+   * The context of this retry logic
+   */
+  context: any
+
+  /**
+   * Call to specify a function that should be called on successful invocation of the action. By default success will
+   * simply complete retry logic. However this callback can use {@link #setShouldRetry(boolean)} or
+   * {@link #setException()} to change this behavior.
+   */
+  onSuccess: lambda(r: Retry)
+
+  /**
+   * Call to specify a function that should be called when exception was encountered running the action. Retryable
+   * exceptions will be automatically retried and an error will be thrown for any non-retryable exceptions encountered.
+   * However this callback can use {@link #setShouldRetry(boolean)} or {@link #setException()} to change this behavior.
+   */
+  onError: lambda(r: Retry)
+
+  /**
+   * Call to specify a function to perform custom cleanup between tries if the action needs to be retried.
+   *
+   * Callback will be called before sleeping and only in between of tries.
+   */
+  beforeRetry: lambda(r: Retry)
+
+  /**
+   * Call to specify a function to determine the sleep time between retry operations. If not specified, a default
+   * exponential backoff algorithm will be used instead.
+   */
+  nextSleepMillis: lambda(r: Retry): int
+
+  /**
+   * Call to specify a function that should be called to provide a description to put in the log message when the
+   * operation needs to be retried
+   */
+  description: lambda(r: Retry): string
+
+  /**
+   * Callback function that produces a custom error when overall operation fails (due to either non-retryable error to
+   * timeout or exceeding maxTries).
+   */
+  wrapError: lambda(r: Retry): !Error
+
+  /**
+   * A flag to retry the action upon any error
+   */
+  retryAllErrors: boolean
+
+  /**
+   * the maximum number of times the action will be retried. This means that it will run at most 1 + maxRetries
+   * times including the initial attempt.
+   */
+  maxRetries: int
+
+  /**
+   * the value of the initial number of milliseconds to sleep before the first retry (not first call).
+   */
+  initSleepMillis: int
+
+  /**
+   * the value of the maximum number of milliseconds to sleep before the next retry.
+   */
+  maxSleepMillis: int
+
+  /**
+   * Specify a custom timeout in milliseconds. If < 0 or not set, no timeout will be applied and only the maxRetries
+   * will be applied.
+   */
+  maxTotalMillis: int
+
+  /**
+   * The minimum sleep time guaranteed each iteration.
+   */
+  minSleepMillis: int = 0
+
+  /**
+   * If set to true, it will retry when result is empty.
+   */
+  retryOnEmptyResult: boolean
+
+  /**
+   * Determines the algorithm used to calculate jitter. See {@link ExponentialBackoff.Jitter}.
+   */
+  jitter: string enum ExponentialBackoff.Jitter = FULL
+
+  /**
+   * exponent to apply for exponential backoff between retry attempts. Default is 2
+   */
+  exp: double
+
+  /**
+   * If true, the retry logic will report the each retry attempt in root `C3.action()`'s `#customContext` with key as
+   * `retry-trace`.
+   */
+  trace: private boolean
+
+  /**
+   * the sleep time in milliseconds before the last retry attempt
+   */
+  lastSleepMillis: private int
+
+  /**
+   * DO NOT USE - IGNORED!
+   */
+  @deprecated
+  forUpsert: boolean
+
+  /**
+   * An {@see ExponentialBackoff} instance with the exp value provided above.
+   */
+  expBackoffInstance: private ExponentialBackoff
+
+  /**
+   * Indicate weather or not action should be retried. Typically invoked by #onError and #onSuccess callbacks.
+   */
+  shouldRetry: private boolean
+
+  /**
+   * The exception encountered in the last call to the action.
+   */
+  lastException: private @java(class="java.lang.Throwable") native
+
+  /**
+   * Result of the last call to the action
+   */
+  lastRes: private any
+
+  /**
+   * The last retry attempt. If the action has only been called the initial time, this will be 0.
+   */
+  lastAttempt: private int
+
+  /**
+   * start time of the initial attempt
+   */
+  startTime: private int
+
+  /**
+   * Fail if waits times out or maximum number of retries exhausted. Set by #withWaitSpec
+   */
+  doNotFailOnTimeout: private boolean
+
+  @deprecated(finalVersion='8.11', details="Use doNotFailOnTimeout field instead")
+  failOnTimeout: private boolean
+
+  /**
+   * a constructor for Retry for any lambda for backward compatibility
+   */
+  action: function(v: !lambda(): any): Retry
+
+  /**
+   * a constructor for Retry for a callback function for backward compatibility
+   */
+  action: function(v: @java(class="c3.platform.typesys.util.function.ThrowingRunnable") !native): Retry
+
+  /**
+   * Sets custom parameters for the exponential backoff and retry algorithm.
+   *
+   * @param spec
+   *        retry specification. If spec.retrySpec is `null` will not retry.
+   * @return this Retry instance
+   */
+  withRetrySpec: member function(spec: RetrySpec): !Retry
+
+  /**
+   * Sets custom parameters for the exponential backoff and retry algorithm.
+   *
+   * @param spec
+   *        retry specification. If spec.retrySpec is `null` will not retry.
+   * @return this Retry instance
+   */
+  withWaitSpec: member function(spec: WaitSpec): !Retry
+
+  /**
+   * Sets custom parameters for the exponential backoff and retry algorithm.
+   *
+   * @param spec
+   *        retry specification. If spec.retrySpec is `null` will not retry.
+   * @return this Retry instance
+   */
+  withRetryableSpec: member function(spec: RetryableSpec): !Retry
+
+  /**
+   * Sets custom parameters for the exponential backoff algorithm for sleep between retry operations. These settings
+   * will be ignored if a nextSleepMillis function is provided.
+   *
+   * @param initSleepMillis
+   *        sleep time for first retry (plus randomization). If < 0 the default will be used.
+   * @param exp
+   *        power to raise the last sleep time to for the next retry attempt. If <= 1 the default will be used.
+   * @param maxSleepMillis
+   *        maximum wait time allowed for each sleep. If < 0 the default will be used.
+   * @param minSleepMillis
+   *        the minimum guaranteed wait time each iteration
+   * @param jitter
+   *        the exponential backoff strategy. See {@link ExponentialBackoff.Jitter}
+   * @return this Retry instance
+   */
+  withExpBackoff: member function(initSleepMillis: int,
+                                  exp: double,
+                                  maxSleepMillis: int,
+                                  minSleepMillis: int,
+                                  jitter: string): !Retry
+
+  /**
+   * Executes the action
+   *
+   * @return the return value for the action
+   */
+  now: member function(): any
+
+  /**
+   * @return true if the action should be retried, either due to a retryable exception or because a one of the
+   *         callback functions indicated that it should.
+   */
+  shouldRetryLogic: private member function(): boolean
+
+  /**
+   * @return the #maxRetries value, if set. Else return 3 if #maxTotalMillis is unset. Else return -1
+   */
+  computeMaxRetries: private member function(): int
+}

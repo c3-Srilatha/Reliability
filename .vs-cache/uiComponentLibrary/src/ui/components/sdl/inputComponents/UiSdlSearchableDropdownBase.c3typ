@@ -1,0 +1,156 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base component types for searchable dropdowns.
+ */
+@typeScript
+abstract type UiSdlSearchableDropdownBase mixes UiSdlDropdownBase {
+
+  search: ~ = true
+
+  /**
+   * The max number of options shown on the dropdown at a time.
+   */
+  optionsLimit: int
+
+  /**
+   * The search operator to use for filtering options in the dropdown.
+   */
+  searchOperator: !string enum('CONTAINS', 'STARTSWITH', 'ENDSWITH') = 'CONTAINS'
+
+  /**
+   * Configuration for actionable options.
+   * This is only useful when `search=true`.
+   */
+  actionableOptionsConfig: UiSdlSearchActionableOptionsConfig
+
+  /**
+   * Enable dynamically filtering options on server. When `serverSearch` is enabled
+   * it uses `searchOperator` and `optionsLimit` to create the filter spec.
+   */
+  serverSearch: boolean = false
+
+  /**
+   * Triggered when search value changes.
+   *
+   * @param id
+   *            Id of the component.
+   * @param data
+   *           The data passed from the presentational components.
+   * @returns An `SEARCH_CHANGE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SEARCH_CHANGE')
+  changeSearchAction: function(id: !string, data: any): !UiSdlSearchChangeAction ts-client
+
+  /**
+   * Triggered to set the dropdown to be in read only mode
+   *
+   * @param id
+   *            Id of the component.
+   * @param readonly
+   *            Whether or not the component will go into readonly mode.
+   * @returns An `SET_READONLY` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SET_READONLY')
+  setReadonlyAction: function(id: !string, readonly: boolean): !UiSdlReadonlySetAction ts-client
+
+  /**
+   * Triggered to show or hide actionable options defined in `actionableOptionsConfig`.
+   *
+   * @param id
+   *            Id of the component.
+   * @param show
+   *          If true the options would be shown. If false the options would be hidden.
+   * @returns An `ACTIONABLE_OPTIONS_(SHOW|HIDE)` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='ACTIONABLE_OPTIONS_(SHOW|HIDE)')
+  showHideActionableOptionsAction: function(id: string,
+                                            show: boolean): !UiSdlActionableOptionsShowHideAction ts-client
+
+  /**
+   * Triggered to dispatch an action for actionable options.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *            The suffix of the action to trigger.
+   * @param queryString
+   *            Search query string.
+   * @returns The custom action with the payload.
+   */
+  @uiSdlActionCreator(actionType='ACTIONABLE_OPTION_CLICK_${actionSuffix}')
+  clickActionableOptionAction: function(id: string,
+                                        actionSuffix: string,
+                                        queryString: string): !UiSdlActionableOptionClickPayload ts-client
+
+  /**
+   * Listens for actions of type `ACTIONABLE_OPTIONS_SHOW` and updates `actionableOptionsConfig.show` to be true.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='ACTIONABLE_OPTIONS_SHOW')
+  actionableOptionsShowReducer: private function(state: UiSdlReduxState,
+                                                 action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `ACTIONABLE_OPTIONS_HIDE` and updates `actionableOptionsConfig.show` to be false.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='ACTIONABLE_OPTIONS_HIDE')
+  actionableOptionsHideReducer: private function(state: UiSdlReduxState,
+                                                 action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SET_READONLY` and updates the readonly state.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SET_READONLY')
+  readonlySetReducer: private function(state: UiSdlReduxState,
+                                                 action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * Triggers a `DATA_REQUEST` action when search dataSource needs to be loaded.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='SEARCH_CHANGE')
+  searchChangeEpic: private function(actionStream: UiSdlActionsObservable,
+                                     stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Listens to 'LOADED_DATA_HANDLE' action, and triggers a 'OPTIONS_SET' to update the dropdown options.
+   * @param id
+   *            Id of the component.
+   */
+  @uiSdlEpic(actionType='LOADED_DATA_HANDLE')
+  loadedDataHandleEpic: private function(actionStream: UiSdlActionsObservable,
+                                 stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+}

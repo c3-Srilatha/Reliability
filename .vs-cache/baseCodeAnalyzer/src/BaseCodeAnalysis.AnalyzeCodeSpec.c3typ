@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec to be passed into the {@link BaseCodeAnalysis#analyzeCodeWithSpec} function.
+ */
+@constraint(
+  condition='(exists(prevAppInfo) && exists(curAppInfo)) || (!exists(prevAppInfo) && !exists(curAppInfo))',
+  message='Both prevAppInfo and curAppInfo must be provided or neither.')
+type BaseCodeAnalysis.AnalyzeCodeSpec mixes BaseCodeAnalysis.AnalyzeCodeQualitySpec {
+
+  /**
+   * The information collected for the previous version of a C3 application using either
+   * {@link BaseCodeAnalyzer#collectAppInfo} or {@link BaseCodeAnalyzer#collectAppInfoAndZip}.
+   *
+   * If provided alongside #curAppInfo, then all {@link BaseCodeAnalysis.VersionDiff.Metric}s
+   * will be run against this previous version of #packageName in addition to all
+   * {@link BaseCodeAnalysis.Metric}s.
+   */
+  prevAppInfo: BaseCodeAnalysis.AppInfo | File
+
+  /**
+   * The information collected for the current version of a C3 application using either
+   * {@link BaseCodeAnalyzer#collectAppInfo} or {@link BaseCodeAnalyzer#collectAppInfoAndZip}.
+   *
+   * If provided alongside #prevAppInfo, then all {@link BaseCodeAnalysis.VersionDiff.Metric}s
+   * will be run against this previous version of #packageName in addition to all
+   * {@link BaseCodeAnalysis.Metric}s.
+   */
+  curAppInfo: BaseCodeAnalysis.AppInfo | File
+
+  /**
+   * If #prevAppInfo and #curAppInfo are provided, these options control the behavior of
+   * {@link BaseCodeAnalysis.VersionDiff#compareVersions}.
+   */
+  compareVersionsOptions: BaseCodeAnalysis.VersionDiff.CompareVersionsOptions
+
+  /**
+   * A json field containing the canonical tester coverage data. This field is only populated when called by
+   * the C3 AI Code Analyzer and has no effect outside this workflow. These canonical test coverage results
+   * are packaged together with other code quality metric results to present an holistic view of package quality.
+   */
+  canonicalTesterCoverage: private json
+}

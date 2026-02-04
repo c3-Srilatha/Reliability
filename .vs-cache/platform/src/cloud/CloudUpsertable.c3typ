@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents Cloud Resource that can be created, updated or destroyed.
+ */
+abstract type CloudUpsertable {
+
+  /**
+   * Create or update Cloud Resource.
+   */
+  upsertResource: abstract member function(spec: CloudResourceOperationSpec): !mixing CloudUpsertable
+
+  /**
+   * Create or update Cloud Resource with all of its configured dependencies.
+   */
+  upsertWithDependencies: abstract member function(spec: CloudResourceOperationSpec): !mixing CloudUpsertable
+
+  /**
+   * Destroy existing Cloud Resource.
+   */
+  destroyResource: abstract member function(spec: CloudResourceDestroySpec)
+
+  /**
+   * Wait until the resource is destroyed. Returns `false` on timeout by default - {@link WaitSpec#failOnTimeout}
+   */
+  waitForDestroy: abstract member function(spec: WaitSpec): boolean
+}

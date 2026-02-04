@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlBreadcrumbs} component for testing purposes.
+ */
+type LukeTestUiSdlBreadcrumbs mixes LukeTestComponent {
+
+  /**
+   * Selector for the breadcrumbs
+   */
+  parentSelector: string = '.c3-sdl-breadcrumbs'
+
+  /**
+   * Selector for a single breadcrumb
+   */
+  breadcrumb: string = '.c3-sdl-breadcrumb:not(.separator)'
+
+  /**
+   * Selector for active breadcrumb
+   */
+  activeBreadcrumbEl: string = '.c3-sdl-breadcrumb.active'
+
+  /**
+   * Selector for dropdown that is rendered when there is a breadcrumbs overflow
+   */
+  dropdownEl: string = '.c3-sdl-breadcrumb.dropdown'
+
+  /**
+   * Selector for the Next button
+   */
+  nextButton: string = '.js-next-button'
+
+  /**
+   * Selector for the Previous button
+   */
+  previousButton: string = '.js-previous-button'
+
+  /**
+   * Selector for redirect breadcrumb
+   */
+  redirectBreadcrumbEl: string = 'a.c3-sdl-breadcrumb'
+
+  /**
+   * Gets the labels of the breadcrumbs
+   * @param timeout
+   *            Luke async timeout for this operation
+   * @returns LukeAsyncQueueNode that resolves to the breadcrumb labels
+   */
+  getBreadcrumbLabels: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks on a breadcrumb level.
+   *
+   * @param level
+   *            The breadcrumb level to click
+   * @param timeout
+   *            Luke async timeout for this operation
+   * @returns
+   *            A LukeAsyncQueueNode that's resolved when the breadcrumb has been clicked
+   */
+  clickBreadcrumbLevel: inline member function(level: int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks on a the breadcrumb using the breadcrumb's label. Useful when the breadcrumb is part of a dropdown
+   *
+   * @param label
+   *            The label of the breadcrumb to click
+   * @param timeout
+   *            Luke async timeout for this operation
+   * @returns
+   *            A LukeAsyncQueueNode that's resolved when the item has been clicked
+   */
+  clickBreadcrumbWithLabel: inline member function(label: string, timeout: int): LukeAsyncQueueNode js
+
+  rendered: ~ js
+}

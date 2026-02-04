@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 entity type instances stored as SearchDocument within SearchIndex
+ * Retrieve as part of query result @see SearchHit.
+ */
+type SearchDocument {
+
+  /**
+   * Reference to SearchIndex which this SearchDocument belongs to
+   */
+  index: SearchIndex
+
+  /**
+   * Unique identifier of the document, within the context of the search index
+   * Same as the id field of the corresponding entity type instance.
+   */
+  id: string
+
+  /**
+   * Contents of the search document
+   */
+  contents: json
+
+  /**
+   * Converts SearchDocument's contents to a generic Obj.
+   * It does not fetch anything from the primary data store
+   */
+  toObj: member function(): Obj
+
+  /**
+   * Convert SearchDocument to corresponding c3 entity type instance.
+   * Return Obj should be fetched from Primary Storage, since SearchStore does not have full information of
+   * the entity type instance.
+   * The Type of the return Obj would be the entity type of the corresponding SearchIndex.
+   *
+   * @see SearchIndex.entityType
+   */
+  toSpecificObj: member function(): Obj
+}

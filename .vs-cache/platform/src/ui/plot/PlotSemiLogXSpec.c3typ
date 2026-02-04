@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Make a plot with log scaling on the x axis.
+ *
+ * # Example: Exponential X Values
+ * ```JavaScript
+ * var N = 50,
+ *     x = C3.Array.patternOfDbl(N, n => Math.pow(2, n)),
+ *     y = C3.Array.patternOfDbl(N, n => Math.random() * 100);
+ * PlotAxes.make()
+ *         .semiLogX({
+ *           x: x,
+ *           y: y,
+ *           baseX: 2
+ *         }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.semilogx.html
+ */
+type PlotSemiLogXSpec mixes PlotPlotSpec {
+
+  /**
+   * Base of the x logarithm.
+   * (matplotlib basex)
+   *
+   * Python: scalar
+   */
+  baseX: double = 10
+
+  /**
+   * The location of the minor xticks. If None, reasonable locations are automatically chosen depending on the number of decades in the plot. See Axes.set_xscale for details.
+   * (matplotlib subsx)
+   *
+   * Python: array_like
+   */
+  subsX: [any]
+
+  /**
+   * Non-positive values in x can be masked as invalid, or clipped to a very small positive number.
+   * (matplotlib nonposx)
+   *
+   * Python: {'mask', 'clip'}
+   */
+  nonPosX: string enum('mask', 'clip') = 'mask'
+}

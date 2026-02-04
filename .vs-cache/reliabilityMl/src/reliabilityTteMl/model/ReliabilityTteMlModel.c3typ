@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ *  Machine learning model used to predict the time-to-event (TTE) for a given asset, which is the time until a specific event occurs.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityTteMlModel extends ReliabilityMlModel type key 'RTTE' {
+  /**
+   * A collection of relations between this model and various assets.
+   * This field contains a list of all asset-to-model relations for the TTE (time-to-event) model.
+   */
+  @db(order='descending(meta.created)')
+  assetRelations: [ReliabilityAssetToTteModelRelation] (to)
+  /**
+   * A collection of current asset relations, filtering out relations that are either ended or not yet started.
+   * This field provides only active (currently valid) asset-to-model relations for the TTE model.
+   */
+  @db(filter='(!exists(end) || end > now()) && (!exists(start) || start < now())', order='descending(meta.created)')
+  currentAssetRelations: [ReliabilityAssetToTteModelRelation] (to)
+
+  /**
+   * Function to create a TTE model. Validates the provided pipeline and ensures it has the correct input and output ports.
+   * @param pipeline - The pipeline to validate and use to create the TTE model.
+   * @param x - The set of features representing the input variables (could be a map or a set).
+   * @param y - The set of features representing the target variable (could be a map or a set).
+   * @param id - The unique identifier for the TTE model being created.
+   * @returns A validated and created `ReliabilityTteMlModel`.
+   */
+  createTteModel: final function(
+    pipeline: !MlPipeline,
+    x: map<string, Feature.Set> | Feature.Set,
+    y: map<string, Feature.Set> | Feature.Set,
+    id: string
+  ): !ReliabilityTteMlModel py
+
+  /**
+   * Validates the pipeline to ensure it contains the required input (`x`), output (`out`), and optional target (`y`) ports.
+   * Raises a warning if the optional `y` and `out` ports are missing.
+   * This validation function checks for correct configuration before proceeding with the model creation.
+   * @param pipeline - The pipeline to validate.
+   */
+  validatePipeline: private function(pipeline: !MlPipeline) py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Google mixes REST {
+
+  @deprecated
+  getFormattedAddress: function(address: string): json
+
+  /**
+   * Calls Google's geocode API with the supplied parameters
+   */
+  @rest(uri='maps/api/geocode/json', method='GET')
+  geocode: abstract function(@rest(queryParameter=true)
+                             address: !string,
+                             components: string,
+                             @rest(queryParameter=true)
+                             client: string): GoogleGeocodeResults
+
+  /**
+   * Calls Google's timezone API with the supplied parameters
+   */
+  @rest(uri='maps/api/timezone/json', method='GET')
+  timezone: abstract function(@rest(queryParameter=true)
+                              location: !string,
+                              @rest(queryParameter=true)
+                              timestamp: int,
+                              @rest(queryParameter=true)
+                              client: string): GoogleTimeZone
+
+  /**
+   * Returns lat/lng information for the given address
+   *
+   * @param address
+   *             The address or zip to be geo-coded
+   */
+  getLatLong: function(address: !string, components: string): GoogleGeocodeLatLng js-server
+
+  /**
+   * Returns time zone information for the given latitude/longitude combination.
+   *
+   * @param address
+   *             The address or zip to be geo-coded
+   */
+  getTimeZone: function(latitude: !double, longitude: double): string js-server
+}

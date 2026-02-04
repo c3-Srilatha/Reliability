@@ -1,0 +1,576 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+/**
+ * A python-specific util type.
+ */
+type Genai.PyUtil {
+
+  /**
+   * Gets the formatted stack trace from the caught error if possible, else returns the error message.
+   * @param error
+   *   The error to format.
+   * @return The formatted stack trace or error message.
+   */
+  formatError: function(error: native): !string py
+
+  /**
+   * Function to print a prettified version of the logs from the structured tools, splitting each log entry into a different section.
+   * @param logs
+   *           The logs to prettify.
+   * @param indent
+   *           The number of spaces to use for indentation.
+   */
+  prettyPrintLogs: function(logs: !json, indent: int = 4) py
+
+  /**
+    * Function to naively calculates the number of tokens in a prompt. This function estimates tokens by dividing the prompt length by the
+    * assumed token length. For example, each token is assumed to be 3 characters long.
+    * @param prompt
+   *           (str): The text whose tokens need to be counted.
+    * @param tokenLength
+   *           (int, optional): The length of each token. Defaults to 3.
+    * @return - (int): The approximate number of tokens in the prompt.
+    */
+  countPromptTokensNaively: inline function(prompt: !string, tokenLength: int = 3): int py
+
+  /**
+    * Function to convert a string with {single braces} to {{double braces}}.
+    * @param prompt - (str): The string having single braces.
+    * @return - (str): Converted string with double braces, which can be utilized by `c3.Genai.Prompt`.
+    */
+  buildPromptTemplateString: inline function(prompt: !string): !string py
+
+  /**
+    * Splits or truncates a prompt based on a maximum token limit.
+    * If `truncate_prompt` is True, the prompt is truncated to
+    * `max_tokens * token_length` characters and returned as a string.
+    * Otherwise, the prompt is split into multiple chunks, each chunk not exceeding
+    * `max_tokens` tokens. For more details on tokens and how to count them, see:
+    * {@link https://help.openai.com/en/articles/4936856-what-are-tokens-and-how-to-count-them}
+    *
+    * @param prompt
+   *           (str): The text to split or truncate.
+    * @param promptTokenCount
+   *           (int, optional): The number of tokens in the prompt. If provided, the function will not count the tokens in the prompt. Defaults to 0.
+    * @param tokenLength
+   *           (int, optional): The length of each token. Defaults to 3.
+    * @param maxTokens
+   *           (int, optional): The maximum number of tokens in each chunk. Defaults to 4096.
+    * @param truncatePrompt
+   *           (bool, optional): Whether to truncate the prompt to `max_tokens * token_length` characters if it exceeds the token limit. Defaults to False.
+    * @return - (Union[List[str], str]): A list of strings if the prompt is split into multiple chunks, or a single string if the prompt is truncated.
+    */
+  handleTextByMaxTokenLimit: inline function (prompt: !string, promptTokenCount: int = 0, tokenLength: int = 3, maxTokens: int = 4096, truncatePrompt: boolean): ![!string] | !string py
+
+  /**
+   * Function to print a prettified version of the engine logs of a {@link Genai.Query.Result}
+   * @param queryResult
+   *           The query result to prettify the engine logs from.
+   * @param indent
+   *           The number of spaces to use for indentation.
+   * @param chainResultKey
+   *           Key of chainResult component to print.
+   */
+  prettyPrintUnstructuredLogs: function(queryResult: !Genai.Query.Result, indent: int = 4, chainResultKey: string) py
+
+  /**
+   * Function to parse the engine logs of a {@link Genai.Query.Result} into a Pandas Series object
+   * @param queryResult
+   *           The query result to prettify the engine logs from.
+   */
+  parseEngineLogs: function(queryResult: !Genai.Query.Result): !native py
+
+  /**
+   * Sets global variables that will be loaded when #importResourceFile is called.
+   *
+   * @param variables
+   *        The variables to set based on the metadataPath value in the #importResourceFile call.
+   *        E.g. if we want to load a global variable GLOBAL_VAR = 3, for metadataPath = "some/path.py", then the
+   *        map should be {"/some/path.py": {"GLOBAL_VAR": 3}}.
+   */
+  setGlobalVariables: inline function(variables: !map<string, map<string, native>>) py
+
+  /**
+   * Clears the global variables set by #setGlobalVariables
+   */
+  clearGlobalVariables: inline function() py
+
+  /**
+   * Load the Python code from the specified metadata path into the current interpreter, returning all requested
+   * names.
+   *
+   * To improve performance while experimenting in Jupyter, you can enable a local cache by setting the
+   * env variable `GENAI_PYUTIL_IMPORT_ROOT` in your notebook/calling process.
+   *
+   * ```py
+   * os.environ['GENAI_PYUTIL_IMPORT_ROOT'] = "/home/c3/jupyter_root_dir/code_cache"
+   * ```
+   *
+   * Example usage:
+   *
+   * ```py
+   * X, Y, Z = c3.Genai.PyUtil.importResourceFile("/genAiBase/resource/code/c3genai/alphabet.py", ["X", "Y", "Z"])
+   * ```
+   *
+   * That call will load the `X`, `Y`, and `Z` globals from `alphabet.py` and assign them to X, Y, and Z. It is
+   * logically equivalent to `from genAiBase.resource.code.c3genai.alphabet import X, Y, Z`
+   *
+   * If only one name is requested, its corresponding value will be returned alone (not in a tuple), so that it does not
+   * need to be unpacked
+   *
+   * ```py
+   * X = c3.Genai.PyUtil.importResourceFile("/genAiBase/resource/code/c3genai/alphabet.py", ["X"])
+   * ```
+   *
+   * @param metadataPath
+   *        The metadata path (in the current package or one it depends on) to load
+   * @param namesToImport
+   *        The names to import from the specified file. These must all be declared at the top/outer level of the file.
+   *        That is, all names in `namesToImport` must be global within the file.
+   * @param callerGlobals
+   *        If you want all of the imported names to be available as globals in the calling scope/file, pass `globals()`
+   *        for this parameter. Otherwise, the loaded names will be returned but not injected into the global scope.
+   *
+   * @return a tuple for all of the names in `namesToImport` in the same order. If only one name is requested, its
+   *         corresponding value will be returned alone (not in a tuple), so that it does not need to be unpacked
+   */
+  importResourceFile: inline function(metadataPath: !string, namesToImport: ![string], callerGlobals: native): native py
+
+  /**
+   * Purges files cached by #importResourceFile from the GENAI_PYUTIL_IMPORT_ROOT directory.
+   *
+   * @param paths
+   *        The list of metadata paths to purge
+   * @param confirmPurgeAll
+   *        If you want to purge the entire local cache, you should pass `confirmPurgeAll=True`
+   */
+  purgeLocalResourceCache: inline function(paths: [string], confirmPurgeAll: boolean) py
+
+  /**
+   * If the provided C3 logger is enabled for debug-level logging (i.e. `logger.isDebugEnabled()`), then `msgGenerator`
+   * will be used to generate a message that will be debug logged. Useful to avoid calling potentially expensive
+   * functions and/or generating very large strings for the log message when the logger is not debug enabled.
+   */
+  loggerDebug: inline function(logger: !native, msgGenerator: !native) py
+
+  /**
+   * Returns a json.JSONEncoder that can handle some of the non-json-serializable types that are used Genai code.
+   * @param useTypedJson
+   *        If true, C3 values will be encoded using toTypedJson instead of toJson. This is useful when saving/restoring
+   *        C3 types/instances and not simply passing those values to a (non-type-aware) library/service.
+   * @param maxRowsInDataFrame
+   *        Maximum number of rows in dataframe
+   */
+  jsonEncoder: inline function(useTypedJson: boolean, maxRowsInDataFrame: int = 10): !native py
+
+  /**
+   * Prints text in a given color & style. Default is a normal print.
+   * To print a single line in multiple colors, use #prettify
+   *
+   * Examples:
+   *
+   * ```py
+   * pprint = c3.Genai.PyUtil.prettyPrint
+   * pprint("This text will be green and bold", color="green", style="bold")
+   * pprint("This text will be red and underscore", color="red", style="underscore")
+   * ```
+   *
+   * @param color
+   *        Color of the text, one of (black, red, green, yellow, blue, magenta, cyan, white)
+   * @param style
+   *        Style of the text, one of (normal, bold, reversed, underscore)
+   */
+  prettyPrint: inline function(text: !string, color: string, style: string) py
+
+  /**
+   * Generates new string coloring and styling text using ANSI codes. This can be used to print a single line in multiple colors.
+   *
+   * Examples:
+   *
+   * ```py
+   * p = c3.Genai.PyUtil.prettity
+   * f'{p("Hello", "black")} {p("dear", "red")} {p("friend", "green")}, {p("how", "yellow")} {p("are", "blue")} {p("you", "magenta")} {p("today", "cyan")} {p("?", "white")}'
+   * >>> \x1b[30mHello\x1b[0m \x1b[31mdear\x1b[0m \x1b[32mfriend\x1b[0m, \x1b[33mhow\x1b[0m \x1b[34mare\x1b[0m \x1b[35myou\x1b[0m \x1b[36mtoday\x1b[0m \x1b[37m?\x1b[0m
+   *
+   * f'{p("I", "normal")} {p("am", "bold")} {p("great", "reversed")}, {p("thanks!", "underscore")}'
+   * >>> I \x1b[1mam\x1b[0m \x1b[7mgreat\x1b[0m, \x1b[4mthanks!\x1b[0m
+   * ```
+   *
+   * @param color
+   *        Color of the text, one of (black, red, green, yellow, blue, magenta, cyan, white)
+   * @param style
+   *        Style of the text, one of (normal, bold, reversed, underscore)
+   *
+   * @return a string with the ANSI codes for colors and styles.
+   */
+  prettify: inline function(text: !string, color: string, style: string): string py
+
+  /**
+   * Replaces code references with code snippets in the content.
+   *
+   * @param content
+   *        String from which code references needs to be replaced.
+   * @param codeReferenceMap
+   *        Dict contaning the mapping of code reference to code snippet
+   *
+   * @return a string with the code references replaced with code snippets.
+   */
+  replaceCodeReference: inline function(content: !string, codeReferenceMap: native): string py
+
+  /**
+   * Returns the provided function in a wrapper that will write all input to and output from the wrapped function to the
+   * specified file.
+   *
+   * @param func
+   *        The function to wrap
+   * @param filePath
+   *        Where the input/output should be written
+   *
+   * @return the wrapped function
+   */
+  logInputOutputWrapper: inline function(func: !native, filePath: !string): !native py
+
+  /**
+   * Merges dictionary `dictionaryB` into dictionary `dictionaryA` recursively. If there is a conflict (i.e., the same key exists in both dictionaries
+   * with different values), the values of `dictionaryA` are persisted. If the dictionaryA is empty, the dictionaryB is returned as is. If the dictionaryB is empty, the dictionaryA is returned as is.
+   * If both dictionaries are empty, an empty dictionary is returned.
+   *
+   * @param dictionaryA
+   *        The dictionary to merge into.
+   * @param  dictionaryB
+   *        The dictionary to merge from.
+   *
+   * @return The merged dictionary.
+   */
+  mergeDict: function(dictionaryA: map<string, any>, dictionaryB: map<string, any>): map<string, any> py
+
+  /**
+   * Recursively flattens a nested dictionary and returns a dictionary where
+   * keys are tuples representing the path to each original key, and values
+   * are the corresponding depth of that key in the original dictionary.
+   *
+   * @param dictToFlatten
+   *        The dictionary to flatten.
+   * @param depth
+   *        The current depth of the recursion to flatten the dictionary.
+   *
+   * @return A flattened dictionary with tuples as keys and depth as values.
+  */
+  flattenDict: function(dictToFlatten: !map<string, any>, depth: int = 0): !map<string, any> py
+
+  /**
+   * Attempts to load tokenizer file (and optionally a model as well) from a zip on the file system.
+   * Generally used in airgapped environments where we cannot reach out to Huggingface or other repositories to download over the internet.
+   *
+   * @param srcPath
+   *        The file path to the tokenizer/model zip.
+   * @param tokenizerOnly
+   *        Boolean indicating whether we are only loading the tokenizer and nothing else, or loading tokenizer + model.
+   *
+   * @return dictionary containing the instantiated tokenizer class and model
+   */
+  loadModelTokenizer: inline function(srcPath: !string, tokenizerOnly: boolean = true): !native py
+
+  /**
+   * Downloads from the remote location, unzips the data files
+   *
+   * @param zipUrl
+   *           The url where the remote zip is persisted before downloading.
+   * @param localRoot
+   *           The local directory where the zip file will be downloaded.
+   *           If not passed a tmp location will be created
+   * @param dataDir
+   *           The local directory into which to unzip the archive from zipUrl.
+   *           If not passed a tmp location will be created
+   * @param forceDownload
+   *           Flag to specify whether force re-download even if data exist already.
+   * @param pathPrefix
+   *           If passed a tmp directory will be created with pathPrefix and used instead of localRoot
+   * @param keepZip
+   *           If true, the zip file will be kept after unzipping, otherwid the zip file will be deleted
+   *           after unzipping.
+   * @return the path of the directory if the zip was unzipped successfully.
+   */
+  downloadAndUnzip: function(zipUrl: !string,
+    localRoot: string,
+    dataDir: string,
+    forceDownload: boolean,
+    pathPrefix: string,
+    keepZip: boolean): string py
+
+  /**
+   * Read and return the source passages from the given file. Used to reduce memory load when reading large files.
+   * @param srcFile
+   *        The file to read the source passages from
+   * @return the source passages
+   */
+  readSourcePassages: private inline function(srcFile: !File): [Genai.SourcePassage] py
+
+  /**
+   * Read and return the instances from the given file. Used to reduce memory load when reading large files.
+   * @param srcFile
+   *        The file to read the instances from
+   * @param instanceType
+   *        The type of the instances to read
+   * @return the instances
+   */
+  readInstancesFromFile: private inline function(srcFile: !File, instanceType: !Type): [Obj] py
+
+  /**
+   * Appends the {@link Genai.SourcePassage}s to the file provided in localFilePath
+   * If no localFilePath is provided it creates a new file and returns the file path.
+   *
+   * @param passages
+   *         {@link Genai.SourcePassage}s to append to the file
+   * @param localFilePath
+   *         Optional path of the file to append the passages. If none is specified, this will create a local file
+   * @return the localFilePath containing the passages
+   */
+  appendSourcePassagesToLocalFile: private inline function(passages: [Genai.SourcePassage], localFilePath: string): !string py
+
+  /**
+   * Loads the nltk sentence tokenizer if srcPath is provided. The downloaded file is stored in local file system and for subsequent
+   * calls the data is returned from local file system.
+   * Otherwise downloads the tokenizer from the public repository.
+   *
+   * @param srcPath
+   *           Path to load the tokenizer from the srcPath. If not provided it will download from public repository i.e. `nltk.download()`
+   * @param tokenizerMethod
+   *           The name of the tokenizer function
+   * @param forceDownload
+   *           Flag to specify whether force re-download even if the file exists in local file system.
+   * @param loadPerceptron
+   *           If true, and the srcPath is not provided, this will also download perceptron from the public repo.
+   * @return the dictionary containing nltk.data and tokenizer
+   */
+  loadNltkTokenizer: inline function(srcPath: string,
+    tokenizerMethod: string enum("sent_tokenize", "word_tokenize") = "sent_tokenize",
+    forceDownload: boolean,
+    loadPerceptron: boolean): !native py
+
+  /**
+   * Sanitizes the file name.
+   *
+   * @param fileName
+   *            the source file name string.
+   * @return string
+   *            the santized file name after removing special chars.
+   */
+  sanitizeFileName: inline function(fileName: !string): !string py
+
+  /**
+   * Get the destination url to upload the chunked image or table contents.
+   *
+   * @param srcFile
+   *            the source file with the image or table contents.
+   * @param srcUrl
+   *            the source url of the chunked image or table contents.
+   * @return string
+   *            the destination url where the contents should be uploaded.
+   */
+  getDestinationUrl: function(srcFile: !Genai.SourceFile, srcUrl: string): !string py
+
+  /**
+    * Get the target url from {@link Genai.SourceFile#collection} if the collection exists otherwise create a file with name
+    * 'sourceFilesWithoutCollection' and return its url.
+    *
+    * @param srcFile
+    *            the source file from which the target url should be extracted.
+    * @return string
+    *            the target url
+    */
+  getTargetUrlFromSourceFile: function(srcFile: !Genai.SourceFile): !string py
+
+  /**
+   * Upload the chunked data to the destination url and return the destination url.
+   *
+   * @param srcFile
+   *            the source file with the image or table contents.
+   * @param srcUrl
+   *            the source url of the chunked image or table contents.
+   * @param isImageData
+   *            a boolean flag to indicate if the data is an image or table.
+   * @return string
+   *            the destination url where the contents should be uploaded.
+   */
+  uploadChunkedData: function(srcFile: !Genai.SourceFile, srcUrl: !string, isImageData: boolean): !string py
+
+  /**
+   * Loads the spacy model from the zip file and returns the local path.
+   * @param srcPath
+   *           The url where the remote zip is persisted before downloading.
+   * @param pathPrefix
+   *           Creates a tmp directory with pathPrefix for the local path
+   * @return the local path of the extracted zip
+   */
+  loadSpacyModel: function(srcPath: !string, pathPrefix: !string): !string py
+
+  /**
+   * Loads the Nougat model if {@link Genai.App.AirGapConfig#nougatZipPath} is set.
+   * Otherwise it loads the pretrained model
+   * @param modelName
+   *           Name of the pretrained model to load
+   * @return the dictionary containing the `NougatProcessor` and `VisionEncoderDecoderModel`
+   */
+  loadNougatModel: function(modelName: !string enum ("facebook/nougat-small", "facebook/nougat-base")): !native py-chunker
+
+  /**
+   * Loads tiktoken from file if {@link Genai.App.AirGapConfig#tableTextSplitterEncoderPath} is set,
+   * Otherwise it loads the pretrained model
+   * @param modelName
+   *           Name of the model for which to generate the tokens
+   * @param encodingName
+    *           Alternatively, directly specify the tokenizer
+   * @param modelPath
+   *           The path to the model zip file if loading from file system
+   * @return the native tiktoken encoder
+   */
+  loadTiktokenTextSplitterWithAirgap: function(modelName: string, encodingName: string, modelPath: string): !native py-chunker
+
+  /**
+   * Download and unzip TATR from file if {@link Genai.App.AirGapConfig#tatrZipPath} is set,
+   * Otherwise returns None indicating that the model is not available locally
+   * @return the the local path of the TATR model if available, otherwise None
+   */
+  getTatrAirgapDownloadPath: function(): string py
+
+  /**
+   * Runs a series of tasks in parallel, using python multithreading library.
+   * @param tasks
+   *    dictionary of task id to a tuple of c3.Lambda function and list of its arguments. For example, {"task_01": (lmbda_func, [arg1 ,arg2, ...])}
+   * @param maxWorkers
+   *    int to pass into max_workers parameter of multithreading executor declaration
+   * @return a map of the task ID's to the task lambda's return result
+   */
+  runLambdaTasksInParallel: function(tasks: !native, maxWorkers: int=10): native py
+
+  /**
+   * Convert the nested c3 type obj into corresponding nested python class instance,
+   * also convert the c3 camel case fields into py snake cases.
+   *
+   * @param obj
+   *           The nested c3 type obj to convert
+   * @param classMapping
+   *           The c3 type name to corresponding py class names.
+   * @return the nested python class instance converted from c3 type obj.
+   */
+  nestedC3TypeToPyObj: function(obj: !Type, classMapping: !native): !native py
+
+  /**
+   * Convert the nested py obj into corresponding nested c3 type instance,
+   * also convert the py snake cases fields into c3 camel case.
+   *
+   * @param obj
+   *           The nested native py obj to convert
+   * @param typeMapping
+   *           The py class names to corresponding c3 types.
+   * @return the nested c3 type instance converted from py obj.
+   */
+  nestedPyObjToC3Type: function(
+    obj: !native, typeMapping: !native
+  ): Type py
+
+  /**
+   * Cleanses a string by removing unwanted or problematic characters, including null bytes and unwanted keywords in translation configuration.
+   *
+   * @param content
+   *           The input string from which to remove bad characters.
+   * @param chunkerSpec
+   *            A {@link Genai.SourceFile.ChunkerSpec} used to specify which chunker is used
+   */
+  replaceBadChars: inline function(content: !string, chunkerSpec: Genai.SourceFile.ChunkerSpec): !string py
+
+  /**
+   * From a seeded read-only retriever, fabricate the SourceCollection and SourceFiles
+   * for the passage metadata.
+   *
+   * @param name
+   *   The name of the retriever to fabricate the SourceCollection and SourceFiles for.
+   * @param metadatas
+   *   The metadata of the passages.
+   */
+  populateSourceFilesForName: private function(name: !string, metadatas: ![native]) py
+
+  /**
+   * Downloads the files from the remote location and returns the local path of the downloaded file.
+   *
+   * @param files
+   *           The list of {@link Genai.SourceFile}s to download.
+   * @param dir
+   *           The local directory where the files should be downloaded.
+   * @return a list of local paths of the downloaded files.
+   */
+  downloadFilesBatch: function(files: ![Genai.SourceFile], dir: !string): ![string] py
+
+  /**
+   * Downloads the file from the remote location and returns the local path of the downloaded file.
+   *
+   * @param file
+   *           The {@link Genai.SourceFile} to download.
+   * @param dir
+   *           The local directory where the file should be downloaded.
+   * @return a local path of the downloaded file.
+   */
+  downloadFile: function(file: !Genai.SourceFile, dir: !string): !string py
+
+  /**
+   * List all {@link Engine}s on the current node.
+   * @param allNodes
+   *     If true, list engines on all nodes in the {@link App}.
+   */
+  listAllEngines: function(allNodes: boolean): [Engine] py
+
+  /**
+   * Call {@link Engine#restart} on all running {@link Engine}s on the current node.
+   * @param allNodes
+   *     If true, restart engines on all nodes in the {@link App}.
+   */
+  restartAllEngines: function(allNodes: boolean): [Engine] py
+
+  /**
+   * Call {@link Engine#terminate} on all running {@link Engine}s on the current node.
+   * @param allNodes
+   *     If true, only terminate engines on all nodes in the {@link App}.
+   */
+  terminateAllEngines: function(allNodes: boolean): [Engine] py
+
+  /**
+   * Download a huggingface model, zip it, and upload it to the specified mount
+   * in <mountName>/huggingface/models.
+   *
+   * @param modelName
+   *     The Huggingface model to persist
+   * @param revision
+   *     The revision of the model to persist
+   * @param endpoint
+   *     The endpoint to use for the Huggingface API, if using a mirror
+   * @param mountName
+   *     The mount in which to upload the model
+   * @param transformersModuleNames
+   *     The list of transformers class names to initialize for the model before creating the archive.
+   *     This ensures that for cases where we need to call `TableTransformerForObjectDetection.from_pretrained`
+   *     or similar, the files needed for model the model, while `snapshot_download` only downloads the files
+   *     needed for AutoModel.from_pretrained.
+   * @return where the file was uploaded
+   */
+  archiveHuggingfaceModel: function(
+    modelName: !string,
+    revision: string,
+    endpoint: string,
+    mountName: string = "datasets",
+    transformersModuleNames: [string]
+  ): string py-query_orchestrator
+
+  /**
+   * Adds c3 to the builtin.
+   */
+  setC3: inline function() py
+}

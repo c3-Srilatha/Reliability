@@ -1,0 +1,120 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A stream is a read-once collection where elements are accessed through the hasNext and next members.
+ *
+ * Streams are declared in DSL using `stream<E>` notation:
+ *
+ * ```
+ * // a stream of integer values
+ * counts: stream<int>
+ *
+ * // a stream of Cat objects or any type that mixes Cat
+ * herd: stream<Cat>
+ * ```
+ *
+ * To avoid memory leaks, streams must either be iterated to the end or explicitly closed. Streams may be arbitrarily
+ * large, larger than can fit into memory at any one time, so care should be taken not to materialize them all at once.
+ *
+ * @see Stream
+ * @see streams.c3doc
+ */
+type StreamType mixes CollectionType {
+
+  /**
+   * Build a stream on top of an iterator instance.
+   */
+  makeStream: member function<E>(iter: !Iterator<E>): Stream<E> java | js
+
+  /**
+   * Build a stream on top of a lambda that produces the next value or null on end. Note that this model does not
+   * work for streams that may contain null values.
+   */
+  makeStream: member function<E>(next: !lambda(): E, close: lambda()): Stream<E> java | js
+
+  /**
+   * Build a stream on top of a lambda that produces the next value or null on end. Note that this model does not
+   * work for streams that may contain null values.
+   *
+   * @param initial
+   *        initial value passed to next lambda; note that this is not necessarily a first element as next can decide
+   *        to return a different value when `index == 0`
+   * @param next
+   *        lambda that takes last element and next index and returns next value or null on end
+   * @param close
+   *        optional lambda that will be called on stream close
+   */
+  makeStream: member function<E>(initial: !?E,
+                                 next: !lambda(last: !?E, index: !int): E,
+                                 close: lambda()): Stream<E> java | js
+
+  /**
+   * Build a stream on top of a lambdas that determine and produce the next value. Note that since `hasNext` is
+   * specified separately, this model works for streams that may contain null values.
+   *
+   * @param hasNext
+   *        predicate that determines whether there is another element to be gotten
+   * @param next
+   *        lambda that takes last element and next index and returns next value
+   * @param close
+   *        lambda that will be called on stream close (may be null)
+   */
+  makeStream: member function<E>(hasNext: !lambda(): boolean,
+                                 next: !lambda(last: !?E, index: !int): E,
+                                 close: !?lambda()): Stream<E> java | js
+
+  /**
+   * @return instance of empty stream of this type.
+   */
+  emptyStream: member function<E>(): stream<E> java | js
+
+  /**
+   * @return {@link #emptyStream}
+   */
+  emptyCollection: ~ java | js
+
+  /**
+   * @return stream built by provided lambda; note that this is not a recommended way to construct large stream. Use
+   *         #makeStream instead
+   */
+  buildStream: member function<E>(builder: !lambda(b: !CollectionBuilder<E>)): stream<E> java | js
+
+  /**
+   * @return builder of stream of this type. This is not a recommended way to construct the stream. Use Stream#of and
+   *         variants instead.
+   */
+  makeCollectionBuilder: ~
+
+  isAnyCollection:      ~ java | js | py
+  instanceType:         ~
+  isIndexed:            ~ java | js
+  isStream:             ~ java | js
+  of:                   ~ java | js
+  ofAny:                ~ java | js
+  ofBinary:             ~ java | js
+  ofBool:               ~ java | js
+  ofByte:               ~ java | js
+  ofDateTime:           ~ java | js
+  ofDecimal:            ~ java | js
+  ofDbl:                ~ java | js
+  ofFloat:              ~ java | js
+  ofInt:                ~ java | js
+  ofInt16:              ~ java | js
+  ofInt32:              ~ java | js
+  ofJson:               ~ java | js
+  ofNative:             ~ java | js
+  ofStr:                ~ java | js
+  cacheKey:             ~
+  convertToJavaRuntime: ~
+  convertValue:         ~
+  valueFromHttpRequest: ~
+  valueToHttpResponse:  ~
+  hasDefaultEmptyValue: ~
+  defaultEmptyValue:    ~ java | js | py
+}

@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Batch job to update a single or group of {@link FieldStoredCalcCache}(s).
+ */
+entity type FieldStoredCalcCacheBatchJob extends BatchJob<FieldStoredCalcCacheBatchJob, FieldStoredCalcCacheBatchJobOptions, FieldStoredCalcCacheBatch> type key 'FSCCBJ' {
+
+  /**
+   * Starting a {@link FieldStoredCalcCacheBatchJob} to update the field specified in the options.
+   * @return A started {@link FieldStoredCalcCacheBatchJob}.
+   */
+  startJob: function(options: FieldStoredCalcCacheBatchJobOptions): !FieldStoredCalcCacheBatchJob js-rhino
+
+  /**
+   * Get all relevant {@link FieldStoredCalcCache} (FSCC) instances for this batch job.
+   * Evaluate each FSCC one at a time.
+   * Batch the evaluation of the single FSCC by in batches of {@link FieldStoredCalcCacheBatch}.
+   * See {@link FieldStoredCalcCacheBatchJobOptions} for more details.
+   */
+  doStart: ~ js-rhino
+
+  /**
+   * Batch will evaluate a single {@link FieldStoredCalcCache} on a subset of it's `srcType` IDs.
+   * It will evaluate metrics for those IDs and then store the result on the field specified by the FSCC.
+   * See {@link FieldStoredCalcCacheBatch} for more info.
+   */
+  processBatch: ~ js-rhino
+}

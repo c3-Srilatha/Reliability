@@ -1,0 +1,138 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type button.
+ */
+@typeScript
+@uiComponentCategorizer(name='Button', category='Components')
+type UiSdlButton mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Ms to debounce clicks.
+   */
+  clickDebounce: int
+
+  /**
+   * The displayed content of the button.
+   */
+  content: string serialized UiSdlDynamicValueSpec
+
+  /**
+   * The the usage style for the button.
+   */
+  usage: string enum('primary', 'secondary', 'link', 'danger', 'danger-secondary', 'danger-link', 'icon', 'icon-with-text')
+
+  /**
+   * Sets the button to be disabled.
+   */
+  disabled: boolean = false
+
+  /**
+   * Sets the button to show a loading spinner instead of the content.
+   */
+  loading: boolean = false
+
+  /**
+   * The size of the button.
+   */
+  size: string enum('small', 'large', 'condensed')
+
+  /**
+   * Triggered when the button is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @returns A `BUTTON_CLICK` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='BUTTON_CLICK')
+  clickButtonAction: function(id: string): !UiSdlButtonClickAction ts-client
+
+  /**
+   * Action for setting the disabled state of the button.
+   *
+   * @param id
+   *            Id of the component.
+   * @param disabled
+   *          True will set the button to disabled.
+   * @returns A `DISABLED_SET` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='DISABLED_SET')
+  setDisabledAction: function(id: string, disabled: boolean): !UiSdlButtonSetAction ts-client
+
+  /**
+   * Action for setting the loading state of the button.
+   *
+   * @param id
+   *            Id of the component.
+   * @param loading
+   *          True will set the button to loading, show the spinner
+   *          and disable the click action.  False will hide the spinner
+   *          and re-enable the button click action.
+   * @returns A `LOADING_SET` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='LOADING_SET')
+  setLoadingAction: function(id: string, loading: boolean): !UiSdlButtonSetAction ts-client
+
+  /**
+   * Action for setting the content of the button.
+   *
+   * @param id
+   *            Id of the component.
+   * @param content
+   *            The DynamicValueSpec for the content.
+   * @returns A `CONTENT_SET` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CONTENT_SET')
+  setContentAction: function(id: string, content: UiSdlDynamicValueSpec): !UiSdlContentSetAction ts-client
+
+  /**
+   * Listens for actions of type `DISABLED_SET` and sets the {@link #disabled} state.
+   * to the payload value (true/false)
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='DISABLED_SET')
+  disabledSetEffect: private function(state: !UiSdlReduxState,
+                                      action: !UiSdlButtonSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `LOADING_SET` and sets the {@link #loading} state
+   * to the payload value (true/false).
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='LOADING_SET')
+  loadingSetEffect: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlButtonSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `CONTENT_SET` and sets the {@link #content} state
+   * to the payload values.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CONTENT_SET')
+  contentSetEffect: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlContentSetAction): !UiSdlReduxState ts-client
+}

@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used in SelfServiceDITestUtil to set up data
+ */
+type SelfServiceDITestUtil {
+
+  /**
+   * Sets up necessary credentials for testing snowflake, postgres, delta lake and big query data connectors
+   */
+  setUpSourceSystemAndSourceCollection: function(name: string,
+                                                 password: any,
+                                                 connectorType: string,
+                                                 createSourceCollection: boolean) js-server
+
+  /**
+   * retrieve a list of url for files
+   */
+  retrieveFileUrls: function(filePathsList: [string], packageName: string): [string] js-server
+
+  /**
+   * copies files from Pkg to destDirUrl url in bucket
+   * The newly created files will have the same name as passed in the filePathsList
+   *
+   * @return an array of strings containing the destination url for the newly created file(s)
+   */
+  copyFilesFromPkg: function(filePathsList: [string], packageName: string, destDirUrl: string): [string] js-server
+
+  /**
+   * Writes a file to the Pkg content for testing large file uploading
+   * The file will be written to the `test/data` folder
+   *
+   * @param fileName
+   *         The name of the file.
+   */
+  createLargeFile: function(fileName: string) js-server
+
+  /**
+   * Create a fileSourceCollection with data in it
+   *
+   * @param fileName
+   *         The name of the file.
+   * @param sourceCollectionName
+   *         The name of the sourceCollection.
+   */
+  uploadFiles: function(fileName: [string], sourceCollectionName: string) js-server
+
+  /**
+   * Test cleanup that ensures each test runs independently from each other
+   */
+  // TODO: PLAT-96900 remove this in favor of a platform level solution
+  cleanup: function() js-server
+}

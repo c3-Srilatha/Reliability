@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test entity type
+ */
+entity type DataApiEntityType mixes DataApiEntityMixinType schema name 'DAET' {
+
+  /**
+   * Int field
+   */
+  intField: int
+
+  /**
+   * Datetime field
+   */
+  datetimeField: datetime
+
+  /**
+   * Double field
+   */
+  doubleField: double
+
+  /**
+   * Boolean field
+   */
+  booleanField: boolean
+
+  /**
+   * Reference field
+   */
+  referenceField: TestApiEntityType
+
+  /**
+   * Required field
+   */
+  requiredField: !int
+
+  /**
+   * Foreign key reference field
+   */
+  foreignKeyReferenceField: TestApiEntityType(id, referenceField)
+
+  /**
+   * Foreign key reference collection field
+   */
+  foreignKeyReferenceCollectionField: [TestApiEntityType](referenceField)
+
+  /**
+   * Dimension field
+   */
+  dimensionField: Dimension
+
+  /**
+   * Unit field
+   */
+  unitField: Unit
+
+  /**
+   * Stored calc field
+   */
+  storedCalcField: double stored calc doubleField + 10
+
+  /**
+   * Stored collection field
+   */
+  storedCollectionField: [TestApiEntityType] schema name 'TAET'
+
+  /**
+   * Duration field
+   */
+  durationField: Duration
+
+  /**
+   * Test method
+   */
+  testMethod: function() js-server
+}

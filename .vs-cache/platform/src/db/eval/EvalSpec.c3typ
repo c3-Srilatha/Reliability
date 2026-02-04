@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link Evaluatable#eval} spec type
+ */
+type EvalSpec mixes IdTimeRangeFilterSpec, FetchSpecBase, EvaluateSpecBase, EvalFeaturesSpec, UnitFieldsSpecBase, TimeInfo, EvalOverrideMetricsSpec, LegacyMetricAdvancedSpec, Spec {
+
+  /**
+   *  This represents the interval for the time-series data.
+   *  Please take note of the support of **interval** on {@link EvalSpec} and how it impacts {@link Evaluatable#eval}:
+   *  ```
+   *  | Kind                                | Supports Interval |  Valid  | Example
+   *  |-------------------------------------|-------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------|
+   *  | Projection with Metrics             | Yes               |   ✅    | `eval(interval = 'DAY', projection="gearOilTemperatureAvg")`                                                                             |
+   *  | Projection with normalized data     | Yes               |   ✅    | `eval(interval = 'DAY', projection="normalized.data.gearOilTemperature")`                                                                |
+   *  | Projection with non-normalized data | No                |   ❌    | `eval(interval = 'DAY', projection="data.gearOilTemperature")`                                                                           |
+   *  | Projection with Feature.Set         | No                |   ❌    | `eval(interval = 'DAY', projection="WindTurbineFeatureSet")`                                                                             |
+   *  | Projection with Feature.Set columns | No                |   ❌    | `eval(interval = 'DAY', projection="WindTurbineFeatureSet.gearOilTemperatureAvgFeat, WindTurbineFeatureSet.gearOilTemperatureMinFeat")`  |
+   * ```
+   *  Also, note that:
+   *  * `gearOilTemperatureAvg` is a {@link Metric} on `WindTurbine`.
+   *  * `WindTurbineFeatureSet` is a {@link Feature.Set} with 2 features `gearOilTemperatureAvgFeat` and `gearOilTemperatureMinFeat` on `WindTurbine`.
+   *  * `gearOilTemperature` is a {@link Ann.Ts @ts} field on a referenced type via `data` field on `WindTurbine`. Please look at {@link TimedDataHeader} and {@link TimedDataPoint} for more information about normalization.
+   */
+  interval: ~
+
+  /**
+   * If set, returns actualized {@link Data} otherwise returns a lazy handle to actualize Data
+   */
+  actualize: private boolean
+
+  /**
+   * @return EvalSpec by removing the following fields: "ids", "id", "start", "end", "filter"
+   */
+  withoutAnyFilter: member function(): !EvalSpec
+
+  /**
+   * Resultant type for this spec as a result of {@see Evaluatable#eval}
+   */
+  dataType: member function(evalType: !Type<<Evaluatable>>): !TupleType
+
+  /**
+   * Validates if the spec if correct
+   * @param singleValued
+   *                If set, validation validates that either #projection has exactly 1 output value
+   */
+  validate: member function(singleValued: boolean)
+
+  /**
+   * Default aggregation function for {@link Data} depending on underlying agg function
+   *
+   * Looks into the aggregation functions for underlying {@link SimpleMetric} and infers the default aggregation function
+   */
+  dataDefaultAgg: member function(evalType: !Type<<Evaluatable>>): string serialized AggOp
+
+  /**
+   * @return kind of evaluation for this EvalSpec
+   */
+  kind: private cached member function(evalType: !Type<<Evaluatable>>): string enum EvalSpec.ProjectionKind
+
+  // TODO: PLAT-50038: Improve Data support for Mutability and Statefulness
+
+  /**
+   * If set to true, eval functions will return a mutable instance of Data, otherwise return an immutable instance by default.
+   * For now, if set to true, the returned instance will also be stateful.
+   */
+  mutable: boolean
+
+  /**
+   * Reverse map of projection to aliased name. E.g. projection="{'foo' : a+b }" => {"a+b"="foo"}
+   * If there is no alias, return value will be an empty map
+   */
+  aliases: property(): map<string, string>
+}

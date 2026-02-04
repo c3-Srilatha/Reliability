@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Fields for the trace.
+ */
+type Observability.Trace.Fields {
+  /**
+   * Name of the trace formed from concatenation of typename and methodname of root action.
+   * For example, `Observability.Trace#list` and `WindTurbine#echo` could be possible values.
+   */
+  name: string
+
+  /**
+   * The start time of this {@link Observability.Trace}
+   * This is the earliest {@link Observability.Span#startTime} of all spans belonging to this trace.
+   */
+  startTime: ?datetime with millis
+
+  /**
+   * The end time of this {@link Observability.Trace}
+   * This is the latest {@link Observability.Span#endTime} of all spans belonging to this trace.
+   */
+  endTime: ?datetime with millis
+
+  /**
+   * Duration of this {@link Observability.Trace}.
+   * This is the difference between {@link Observability.Trace#startTime} and
+   * the {@link Observability.Trace#endTime}.
+   */
+  durationInMillis: ?int
+
+  /**
+   * Number of {@link Observability.Span}s in this {@link Observability.Trace}.
+   */
+  spanCount: ?int
+
+  /**
+   * Number of {@link Observability.Span}s in this {@link Observability.Trace} that have errors.
+   */
+  errorCount: ?int
+
+  /**
+   * The status code of this {@link Observability.Trace}.
+   */
+  status: ?Observability.Status
+
+  /**
+   * True if there were errors during aggregation
+   */
+  hasAggregationErrors: private ?boolean
+}

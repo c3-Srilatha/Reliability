@@ -1,0 +1,109 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to annotate specific fields of an entity type to be "searchable". These fields when part of an entity type
+ * (mixes {@link Searchable}), will be persisted in a search data store and will be available to be searched on
+ * via {@link Searchable.search} APIs.
+ *
+ * We may also want to annotate a type with this annotation so that we can influence/optimize the index as well.
+ *
+ * By default we use C3 ValueType information to map the search store data type.
+ * If unavailable we use text to override.
+ *
+ * ```Only Annotation on Primitive Types or another entity type (do not need to mixes {@link Searchable}) are supported.```
+ *
+ * ```
+ * @searchIndex(primaryCount=5, replicaCount=5, doNotIndexNameField=false)
+ * entity type Company mixes Searchable<Company> {
+ *      @search
+ *      name: string
+ *
+ *      @search
+ *      value: int
+ *
+ *      // Will not be indexed
+ *      founder: string
+ *
+ *      // @search on reference type is not supported
+ *      employees: [Person]
+ *
+ * }
+ *
+ *
+ * type Person {
+ *      @search
+ *      firstName: string
+ *
+ *      @search
+ *      lastName: string
+ *
+ *      dob: datetime
+ * }
+ * ```
+ *
+ * Even if the embedded type does not mixes Searchable, we should be able to support it.
+ * This is needed because user may want additional information to improve search relevancy.
+ *
+ * @see Searchable
+ */
+@annotation(appliesTo=['field', 'type'])
+type Ann.Search mixes Annotation {
+
+  /**
+   * This should be applied on a type and is used to specify the number of primary shards that should be created for
+   * the index, provided that the index does not already exist on the search engine side. By default it is 1
+   * If an index is already created, same SearchIndex will be used but number of primary shards will not change, only
+   * reconstructing the index will change number of primary shards.
+   */
+  primaryShardsOverride: int = 1
+
+  /**
+   * This should be applied on a type and is used to specify the number of replica shards that should be created
+   * for the index, provided that the index does not already exist on the search engine side. By default it is 1
+   * If an index is already created, number of replica shards will change.
+   */
+  replicaShardsOverride: int = 1
+
+  /**
+   * This is a field-specific annotation and is used to override the data type of field to be text when persisting in
+   * the search data store. By default, it's false and the fields {@link ValueType} will determine the data type when
+   * persisting to the index data store.
+   * Setting as text will ensure the field to be processed (i.e. tokenized, stemmed, etc.). Therefore, the inverted
+   * index will use processed terms as opposed to the keyword
+   * Ex: "The quick brown fox jumps over the lazy dog"
+   * Stored as:
+   * Term     | Count
+   * the      | 2
+   * quick    | 1
+   * brown    | 1
+   * fox      | 1
+   * jumps    | 1
+   * over     | 1
+   * lazy     | 1
+   * dog      | 1
+   */
+  text: boolean
+
+  /**
+   * This is a field-specific annotation and is used for exact matching.
+   *
+   * Setting a field as keyword will result in:
+   * Ex: "The quick brown fox jumps over the lazy dog"
+   * Stored as:
+   * Term                                             | Count
+   * The quick brown fox jumps over the lazy dog      | 1
+   *
+   * In this case, Query of 'fox' will not result in any hit, since it needs exact matching of the string, but
+   * if override the type as text there will be hits.
+   * Therefore, keyword is often used when exact matching (unique identifier) is required.
+   * If both exact matching and tokenized query are required, multi-fields mapping supports mapping the field as
+   * text and keyword. E.g @search(text=true, keyword=true)
+   */
+  keyword: boolean
+}

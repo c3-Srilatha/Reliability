@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This contains the similiarity scoring for parts in an {@link WorkOrder} to other {@link WorkOrder}s
+ */
+entity type WorkOrderPartsSimilarityPredictions mixes FilterableByFacility schema name 'WOPP' {
+
+/**
+ * The {@link WorkOrder} for which the prediction is made.
+ */
+parent: !WorkOrder
+
+/**
+ * The similar {@link WorkOrder} for which the the parts scoring were generated.
+ */
+similarWorkOrders: ![WorkOrder]
+
+/**
+ * The {@link InventorySeries} which is a unique object for a part.
+ * This is tied back to the {@link #similarWorkOrders}
+
+ */
+part: !InventorySeries
+
+/**
+ * The sum of quantity of the {@link #part} from the associated {@link #similarWorkOrders}.
+ */
+quantity: int
+
+/**
+ * The sum of quantity of the {@link #part} from the associated {@link #similarWorkOrders} normalized
+ * by the total quantity of the {@link #part} in the {@link #parent} {@link WorkOrder}. The sum of the
+ * normalized scores for all parts in the {@link #parent} will be 100.
+ */
+normalizedScore: double
+
+/**
+ * @inheritdoc
+ */
+facilityFilterPaths: const ~ = ["parent.parent.facility"]
+}

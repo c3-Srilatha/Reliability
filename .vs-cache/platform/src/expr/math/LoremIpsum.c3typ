@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Pseudo-random prose generation utility based the letter frequency of
+ * [standard text](https://en.wikipedia.org/wiki/Lorem_ipsum).
+ *
+ * A few different languages are supported, by using text translated from standard text in "Latin".
+ *
+ * @see Rnd
+ */
+inline type LoremIpsum {
+
+  /**
+   * The language code used of the training text.
+   *
+   * @see https://www.loc.gov/standards/iso639-2/php/code_list.php
+   */
+  langCode: !string
+
+  /**
+   * The language name (in that language) used of the training text.
+   */
+  langName: !string
+
+  /**
+   * The training text for this language. (This never varies).
+   */
+  original: !string
+
+  /**
+   * The sentence terminator string.
+   */
+  terminator: !string
+
+  /**
+   * Produce a sentence of prose with letter frequencies from the training text for this language.
+   */
+  sentence: member function(rnd: !Rnd): !string
+
+  /**
+   * Get an instance for generating random prose that mimics the specified language.
+   *
+   * @param lang the language code (case insensitive)
+   *
+   * @see #languages
+   */
+  forLang: function(lang: !string, failIfInvalid: boolean): LoremIpsum
+
+  /**
+   * Get an instance for generating random prose that mimics Latin (the original).
+   */
+  forLatin: function(): !LoremIpsum
+
+  /**
+   * Get an instance for generating random prose that mimics English (translated from Latin).
+   */
+  forEnglish: function(): !LoremIpsum
+
+  /**
+   * Return the supported language codes (with training text).
+   *
+   * @see https://www.loc.gov/standards/iso639-2/php/code_list.php
+   */
+  supportedLangs: cached function(): [!string]
+
+  _states: private @java(class="c3.platform.typesys.value.Map<String, c3.platform.expr.math.LoremIpsum_Methods$States>") native
+}

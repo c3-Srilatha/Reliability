@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type AzureSharedAccessResource<RF: AzureSharedAccessAuthorizationRuleResource> mixes AzureGenericResource {
+
+  /**
+   * Add a send rule into shared access policy.
+   *
+   * @param ruleName
+   *           The name of the send rule that will be created
+   * @param spec
+   *           Parameters used to configure this rule upon creation
+   */
+  @action(group+='cluster-admin')
+  addRule: final member function(ruleName: !string, claim: string enum AzureSharedAccessRuleClaim)
+
+  /**
+   * Remove a rule from the shared access policy.
+   *
+   * @param ruleName
+   *           The name of the rule that will be removed
+   */
+  @action(group+='cluster-admin')
+  removeRule: final member function(ruleName: !string)
+
+  /**
+   * List all the rules currently exist in the shared access policy.
+   *
+   * @return An array contains all the rules
+   */
+  @action(group+='cluster-admin')
+  listRules: final member function(): [RF]
+}

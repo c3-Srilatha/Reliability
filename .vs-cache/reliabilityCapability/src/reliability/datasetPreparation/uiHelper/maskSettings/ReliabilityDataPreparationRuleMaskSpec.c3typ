@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that represents a rule mask for dataset preparation settings. This is used for any mask that is applied based
+ * on one or more sensors' values. Through the UI, non-operational and training/inference rule masks all
+ * represent instances of these rule masks.
+ */
+type ReliabilityDataPreparationRuleMaskSpec {
+
+  /**
+   * The id of the target for the mask. The type of the target is either
+   * an {@link ExpectedSensor} or a {@link Sensor}.
+   */
+  targetId: !string
+
+  /**
+   * A string enum representing the type of the target.
+   */
+  targetType: ReliabilityDataPreparationMaskTargetType = ReliabilityDataPreparationMaskTargetType.SENSOR
+
+  /**
+   * The string that represents the operator that will be applied to the mask.
+   */
+  operator: !string enum('eq', 'gt', 'ge', 'lt', 'le', 'ne')
+
+  /**
+   * Threshold on which to apply the operator.
+   */
+  value: !double
+
+  /**
+   * Converts the rule to a compound metric expression using the provided
+   * {@link SimpleMetric} name.
+   *
+   * @param simpleMetricName
+   *            The name of the {@link SimpleMetric} to be included in the
+   *            {@link CompoundMetric}. Must be evaluatable on `targetType`.
+   * @return compound metric expression string
+  */
+  toCompoundMetricExpression: member function (simpleMetricName: string): string js-rhino
+}

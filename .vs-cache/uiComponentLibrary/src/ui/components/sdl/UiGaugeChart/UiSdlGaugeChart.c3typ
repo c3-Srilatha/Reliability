@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that displays data in a gauge chart.
+ */
+@uiSdlDesignerComponent(designable=true,
+                        category='UiSdlGaugeChart.CategoryName',
+                        name='UiSdlGaugeChart.ComponentName',
+                        icon='tachometer-alt')
+@typeScript
+@uiComponentCategorizer(name='Gauge chart', category='Data Visualization')
+type UiSdlGaugeChart mixes UiSdlComponent<UiSdlGaugeChartDataSpec>, UiSdlHeight {
+
+  /**
+   * The specification used for retrieving data displayed by the chart.
+   */
+  @uiSdlDataSpec(dataDestinationField='data')
+  dataSpec: ~
+
+  /**
+   * Holds the data to display in the chart.
+   */
+  data: [Obj]
+
+  /**
+   * Chart header.
+   */
+  header: UiSdlGaugeChartHeader
+
+  /**
+   * The chart style.
+   */
+  chartStyle: string enum('CIRCLE', '240', 'SEMI') = 'SEMI'
+
+  /**
+   * The start angle of the guage (Only avialable when the chart style is Circle).
+   */
+  startAngle: string enum('TOP', 'LEFT', 'RIGHT', 'BOTTOM') = 'TOP'
+
+  /**
+   * The height of the component in pixels.
+   */
+  height: ~ = 400
+
+  /**
+   * Action to change the text of label.
+   *
+   * @param id
+   *          Id of the component.
+   * @param label
+   *          Value of label to update.
+   *
+   * @returns A `GAUGE_CHART_LABEL_UPDATE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='GAUGE_CHART_LABEL_UPDATE')
+  updateGaugeChartLabelAction: function(id: !string, label: string): !UiSdlGaugeChartUpdateLabelAction ts-client
+
+  /**
+   * Listens for actions of type `GAUGE_CHART_LABEL_UPDATE` and updates chart label
+   *
+   * @param state
+   *            Redux state
+   * @param action
+   *            Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='GAUGE_CHART_LABEL_UPDATE')
+  gaugeChartLabelUpdateReducer: private function(state: !UiSdlReduxState,
+                                                 action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

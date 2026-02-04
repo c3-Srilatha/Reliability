@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The data spec setting for a form field.  Represents the configurable options for a single form field.
+ */
+@typeScript
+abstract type UiSdlFormFieldDataSpecSetting mixes UiSdlFieldBasedDataSpecSetting, UiSdlComponentInput {
+
+  /**
+   * The label that should appear above the field.
+   */
+  label: !(string | UiSdlDynamicValueSpec)
+
+  /**
+   * For {@link UiSdlFilterPanel}, this field has to be assigned the value that matches the name of
+   * the field being filtered on in the {@link FetchFilterSpec} of a {@link FetchSpec}.
+   * For example, you have a {@link UiSdlDataGrid} that displays instances of TypeA. And you have a
+   * UiSdlFilterPanel that has a SDLSelectField corresponding to a field on TypeA. The `fieldName` for
+   * that instance of SDLSelectField has to match the name of the corresponding field on TypeA.
+   *
+   * If you have a another SDLSelectField which is a reference field on TypeA, think about how you
+   * would filter on that reference field in a fetch call. If your filter spec will be something like
+   * `Filter.eq('someField.anotherField.id', 'someValue')`, the fieldName for that SDLSelectField will
+   * have to be `someField.anotherField.id`.
+   * This naming convention is important to make sure the grid can filter correctly based on the
+   * selected value(s).
+   *
+   * Note: fieldName has to be unique among the list of fieldNames in a UiSdlFilterPanel.
+   */
+  fieldName: ~
+
+  /**
+   * The hint text to be shown below the field.
+   */
+  hintText: string | UiSdlDynamicValueSpec
+
+  /**
+   * Whether or not this field is required.
+   */
+  required: boolean
+
+  /**
+   * Whether the field should be disabled.
+   */
+  disabled: boolean = false
+
+  /**
+   * The placeholder text for a field.
+   */
+  placeholder: string | UiSdlDynamicValueSpec
+
+  /**
+   * The field could also have a dataSpec. For example, a dropdown select could be backed by
+   * a collection of countries. The data for this dataSpec should be in 'fieldCollection'.
+   */
+  @uiSdlDataSpec(dataDestinationField='fieldCollection')
+  dataSpec: UiSdlFormFieldDataSpec
+
+  /**
+   * Holds the data that will populate field collection.
+   * For example, the options in a drop down.
+   */
+  fieldCollection: any
+
+  /**
+   * Descriptors for how to obtain the value for a prop from data.
+   * Specifies the path to the data and the prop to populate.
+   */
+  dataPropSpecs: [UiSdlFormDataToPropSpec]
+
+  /**
+   * The current value of the field.
+   */
+  value: any
+
+  /**
+   * The default value of the field, if any.
+   */
+  defaultValue: any
+
+  /**
+   * Whether the value in the input is not acceptable as a valid value.
+   */
+  invalid: boolean
+
+  /**
+   * The component to render in the field.
+   */
+  componentRef: UiSdlComponentRef<UiSdlComponent<UiSdlNoData>>
+
+  /**
+   * A mapping of field name to ref component.
+   */
+  fieldRefComponents: map<string, any>
+}

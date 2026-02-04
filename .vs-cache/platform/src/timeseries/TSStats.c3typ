@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@db(compactType=true, index+=['job,group,start'])
+entity type TSStats schema name 'TS_STS' {
+
+  job: TSStatsJob
+
+  /**
+   * this value is for job.spec.group or null
+   */
+  group: string
+
+  start:      datetime
+  value:      double
+  startCalc:  function(spec: TSStatsCalcSpec): TSStatsJob js-server
+  cancelCalc: function(job: TSStatsJob): TSStatsJob js-server
+  status:     function(job: TSStatsJob): MapReduceStatus js-server
+  read:       function(spec: TSStatsReadSpec): [TSStats] js-server
+}

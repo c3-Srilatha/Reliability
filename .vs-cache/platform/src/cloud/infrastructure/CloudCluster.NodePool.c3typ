@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a group of homogenous Virtual Machines (VMs) that can be consumed by {@link CloudCluster.Node}
+ * There should at least exist one CloudCluster.NodePool for a given CloudCluster.
+ * Each CloudCluster.NodePool is characterized by the following:
+ *      1. {@link CloudProvider}: Specifies where a CloudCluster.NodePool exists (ex: K8s, Gcp, Aws, or Azure)
+ *      2. {@link CloudCluster.NodePool.Config}: Describes a CloudCluster.NodePool's allocatable resources and unique hardware
+ * This type is primarily used for specifying C3-application usage constraints and should not be confused with
+ * {@link App.NodePool}, which represents a group of C3 nodes
+ */
+abstract type CloudCluster.NodePool<P: CloudProvider, C: CloudCluster.NodePool.Config> mixes Named, Configurable<C> {
+
+  forName: ~
+
+  /**
+   * Returns {@link CloudProvider} {@link Type} details for this CloudCluster.NodePool
+   */
+  cloudProviderType: final member function(): !Type<<P>>
+
+  /**
+   * Checks for availability of nodes with the requested min hardware requirements.
+   *
+   * @param hardwareConstraint
+   *           {@link HardwareConstraint} that are requested
+   * @return true iff there exists a node pool {@link CloudCluster.NodePool} that supports the requested
+   *         hardware constraints.
+   */
+  checkAvailable: function(hardwareConstraint: HardwareConstraint): boolean
+
+  /**
+   * List available CloudCluster.NodePools
+   */
+  list: function(): [mixing CloudCluster.NodePool<P, C>]
+}

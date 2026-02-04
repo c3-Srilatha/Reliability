@@ -1,0 +1,309 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines hierarchical relations between types.
+ *
+ * By defining hierarchyLevels, a Hierarchy can link multiple types, providing a retrieval mechanism that flattens
+ * the hierarchy graph nodes into a collection. Each node provides metadata about the relation and the data encapsulated by it.
+ */
+@seed(userUpdatable=true, userRemovable=true)
+entity type Hierarchy mixes SeedData schema name 'HIER_HIER' {
+
+  id:        !string
+  name:      !string
+  available: boolean = true
+
+  /**
+   * Map of node types to hierarchy level.
+   *
+   * A special node type name, 'Root', must be used to define the top level nodes in the hierarchy.
+   *
+   * Each node might branch out to new levels if a hierarchy level is defined for its type in this mapping.
+   */
+  hierarchyLevels: map<string, HierarchyLevel> schema suffix 'HLV'
+
+  /**
+   *  Get children nodes within a hierarchy
+   *
+   *  @param currentNode
+   *            The node to get children from. If set to null it will return all root nodes.
+   *  @param hierarchyId
+   *            The ID of the hierarchy you are interested in, E.G. businessRegion
+   *  @param rootLimit
+   *            Limit of the number roots will return . If set, it will only return limit number of root nodes.
+   *  @param rootOffset
+   *            Offset of the return root nodes.
+   *  @param searchString
+   *            Filter on the return nodes.
+   *  @param includeHasChildrenInformation
+   * .          If set to true it will populate hasChildren field
+   *  @param spec
+   *            User input fetch spec contains filter string, order string, limit, etc
+   *  @return An array of HierarchyNode
+   */
+  getChildren: function(currentNode: HierarchyNode,
+                        hierarchyId: string,
+                        rootLimit: int,
+                        rootOffset: int,
+                        searchString: string,
+                        includeHasChildrenInformation: boolean,
+                        spec: any): [HierarchyNode] js-server
+
+  /**
+   * Given an array of HierarchyNode, check each HierarhcyNode whether it has children or not.
+   * If it has children set hasChildren field to true otherwise set it to be false.
+   *
+   * @param hierarchyNodes
+   *           An array of nodes that want to get hasChildren information.
+   * @param hierarchyId
+   *           The ID of the hierarchy you are interested in, E.G. businessRegion
+   * @param spec
+   *           User input fetch spec contains filter string, order string, limit, etc
+   * @return An array of HierarchyNode with hasChildren field
+   */
+  getHasChildrenInformation: private function(hierarchyNodes: ![HierarchyNode],
+                                              hierarchyId: !string,
+                                              spec: any): [HierarchyNode] js-server
+
+  /**
+   *  Helper function for {@link getChildren}. Get children metadata file objects within a parent folder in the current package.
+   *  If the parentFolderPath param is null, return the root level test folders.
+   *  For example, if there are two metadata files under 'test/browser' folder with the full url as below:
+   *  - meta://server/platformFoundation/test/browser/testFile1.js
+   *  - meta://server/platformFoundation/test/browser/testFile2.js
+   *  By calling this function with the parentFolderPath as null, it will return the following results:
+   *   [{
+   *       id: 'platformFoundation/test/browser',
+   * name: 'Browser Tests'
+   *   }]
+   *
+   *  By calling this function with the parentFolderPath as 'test/browser', it will return the following results:
+   *   [{
+   *       id: 'platformFoundation/test/browser/testFile1.js',
+   * name: 'testFile1.js'
+   *   }, {
+   *       id: 'platformFoundation/test/browser/testFile2.js',
+   * name: 'testFile2.js'
+   *   }]
+   *
+   *  @param parentFolderPath
+   *            The relative path of the parent folder, e.g., 'platformFoundation/test/jasmine'.
+   *  @param isTestFile
+   *            Whether the metadata files are test files.
+   *  @param fileExt
+   *            The file extention of the metadata files, e.g., 'js'.
+   */
+  getMetadataFileChildren: private function(parentFolderPath: string,
+                                            isTestFile: boolean,
+                                            fileExt: string): [MetadataFileChild] js-server
+
+  /**
+   * Search within a hierarchy for a node by name
+   *
+   * @param hierarchyId - The ID of the hierarchy you are interested in, E.G. businessRegion
+   * @param searchString - What to search for
+   * @returns [HierarchyNode] an array of nodes which fit the search. Their parent fields are set with parents going
+   *  all the way up to the root.
+   */
+  searchByName: function(hierarchyId: string, searchString: string, rootOnly: boolean): [HierarchyNode] js-server
+
+  /**
+   * Search within a hierarchy for a node by ID
+   *
+   * @param hierarchyId - The ID of the hierarchy you are interested in, E.G. businessRegion
+   * @param nodeType - The type of node to search for, E.G. Location or FixedAsset
+   * @param id - The id of the node
+   * @returns [HierarchyNode] an array of nodes which fit the search. Their parent fields are set with parents going
+   *  all the way up to the root.
+   */
+  searchById: function(hierarchyId: string, nodeType: string, id: string): [HierarchyNode] js-server
+
+  /**
+   * Fetch and process Hierarchy data for UI components
+   * It calls {@link Hierarchy.getChildren} to get data in {@link HierarchyNode} format
+   * and calls fetch for each type to get the acutal data, then maps the data to the correct
+   * column field to render in the UI component
+   *
+   * @param hierarchyId
+   *           The ID of the hierarchy you want to fetch data from.
+   * @param columnFieldMappings
+   *           Mapping between column field name in UI component to the actual field name from a type
+   *           For Example:
+   *              {
+   *                Type1: {
+   *                  columnIdField: "type1IdField",
+   *                  columnNameField: "type1NameField"
+   *                },
+   *                Type2: {
+   *                  columnIdField: "type2IdField",
+   *                  columnNameField: "type2NameField"
+   *                }
+   *              }
+   * @param spec
+   *   A mapping fetch specs for different types in the same Hierarchy
+   *   For Example:
+   *        "spec": {
+   *          "SDLDemoMachine": {
+   *            "filter": "id!=='001'"
+   *           }
+   *         }
+   * @param currentNode
+   *           The node to get children from. If set to null it will return all root nodes.
+   * @param limit
+   *           Limit of the number of data will return . If set, it will only return limit number of nodes.
+   * @param offset
+   *           Offset of the return nodes.
+   * @param searchString
+   *           Filter on the return nodes.
+   * @param expandedParentList
+   *           A map to keep track of expanded parent nodes for different types.
+   *           Example: {typeName: [id1, id2]}
+   */
+  fetchData: function(hierarchyId: !string,
+                      columnFieldMappings: any,
+                      spec: any,
+                      currentNode: HierarchyNode,
+                      limit: int,
+                      offset: int,
+                      searchString: string,
+                      expandedParentList: any): any js-server
+
+  /**
+   * A list of current root nodes
+   */
+  rootNodeList: [any] schema name 'RNL'
+
+  /**
+   * Map ids to objects for different types
+   *     example {
+   *      "fakeType1": {
+   *        "fakeId1": {
+   *          "id": "fakeId1",
+   *          "value": "fakeValue"
+   *          }
+   *        }
+   *     }
+   */
+  idToObjectMap: any schema name 'ITOM'
+
+  /**
+   * A map that contains hierarchy relationship.
+   * It look likes {parentNodeId: {node: HierarchyNode, children: [HierarchyNode]}}
+   */
+  hierarchyMap: any schema name 'HM'
+
+  /**
+   * Whether it has more root nodes after fetching data with given limit.
+   */
+  hasMore: boolean
+
+  /**
+   * Helper functon to recursively find children of the given node and add into sortedData array
+   * @param node
+   *           Parent node
+   * @param hierarchyMap
+   *           A map that contains hierarchy relationship {@link hierarchyMap}
+   * @param idToObjectMap
+   *           A map that maps data id to data object
+   * @param expandedParentList
+   *           A map to keep track of expanded parent nodes for different type
+   * @param dataArray
+   *           An array of data points. Example: [{node: hierarchyNode, obj: dataObject}, {...}]
+   */
+  findChildren: private function(node: HierarchyNode,
+                                 hierarchyMap: any,
+                                 idToObjectMap: any,
+                                 expandedParentList: any,
+                                 dataArray: [any]) js-server
+
+  /**
+   * Helper function to group all node ids of the same node type that return from calling {@link Hierarchy.getChildren}.
+   * By grouping ids together for one type, we only need to call fetch function on this type once to get all data points with these ids
+   * later on at {@link fetchDataAndBuildIdToObjectMap}.
+   *
+   * @param hierarchyNodes
+   *          Hierarchy nodes {@link HierarchyNode} that return from calling {@link Hierarchy.getChildren}
+   * @return the typeIdMap in the format of:
+   *      {
+   *        Organization: ['001', '002', '003'],
+   *        FixedAsset: ['fa1', 'fa2']
+   *      }
+   */
+  buildTypeIdMap: private function(hierarchyNodes: [HierarchyNode]): any js-server
+
+  /**
+   * Helper function to build and update {@link hierarchyMap}.
+   * @param hierarchyMap
+   *          The existing {@link hierarchyMap} that needs to be updated. It stores all parent to children relationship.
+   * @param currentNode
+   *           The node to get children from which will be the parent key.
+   * @param hierarchyNodes
+   *           The result from calling {@link Hierarchy.getChildren} with the currentNode.
+   *           These are children value of the given currentNode.
+   * @return The latest version of hierarchyMap
+   */
+  buildHierarchyMap: private function(hierarchyMap: any,
+                                      currentNode: !HierarchyNode,
+                                      hierarchyNodes: [HierarchyNode]): any js-server
+
+  /**
+   * Since {@link HierarchyNode} only contains type name and id information we need to do another fetch with the actual type to get all other information.
+   * Alos build {@link idToObjectMap} with the returning data.
+   * @param idToObjectMap
+   *           The existing {@link idToObjectMap} that needs to be built or updated.
+   * @param typeIdMap
+   *           A map to group all ids for one type. For example:
+   *            {
+   *              Organization: ['001', '002', '003'],
+   *              FixedAsset: ['fa1', 'fa2']
+   *            }
+   * @param spec
+   *           A mapping fetch specs for different types in the same Hierarchy
+   *           For Example:
+   *           "spec": {
+   *              "SDLDemoMachine": {
+   *              "filter": "id!=='001'"
+   *            }
+   *           }
+   * @param columnFieldMappings
+   *           Mapping between column field name in UI component to the actual field name from a type
+   *           For Example:
+   *              {
+   *                Type1: {
+   *                  columnIdField : "type1IdField",
+   *                  columnNameField: "type1NameField"
+   *                },
+   *                Type2: {
+   *                  columnIdField: "type2IdField",
+   *                  columnNameField: "type2NameField"
+   *                }
+   *              }
+   * @return the latest idToObjectMap
+   */
+  fetchDataAndBuildIdToObjectMap: private function(idToObjectMap: any,
+                                                   typeIdMap: any,
+                                                   spec: map<string, any>,
+                                                   columnFieldMappings: any,
+                                                   filterString: string,
+                                                   rootNodes: [HierarchyNode],
+                                                   expandedParentList: any,
+                                                   hierarchyId: string): any js-server
+
+  /**
+   * Map MetadataFile hierarchyNodes to objects that can be consumed by the UI.
+   * Build {@link idToObjectMap} with the returning data.
+   * @param idToObjectMap
+   *           The existing {@link idToObjectMap} that needs to be built or updated.
+   * @param hierarchyNodes
+   *           The result from calling {@link Hierarchy.getChildren} with the currentNode.
+   *           These are children value of the given currentNode.
+   * @return the latest idToObjectMap
+   */
+  buildMetadataFileObjectMap: private function(idToObjectMap: any, hierarchyNodes: [HierarchyNode]): any js-server
+}

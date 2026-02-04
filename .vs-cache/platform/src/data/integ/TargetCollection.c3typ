@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a collection of data transformed in DI pipeline prior to persistence step.
+ * Stores information on how to persist TargetObjs post transform
+ */
+@beta
+abstract type TargetCollection<C> mixes Configurable<C>, Metadata, Named {
+
+  /**
+   * Structure defined to serialize the content from the TargetCollection
+   * Type must be entity type
+   */
+  target: !Type
+
+  /**
+   * User defined lambda to define custom logic for persisting data. This will override default persisting logic
+   */
+  persist: abstract member function<T>(targetObjs: [T]): ObjList<T>
+
+  /**
+   * @return default target collection for Target
+   */
+  dfltFromTarget: function(target: Type): !TargetCollection<C>
+
+  /**
+   * @return true if the TargetCollection is a {@link DbTargetCollection}
+   */
+  isDb: member function(): !boolean
+
+  /**
+   * @return db target collection for the target collection if it exists
+   */
+  asDbTargetCollection: private member function(refresh: boolean, failIfMissing: boolean): DbTargetCollection
+}

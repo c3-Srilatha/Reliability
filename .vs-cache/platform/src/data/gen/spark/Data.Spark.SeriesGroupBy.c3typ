@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type Data.Spark.SeriesGroupBy mixes Value {
+
+  agg:       abstract member function(): ?any
+  aggregate: abstract member function(): ?any
+  all:       abstract member function(skipna: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  any:       abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  apply:     abstract member function(func: ?lambda(x: any ...): any): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  backfill:  abstract member function(limit: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  bfill:     abstract member function(limit: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  count:     abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  cumcount:  abstract member function(ascending: ?boolean): ?Data.Spark.Series
+  cummax:    abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  cummin:    abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  cumprod:   abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  cumsum:    abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  diff:      abstract member function(periods: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  ewm: abstract member function(com: ?float,
+                                span: ?float,
+                                halflife: ?float,
+                                alpha: ?float,
+                                min_periods: ?int,
+                                ignore_na: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  expanding: abstract member function(min_periods: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  ffill:     abstract member function(limit: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  fillna: abstract member function(value: ?any,
+                                   method: ?string,
+                                   axis: ?any,
+                                   inplace: ?boolean,
+                                   limit: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  filter: abstract member function(func: ?lambda(a: any): any): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  first: abstract member function(numeric_only: ?boolean,
+                                  min_count: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  get_group: abstract member function(name: ?any): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  head:      abstract member function(n: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  idxmax:    abstract member function(skipna: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  idxmin:    abstract member function(skipna: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  last:      abstract member function(numeric_only: ?boolean,
+                                      min_count: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  mad:       abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  max:       abstract member function(numeric_only: ?boolean,
+                                      min_count: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  mean:      abstract member function(numeric_only: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  median: abstract member function(numeric_only: ?boolean,
+                                   accuracy: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+
+  min:          abstract member function(numeric_only: ?boolean,
+                                         min_count: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  nlargest:     abstract member function(n: ?int): ?Data.Spark.Series
+  nsmallest:    abstract member function(n: ?int): ?Data.Spark.Series
+  nth:          abstract member function(n: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  nunique:      abstract member function(dropna: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  pad:          abstract member function(limit: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  prod:         abstract member function(numeric_only: ?boolean,
+                                         min_count: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  quantile:     abstract member function(q: ?float, accuracy: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  rank:         abstract member function(method: ?string,
+                                         ascending: ?boolean): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  rolling:      abstract member function(window: ?int, min_periods: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  sem:          abstract member function(ddof: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  shift:        abstract member function(periods: ?int, fill_value: ?any): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  size:         abstract member function(): ?Data.Spark.Series
+  skew:         abstract member function(): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  std:          abstract member function(ddof: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  sum:          abstract member function(numeric_only: ?boolean,
+                                         min_count: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  tail:         abstract member function(n: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  transform:    abstract member function(func: ?lambda(x: any ...): any): ?(Data.Spark.DataFrame | Data.Spark.Series)
+  unique:       abstract member function(): ?Data.Spark.Series
+  value_counts: abstract member function(sort: ?boolean, ascending: ?boolean, dropna: ?boolean): ?Data.Spark.Series
+  var:          abstract member function(ddof: ?int): ?(Data.Spark.DataFrame | Data.Spark.Series)
+}

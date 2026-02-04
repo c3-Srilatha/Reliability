@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility helper methods related to UI features for the User Management module.
+ */
+type Genai.UserManagement.UiHelpers {
+
+  /**
+   * Creates multiple users from one API call. The `emails` array must contain valid email addresses that share the
+   * same email domain as the caller user. A {@link Genai.UserManagement.ActionAuditLogEntry.InviteUser} entry is
+   * created for each created user.
+   */
+  @action(group='user-admin')
+  createUsers: function(
+    formObject: !Genai.UserManagement.UiHelpers.CreateUsersSpec
+  ): [User] js-rhino
+
+  /**
+   * Removes the user and creates a {@link Genai.UserManagement.ActionAuditLogEntry.RemoveUser} entry.
+   */
+  @action(group='user-admin')
+  removeUser: function(userId: !string) js-rhino
+
+  /**
+   */
+  // TODO: GEN-10985 Remove subscription/billing logic from genAiSearch
+  /**
+   * Returns the maximum number of users that can be added to the app.
+   */
+  getMaxUsers: private function(): int js-rhino
+
+  /**
+   * Returns information used by the User Management page and any children components on the page.
+   */
+  getPageSettings: function(): Genai.UserManagement.UiHelpers.PageSettings js-rhino
+
+  /**
+   * Updates the provided user's role by adding the user to the `targetRole` and removing the user from all other roles
+   * defined in {@link Genai.UserManagement.AssignableRoleEnum} aside from the `targetRole`. A
+   * {@link Genai.UserManagement.ActionAuditLogEntry.UpdateRole} entry is created every time a role is updated.
+   */
+  @action(group='user-admin')
+  updateUserRole: function(
+    user: !User,
+    targetRole: !string enum Genai.UserManagement.AssignableRoleEnum
+  ): boolean js-rhino
+
+  /**
+   * Checks if the user has the role provided. If no user is passed it defaults to `User.myUser()`
+   * @param role
+   *    The role to check the permissions for
+   * @param user
+   *    The user for which the role is checked. If not passed, it will check for `User.myUser()`
+   * @return whether the user has the permission for the role
+   */
+  userHasRole: function(role: !Genai.UserManagement.AssignableRoleEnum, user: User): !boolean js-rhino
+}

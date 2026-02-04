@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 Performance Test - see /c3server/server/action-engine/test/resources/db/test/metadata/perfTest.c3typ for example
+ */
+@beta
+type PerfTest mixes Value {
+
+  /**
+   * call this to run the test
+   */
+  run: function(spec: PerfSpec): PerfTestResult
+
+  /**
+   * implement this to perform single test step;
+   *
+   * can return custom measurements that will be aggregated into PerfTestResult.measurements
+   */
+  step: function(run: int, runs: int, thread: int, threads: int, param: PerfStepParam): map<string, decimal>
+
+  /**
+   * optionally override this function to prepare step test data and/or to customize step param;
+   *
+   * call to this function is not measured
+   */
+  beforeStep: function(run: int, runs: int, thread: int, threads: int, param: PerfStepParam): PerfStepParam
+}

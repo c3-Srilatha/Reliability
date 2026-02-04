@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type System Support flags. Typically used by clients to indicate their capabilities. E.g. via `X-C3-Type-Aware`
+ * HTTP header.
+ */
+type TypeSystemSupport mixes StringSerializable {
+
+  /**
+   * `false` if no support at all for C3 Type System.
+   */
+  yes: !boolean
+
+  /**
+   * If `true` then C3 Sever will omit serializing `type` field where it's value can be inferred from metadata. E.g. if
+   * `true` then referenced objects in serialized representation, e.g. in JSON will skip `type` field.
+   */
+  serTypeInference: !boolean
+
+  /**
+   * If `true` then C3 Sever will serialize timeseries private field instead of materializing methods like `data()`.
+   */
+  timeseriesPrivateFields: !boolean
+
+  /**
+   * If `true` then C3 Sever will send error in the form of a template using `C3Error` C3 type. Otherwise errors
+   * will be formatted plain text.
+   */
+  errorTemplate: !boolean
+
+  /**
+   * The list of languages supported by the client. Implementations of methods in these languages will be delivered if
+   * the method is marked not server-only.
+   *
+   * @see ActionRunLocation
+   */
+  methodLanguages: set<string serialized ImplLanguage>
+
+  /**
+   * Whether the client is capable of debugging method implementations. If true, all method implementations in the
+   * supported #methodLanguages are delivered, along with metadata for private methods. This allows the method to be
+   * executed locally, even if it would normally be server-only.
+   */
+  methodDebug: !boolean
+
+  /**
+   * Build a string representation of this instance. If it's same as result of #all then value will simply be "all".
+   * If it's the same as #typesOnly, the value will be "typesOnly". Otherwise a set field names separated by `|`
+   * character. E.g. "timeseriesPrivateFields|errorTemplate". The values in #methodLanguages will be expanded into the
+   * list as well. If none of the fields are specified (same as #none), the value will simply be "false".
+   */
+  toString: ~
+
+  /**
+   * Parse a string representation of this instance. It should be a set of primitive field values and members of the
+   * #methodLanguages set, separated by `|` characters, commas or whitespace.
+   *
+   * These values are supported by fromString, but not produced by toString:
+   *   - empty and "0" are aliases for "false"
+   *   - "true" and "1" are aliases for "typesOnly"
+   *
+   * Unrecognized tokens are ignored. A value is always returned (even if all fields are false/empty).
+   *
+   * @see #toString
+   */
+  fromString: ~: !TypeSystemSupport
+
+  /**
+   * @return instance with full type support, but not script language implementations nor debugging.
+   */
+  typesOnly: inline function(): !TypeSystemSupport
+
+  /**
+   * @return instance with all the support.
+   */
+  all: inline function(): !TypeSystemSupport
+
+  /**
+   * @return instance with no special support.
+   */
+  none: inline function(): !TypeSystemSupport
+}

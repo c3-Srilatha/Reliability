@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Computed dependencies between timeseries headers and source Objs.  This type is totally system managed and, as such,
+ * does not persist most of the system fields.
+ */
+@db(systemType=true,
+    compactType=true,
+    shortIdReservationRange=100000,
+    datastore='kv',
+    partitionKeyField='dest',
+    persistenceOrder='srcTypeId, srcId',
+    persistDuplicates=false)
+private entity type MetricDependency mixes Partitionable<string> schema name 'metric_MetricDependency' {
+
+  /**
+   * Concatenation of dest type id and dest id
+   */
+  dest: !string
+
+  /**
+   * Type id of root type of source Obj.
+   *
+   * @see TypeId
+   */
+  srcTypeId: !int
+
+  /**
+   * Source Obj id.  The source Obj (by its id) for the appropriate type will be invalidated when timeseries data
+   * for the corresponding {@link destTypeId}/{@link destId}
+   * are modified.
+   */
+  srcId: !string
+
+  /**
+   * Metric name for the dependency.  This is only set for dependencies generated for {@link MetricsListener} types.
+   * When we invalidate metrics for {@link AnalyticsListener} types we do so at the metricGroup level.
+   */
+  metricName: string
+
+  /**
+   * Metric group for the dependency.  This is only set for dependencies generated for {@link AnalyticsListener}
+   * types.  When we invalidate metrics for {@link MetricsListener} types we do so at the metric level.
+   */
+  metricGroup: string
+
+  /**
+   * Version is not persisted
+   */
+  version: ~ not persistable
+
+  /**
+   * Name is not persisted
+   */
+  name: ~ not persistable
+
+  /**
+   * @return A Pair containing the type id and obj id of the dest for the dep.
+   */
+  destInfo: inline member function(): !Pair<int, string>
+
+  /**
+   * Gets all metric dependencies for a particular type and set of ids.
+   *
+   * @param destType
+   *        Dest type.
+   * @param destIds
+   *        List of dest ids.
+   *
+   * @return All metric dependencies for a particular type and set of ids.
+   */
+  fetchDeps: function(destType: !Type, destIds: [string]): stream<MetricDependency>
+}

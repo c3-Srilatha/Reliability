@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec to be used in {@link Data#stream}. If {@link #sliceDimension} is not specified
+ * (i.e. empty spec), then the implementation will choose a size that is convenient and performant. For example, this could be
+ * the underlying storage block size.
+ */
+@beta
+type Data.StreamSpec mixes Spec {
+
+  /**
+   * Exact specifications of the dimensions on which to slice and how much to slice.
+   * Each slice will be generated based on the number of entries in these dimensions.
+   * An unspecified dimension denotes that there is no slicing need for that dimension.
+   *
+   * See {@link Data.SliceSpec#slice}
+   *
+   * Examples (inspired by {@link Data.FeatureSet}):
+   * `sliceDimension = {"subject": 10}`
+   * This would indicate to provide slices of 10 subjects at a time.
+   *
+   * `sliceDimension = {"subject": 1, "timestamp": 1000}`
+   * This would indicate to provide slices 1 subject at a time. Furthermore, within each subject, provide timestamps 1000 at a time.
+   */
+  sliceDimension: map<string, int>
+
+  /**
+   * A fixed number of rows (this follows an exactly once semantic) must be present in each element of the stream from
+   * {@link Data#stream}. Only the last element of the stream may have fewer number of rows if the backing content
+   * is exhausted.
+   * NOTE: this specification is intended for native (e.g. python) streams to return exact data to interface
+   * with native generators (e.g. keras)
+   */
+  rowCount: int
+
+  /**
+   * Specifies the output format for {@link Data.Stream#next}.
+   * NOTE: this specification is intended for native (e.g. python) streams to return data as e.g. `pd.DataFrame`
+   */
+  outputFormat: string enum Data.Stream.OutputFormat
+
+  /**
+   * Max memory in bytes in each slice
+   */
+  maxMemoryBytes: private int = 500000000
+}

@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@action(group+='app-admin')
+type LdapIdp.Config mixes IdpConfig {
+
+  /**
+   * Maximum number of connections that can be created at a time in LDAP server connection pool.
+   * If maxLdapConnections is 0, then the connection pool is disabled and a new connection is created for each request.
+   */
+  maxLdapConnections: !int = 5
+
+  /**
+   * Maximum number of connections that can left idle at a time in LDAP server connection pool
+   */
+  maxIdleLdapConnections: !int = 0
+
+  /**
+   * Minimum number of connections to be left idle at a time in LDAP server connection pool
+   */
+  minIdleLdapConnections: !int = 0
+
+  /**
+   * If populated, TLS is enabled and connection to LDAP server will be secure.
+   * `trustStorePath` and `trustStorePassword` are required fields.
+   * see {@link TlsCertificate}.
+   */
+  tlsCert: TlsCertificate
+
+  /**
+   * HostName of the LDAP server
+   */
+  hostName: !string
+
+  /**
+   * Port number of the LDAP server
+   */
+  port: !int32
+
+  /**
+   * Connection will fail if it does not succeed within this given time, in milliseconds
+   */
+  timeout: !int
+
+  /**
+   * Username of the read only admin account
+   */
+  @config(secret=true)
+  username: !string
+
+  /**
+   * Password of the read only admin account
+   */
+  @config(secret=true)
+  password: !string
+
+  /**
+   * The {@link LdapIdp.QueryParams} with common query parameters, e.g. location for users in ldap server "ou=people,dc=example,dc=com"
+   */
+  queryParams: !LdapIdp.QueryParams
+
+}

@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base interface for types that represent auth configurations for LLM Services.
+ * Since there can be multiple auths set up for a single LLM Service provider, this
+ * type is {@link Named}.
+ * In addition, multiple individual auths can be aggregated into a single one, for
+ * convenient reference, by creating a new auth with {@link #auths} field populated.
+ * The default auth instance shall be named "default", so in order to configure
+ * a default instance, be sure to create a configuration with that name.
+ *
+ * See {@link GenaiCore.Llm.AzureOpenAi.Auth}, as an example of a type implementing this interface.
+ */
+@config(doNotDefaultIfMissing=true)
+abstract type GenaiCore.Llm.Auth mixes DefaultInstance, Named, Config {
+
+  /**
+   * If set, then this {@link GenaiCore.Llm.Auth} represents a combination of multiple auths.
+   * NOTE: if specified, then the auths referenced will be used - other fields in this instance will
+   * be ignored.
+   *
+   * As an analogy, if a specific auth is a "key", then this enables the ability to
+   * specify "keychains" based on existing "keys".
+   * See {@link GenaiCore.Llm.Completion.Client#router} for an example for where the
+   * "keychain" concept may be used.
+   */
+  // TODO: PLAT-98206, revisit this design
+  auths: [GenaiCore.Llm.Auth]
+
+  /**
+   * @return a list of all non-"keychain" {@link GenaiCore.Llm.Auth} represented by this instance.
+   *         For example, if {@link #auths} is populated, then it will be traversed and "flattened"
+   *         recursively, until there only exist instances that have empty {@link #auths}.
+   */
+  flattenedAuths: cached inline member function(): ![GenaiCore.Llm.Auth] py
+
+  // Disabled due to PLAT-98343
+  setConfigValues: ~ py
+
+  inst: ~ py
+
+  /**
+   * Given the result of calling {@link #getSecret} on an instance of this type, return the
+   * list of strings that are considered secret and should be masked in logs or other outputs.
+   *
+   * @param authSecret
+   *          the auth instance to get secrets for.
+   * @return a list of secrets.
+   */
+  secretStringsFromAuthSecret: private abstract inline function(authSecret: !GenaiCore.Llm.Auth): [string]
+
+  getSecret: ~ py
+  setSecret: ~ py
+
+  /**
+   * Clear the secret value for the given override.
+   *
+   * @param override
+   *          override level to clear.
+   */
+  clearAuthSecret: member function(override: string enum ConfigOverride) py
+
+  /**
+   * Clear the secret value for the all overrides.
+   */
+  clearAuthSecretAllOverrides: member function() py
+
+  /**
+   * Clear the config and secret for the given override.
+   *
+   * @param override
+   *          override level to clear.
+   */
+  clearConfigAndAuthSecretOverride: member function(override: !string enum ConfigOverride) py
+
+  /**
+   * Clear the config and secret for all overrides.
+   */
+  clearConfigAndAuthSecretAllOverrides: member function() py
+
+  /**
+   * Clear all config and secrets for this type for the given override.
+   *
+   * @param override
+   *          override level to clear.
+   * @param confirm
+   *          set to `true` to confirm the operation.
+   */
+  clearAllConfigAndAuthSecretOverrides: function(override: !string enum ConfigOverride, confirm: boolean) py
+
+  setSecretValue: ~ py
+  clearSecretValue: ~ py
+  clearSecretValueAllOverrides: ~ py
+}

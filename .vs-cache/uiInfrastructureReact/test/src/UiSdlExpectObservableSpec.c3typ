@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A test spec for {@link UiSdlEpic#effect effect} or {@link UiSdlEpic} methods
+ */
+type UiSdlExpectObservableSpec {
+
+  /**
+   * The epic method to be tested.
+   */
+  epic: lambda(actionStream: UiSdlObservable,
+               stateStream: UiSdlObservable<UiSdlReduxState>): UiSdlObservable<UiSdlReduxState>
+
+  /**
+   * The input observable stream as a pair: marble diagram string,
+   * observables object.
+   *
+   * input[0] Marble diagram string
+   * input[1] Observables mapping
+   */
+  input: Pair<string, map<string, UiSdlReduxAction>>
+
+  /**
+   * The expected observable stream as a triplet: marble diagram string,
+   * observables object, observable error.
+   *
+   * output[0] Marble diagram string
+   * output[1] Observables mapping
+   * output[2] UiSdlObservable error
+   */
+  output: Triple<string, map<string, UiSdlReduxAction>, map<string, any>>
+}

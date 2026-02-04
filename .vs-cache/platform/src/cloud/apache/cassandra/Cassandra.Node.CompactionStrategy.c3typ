@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enum type that identifies the compaction strategy to use when forcing a compaction on {@link Cassandra.Node}
+ * @see Cassandra.Node#compact
+ */
+enum type Cassandra.Node.CompactionStrategy {
+
+  /**
+   * SizeTieredCompactionStrategy
+   * Default compaction strategy. Triggers a minor compaction when there are a number of similar sized SSTables on disk.
+   * Number of similar sized SSTables to compact on is set in table subproperty, min_threshold.
+   */
+  STCS
+
+  /**
+   * TimeWindowCompactionStrategy
+   * Alternative for time series data. Compacts SSTables using series of 'time windows'. Uses STCS to compact within a time window.
+   * Duration of the time window is a configurable subproperty
+   */
+  TWCS
+
+  /**
+   * LeveledCompactionStrategy
+   * Creates small SSTables (160MB by default) that are grouped in to levels. Within levels, SSTables are non-overlapping.
+   * Each level is 10x larger than previous with more uniform Disk I/O.
+   * At each level, row keys are merged into non-overlapping SSTables in the next level. SSTables continuously being compacted in to larger levels.
+   */
+  LCS
+}

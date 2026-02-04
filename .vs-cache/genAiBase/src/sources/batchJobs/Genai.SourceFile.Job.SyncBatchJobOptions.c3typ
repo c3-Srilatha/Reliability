@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used by {@link Genai.SourceFile.Job.SyncBatchJob} to supply the {@link Genai.SourceFile}s, {@link Genai.SourceFile.Chunker.UniversalChunker.Spec}
+ */
+type Genai.SourceFile.Job.SyncBatchJobOptions {
+  /**
+   * All {@link Genai.SourceFile}s to be synced belonging to the same collection.
+   */
+  sourceFiles: ![Genai.SourceFile]
+
+  /**
+   * Chunker to use during processing. If no chunker is provided, {@link Genai.SourceFile.Chunker.Universal} will be used as default.
+   */
+  chunkerSpec: Genai.SourceFile.Chunker.UniversalChunker.Spec
+
+  /**
+   * The {@link User#email} who last processed this source file.
+   * This is used in {@link Genai.SourceFile#displayLastProcessedBy} to display the last processed activity in UI.
+   * The entire {@link User} is not persisted to avoid access issues with ACLs.
+   * The refresh could either be triggered manually or by the cron job.
+   */
+  lastProcessedBy: string
+}

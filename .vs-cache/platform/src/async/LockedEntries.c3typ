@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result returned from {@link InvalidationQueueStore.lock} that will be dispatched
+ * for computing.
+ */
+type LockedEntries {
+
+  /**
+   * Globally unique id for the lock (e.g. GUID).  It is the responsibility of the implementor of {@link InvalidationQueueStore.lock} to set this
+   * appropriately.  Values for this should never be reused, even across multiple calls to the api.
+   */
+  id: string
+
+  /**
+   * Target type for the entries.
+   */
+  targetTypeId: int
+
+  /**
+   * List of locked queue entries to dispatch for computing.
+   */
+  entries: [InvalidationQueueEntry]
+}

@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used for testing the functions of `SpecHelper`.  In order for this component to be imported it MUST start with `Ui`.
+ */
+private type UiSdlSpecHelperTestType mixes UiSdlComponent<any> {
+
+  /**
+   * A test action creator.
+   *
+   * @param id
+   *           The component id.
+   * @param value
+   *           A test boolean value.
+   *
+   * @returns a `TEST_ACTION` action for this component.
+   */
+  @uiSdlActionCreator(actionType='TEST_ACTION')
+  testAction: private function(id: string, value: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * A test epic.
+   *
+   * Listens for actions of type `TEST_ACTION`.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='TEST_ACTION')
+  testEpic: private function(actionStream: UiSdlActionsObservable,
+                             stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Function to help test using spies.
+   * Calls {@link child} and returns the result.
+   */
+  parent: function(): string ts-client
+
+  /**
+   * Function to help test using spies.
+   * Is called by {@link parent}.
+   */
+  child: function(): string ts-client
+
+  /**
+   * Function to help test using spies.
+   * Calls {@link privateChild} and returns the result.
+   */
+  privateParent: private function(): string ts-client
+
+  /**
+   * Function to help test using spies.
+   * Is called by {@link privateParent}.
+   */
+  privateChild: private function(): string ts-client
+
+  /**
+   * Function to help test using spies for imported functions.
+   * Calls {@link UiSdlSpecHelperTestTypeChild#fetch}.
+   */
+  testImportedFunction: private function(): string ts-client
+
+  /**
+   * Function to help test using mocked imported objects.
+   * Calls {@link UiSdlSpecHelperTestTypeChild#fetch}.
+   */
+  testMockObject: private function(): string ts-client
+
+  /**
+   * Function to help test using `spyOnEffect`.
+   * Calls {@link child} and returns the result.
+   */
+  parentEpic: function(): any ts-client
+}

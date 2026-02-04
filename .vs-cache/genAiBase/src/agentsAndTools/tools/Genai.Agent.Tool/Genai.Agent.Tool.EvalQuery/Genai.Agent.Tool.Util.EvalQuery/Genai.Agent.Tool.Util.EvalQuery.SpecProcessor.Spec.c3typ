@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * Influences the behavior of {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor}
+ */
+type Genai.Agent.Tool.Util.EvalQuery.SpecProcessor.Spec mixes Genai.Agent.Tool.Util.SpecCorrection.BaseSpec {
+  /**
+   * Lambda to apply to the eval spec, e.g. an f_string of the different parts of the spec, an LLM verbalizing the spec, or the spec itself.
+   * Defaults to the identity function
+   */
+  rationaleLambda: Lambda<function(evalSpec: Genai.StructuredQuery.Spec): !string>
+
+  /**
+   * Lambda to apply to the eval spec to enable customized behaviors (e.g. default/blacklist projections, default/max limits).
+   * Takes in {@link Genai.StructuredQuery.Spec} and returns the pre-processed {@link Genai.StructuredQuery.Spec}.
+   * Defaults to null so won't apply
+   */
+  preProcessLambda: lambda(evalSpec: !Genai.StructuredQuery.Spec, args: json): !Genai.StructuredQuery.Spec
+
+  /**
+   * Arguments for #preProcessLambda
+   */
+  preProcessLambdaArgs: json
+
+  /**
+   * If true and `postProcessLambda` is not provided, will reformat each table column name to "TargetType.FieldName" format.
+   * For example, the original `aircraft.location.id, max(a.b.c, d.e.f)` will change to `Genai.Airport.id, max(B.c, E.f)`.
+   */
+  postProcessingRenameColumns: boolean
+
+  /**
+   * Lambda to apply post-processing to the retrieved data table.
+   * If it is not provided, then `postProcessingRenameColumns` dictates whether any renaming should be done.
+   */
+  postProcessLambda: lambda(table: !native, sourceType: !Type, graph: native, args: json): !native
+
+  /**
+   * Arguments for #postProcessLambda
+   */
+  postProcessLambdaArgs: json
+
+  /**
+   * If true, will remove invalid fields in projections.
+   * It's turned off by default but will be activated in the last run of retrying {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor#tableFromSpec}.
+   * Then we can ensure the final spec is valid.
+   */
+  removeInvalidFieldsInProjections: boolean
+}

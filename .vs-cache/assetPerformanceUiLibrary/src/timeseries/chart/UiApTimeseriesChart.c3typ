@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A charting UI component built on top of ECharts.
+ */
+@typeScript
+type UiApTimeseriesChart mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * The width of the chart component. Leave blank to use the default width.
+   */
+  width: string
+
+  /**
+   * The height of the chart component. Leave blank to use the default height.
+   */
+  height: string
+
+  /**
+   * The data store ID that provides data for the chart. The datastore should be a {@link UiApDataStore} that provides
+   * data for the chart. It should have two {@link UiApDataStore#actionMap} entries:
+   * - `chartConfig` - The action to fetch the {@link UiApTimeseriesChartConfig}
+   * - `renderConfig` - The action to fetch the {@link UiApTimeseriesChartRenderConfig}. Overrides parts of
+   * the `chartConfig`.
+   */
+  dataStoreId: string
+
+  /**
+   * The title to display for the chart.
+   *
+   * It accepts the following properties:
+   * - `title`: As a string or a {@link UiSdlDynamicValueSpec} object.
+   * - `subtitle`: As a string or a {@link UiSdlDynamicValueSpec} object.
+   */
+  header: json
+
+  /**
+   * The toolbar options to display in the chart.
+   * It can modify the following toolbar options:
+   *
+   * - `disableLinesButtons`: If true, the horizontal/vertical lines buttons will not be displayed.
+   * - `disableSplitMergeButton`: If true, the split/unsplit button will not be displayed.
+   * - `disableZoomButtons`: If true, the zoom area and zoom mouse buttons will not be displayed.
+   * - `customButtons`: Optional array of custom buttons to render at the end of the toolbar. Each item supports:
+   *   - `icon`: Icon class for the button (e.g. 'refresh').
+   *   - `text`: The translation key for the button text. If provided, button renders as icon-with-text.
+   *   - `tooltip`: The translation key for the button tooltip.
+   *   - `usage`: Optional SDLButton usage override; defaults to 'icon' or 'icon-with-text' based on `text`.
+   *   - `actionSuffix`: The suffix appended to the chart `dataStoreId` to form the Redux action type on click.
+   */
+  toolbarOptions: json
+
+  /**
+   * Flags whether the chart should display a loading indicator while data is being fetched.
+   *
+   * - When true, a loading spinner will be shown until the data is fully loaded. (Uses #dataStoreId `DATA_REQUEST` and
+   *  `DATA_RECEIVE` events.)
+   * - When false, no loading indicator will be shown, and the user will need to handle the spinner externally.
+   */
+  showLoadingIndicator: boolean
+
+  /**
+   * The text to display on the split button.
+   */
+  splitButtonText: string
+
+  /**
+   * The text to display on the unsplit button.
+   */
+  unsplitButtonText: string
+
+  /**
+   * Configuration for the empty state when no data is available.
+   */
+  emptyStateConfig: UiSdlEmptyState
+
+  /**
+   * Determines the data to be displayed in the chart, and how it is displayed.
+   */
+  chartConfig: UiApTimeseriesChartConfig
+
+  /**
+   * Layout configuration for chart margins, plot sizing, legend, y-axis, labels, and tooltips.
+   * If not provided, default layout settings will be used.
+   */
+  layoutConfig: UiApTimeseriesChartLayoutConfig
+}

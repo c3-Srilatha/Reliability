@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Internal instance of {@link Data.Series} as partially applied function.
+ */
+@beta
+private type Data.Series.Lazy mixes DataImpl.Lazy, Data.Series {
+
+  _exec:     ~ from DataImpl.Lazy
+  toDataRef: ~: Data.Series.Ref
+
+  /**
+   * Some methods are generally called once without using the result for subsequent
+   * operations. For these methods, it makes sense to additionally cache the parent operation, as we anticipate the
+   * immediate results will not be used for further operations, but rather operations will be called on the parent.
+   * @return a list of the name of all such methods on Data
+   */
+  cacheParentMethods: private cached function(): set<string>
+
+  toDataPandas: ~
+
+  @java(codeGenSetCached=true)
+  _toPandas: private cached member function(datasetId: !string, returnNullIfNotCached: boolean): Data.Series.Pandas
+
+  cache:    ~
+  isCached: ~
+}

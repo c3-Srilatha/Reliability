@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a Keras data generator whose functionality is implemented by a custom native Python class.
+ * A custom native Python generator can be tied to a {@link KerasPipe} using a {@link KerasConvertSpec}, and once added,
+ * a {@link KerasCustomGenerator} will be created to wrap around the native class. Once the {@link KerasPipe} has been
+ * created with the custom generator, the generator will be used automatically for training and processing. Please see
+ * {@link KerasConvertSpec#nativeGenerator} for the requirements and an example of a custom native Python
+ * generator class.
+ */
+type KerasCustomGenerator<DX, DY> mixes KerasGenerator<DX, DY> {
+
+  /**
+   * The url for accessing the saved native class source code.
+   */
+  nativeClassUrl: private Url
+
+  generate: ~ py
+}

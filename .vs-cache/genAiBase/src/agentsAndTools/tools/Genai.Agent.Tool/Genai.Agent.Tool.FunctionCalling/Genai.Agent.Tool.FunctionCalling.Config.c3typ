@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link Genai.Agent.Tool.FunctionCalling} subtypes should have their configs mix this type to allow for
+ * native tool documentation override.
+ */
+abstract type Genai.Agent.Tool.FunctionCalling.Config {
+
+  /**
+   * The default tool description will be derived from the python signature and docstring for
+   * the function returned by {@link Genai.Agent.Tool.FunctionCalling#pyFuncForAgent}. If provided, values in this
+   * dictionary will override those from the generated description.
+   *
+   * * name: The name of the tool/function
+   * * description: A brief description of the tool/function (normally derived from the docstring)
+   * * parameters: A dict of (parameter name, python type string) pairs
+   *              (e.g. {"currency": {"type": "str"}, "value": {"type": "float"}})
+   * * return_type: The python type string of the return value (e.g. "dict")
+   *
+   * NOTE: due to issues with serializing the 'type' key, you may set nativeToolDocumentationOverride to a JSON string
+   * representation (or json.dumps from python) of the dictionary instead of the dictionary itself.
+   */
+  nativeToolDocumentationOverride: json
+
+  /**
+   * If true, the {@link Genai.Agent.Planner} will serialize inputs for the function call.
+   * Otherwise, the in-memory references will be passed.
+   */
+  serializeInputsForFunctionCall: boolean
+}

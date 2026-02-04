@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility functions for diagram parsing related to image manipulation and bounding box operations.
+ * Includes functionality for resizing images and computing Intersection over Union (IoU) between bounding boxes.
+ */
+@beta
+type DiagramParsingCvUtils {
+
+  /**
+   * Rescale an image using opencv. The input and output are native numpy arrays.
+   */
+  resizeImage: inline function(
+    image: !native,
+    zoom: !float
+  ): !native py-diagramparsing-cv
+
+  /**
+   * Compute the iou between two bounding boxes [xmin, ymin, xmax, ymax]
+   */
+  iou: inline function(
+    box1: ![int],
+    box2: ![int]
+  ): !float py-diagramparsing-cv
+
+  /**
+   * Compute iou matrix among n and m bounding boxes with shape n x m
+   */
+  ious: inline function(
+    boxes1: ![[int]],
+    boxes2: ![[int]]
+  ): ![[float]] py-diagramparsing-cv
+}

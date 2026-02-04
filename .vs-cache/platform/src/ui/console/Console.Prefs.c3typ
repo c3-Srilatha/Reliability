@@ -1,0 +1,179 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * User preferences for the Console.
+ */
+@config(minOverride=USER)
+type Console.Prefs mixes Config {
+
+  /**
+   * The number of rows to load initially for the grid and the number of additional rows to load when "More" is clicked.
+   *
+   * @see DataGrid.LoadSpec#initialLoad
+   * @see DataGrid#loadMore
+   */
+  loadRows: !int = 100
+
+  /**
+   * The number of rows to display in the grid (even if more are loaded). If more rows are loaded than this, only the
+   * first and last block of rows are shown and the middle rows are hidden.
+   *
+   * @see DataGrid.FormatSpec#splitRows
+   */
+  displayRows: int = 5
+
+  /**
+   * If true, ignore #displayRows and show all loaded rows.
+   */
+  displayAll: boolean
+
+  /**
+   * The length after shortening strings that exceed #maxStrHard.
+   *
+   * @see DataGrid.FormatSpec#maxStrSoft
+   */
+  maxStrSoft: !int32 = 48
+
+  /**
+   * Strings that exceed this length will be shortened to #maxStrSoft.
+   *
+   * @see DataGrid.FormatSpec#maxStrHard
+   */
+  maxStrHard: !int32 = 1024
+
+  /**
+   * The number of significant/fraction digits to format decimal numbers.
+   *
+   * @see DataGrid.FormatSpec#numberDigits
+   */
+  numberDigits: !int32 = 6
+
+  /**
+   * The style of number formatting.
+   *
+   * @see DataGrid.FormatSpec#numberStyle
+   */
+  numberStyle: !string enum DataGrid.NumberStyle = SIGNIFICANT
+
+  /**
+   * If true, more whitespace is added in the grid. This makes it easier to read, but reduces the amount of data
+   * visible at one time.
+   */
+  tableLoose: boolean
+
+  /**
+   * Specify a color map to be used for numeric values. This should be a sequential, diverging or cyclic color map.
+   *
+   * @see DataGrid.HtmlSpec#numberColorMap
+   */
+  numberColorMap: string
+
+  /**
+   * Specify a color map to be used for low-cardinality string values. This should be a qualitiative color map.
+   *
+   * @see DataGrid.HtmlSpec#stringColorMap
+   */
+  stringColorMap: string
+
+  /**
+   * If true, the console will _not_ listen for changes to the type definitions and automatically reload them.
+   */
+  noTypeListener: boolean
+
+  /**
+   * Whether the results of `c3ShowType` appear in the documentation micro-site instead of in the same tab.
+   */
+  showTypeInSite: boolean
+
+  /**
+   * Whether private fields should be included in `c3ShowType` when in same tab.
+   *
+   * @see #showTypeInSite
+   */
+  showTypePrivate: boolean
+
+  /**
+   * Whether accordions are expanded by default or all start collapsed.
+   *
+   * @see #showTypeInSite
+   */
+  showTypeExpanded: boolean
+
+  /**
+   * How frequently to poll the server for CPU and memory usage. Set to null or non-positive to disable.
+   *
+   * @see Jvm
+   */
+  statusInterval: int = 60
+
+  /**
+   * Which color theme to use for the console. 'auto' will adapt to the user preference while 'light' and 'dark' will
+   * select those themes explicitly.
+   */
+  theme: !string enum('auto', 'light', 'dark') = 'auto'
+
+  /**
+   * If true, the notebook will be reset each session, instead of being carried over from the previous session against
+   * the same server URL.
+   *
+   * @see #resetTabs
+   */
+  resetNotebook: boolean
+
+  /**
+   * If true, single-click on the expand button in a tree will fully expand sub-trees. When false, this behavior
+   * requires Shift-click.
+   */
+  treeDeepExpand: boolean
+
+  /**
+   * If true, Notebook cells executed while an existing cell is running are queued to start once currently executing
+   * and previously queued cells complete. Note that this setting does not affect the behavior of "run all cells" in the
+   * toolbar (which always runs sequentially).
+   */
+  cellsRunQueued: boolean
+
+  /**
+   * Tab reuse behavior for every notebook opened.
+   */
+  newNotebookTabs: !string enum Console.Prefs.Tab = REUSE_SAME
+
+  /**
+   * Tab reuse behavior for every `c3Grid` displayed.
+   */
+  newGridTabs: !string enum Console.Prefs.Tab = REUSE_SAME
+
+  /**
+   * Tab reuse behavior for every `c3Tree` displayed.
+   */
+  newTreeTabs: !string enum Console.Prefs.Tab = REUSE_SAME
+
+  /**
+   * Tab reuse behavior for every `c3Viz` displayed.
+   */
+  newVizTabs: !string enum Console.Prefs.Tab = REUSE_SAME
+
+  /**
+   * Tab reuse behavior for every `c3ShowType` displayed.
+   */
+  newShowTypeTabs: !string enum Console.Prefs.Tab = REUSE_SAME
+
+  /**
+   * If true, the tab layout will be reset each session, instead of being carried over from the previous session against
+   * the same server URL.
+   *
+   * @see #resetNotebook
+   */
+  resetTabs: boolean
+
+  /**
+   * Warning colors applied to the navigation bar for different app modes.
+   */
+  modeWarning: string enum Console.Prefs.Warning = AUTO
+}

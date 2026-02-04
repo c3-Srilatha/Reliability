@@ -1,0 +1,132 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Entity representing a scenario for a {@link ReliabilityMlModel}, where we will use "fake" or "custom"
+ * data to generate predictions using the model's {@link MlPipeline}.
+ */
+@db(index=['baseModel'])
+entity type ReliabilityMlModelScenario mixes FilterableByFacility {
+
+  /**
+   * The name of the scenario.
+   */
+  name: !string
+
+  /**
+   * {@link ReliabilityMlModel} over which this scenario is based.
+   *
+   * During the scenario execution, we will use the {@link MlPipeline} of this model to
+   * generate predictions.
+   */
+  baseModel: !ReliabilityMlModel
+
+  /**
+   * The time range over which the scenario is executed.
+   */
+  timeRange: !TimeRange
+
+  /**
+   * The [status](ReliabilityOrchestrator.RunStatus) of the scenario.
+   */
+  status: string enum ReliabilityOrchestrator.RunStatus
+
+  /**
+   * The translated status of the scenario, which is used for display purposes.
+   */
+  displayStatus: string translate by status
+
+  /**
+   * The translation key for the status of the scenario, which is used for display purposes.
+   */
+  translatedStatusKey: string calc concat('Reliability.', status)
+
+  /**
+   * Scenario {@link ReliabilityMlModel#xFeatures} data, which is used to generate #alertData, #algorithmData, and
+   * #featureOutputData using the {@link MlPipeline} of #baseModel.
+   *
+   * **NOTE**: {@link Map} is defined as `<string, any>` instead of `<string, Data>` because the metadata system is
+   *           not persisting the map correctly, so we can use `any` to store it as a `Boxed<json>` instead.
+   */
+  scenarioPipelineData: map<string, any>
+
+  /**
+   * {@link Data} output from the {@link ReliabilityMlModel#process} and {@link ReliabilityMlModel#interpret} steps over #baseModel.
+   *
+   * This DataFrame stores the timestamps when alerts were generated and contains columns for each model feature
+   * used to generate them (feature contributions).
+   *
+   * ```
+   * | timestamp           | feature1 | feature2 | featureN |
+   * |---------------------|----------|----------|----------|
+   * | 2024-01-01 00:00:00 | 0.5      | 0.2      | 0.3      |  // All values are normalized
+   * | 2024-01-16 00:00:00 | 0.6      | 0.2      | 0.2      |
+   * ```
+   *
+   * The process to generate this DataFrame is as follows:
+   * - Run {@link ReliabilityMlModel#process} on the #baseModel and extract the primary model output for alerts
+   *   ({@link ReliabilityMl.Project#alertOutputs}).
+   * - Run {@link ReliabilityMlModel#interpret} on the #baseModel and extract the feature contribution data
+   *   (`featureInterpretations`).
+   */
+  alertData: Data.Persisted
+
+  /**
+   * {@link Data} output from the {@link ReliabilityMlModel#process} over the #baseModel
+   *
+   * This DataFrame contains a column per {@link ReliabilityMl.Project#algorithmOutputs}, stored as a timeseries.
+   *
+   * ```
+   * | timestamp           | riskScore | riskScoreNormalized |
+   * |---------------------|-----------|---------------------|
+   * | 2024-01-01 00:00:00 | 100       | 0.66                |
+   * | 2024-01-02 00:00:00 | 150       | 1.0                 |
+   * | 2024-01-03 00:00:00 | 120       | 0.80                |
+   * | 2024-01-04 00:00:00 | 130       | 0.86                |
+   * ```
+   */
+  algorithmData: Data.Persisted
+
+  /**
+   * {@link Data} output from the {@link ReliabilityMlModel#process} over the #baseModel but using persisted
+   * {@link Feature}s data instead of #scenarioPipelineData, and is stored the same as #algorithmData.
+   */
+  originalAlgorithmData: Data.Persisted
+
+  /**
+   * A map of {@link Feature#id}s to the {@link Data} output from the {@link ReliabilityMlModel#process} and indexed
+   * through {@link ReliabilityMl.Project#featureOutputs}.
+   *
+   * **NOTE**: {@link Map} is defined as `<string, any>` instead of `<string, Data>` because the metadata system is
+   *           not persisting the map correctly, so we can use `any` to store it as a `Boxed<json>` instead.
+   */
+  featureOutputData: map<string, any>
+
+  /**
+   * The spec used to generate the scenario.
+   */
+  spec: ReliabilityOrchestrator.ModelScenarioProcess.Spec
+
+  /**
+   * File containing the serialized UI data for the scenario.
+   */
+  uiData: File
+
+  /**
+   * Automatically set by the orchestrator when the Workflow finishes.
+   * It contains the {@link Workflow.Run} that was executed for this scenario.
+   * This is used to track the execution of the scenario and to retrieve the errors if any.
+   */
+  workflowRun: Workflow.Run
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["baseModel.currentAssetRelations.from.facility"]
+}

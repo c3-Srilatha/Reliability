@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// Class for managing DataLake catalogs.
+@beta
+type DataLake {
+
+  /**
+   * Returns list of all the catalogs registered.
+   */
+  listCatalogs: function(): [DataLake.Catalog]
+
+  /**
+   * Returns catalog with the give name if it exists, otherwise throw an error.
+   * @param name
+   *        Name of the catalog
+   */
+  getCatalog: function(name: !string): DataLake.Catalog
+
+  /**
+   * Creates a new catalog with the specified name and catalog kind.
+   * @param name
+   *       Unique name to create the new catalog
+   * @param kind
+   *       Catalog type {@link DataLake.Catalog.Kind} to create the new catalog
+   * @param customProperties
+   *       Custom parameters to create the catalog,
+   *       if not passed, catalog will be created with default system parameters.
+   */
+  createCatalog: function(name: !string,
+                          kind: !string enum DataLake.Catalog.Kind,
+                          customProperties: map<string, string>): DataLake.Catalog
+
+  deleteCatalog: function(name: !string)
+
+  getTable: function(catalog: !string,
+                     namespace: !string,
+                     tableName: !string,
+                     includeSnapshots: boolean): DataLake.Table
+}

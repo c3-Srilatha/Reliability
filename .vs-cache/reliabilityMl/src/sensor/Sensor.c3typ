@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+remix type Sensor {
+
+  /**
+   * Returns the expected sensor that this Sensor represents in the context of the provided {@link ReliabilityAsset}.
+   */
+  getExpectedSensorForAsset: member function(asset: !ReliabilityAsset): ExpectedSensor js-rhino
+
+  /**
+   * Returns the timestamp of the latest normalized data among all given sensors, or null if no normalized data
+   * is present.
+   */
+  getLatestDataTimestamp: function (sensors: [Sensor]): datetime js-rhino
+
+  /**
+   * Returns the latest Sensor values.
+   *
+   * @param sensorIds
+   *     The list of sensor IDs to get values for.
+   * @param asOf
+   *     The time we want sensor values for. Used as the end of the evaluation period in metric evaluation. Defaults to now.
+   * @param metricName
+   *     The metric to use to evaluate the sensor value. Defaults to {@link ReliabilityMLConfig#sensorValueMetricName}.
+   * @return map<string, double>
+   *     A map from {@link Sensor#id} to sensor value.
+   */
+  getSensorValues: function(sensorIds: ![string], asOf: datetime, metricName: string): map<string, double> js-rhino
+
+  /**
+   * Returns the latest Sensor values.
+   *
+   * @param sensorIds
+   *     The list of sensor IDs to get values for.
+   * @param asOf
+   *     The time we want sensor variances for. Used as the end of the evaluation period in metric evaluation. Defaults to now.
+   * @param horizon
+   *     The amount of time to look back to calculate variance. Defaults to {@link ReliabilityMLConfig#featureVarianceLookbackHorizon}.
+   * @param interval
+   *     The interval of evaluation. Defaults to {@link ReliabilityMLConfig#featureVarianceEvalInterval}.
+   * @return map<string, double>
+   *     A map from {@link Sensor#id} to sensor variance.
+   */
+  getSensorVariances: function(sensorIds: ![string],
+                               asOf: datetime,
+                               horizon: int,
+                               interval: Interval): map<string, double> js-rhino
+
+  /**
+   * Returns a mapping of sensor IDs to their respective variances for the given sensor data summary spec.
+   *
+   * @param sensorDataSummarySpec
+   *     The {@link SensorDataSummarySpec} to get sensor variances for.
+   * @return map<string, double>
+   *     A map from {@link Sensor#id} to sensor variance.
+   */
+  getSensorVariancesForDataReport: function(sensorDataSummarySpec: SensorDataSummarySpec): map<string, double> js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

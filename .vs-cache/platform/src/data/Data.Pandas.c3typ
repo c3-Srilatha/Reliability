@@ -1,0 +1,105 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 Interface to a Data.Pandas backed by native pandas
+ *
+ * @see Data
+ */
+// TODO: PLAT-45752 Make Data.Pandas stateless
+@beta
+private type Data.Pandas mixes Data, DataImpl.Pandas {
+
+  _exec: private ~ from DataImpl.Pandas
+
+  /**
+   * Helper function to construct a {@link Data.Pandas} from a structured 2D {@link Array}.
+   * Example usage:
+   * ```
+   * pdt = c3.Data.Pandas.fromArray([
+   *   ["a", c3.PrimitiveType.ofInt(), [100, 400, 200]],
+   *   ["b", c3.PrimitiveType.ofInt(), [200, 300, 100]],
+   *   ["c", c3.PrimitiveType.ofInt(), [300, 200, 400]],
+   *   ["d", c3.PrimitiveType.ofInt(), [400, 100, 300]],
+   * ])
+   * ```
+   * This gives a {@link Data.Pandas} that is equivalent to the following `pandas.DataFrame`:
+   * ```
+   * df = pd.DataFrame([
+   *   {'a': 100, 'b': 200, 'c': 300, 'd': 400},
+   *   {'a': 400, 'b': 300, 'c': 200, 'd': 100},
+   *   {'a': 200, 'b': 100, 'c': 400, 'd': 300}
+   * ])
+   * ```
+   * @param multi_index
+   *           list of column names we want to turn into indices
+   */
+  @call(javaThreadAffinity=true)
+  fromArray: private function(nameTypeData: ![any],
+                              multi_index: [any],
+                              dataset_id: string,
+                              table_name: string): !Data.Pandas py-jep
+
+  @call(javaThreadAffinity=true)
+  flatten: ~ py-jep
+
+  @call(javaThreadAffinity=true)
+  assign: ~ py-jep
+
+  /**
+   * Return a tabular representation of the dataframe in html format
+   */
+  @call(javaThreadAffinity=true)
+  to_html: function(pandas: !Data.Pandas): string py-jep
+
+  // TODO: PLAT-45334 Remove py-datapandas workaround for Data#read_sql
+  _read_sql_query: private function(sql: !string,
+                                    url: !string,
+                                    http_path: !string,
+                                    parse_dates: any): !binary py-datapandas
+
+  /**
+   * Return the html for a Data.Pandas to be displayed after calls to repr. Invokes the pandas private method
+   * `_repr_html_()`
+   */
+  @call(javaThreadAffinity=true)
+  reprHtml: private function(data: !Data.Pandas): !string py-jep
+
+  /**
+   * Returns a binary from a py-arrow buffer constructed from the tuple field. Returns null if tuple field is null
+   */
+  arrowBuffer: private member function(): binary
+
+  /**
+   * Write Arrow Buffer representation of this data to a file.
+   *
+   * @see Data#arrowBuffer
+   */
+  writeArrowBufferToFile: private member function(): string serialized !FileUrl
+
+  equal_:         private ~
+  collect:        ~
+  isEmpty:        private ~
+  elementType:    private ~
+  dataType:       private ~
+  fieldValueType: private ~
+  toDataPandas:   private ~
+  _first:         private ~
+  _length_:       private ~
+  fromTuple:      ~
+  contains:       private ~
+  neg:            private ~
+  invert:         private ~
+  toDataRef:      private ~: !DataRef from DataImpl.Pandas
+  type:           ~ java
+
+  /**
+   * Stores data as {@link EvalMetricsResult} only if {@link EvalFeatureSpec#toEmr} is set to true.
+   */
+  _emr: private EvalMetricsResult
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Epic that listens for `INITIAL_RENDER` and `ACTIVE_TAB_CHANGE` actions, and does the following:
+ *  - (*If `spinnerId` is defined*) triggers a {@link UiSdlSpinner#changeDataLoadingAction} to **enable** loading animation.
+ *  - Fetches from {@link LatestSensorAssociationHelper#getLatestUiSettings} the latest
+ *    {@link BulkSensorAssociationUiSettings} for the entity specified.
+ *    Storing it in `applicationStateId.fieldToStore`.
+ *  - (*If `spinnerId` is defined*) triggers a {@link UiSdlSpinner#changeDataLoadingAction} to **disable** loading animation.
+ *
+ * Error handling cases:
+ * - If `entityType`, `entityId`, `applicationStateId`, or `fieldToStore` are not defined:
+ *   - (*If `spinnerId` is defined*) triggers a {@link UiSdlSpinner#changeDataLoadingAction} to **disable** loading animation.
+ *   - Otherwise, does nothing.
+ * - If {@link LatestSensorAssociationHelper#getLatestUiSettings} returns an error or `null`:
+ *   - Sets `applicationStateId.fieldToStore` to `null`
+ *
+ * Expected Payload:
+ * - `entityType`: String representation of a supported type from which to fetch the latest configuration
+ *                 (See {@link LatestSensorAssociationHelper#getLatestUiSettings}).
+ * - `entityId`: Supports `string` or `UiSdlDynamicValueSpec` from which to retrieve the entity id.
+ * - `spinnerId`: Spinner Component ID to enable/disable while fetching.
+ *   - Default Value: `Reliability.LatestCorrelationConfigurationSpinner`
+ * - `applicationStateId`: Application State ID where to store the result.
+ *   - Default Value: `Reliability.ReliabilityApplicationState`
+ * - `fieldToStore`: Field of the `applicationStateId` used for the correlation configuration.
+ *   - Default Value: `latestCorrelationConfig`
+ * - `parentTabId`: When implemented on `ACTIVE_TAB_CHANGE` this field is used to filter until the
+ *                  tab panel active is the one that needs this Epic.
+ *
+ * Usage example:
+ * ```json
+ * {
+ *   "trigger": [
+ *     "Reliability.CorrelationModelSetupAssetDetailTabPanel.ACTIVE_TAB_CHANGE",
+ *     "INITIAL_RENDER"
+ *   ],
+ *   "effectType": "LatestCorrelationFetchDataEpic",
+ *   "payloadStrategy": "MERGE",
+ *   "payload": {
+ *     "parentTabId": "Reliability.CorrelationModelSetupAssetDetailLatestCorrelationConfigurationTab",
+ *     "entityType": "ReliabilityAsset",
+ *     "entityId": {
+ *       "type": "UiSdlPageParam",
+ *       "path": "id"
+ *     },
+ *   }
+ * }
+ * ```
+ *
+ * @see LatestSensorAssociationHelper
+ * @see ReliabilityApplicationState
+ */
+type LatestCorrelationFetchDataEpic mixes UiSdlEpic {
+
+  epic: ~ ts-client
+}

@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The "void" value type represents that _no_ value is expected. It is declared in DSL simply as `void`.
+ *
+ * The only legal value for this type is `null`, but more importantly its use indicates that there will never be a
+ * meaningful value in this context.
+ *
+ * This type may be used in the DSL to indicate no value is expected, for example in declaring that a generic binding
+ * will never have a value:
+ * ```type
+ * type Pipeline.Step<In, Out>
+ *
+ * type Pipeline.Sink<In> mixes Pipeline.Step<In, void>
+ * ```
+ *
+ * Note that {@link ValueType#guessType} will never return this type; it returns `null` instead. Similarly,
+ * {@link FunctionType#returnType} returns `null` if there is no return value type declared.
+ *
+ * This is also not a data type (more of a special marker), so it cannot explicitly be used for a field,
+ * method parameter or return value. These can _implicitly_ become `void` through a generic binding. For example
+ * **Foo** is generic:
+ *
+ * ```c3typ
+ * type Foo<T> {
+ *   f: T
+ *   getF: member function(): T
+ *   compareToF: member function(v: T): @comparator int32
+ * }
+ * ```
+ *
+ * A binding of `T` to `void` means the field, `getF` return value, and `compareTo` parameter will all be of void type:
+ *
+ * ```c3typ
+ * type VoidFoo mixes Foo<void>
+ * ```
+ */
+type VoidType mixes ValueType, Singleton {
+
+  isA:              ~(other: ValueType) java | js | py
+  isEmptyValue:     ~ java | js | py
+  inst:             ~
+  makeValue:        ~ java | py | js
+  valueToJson:      ~ java | py | js
+  valueToTypedJson: ~ java | py | js
+  valueFromJson:    ~ java | py | js
+}

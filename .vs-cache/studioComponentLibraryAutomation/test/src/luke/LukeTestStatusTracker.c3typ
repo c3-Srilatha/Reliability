@@ -1,0 +1,190 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A test component for the status tracker
+ */
+type LukeTestStatusTracker mixes LukeTestComponent {
+
+  /**
+   * The selector for the status tracker
+   */
+  parentSelector: ~ = '.c3-metadata-id-selfservicedi-fileuploadstatuscontainer .container'
+
+  /**
+   * The title of the status tracker other than the file source collection title
+   */
+  titleSelector: string = '.title-section'
+
+  /**
+   * The title of file source collection
+   */
+  trackerTitleSelector: string = '.tracker-title'
+
+  /**
+   * The file name of the uploaded file
+   */
+  fileNameSelector: string = '.file-name'
+
+  /**
+   * The individual file status
+   */
+  individualfileUplodStatusSelector: string = '.file-list'
+
+  /**
+   * The percentage selector
+   */
+  filePercentageSelector: string = '.file-percentage'
+
+  /**
+   * The raw complete ratio selector for overall status
+   */
+  rawCompletionRatioSelector: string = '.raw-completion-ratio'
+
+  /**
+   * The raw count ratio selector for individual file status
+   */
+  rawCountRatioSelector: string = '.raw-count-ratio'
+
+  /**
+   * The dismiss button for dismiss a files on the completed status
+   */
+  completedDismissButtonSelector: string = '.tracker-header .c3-icon-x'
+
+  /**
+   * The expand button for file source collection
+   */
+  expandButtonSelector: string = '.tracker-header .c3-icon-angle-right'
+
+  /**
+   * The expand button for status tracker container
+   */
+  statusTrackerExpandSelector: string = '.c3-icon.c3-icon-caret-right'
+
+  /**
+   * Expand the individual status tracker
+   *
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the individual status tracker is expanded
+   */
+  individualStatusExpand: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Expand the status tracker container
+   *
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the container is expanded
+   */
+  statusTrackerContainerExpand: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the title text of the file
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the title text
+   */
+  getTitleText: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the status icon of the file
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the status icon
+   */
+  getStatusIcon: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the file name of the uploaded file
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the file name
+   */
+  getFileName: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the file upload percentage
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the file upload percentage
+   */
+  getFilePercentage: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the raw completion ratio for overall status
+   *
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the raw completion ratio
+   */
+  getRawCompletionRatio: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the raw count ratio for individual file status
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the raw count ratio
+   */
+  getRawCountRatio: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the tracker title of the file source collection
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the tracker title
+   */
+  getFileSourceCollectionName: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Click the dismiss button for completed status
+   *
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the dismiss button is clicked
+   */
+  completedDismissButtonClick: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get the file upload status selector
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @return a string representing the file upload status selector
+   */
+  fileUploadStatusSelector: inline member function(fileId: string) js
+
+  /**
+   * Click the dismiss button for completed status
+   *
+   * @param fileId
+   *           fileId for the individual file.
+   * @param timeout
+   *           Timeout in seconds for the chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the dismiss button is clicked
+   */
+  individualDismissButtonClick: inline member function(fileId: string, timeout: int): LukeAsyncQueueNode js
+}

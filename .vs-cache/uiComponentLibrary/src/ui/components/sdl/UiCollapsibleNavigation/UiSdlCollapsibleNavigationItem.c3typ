@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type UiSdlCollapsibleNavigationItem {
+
+  /**
+   * The string or {@link UiSdlFieldBasedDataSpecSetting} to represent the item's unique ID.
+   */
+  id: !string | UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The string or {@link UiSdlFieldBasedDataSpecSetting} to represent the item's label.
+   */
+  label: !string | UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The string or {@link UiSdlFieldBasedDataSpecSetting} to represent the icon of the item.
+   * (e.g. "folder", "file", "house")
+   */
+  icon: string | UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * Array of children that the subItems has.
+   */
+  subItems: [UiSdlCollapsibleNavigationItem] = []
+
+  /**
+   * Boolean to control if the section is open
+  */
+  active: boolean | UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The string or {@link UiSdlFieldBasedDataSpecSetting} to represent the expanded state of the item.
+   */
+  @constraint(condition='subItems.length >= 0')
+  expanded: boolean | UiSdlFieldBasedDataSpecSetting = true
+
+  /**
+   * The {@link UiSdlRoute} or {@link UiSdlFieldBasedDataSpecSetting} to represent the route to redirect to when an item is clicked.
+   */
+  redirectLink: UiSdlRoute | UiSdlFieldBasedDataSpecSetting
+}

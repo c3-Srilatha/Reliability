@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@seed(userUpdatable=true)
+private extendable entity type CodeSample mixes Nameable, AclEnabled<CodeSample>, SeedData<CodeSample> schema name 'CDSMPL' {
+
+  description: string
+
+  /**
+   * The content of the code sample.  It is persisted as a metadata file if live metadata is on.
+   * Otherwise, it is persisted as a ContentValue.
+   *
+   * This field should always be set when persisted.  UI uses the {@link codeContent} field
+   * instead to avoid having to read the content directly.
+   */
+  content: File | ContentValue
+
+  /**
+   * The {@link content} as a string, which is easier for the UI to use.  It will be set
+   * for objects returned by {@link allCodeSamples} or {@link withNotPersistableFields}.
+   * If it is set when the object is upserted, the {@link content} will be updated to
+   * this value.
+   *
+   * This field is not persisted, since {@link content} is the source of truth.  However,
+   * it is not marked `not persistable`, since {@link beforeCreate} and {@link beforeUpdate}
+   * need it.
+   */
+  codeContent: string
+
+  /**
+   * The name of the package containing this code sample.
+   */
+  package: string
+
+  /**
+   * Fetch all code samples.  Populate the {@link codeContent} and {@link package} fields.
+   * Return a list sorted by whether they are from the current package and then alphabetically
+   * (case insensitive).
+   */
+  allCodeSamples: function(): [CodeSample]
+
+  /**
+   * Return this code sample with the {@link codeContent} and {@link package} fields set.
+   */
+  withNotPersistableFields: member function(): !CodeSample
+
+  /**
+   * Reads the seeded {@link CodeSample} python file, passes the data needed to run the script and executes it.
+   * Returns the state of execution after executing the script. Used for testing {@link CodeSample}s.
+   *
+   * @param metadataFilePath
+   *            Metadata file path/url of the seeded {@link CodeSample}
+   * @param data
+   *            Map of data needed for the seeded {@link CodeSample} to run.
+   */
+  call: function(metadataFilePath: !string, data: ?native): !map<string, native> py
+
+  beforeCreate: ~
+  beforeUpdate: ~
+  beforeRemove: ~
+  afterCreate:  ~
+  afterUpdate:  ~
+}

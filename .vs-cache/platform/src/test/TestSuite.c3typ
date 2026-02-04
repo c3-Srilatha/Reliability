@@ -1,0 +1,428 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A test suite is defined in Markdown that contains descriptions and test cases. Tests often depend on the "Zoo"
+ * types defined in the **zoo** package. These are often called "poly tests" because they test APIs in multiple
+ * languages.
+ *
+ * ````md
+ * # Example Test
+ * This is an example cross-language test.
+ *
+ * ## 2 + 2
+ * ```
+ * 2 + 2 == 4
+ * ```
+ * ````
+ *
+ * Note that this would produce a test file (name "Example Test") with one case (name "2 + 2") and with a block of
+ * {@link TestScript} asserting that 2+2 is 4.
+ *
+ * For example, #produce for JavaScript would build a Jasmine test file:
+ * ```js
+ * describe("Example Test", function() {
+ *   describe("2 + 2", function() {
+ *     it("", function() {
+ *        expect(2 + 2).toBe(4);
+ *     });
+ *   });
+ * });
+ * ```
+ *
+ * And for Python, a `pytest` file:
+ * ```py
+ * import pytest
+ *
+ * def test__Example_Test_2_2():
+ *     assert ((2 + 2) == 4)
+ * ```
+ *
+ * Normal poly tests just verify behavior, but "key performance indicator" (KPI) poly tests also verify performance.
+ * If a file ends with the snake case word "kpi" (case insensitive), it will be a poly KPI test and its cases will be
+ * #KpiCase instances instead of #PolyCase.
+ *
+ * @see TestScript
+ * @see poly-test.c3doc.md
+ */
+type TestSuite mixes Nameable, StringSerializable {
+
+  /**
+   * If loaded from a Markdown file, the name of the original file.
+   */
+  fileName: string
+
+  /**
+   * If loaded from Markdown, the original document content.
+   */
+  source: string
+
+  /**
+   * If loaded from Markdown, the hash code of the text content.
+   */
+  sourceHash: int
+
+  /**
+   * The text of Markdown (other than headings) not associated with any test case. Note that this may contain
+   * multiple lines.
+   */
+  comment: string
+
+  /**
+   * Whether this represents a KPI test, which measures the time and memory usage for running some operation and
+   * reports those statistics as "key performance indicators".
+   *
+   * @see Microbench
+   */
+  kpi: boolean
+
+  /**
+   * The test cases defined as sections of the file, each of which is defined by a single code block.
+   */
+  cases: [TestSuite.Case]
+
+  /**
+   * Optional hook code blocks defined in this test suite. Note that only one of each type may be used and they apply
+   * to all #cases.
+   */
+  hooks: [TestSuite.Hook]
+
+  /**
+   * Ignores of this test suite
+   */
+  ignore: [TestSuite.Ignore]
+
+  /**
+   * A suite may specify additional custom requirements. Tests will be generated for these requirements _in addition_ to the
+   * standard set. This is done using a special line in the first paragraph that begins with `actionRequirement:` and contains
+   * a comma-separated list of requirements.
+   *
+   * These requirements must be defined, runtime-specific requirements. They must use only the supported languages,
+   * locations, and executors and must be extensions of them. For example, `py-data-science-ipython` is valid because it's defined
+   * as well as being an extension of a supported language and executor (Python and `ipython` respectively).
+   *
+   * @see #supportedLanguages
+   * @see #supportedLocations
+   */
+  extraRequirements: [string serialized Action.Requirement]
+
+  /**
+   * Get a hook code block by name.
+   */
+  hook: member function(name: !string enum TestSuite.HookName): TestSuite.Hook
+
+  /**
+   * Update global and case ignores by enabling all tests in a list of (JUnit) poly case names.
+   * For example, passingCaseNames can be an {@link Array} of:
+   * ["c3.zoo.poly.value.gen.Collection_Test_Poly_Js_Server.empty_1",
+   * "c3.zoo.poly.value.gen.Collection_Test_Poly_Java_Server.empty_1"]
+   *
+   * @param passingCaseNames a list of passing (JUnit) test cases
+   */
+  updateSuiteIgnores: member function(passingCaseNames: ![string]): !TestSuite
+
+  /**
+   * Get the original Markdown document content with updated global and case ignores.
+   */
+  // TODO: PLAT-37694 Add TestSuite.Comment inner type so that TestSuite.toString(TestSuite.fromString()) is idempotent
+  updateIgnores: member function(): !string
+
+  /**
+   * Collect variables set by the `before` and `beforeEach` hooks.
+   *
+   * @see TestSuite.Hook
+   */
+  beforeHookVars: member function(): set<string>
+
+  /**
+   * Build a testing source code file(s) for the specified language by translating the scripts for each case. If the
+   * language is unsupported or there are no test cases, an empty array is returned.
+   */
+  produce: member function(spec: !TestSuite.ProduceSpec): [Content]
+
+  /**
+   * Build a testing source code file(s) for the specified language by translating the scripts for each case. If the
+   * language is unsupported or there are no test cases, an empty array is returned.
+   *
+   * @param language the language to generate for
+   * @param failIfUnsupported if language is unsupported, throw error instead of returning an empty array
+   */
+  produce: member function(language: !string serialized ImplLanguage, failIfUnsupported: boolean): [Content]
+
+  /**
+   * Generate the test suite/class name for a generated poly test suite. This is the same name as that generated if
+   * TestSuite.produce() was called, but skips the generation of the actual test suite/class itself
+   *
+   * @param spec the non-null spec specifying the language, package, and runtime
+   * @param destPath the destination path of the generated test suite
+   * for Java tests, the generated name is of the form package.suiteName
+   *        e.g. c3.zoo.poly.action.gen.Action_SpecOverload_Test_Poly_Java_Server
+   * for js and py tests, the generated name is of the form destPath/test_suiteName.py
+   *        e.g. zoo/test/py-ipython/poly/action/gen/test_action_SpecOverload.py
+   */
+  generateSuiteNames: member function(spec: !TestSuite.ProduceSpec, destPath: !string): [string]
+
+  /**
+   * Read a Jasmine test file and translate it to the corresponding test suite. This handles simple assignments and
+   * assertions, but does not translate arbitrary JavaScript test code.
+   *
+   * @param code contents of the Jasmine test
+   * @param fileName file name if known
+   */
+  fromJasmine: function(code: !string, fileName: string): !mixing TestSuite
+
+  /**
+   * From string, remembering the file name.
+   */
+  fromString: function(s: !?string, fileName: !?string): mixing TestSuite
+
+  /**
+   * Enable remote API calls from the current instance. By default remote calls are enabled, but #blockRemote can be
+   * used to prevent them for testing caching or that a local implementation is being called.
+   */
+  allowRemote: function() java | js | py
+
+  /**
+   * Block remote API calls from the current instance until the end of the test block or until #allowRemote is called.
+   * This can be used for testing caching or that a local implementation is being called.
+   *
+   * If called in the `before` hook, the {@link TestSuite.BlockRemoteSpec#noAutoClear} flag is assumed to be true, thus
+   * applying to all cases in the file by default.
+   */
+  blockRemote: function(spec: TestSuite.BlockRemoteSpec) java | js | py
+
+  /**
+   * Return the value of the HTTP `Authorization` header for a test user usable for creating requests.
+   */
+  testAuthHeader: function(): !string
+
+  /**
+   * Get a random number generator for this test with a known seed so failures can be reproduced later.
+   * This should be used in tests rather than native random number generators.
+   */
+  rnd: function(): !Rnd
+
+  /**
+   * Return the base performance metric for a given suite and test case. For example if the test suite is in the file
+   * "Stuff_Kpi.md", and the test case has the heading `# Stuff Kpi Nonsense`, the metric base will be
+   * "Stuff_Kpi_Nonsense". Only the _innermost_ heading is used for the metric name, so it must be globally unique.
+   *
+   * The metric names should be specific and descriptive, but not overly long. For example, "Obj Kpi make" is too
+   * generic and it would be better to make a bit more specific, such as `Obj Kpi make 1 field`. This would produce the
+   * metric base name "Obj_Kpi_make_1_field" and allow a separate test for making with 100 fields.
+   *
+   * @see MicrobenchResult
+   */
+  metricBaseName: member function(case: !TestSuite.KpiCase): !string
+
+  /*
+   * From an instance, testing the data fields and methods with bounded parameters.
+   *
+   * For example:
+   * ```js
+   * TestSuite.fromInstance(Duration.fromString('1h1m1s'), "Duration.fromString('1h1m1s')")
+   * ```
+   * will produce a suite that tests each method of {@link Duration} for that specific duration.
+   *
+   * Note that the second argument is the JavaScript (poly test) initialization, which may not be the same as the
+   * initialization in the language from which the method is called. The second argument is written verbatim into
+   * the test.
+   *
+   * @param inst the instances providing the reference state
+   * @param setup the TestScript expression that initialized the test instance
+   * @param spec options
+   * @return suite that tests the instance
+   */
+  fromInstance: function(inst: !WithType, setup: !string, spec: TestSuite.FromInstanceSpec): !mixing TestSuite
+
+  /*
+   * From an instance, testing the data fields and methods with bounded parameters. This form takes the type as a
+   * separate argument, which allows it to be used for instances that are not {@link WithType}.
+   *
+   * For example:
+   * ```js
+   * TestSuite.fromInstance(DateTime.fromString('2020-12-31'), DateTime.myType(), "DateTime.fromString('2020-12-31')");
+   * ```
+   * will produce a suite that tests each method of {@link DateTime} for that specific date.
+   *
+   * Note that the third argument is the JavaScript (poly test) initialization, which may not be the same as the
+   * initialization in the language from which the method is called. The second argument is written verbatim into
+   * the test.
+   *
+   * @param inst the instances providing the reference state
+   * @param type the type to use for locating fields and methods
+   * @param setup the TestScript expression that initialized the test instance
+   * @param spec options
+   * @return suite that tests the instance
+   */
+  fromInstance: function(inst: !any, type: !Type, setup: !string, spec: TestSuite.FromInstanceSpec): !mixing TestSuite
+
+  /*
+   * From an instance, testing the data fields and methods with bounded parameters. This form calls the lambda to
+   * produce the instance for each test, which allows it to be used with a stateful instance that should be recreated
+   * for each test case.
+   *
+   * Note that the third argument is the JavaScript (poly test) initialization, which may not be the same as the
+   * initialization in the language from which the method is called. The second argument is written verbatim into
+   * the test.
+   *
+   * @param producer a lambda to produce the fresh instance
+   * @param type the type to use for locating fields and methods
+   * @param setup the TestScript expression that initialized the test instance
+   * @param spec options
+   * @return suite that tests the instance
+   */
+  fromInstance: function(producer: !lambda(): !any,
+                         type: !Type,
+                         setup: !string,
+                         spec: TestSuite.FromInstanceSpec): !mixing TestSuite
+
+  /**
+   * Whether the specified @link{Action.Requirement} is ignored for this set of ignore specs.
+   */
+  isIgnored: function(actionRequirement: !Action.Requirement, ignore: [TestSuite.Ignore]): boolean
+
+  /**
+   * If the specified @link{Action.Requirement} is ignored, get the first matching ignore spec.
+   */
+  matchIgnore: function(actionRequirement: !Action.Requirement, ignore: [TestSuite.Ignore]): TestSuite.Ignore
+
+  /**
+   * If the specified @link{Action.Requirement} is ignored, get all the matching ignore specs.
+   */
+  matchAllIgnores: function(actionRequirement: !Action.Requirement, ignore: [TestSuite.Ignore]): [TestSuite.Ignore]
+
+  /**
+   * Whether or not there are ignores for this @link{Action.Requirement} globally or in any cases.
+   */
+  hasIgnores: member function(actionRequirement: !Action.Requirement): boolean
+
+  /**
+   * Whether or not there are matching ignores globally or in any cases.
+   */
+  hasIgnores: member function(test: !lambda(ign: !TestSuite.Ignore): boolean): boolean
+
+  /**
+   * Whether or not there are @link{Action.Requirement} ignores globally or in any cases.
+   */
+  hasRequirementIgnores: member function(): boolean
+
+  /**
+   * Convert an AstNode to the equivalent python code.
+   *
+   * @param astNode The AstNode to be converted
+   * @param allTypeNames set of all type names available
+   * @param pyKeywords list of all reserved Python keywords that need to be escaped (by adding a trailing underscore)
+   *
+   * @return the python code corresponding to the AstNode
+   */
+  jsAstToPythonCode: private function(astNode: @java(class='org.mozilla.javascript.ast.AstNode') !native,
+                                      allTypeNames: !set<string>,
+                                      pyKeywords: ![string]): [string] py-jep
+
+  /**
+   * Called before each test (fenced code block).
+   */
+  beforeTest: private function() java | js | py
+
+  /**
+   * Called after each test (fenced code block).
+   */
+  afterTest: private function() java | js | py
+
+  /**
+   * Generate {@link TestSuiteSummary} for current poly test for each requirement.
+   */
+  summarize: member function(): !map<string serialized Action.Requirement, TestSuiteSummary>
+
+  /**
+   * Summarize all poly tests
+   * This method assumes access to the C3 Server source code on local disk.
+   */
+  summarizeAll: function(): !map<string serialized Action.Requirement, TestSuiteSummary>
+
+  /**
+   * Massage the source to make it display nicely with Markdown formatters. For example, test blocks are marked with
+   * language "js" for better syntax highlighting and all "x-ing out" annotations are removed.
+   *
+   * @param transpile test blocks are transpiled into all supported languages as separate tabs
+   * @return massaged to more natural Markdown
+   *
+   * @see #sourceToMarkdown
+   */
+  toMarkdown: member function(transpile: boolean): string
+
+  /**
+   * Massage the source to make it display nicely with Markdown formatters. For example, test blocks are marked with
+   * language "js" for better syntax highlighting and all "x-ing out" annotations are removed.
+   *
+   * Note that this need not be a valid poly test suite for this to work.
+   *
+   * @param source source of Markdown
+   * @param transpile test blocks are transpiled into all supported languages as separate tabs
+   * @return massaged to more natural Markdown
+   */
+  sourceToMarkdown: function(source: !?string, transpile: boolean): string
+
+  /**
+   * List paths of all poly tests under the `zoo` package. Paths are relative to the `poly` directory.
+   * This method assumes access to the C3 Server source code on local disk.
+   */
+  testPaths: function(): [string]
+
+  /**
+   * Summarize poly tests and publish html report to specified local file path.
+   * This method assumes access to the C3 Server source code on local disk.
+   * @param topN number of top results to display in the report for {@link TestSuiteSummary.Stats.disabledByCause} and
+   *             {@link TestSuiteSummary.Stats.disabledByTestSuite}.
+   *             If -1, all entries will be displayed.
+   */
+  // TODO PLAT-31048 Re-implement with jinja and Dataset API
+  publishReport: function(path: !string = "/tmp/testSuiteReport.html", topN: !int = 10)
+
+  /**
+   * The supported languages ("Python", "JavaScript", "Java").
+   */
+  supportedLanguages: function(): [string serialized ImplLanguage]
+
+  /**
+   * The supported locations for a language, such as "server".
+   */
+  supportedLocations: function(lang: !string serialized ImplLanguage)
+                        : [string serialized ImplLanguage.RuntimeLocation]
+
+  /**
+   * The standard {@link Action.Requirement} for which tests are generated
+   */
+  standardRequirements: cached function(): [string serialized Action.Requirement]
+
+  /**
+   * The requirements to generate tests for, combining #standardRequirements and #extraRequirements.
+   */
+  generateRequirements: member function(): [string serialized Action.Requirement]
+
+  /**
+   * The requirements to generate for a language, combining #standardRequirements and #extraRequirements.
+   */
+  generateRequirements: member function(lang: !string serialized ImplLanguage): [string serialized Action.Requirement]
+
+  /**
+   * Whether the specified info for a fenced code block corresponds to a normal poly test (empty or `test`).
+   */
+  isPolyTestBlock: function(info: string): boolean
+
+  /**
+   * Whether the specified info for a fenced code block corresponds to a KPI poly test (`setup`, `measure` or `assert`).
+   */
+  isPolyKpiBlock: function(info: string): boolean
+
+  /**
+   * Whether the specified info for a fenced code block corresponds to a poly test hook, see #HookName.
+   */
+  isPolyHookBlock: function(info: string): boolean
+}

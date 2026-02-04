@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The specification of data retrieval for instances of the {@link UiSdlMap} component type.
+ */
+@typeScript
+type UiSdlMapDataSpec mixes UiSdlFieldBasedDataSpec {
+
+  /**
+   * The field on the data type that maps to the latitude.
+   */
+  latitude: !UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The field on the data type that maps to the longitude.
+   */
+  longitude: !UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The specification for a field on the data type that is used in determining marker colors.
+   */
+  markerColor: UiSdlMapMarkerColorFieldSetting
+
+  /**
+   * The specification for a field on the data type that is used in determining marker opacity. 1 (not transparent) by default.
+   */
+  markerOpacity: double = 1
+
+  /**
+   * The specification for a field on the data type that decides which layer it is a part of.
+   */
+  layerAttribute: UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The specification for a field on the data type that is used in determining marker shapes.
+   */
+  markerShape: UiSdlMapMarkerShapeFieldSetting
+
+  /**
+   * The specification for a field on the data type that is used in determining marker label.
+   */
+  markerLabel: UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The specification for a field on the data type that is used in determining marker image.
+   */
+  markerImage: UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The field on the data type that maps to the map tooltip's header.
+   */
+  tooltipHeader: UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The field on the data type that maps to the map tooltip's subheader.
+   */
+  tooltipSubHeader: UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * Additional fields that are specified to be added in the map tooltip.
+   */
+  tooltipAdditionalFields: [UiSdlMapTooltipAdditionalFieldDataSpecSetting]
+
+  /**
+   * The legend for the map.
+   */
+  legends: [UiSdlMapLegendConfig]
+
+  /**
+   * Converts the data spec to a partially applied action.
+   */
+  toPartiallyAppliedActions: ~ ts-client
+}

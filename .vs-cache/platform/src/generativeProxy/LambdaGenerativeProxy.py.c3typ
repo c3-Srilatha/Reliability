@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+native py remix type LambdaGenerativeProxy {
+
+  /**
+   * Convenience method for building a LambdaGenerativeProxy from a python native function.
+   *
+   * @param name
+   *           A name of the {@link GenerativeProxy proxy} to be configured.
+   * @param py_native_func
+   *           A native Python function containing the implementation for the {@link GenerativeProxy#completion}.
+   * @param action_requirement
+   *           The name of the {@link Action.Requirement minimal action requirement} the user-defined functions need to
+   *           be executed in.
+   * @param override
+   *           Override level for the {@link LambdaGenerativeProxy.Config config}. Will be `App` if not specified.
+   * @return A {@link LambdaGenerativeProxy} configured with given Python function.
+   */
+  from_py: function(name: !string,
+                    py_native_func: !native,
+                    action_requirement: string serialized Action.Requirement,
+                    override: string enum ConfigOverride = ConfigOverride.APP): !LambdaGenerativeProxy py
+}

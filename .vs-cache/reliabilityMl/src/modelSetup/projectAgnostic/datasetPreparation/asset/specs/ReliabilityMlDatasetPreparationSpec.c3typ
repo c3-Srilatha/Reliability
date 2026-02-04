@@ -1,0 +1,179 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec to be used in {@link ReliabilityAsset#prepareMlDatasets} to generate all the required datasets.
+ * For a given {@link ReliabilityAsset}, the dataset preparation routine consists in the following steps:
+ * - Prepare a {@link Feature.Set} for `features` and preprocess them to ensure high signal to noise ratio.
+ * - Prepare several {@link Feature.Set}s for `masks`, i.e., variables that define which rows of data to ignore for {@link MlModel} training and inference.
+ * - (Optional) Prepare a {@link Feature.Set} for `target` to enable supervised learning {@link MlModel}s.
+ * - Split the above datasets into training and validation.
+ *
+ * The result of preparing all these datasets will be a self-sufficient {@link ReliabilityMlDatasetPreparationRun},
+ * which will contain all the information needed for performing {@link MlModel} training, deployment, and inference.
+ */
+type ReliabilityMlDatasetPreparationSpec mixes WithReliabilityMlProject {
+
+  /**
+   * What is the timestamp FROM when the features, mask, and target should be evaluated?
+   */
+  materializeStart: datetime
+
+  /**
+   * What is the timestamp TILL when the features, mask, and target should be evaluated?
+   */
+  materializeEnd: datetime
+
+  /**
+   * A given {@link ReliabilityMl.Project} associated with this dataset.
+   * Dataset is being prepared for a specific project usecase with custom properties.
+   * Dataset prepared for one project cannot be used in the context of another project.
+   */
+  project: ~
+
+  /**
+   * Set this field to `true` if you wish to run
+   * {@link ReliabilityAsset#runDataValidation} BEFORE running any
+   * dataset preparation routines.
+   * If the data validation run has errors, then the dataset preparation step will not
+   * proceed.
+   */
+  doRunDataValidation: boolean = false
+
+  /**
+   * It is always better to have regular time series instead of irregular time series
+   * for the purposes of stable machine learning model performance. Use this field to
+   * specify the regular {@link Interval} of the data which will be evaluated.
+   */
+  interval: string enum Interval = QUARTER_HOUR
+
+  /**
+   * Specify all the information needed to both create an initial {@link Feature.Set}
+   * for training {@link MlModel}s for {@link MlProject}, as well
+   * as, downstream information needed to pre-process the initial {@link Feature.Set}
+   * such that clean {@link Feature.Set}s are used in the training of {@link MlModel}s.
+   */
+  featurePreparationSpec: ReliabilityMlFeaturePreparationSpec
+
+  /**
+   * Having a set of {@link Feature}s is not good enough to train good {@link MlModel}s.
+   * To train a good {@link MlModel}, several rows of data need to be eliminated from the
+   * training dataset because they contain more noise than true signal. These are called
+   * masks, i.e., they help remove unwanted rows of data from both training and inference
+   * of {@link MlModel}s. Specify all this kind of information in this field.
+   */
+  maskPreparationSpec: ReliabilityMlMaskPreparationSpec
+
+  /**
+   * By default, {@link ReliabilityMlDatasetPreparationHelper#prepareAlertContext} will
+   * create features to fetch the riskScore, riskScoreNormalized and alert predictions
+   * corresponding to the deployed CHAMPION model, in order to generate the
+   * {@link ReliabilityMlDatasetPreparationRunCommon#alertContextDatasets}.
+   * Use this field to instead specify custom features to be used for alert context preparation.
+   */
+  alertContextPreparationSpec: ReliabilityMlAlertContextPreparationSpec
+
+  /**
+   * Set this field to `true` if a target variable must also be prepared. By default,
+   * the target is not evaluated because supervised learning is not the default approach
+   * to train any {@link MlProject}'s {@link MlModel}s. However, supervised learning is not
+   * disallowed. To experiment with such models, evaluate the target variable according to
+   * {@link targetPreparationSpec} by setting this field to `true`.
+   */
+  evaluateTarget: boolean = false
+
+  /**
+   * If set to `true`, {@link ReliabilityMlDatasetPreparationJob#map} will run computeMetrics() on each dataset and populate featureDataReports.
+   */
+  computeFeatureDataReports: boolean = true
+
+  /**
+   * The most common machine learning approach to assess `reliabilityRisk` {@link MlProject} is a
+   * semi-supervised (unsupervised also, to a lesser extent) framework. However, there
+   * are certain situations where supervised learning would work just as well or better.
+   * In these cases, use this field to specify information about the target variable.
+   */
+  targetPreparationSpec: ReliabilityMlTargetPreparationSpec
+
+  /**
+   * Once the features, target, and mask have all been evaluated, the immediate next step
+   * is to split the overall dataset into training and validation. Use this field to control
+   * how this train/val split happens.
+   */
+  trainValSplitSpec: ReliabilityMlTrainValSplitSpec
+
+  /**
+   * Specify all the information needed to run {@link DataValidationRun}
+   * It requires the root {@link DataValidationRuleset} to start the process
+   */
+  dataValidationSpec: ReliabilityDataValidationSpec
+
+  /**
+   * If a given asset id has a value (a run) in this map,
+   * then this run will be used to store the results of data preparation.
+   * If not, a new run will be created to store the results of data preparation.
+   */
+  datasetRunMap: map<string, ReliabilityMlDatasetPreparationRun>
+
+  /**
+   * Optionally, provide a filter for {@link ReliabilityAsset}s to be used as target assets.
+   * If this field is provided, a #datasetRunMap entry is created for each target asset
+   * if and only if the target asset is not already present in the #datasetRunMap.
+   */
+  targetAssetFilter: string serialized Filter
+
+  /**
+   * Field name containing the desired name for the {@link ReliabilityMlDatasetPreparationJob}.
+   */
+  jobName: string
+
+  /**
+   * Field name containing the desired id for the {@link ReliabilityMlDatasetPreparationJob}.
+   */
+  jobId: string
+
+  /**
+   * Specify whether the dataset preparations steps should be done in a sequential fashion,
+   * or whether the order in which the features and masks are prepared does not matter.
+   */
+  approach: string enum("unordered", "sequential") = "sequential"
+
+  /**
+   * If the specified {@link #approach} is `sequential`, then the masks specified in this field
+   * will be applied in the order specified here. The initial features {@link Feature.Set} and
+   * the previously prepared mask {@link Feature.Set}s are available when preparing a given mask.
+   *
+   * These masks will be used to mask the features data before the features are cleaned.
+   *
+   * If the specified {@link #approach} is `unordered`, then this field is ignored.
+   *
+   * Note that every mask must be specified in either this field or in {@link #masksAfterCleaning}, and
+   * must be specified only once.
+   */
+  masksBeforeCleaning: ?[string enum ReliabilityMlDatasetPreparationMaskCategory] = ["mask_IsAssetNotOperational", "mask_AssetEvent", "mask_PreAssetEvent", "mask_PostAssetEvent"]
+
+  /**
+   * If the specified {@link #approach} is `sequential`, then the masks specified in this field
+   * will be applied in the order specified here. These masks will be prepared after cleaning the
+   * features data, and the cleaned Feature.Set (as well as all previously prepared masks) are available
+   * when preparing a given mask in this list.
+   *
+   * If the specified {@link #approach} is `unordered`, then this field is ignored.
+   *
+   * Note that every mask must be specified in either this field or in {@link #masksBeforeCleaning}, and
+   * must be specified only once.
+   */
+  masksAfterCleaning: ?[string enum ReliabilityMlDatasetPreparationMaskCategory] = ["mask_AdHocTraining", "mask_AdHocInference", "mask_AlgorithmicallyComputed"]
+
+  /**
+   * If this map is non-empty, then {@link SensorDataReport}s will be generated
+   * and the thresholds specified will be applied for non-overridden included or excluded sensors
+   */
+  sensorDataReportThresholds: map<string, double>
+}

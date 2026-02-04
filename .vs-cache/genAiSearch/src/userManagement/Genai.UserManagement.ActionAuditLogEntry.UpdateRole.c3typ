@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An audit log entry for an update to a user's role.
+ */
+entity type Genai.UserManagement.ActionAuditLogEntry.UpdateRole extends Genai.UserManagement.ActionAuditLogEntry type key "GAI_UPR_AUDT_LG" {
+
+  action: ~ = Genai.UserManagement.ActionEnum.UPDATE_ROLE
+
+  /**
+   * The role(s) that were removed for the targetUser.
+   */
+  rolesRemoved: [string enum Genai.UserManagement.AssignableRoleEnum]
+
+  /**
+   * The new role(s) that were added for the targetUser.
+   */
+  rolesAdded: [string enum Genai.UserManagement.AssignableRoleEnum]
+}

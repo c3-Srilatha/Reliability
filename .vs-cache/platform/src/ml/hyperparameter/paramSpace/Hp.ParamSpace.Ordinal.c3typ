@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to define a ordinal hyperparameter space in a single variable by listing all elements.
+ * (See https://en.wikipedia.org/wiki/Statistical_data_type for a description of different statistical data types).
+ * Used by classes extending {@link Hpo.Algorithm}, to specify the hyperparameter search space.
+ */
+type Hp.ParamSpace.Ordinal mixes Hp.ParamSpace {
+
+  /**
+   * A list of values [X1, X2, ...] indicating the valid values for a hyperparameter.
+   * Values can be of type int or float.  Values will be sorted by value to establish order.
+   */
+  values: private ![int] | ![double]
+
+  /**
+   * Make an instance of a ordinal parameter space from a list of values.
+   */
+  fromValues: function(values: ![int] | ![double]): !Hp.ParamSpace.Ordinal py
+
+  isValidParam:  ~ py
+  sample:        ~ py
+  numCandidates: ~ py
+}

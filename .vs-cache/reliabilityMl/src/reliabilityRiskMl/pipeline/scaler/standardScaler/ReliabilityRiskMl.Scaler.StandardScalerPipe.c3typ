@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * `ReliabilityRiskMl.Scaler.StandardScalerPipe` is an extension of the `ReliabilityRiskMl.Scaler.Pipe`
+ * type that implements standard scaling for a given dataset. Standard scaling involves subtracting the
+ * mean and dividing by the standard deviation of each feature, transforming the data so that it has a
+ * mean of zero and a standard deviation of one.
+ *
+ * This scaling method is commonly used to normalize data, especially when features have different
+ * units or scales. It is particularly useful for models that are sensitive to the magnitude of the
+ * features, such as linear regression, support vector machines (SVMs), or neural networks.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Scaler.StandardScalerPipe extends ReliabilityRiskMl.Scaler.Pipe<Data, Data> type key 'SSP' {
+
+  /**
+   * `trainedResults` stores the parameters (mean and standard deviation) computed during training.
+   * These results are used to transform the data during the `doProcess` phase.
+   * The data is stored in a map with feature names as keys and their corresponding transformation
+   * values (e.g., mean and standard deviation) as an array of doubles.
+   */
+  trainedResults: private map<string, [double]> schema suffix 'SSTR'
+
+  /**
+   * `doProcess` is the method used to apply the transformation to the input data. After training
+   * the scaler, this function will scale the input data by applying the learned transformation.
+   * The `doProcess` function uses `py-data-science` for performing the transformation.
+   */
+  doProcess: ~ py-data-science
+
+  /**
+   * `doTrain` is the method used to train the scaler. It calculates the mean and standard deviation
+   * of the provided data and stores the results in `trainedResults`.
+   * This function is implemented in `py-data-science` and prepares the scaler for use.
+   */
+  doTrain: ~ py-data-science
+
+  /**
+   * `afterTrain` is a custom function that is called after the training process is complete.
+   * It can be used to perform any additional operations or customizations required after
+   * the scaler has been trained.
+   */
+  afterTrain: ~ py
+
+  /**
+   * `processFunc` defines the transformation method to be applied. In this case, it uses 'transform'
+   * to indicate that the data should be scaled using the learned mean and standard deviation.
+   * This setting ensures that the scaling process is consistent with the standardization approach.
+   */
+  processFunc: ~ = 'transform'
+}

@@ -1,0 +1,146 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies all of the props needed to render a simple node on a {@link UiSdlDiagram}.
+ */
+@typeScript
+type UiSdlDiagramSimpleNode mixes UiSdlDiagramNodeUi {
+
+  /**
+   * Class that name should be applied on the rendering layer of this node
+   */
+  className: const ~ = 'c3-sdl-diagram-node-simple'
+
+  /**
+   * The id of the shape being rendered
+   */
+  shapeId: string
+
+  /**
+   * Whether or not the node should be visible
+   */
+  visible: boolean = true
+
+  /**
+   * The title of the node. Usually a {@link Type} name.
+   */
+  title: string
+
+  /**
+   * The subtitle of the node. Rendered inline to the right of the title
+   */
+  subtitle: string
+
+  /**
+   * The {@link Translation} key for the node's subtitle tooltip
+   */
+  subtitleTooltipKey: string
+
+  /**
+   * The icon class of the node. Rendered inline to the left of the title
+   */
+  iconClass: string
+
+  /**
+   * The color class of the node
+   */
+  colorClass: string
+
+  /**
+   * The add ons for the node
+   */
+  errors: [string enum('BORDER', 'BACKGROUND', 'WARNING')]
+
+  /**
+   * A list of context menu items that will appear when the node is right-clicked
+   */
+  contextMenuItems: [UiSdlDiagramNodeContextMenuItem]
+
+  /**
+   * The current `scrollTop` value of the DOM element containing the nodes {@link #children}.
+   * This is used to preserve the scroll offset after moving/collapsing/expanding the node.
+   */
+  childContainerScrollTop: double
+
+  /**
+   * The function in charge of moving edges when expanded node fields are scrolled through.
+   */
+  moveEdgesOnScroll: any
+
+  /**
+   * The height of the node when rendered. Used to aid layout algorithms
+   */
+  height: int = 37
+
+  /**
+   * The width of the node when rendered. Used to aid layout algorithms
+   */
+  width: int = 230
+
+  /**
+   * The width of a minimized node
+   */
+  minifiedWidth: int = 37
+
+  /**
+   * The height of a minified node
+   */
+  minifiedHeight: int = 37
+
+  /**
+   * Height of the node in pixels when not expanded
+   */
+  collapsedHeight: int = 37
+
+  /**
+   * Height of the node in pixels when expanded. We need this to be accurate even when the node is collapsed
+   * so that edges are drawn in the correct place.
+   */
+  expandedHeight: int = 37
+
+  /**
+   * Spacing between child fields in pixels
+   */
+  spacingBetweenChildren: int = 4
+
+  /**
+   * Extra spacing in pixels between the first child field and the end of the un-expanded parent node
+   */
+  spacingBeforeChildren: int = 0
+
+  /**
+   * Spacing in pixels between the last child and the end of the expanded node
+   */
+  spacingAfterChildren: int = 8
+
+  /**
+   * Sets the maximum number of children displayed when expanded, which effectively determines the maximum node height
+   */
+  maximumChildrenDisplayed: int = 7
+
+  /**
+   * Sets border properties around the node
+   */
+  borderClass: string
+
+  /**
+   * Sets a background properties on the node
+   */
+  backgroundClass: string
+
+  /**
+   * Layers an icon on top of the node icon
+   */
+  layeredIconClass: string
+
+  /**
+   * Whether the shape is currently selected or not
+   */
+  selected: boolean
+}

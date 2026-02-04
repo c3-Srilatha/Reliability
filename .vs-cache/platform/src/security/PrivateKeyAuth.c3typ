@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generic type to support key-pair authentication for any connector using private keys
+ */
+// TODO: PLAT-131632: Refactor CryptoPrivateKey and merge PrivateKeyAuth into CryptoKey hierarchy
+type PrivateKeyAuth mixes ConfigChild, PrivateKeyAuthFields {
+
+  /**
+   * Create a PrivateKeyAuth from PEM content
+   */
+  createFromPem: function(privateKeyPem: !string,
+                          privateKeyPassphrase: string,
+                          pkcsFormat: !string enum PublicKeyCryptographyStandards,
+                          algorithm: string enum CryptoKeyAlgorithm = RSA): PrivateKeyAuth
+
+  /**
+   * Create a PrivateKeyAuth from a file path
+   */
+  createFromFile: function(filePath: !string,
+                           privateKeyPassphrase: string,
+                           pkcsFormat: !string enum PublicKeyCryptographyStandards,
+                           algorithm: string enum CryptoKeyAlgorithm = RSA): PrivateKeyAuth
+
+  /**
+   * Get the private key as Java PrivateKey object
+   */
+  nativePrivateKey: member function(): @java(class="java.security.PrivateKey") native
+
+  /**
+   * Validate the private key format and accessibility
+   */
+  validate: member function(): PrivateKeyAuth
+}

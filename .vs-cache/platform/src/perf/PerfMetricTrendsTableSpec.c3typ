@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The extended arguments to {@link PerfMetric#trendsTable trendsTable}.
+ *
+ * @see PerfMetric#trendsTable
+ */
+type PerfMetricTrendsTableSpec mixes PerfMetricTrendsSpec {
+
+  /**
+   * Include a basic style sheet for formatting the table.
+   */
+  styles: boolean = true
+
+  /**
+   * Include an introductory paragraph before the table.
+   */
+  intro: boolean = true
+
+  /**
+   * CSS class to associate with intro paragraph and table.
+   */
+  rootClass: string = 'trends'
+
+  /**
+   * If specified, the introductory paragraph with be generated with the specified id attribute.
+   */
+  introId: string
+
+  /**
+   * If specified, the trend table with be generated with the specified id attribute.
+   */
+  tableId: string
+
+  /**
+   * If true, generate a full HTML document, not just a `<div>`.
+   */
+  completeHtml: boolean
+
+  /**
+   * Whether and how sparklines are included in the table.
+   *  - `embedded` SVG charts inline
+   *  - `datauri` SVG charts encoded as a URI
+   *  - `text` single line of text characters
+   *  - `none` sparkline column is omitted
+   */
+  sparklines: string enum('embedded', 'datauri', 'text', 'none') = 'embedded'
+}

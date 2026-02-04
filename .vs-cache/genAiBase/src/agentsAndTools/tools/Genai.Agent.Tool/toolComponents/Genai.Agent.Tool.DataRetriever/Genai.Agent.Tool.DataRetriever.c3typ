@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A mixin type for tools that retrieve data. These can be standalone tools or those that logically work in two steps:
+ * first retrieving data and then formatting it to pass to the llm for a human-readable answer.
+ */
+abstract type Genai.Agent.Tool.DataRetriever {
+    /**
+     * Extracts the data that the tool would use to generate a human-readable answer.
+     * As part of its execution, retrieveData should create and persist {@link Genai.Query.Result.Source.AbstractSourceType}[sources] and
+     * corresponding {@link Genai.Query.ResultToSourceRelation}[relations] that refer to the retrieved data.
+     * @param spec
+     *           A spec containing all relevant parameters for retrieving the data.
+     * @return The data that the tool would use to generate a human-readable answer.
+     */
+    retrieveData: abstract member function(spec: !Genai.Agent.Tool.DataRetriever.RetrieveDataSpec): !Genai.Agent.Tool.DataRetriever.Output
+
+    /**
+     * Formats an output from this tool's #retrieveData method into a string that could be passed to an llm answer.
+     * @param spec
+     *           The spec for formatting the data.
+     * @return A string that could be passed to an llm to answer the user's query.
+     */
+    formatData: abstract member function(spec: !Genai.Agent.Tool.DataRetriever.FormatDataSpec): !string
+
+    /**
+     * Perform any postprocessing on an {@link Genai.Query.Result} necessary for this tool
+     */
+    postProcessQueryResult: member function(result: !Genai.Query.Result): !Genai.Query.Result js-rhino
+}

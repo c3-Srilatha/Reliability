@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 Interface to a Ray Actor
+ */
+type RayActor mixes Named {
+
+  /**
+   * Get an existing actor by name
+   */
+  forName: ~: RayActor py-modin-server
+
+  /**
+   * Kills the current actor
+   */
+  kill: member function(): boolean py-modin-server
+
+  /**
+   * Dispatch a method to the Ray Actor class
+   */
+  dispatch: inline member function(method: !string,
+                                   materialize: boolean,
+                                   args: [native],
+                                   kwargs: Map<string, native>): native py-modin-server
+}

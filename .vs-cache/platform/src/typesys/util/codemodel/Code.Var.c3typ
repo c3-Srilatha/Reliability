@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "variable" represents a single variable declaration.
+ *
+ * @see Code.Assignment
+ * @see Code.FieldRef
+ */
+@code(py="none")
+type Code.Var mixes Code.Stmt, Code.WithName, Code.WithMods {
+
+  /**
+   * The type of the variable. This is generally required by Java and unsupported in scripting languages.
+   */
+  varType: member function(): Code.TypeBase
+
+  /**
+   * The initial value of the variable.
+   */
+  init: member function(): Code.Expr
+
+  /**
+   * This supports the Java `var` keyword that doesn't have an explicit type, but requires type inferencing.
+   * If true, then no #varType should be specified.
+   *
+   * ```java
+   * var x = 100;
+   * ```
+   */
+  inferenced: member function(): boolean
+
+  /**
+   * This supports the JavaScript `var` keyword that creates a variable that is "hoisted" to the top of the current
+   * function scope. (Ignoring all nested blocks that would create scopes for `let` or `const`.)
+   *
+   * ```js
+   * var x;
+   * ```
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Glossary/Hoisting
+   */
+  hoisted: member function(): boolean
+
+  _name: !~
+
+  @code(js="none")
+  _varType: private Code.TypeBase
+
+  _init: private Code.Expr
+
+  @code(java="10", js="none")
+  _inferenced: private boolean
+
+  @code(java="none")
+  _hoisted: private boolean
+}

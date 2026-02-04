@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link Engine.InitialState.Deployment} and {@link Engine.InitialState.DeploySpec}
+ */
+@beta
+type WithInitialState.Engine.Deployment<E: WithInitialState.Engine> mixes Engine.Deployment<E: WithInitialState.Engine> {
+
+  /**
+   * Map specifying which objects' state initialized in which {@link Action.Engine}.
+   *
+   * key - The {@link Action.Engine engine} in which {@link WithInitialState object}'s state was initialized.
+   * value - The list of {@link WithInitialState object}s initialized in the {@link Action.Engine engine}.
+   */
+  initialStateObjsPerActionEngine: !?map<string serialized Action.Engine, ![!WithInitialState]>
+
+  /**
+   * Implement translation form {@link WithInitialState.Engine.DeploySpec#initialStateObjsPerRuntime} to
+   * {@link WithInitialState.Engine.Deployment#initialStateObjsPerActionEngine}.
+   */
+  fromDeploySpec: ~
+}

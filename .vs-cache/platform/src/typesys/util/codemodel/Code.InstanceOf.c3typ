@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "instanceof" represents a test of an expression yielding a value of a certain type.
+ *
+ * ```js
+ * x instanceof DateTime
+ * ```
+ *
+ * ```py
+ * isinstance(x, c3.DateTime)
+ */
+type Code.InstanceOf mixes Code.Expr {
+
+  /**
+   * The expression to be tested.
+   */
+  expr: member function(): !Code.Expr
+
+  /**
+   * The type to test for.
+   */
+  testType: member function(): Code.Class
+
+  /**
+   * For Java, instanceof can have a "binding variable" that is set to the value cast automatically to the #testType
+   * if the instanceof matches.
+   *
+   * @see https://docs.oracle.com/en/java/javase/14/language/pattern-matching-instanceof-operator.html
+   */
+  var: member function(): string
+
+  _expr:     private !Code.Expr
+  _testType: private Code.Class
+
+  @code(js="none", py="none")
+  _var: private string
+}

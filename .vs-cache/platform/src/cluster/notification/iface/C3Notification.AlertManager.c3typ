@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface to allow callers to retrieve Application alerts
+ */
+abstract type C3Notification.AlertManager mixes Microservice.Iface, Singleton {
+
+  /**
+   * Adds basic skeleton of {@link App.Alert.Rule} to the notificationService to start tracking.
+   * The rule will be associated with the calling App.
+   */
+  addShadowRules: private abstract function(rules: [App.Alert.Rule])
+
+  /**
+   * Removes shadow {@link App.Alert.Rule} for notificationService to track.
+   * Will only be removed if the rule is associated with the calling App.
+   * @param removeAlerts
+   *            Whether or not to remove the Alerts associated with the rule
+   */
+  removeShadowRules: private abstract function(rules: [string], removeAlerts: boolean)
+
+  /**
+   * If an {@link App.Alert.Rule} is modified, the corresponding shadow rule will also be updated. If a corresponding
+   * shadow rule does not exist, it will create a new one.
+   */
+  updateShadowRules: private abstract function(rules: [App.Alert.Rule])
+
+  /**
+   * Fetches all App.Alert for the calling app. Order is determined by {@link App.Alert.FetchSpec#alertFetchSpec#order}.
+   */
+  fetchAlerts: abstract function(spec: App.Alert.FetchSpec): App.Alert.FetchResult<App.Alert>
+
+  /**
+   * Fetches all App.Alert for the calling App but groups the output by App.Alert.Rule. Order is determined by
+   * {@link App.Alert.FetchSpec#ruleFetchSpec#order}
+   */
+  fetchGroupedAlerts: abstract function(spec: App.Alert.FetchSpec): App.Alert.FetchResult<App.Alert.Rule>
+
+  /**
+   * Constructs {@link App.Alert.FetchSpec} and calls {@link #fetchGroupedAlerts} to fetch all App.Alert grouped by
+   * App.Alert.Rule to display in UI.
+   * See {@link App.Alert.FetchSpec.Ui}.
+   */
+  fetchGroupedAlertsForUi: private abstract function(spec: App.Alert.FetchSpec.Ui)
+                                              : App.Alert.FetchResult<App.Alert.Rule>
+
+  /**
+   * Fetches App.Alert for the given App. Order is determined by {@link App.Alert.FetchSpec#alertFetchSpec#order}.
+   */
+  @action(group+='cluster-admin')
+  fetchAlertsFor: abstract function(appId: !string serialized AppId,
+                                    spec: App.Alert.FetchSpec): App.Alert.FetchResult<App.Alert>
+
+  /**
+   * Fetches App.Alert for the given App but groups the output by App.Alert.Rule. Order is determined by
+   * {@link App.Alert.FetchSpec#ruleFetchSpec#order}
+   */
+  @action(group+='cluster-admin')
+  fetchGroupedAlertsFor: abstract function(appId: !string serialized AppId,
+                                           spec: App.Alert.FetchSpec): App.Alert.FetchResult<App.Alert.Rule>
+
+  /**
+   * Fetches all alerts across the cluster
+   */
+  @action(group+='cluster-admin')
+  fetchClusterAlerts: abstract function(spec: App.Alert.FetchSpec): map<string, [App.Alert]>
+
+  /**
+   * Removes all NotificationService.Alert and NotificationService.Alert.Rule of terminated apps.
+   */
+  clearShadowAlertsAndRules: abstract function()
+}

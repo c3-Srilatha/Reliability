@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Entity type `RecursiveLOVItem` represents a recursive list of values (LOV) item that can have
+ * a parent and children of the same type. The recursive structure allows nesting of LOV items.
+ * The parametric type T represents the type of the parent and children items.
+ */
+entity type RecursiveLOVItem<T> extends LOVItem type key 'RLOV' {
+
+  /**
+   * `parent`: Represents the parent item of the current LOV item.
+   * It is of type `T` and defines a relationship between items in the recursive structure.
+   */
+  parent:   T
+
+  /**
+   * `children`: Represents the child items of the current LOV item.
+   * It is an array of items of type `T`, allowing for recursive nesting.
+   */
+  children: [T](parent)
+}

@@ -1,0 +1,24 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A mixin native remix type that allows for the use of a pandas DataFrame that needs to be persisted for later use.
+ */
+native py remix type Genai.WithDataPersisted mixes PyReprProtocol {
+  /**
+   * Sets the #persistedData field with a Data.Persisted instance created from the provided pandas DataFrame
+   */
+  with_df: member function (df: !native): !mixing Genai.WithDataPersisted py
+
+  /**
+   * Returns the native pandas DataFrame for this instance, using the in-memory `df` if set, and falling back to
+   * #persistedData if not.
+   */
+  get_df: inline member function(): native py
+}

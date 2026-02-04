@@ -1,0 +1,245 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The result of information collection for all packages based on #mode.
+ *
+ * Some of these methods may seem redundant with the {@link TypeMeta} methods, but they're
+ * necessary because when comparing two [versions](SemanticVersion) of an {@link App}, the
+ * complete Type system for each version might not be available, so we can only rely on the
+ * declaration. For example, let's say in version 1.0.0, there was `TypeA.fieldA`, but `TypeA`
+ * was removed in 2.0.0. If we tried to call `(FieldType) fieldA.parentType()` in 2.0.0, it
+ * would fail because `TypeA` doesn't exist.
+ *
+ * This also enables us to compare two versions of an {@link App} without needing to deploy
+ * that {@link App}.
+ *
+ * @see BaseCodeAnalyzer#collectAppInfo
+ */
+type BaseCodeAnalysis.AppInfo mixes Result {
+
+  /**
+   * The timestamp when the information was collected.
+   */
+  timestamp: !utc datetime = now()
+
+  /**
+   * The mode for information collection from {@link BaseCodeAnalyzer.CollectAppInfoSpec#mode}.
+   */
+  mode: !string enum BaseCodeAnalyzer.CollectAppInfoMode
+
+  /**
+   * The {@link App#serverVersion} that the app was deployed with during collection.
+   */
+  serverVersion: !string serialized SemanticVersion
+
+  /**
+   * The names of all packages that were collected by {@link BaseCodeAnalyzer#collectAppInfo},
+   * ordered from root package to farthest dependency.
+   *
+   * This is different from #pkgDependencyInfos, which contains the information for
+   * _all packages_ in the {@link App} regardless of whether they were collected.
+   *
+   * @see BaseCodeAnalyzer#getPkgNamesToCollect
+   */
+  collectedPkgNames: [!string]
+
+  /**
+   * The name of the {@link App#rootPkg} when the information was collected.
+   */
+  rootPkgName: inline property(): !string py-server | js-rhino
+
+  /**
+   * @return The {@link App#rootPkgVersion} that the app was deployed with during collection.
+   */
+  rootPkgVersion: inline property(): !string serialized SemanticVersion py-server | js-rhino
+
+  /**
+   * A map of {@link Pkg#name}s to individual information about each package in the
+   * {@link App}'s dependencies.
+   */
+  pkgDependencyInfos: !map<!string, !BaseCodeAnalysis.PkgDependencyInfo>
+
+  /**
+   * The {@link TypeMeta} that was collected for this {@link App}, keyed by Type name.
+   */
+  typeInfos: map<!string, !BaseCodeAnalysis.TypeInfo>
+
+  /**
+   * Function to generate a deterministic [artifact](ArtifactHub.Artifact) ID for a
+   * given package and [version](SemanticVersion) to be used when the result of #toFile
+   * is stored in a remote repository / hub.
+   *
+   * @param rootPkgName
+   *           The name of the root {@link Pkg} to generate the artifact ID for.
+   * @param semanticVersion
+   *           The [version](SemanticVersion) of `packageName` to generate the artifact
+   *           ID for. The [pre-release components](SemanticVersion#preReleaseVersion)
+   *           and [build metadata](SemanticVersion#buildMetadata) are ignored.
+   * @return A deterministic artifact ID for the given {@link Pkg} and [version](SemanticVersion).
+   */
+  artifactIdFor: inline function(
+    rootPkgName: !string,
+    semanticVersion: !string serialized SemanticVersion
+  ): !string js-rhino
+
+  fromJsonString: ~ js-rhino
+
+  /**
+   * Loads a {@link BaseCodeAnalysis.AppInfo} object from a zipped JSON file.
+   *
+   * @param file
+   *           The zipped JSON file to load the {@link BaseCodeAnalysis.AppInfo} from.
+   *           This file is usually generated through {@link BaseCodeAnalyzer#collectAppInfoAndZip}.
+   * @return The {@link BaseCodeAnalysis.AppInfo} object loaded from the file.
+   */
+  fromFile: function(file: File): mixing BaseCodeAnalysis.AppInfo js-rhino
+
+  /**
+   * Function to create a `.zip` file from the current **BaseCodeAnalysis.AppInfo** instance.
+   * To download this file through the C3 AI static console, use the following snippet:
+   *
+   * ```javascript
+   * function download(file) {
+   *   const link = document.createElement('a');
+   *   link.download = file.fileName();
+   *   link.href = file.apiEndpoint('GET', true);
+   *   document.body.appendChild(link);
+   *   link.click();
+   *   document.body.removeChild(link);
+   *   delete link;
+   * }
+   *
+   * const zipFile = BaseCodeAnalyzer.collectAppInfoAndZip(...);
+   * download(zipFile);
+   * ```
+   *
+   * @return A temporary `.zip` file containing the compressed **BaseCodeAnalysis.AppInfo**
+   *         instance. This file is automatically deleted 2 hours after creation.
+   */
+  toFile: member function(): !File js-rhino
+
+  /**
+   * Method to determine if a given Type or {@link DeclaredFieldType} is persistable.
+   *
+   * A Type is persistable if it's [declared an entity Type](TypeMeta#declaredEntity) or
+   * it [extends another Type](TypeMeta#declaredExtendsRefType) (Types can be declared without
+   * the `entity` keyword but still extend another Type, which makes them persistable).
+   *
+   * A field is persistable if its parent Type is persistable and **none** of the following
+   * are true:
+   *
+   *   - It's a {@link MethodType} (even {@link LambdaType}s can be persisted).
+   *   - It's declared as [not persistable](DeclaredFieldType#notPersistable).
+   *   - It's [read calculated](DeclaredFieldType#calcExpr).
+   *   - It's [translated by](DeclaredFieldType#translatedBy) another field.
+   *   - It's a [constant](DeclaredFieldType#constant).
+   *   - Its parent Type is a [compact Type](Ann.Db#compactType) and it's either [name](Persistable#name),
+   *     [meta](Persistable#meta), or [versionEdits](Persistable#versionEdits).
+   *
+   * @param typeInfo
+   *           The {@link TypeMeta} to check. If `fieldMeta` is provided, this is its parent Type.
+   * @param fieldMeta
+   *           If provided, checks if the {@link DeclaredFieldType} is persistable instead
+   *           of the parent Type.
+   * @return True if the Type or field is persistable, false otherwise.
+   */
+  // TODO: ENGR-21399 Investigate storing backward deps to check if a persistable Type mixes this one.
+  isPersistable: inline member function(
+    typeInfo: !BaseCodeAnalysis.TypeInfoBase,
+    fieldMeta: DeclaredFieldType
+  ): !boolean js-rhino
+
+  /**
+   * Helper function to get a list of all {@link DeclaredFieldType}s for a given Type
+   * name (_including its mixins_).
+   *
+   * @param typeName
+   *           The name of the Type to get the fields for.
+   * @param includeImplicitMixins
+   *           There are a number of Types that are implicitly mixed into all Types through
+   *           {@link Obj} for all Types and {@link Persistable} for entity Types. Fields
+   *           from these implicit mixins are not included by default, but can be included
+   *           by setting this parameter to `true`.
+   * @return A list of all {@link DeclaredFieldType}s along with their declaring Type
+   *         name and package.
+   */
+  declaredFieldInfos: inline member function(
+    typeName: !string,
+    includeImplicitMixins: boolean = false
+  ): [BaseCodeAnalysis.FieldInfo] py-server
+
+  /**
+   * Helper function to get a single _fully-resolved_ {@link DeclaredFieldType} along with
+   * its declaring Type name and package for a given Type name (_including its mixins_).
+   *
+   * @param typeName
+   *           The name of the Type to get the field for.
+   * @param fieldName
+   *           The name of the field to retrieve.
+   * @return The _fully-resolved_ {@link DeclaredFieldType} along with its declaring Type
+   *         name and package, or null if the field doesn't exist.
+   */
+  fieldInfo: inline member function(
+    typeName: !string,
+    fieldName: !string
+  ): BaseCodeAnalysis.FieldInfo py-server
+
+  /**
+   * Same as #fieldInfo, but returns the _original_ declaration of the field on its base Type.
+   *
+   * ```type
+   * type A {
+   *   name: string
+   * }
+   * ```
+   *
+   * ```type
+   * type B mixes A {
+   *   name: !~
+   * }
+   * ```
+   *
+   * In this example, `fieldInfo('B', 'name')` would return the field from `B`, while
+   * `firstFieldInfo('B', 'name')` would return the field from `A`.
+   *
+   * @param typeName
+   *           The name of the Type to get the field for.
+   * @param fieldName
+   *           The name of the field to retrieve.
+   * @return The original _fully-resolved_ {@link DeclaredFieldType} along with its declaring
+   *         Type name and package, or null if the field doesn't exist.
+   */
+  firstFieldInfo: inline member function(
+    typeName: !string,
+    fieldName: !string
+  ): BaseCodeAnalysis.FieldInfo py-server
+
+  /**
+   * Detect whether a given Type, field, or method was marked as [@deprecated](Ann.Deprecated)
+   * and if so, attempt to extract the new name of the Type, field, or method from the
+   * [details](Ann.Deprecated#details) field.
+   *
+   * If no new name is found or multiple new names are found, no rename will be assigned.
+   * If the linked Type, field, or method is not present in #typeInfos, no rename will be assigned.
+   *
+   * @param typeMeta
+   *           If this is the only argument provided, the Type itself will be checked. Otherwise,
+   *           this acts as the default Type for a renamed `fieldMeta`.
+   * @param fieldMeta
+   *           If provided, check this specific field or method for deprecation.
+   * @return All revision details for the Type, field, or method if it was deprecated, otherwise null.
+   *
+   * @see BaseCodeAnalysis.VersionDiff#detectExplicitRevisions
+   */
+  extractRevisionDetails: inline member function(
+    typeMeta: !TypeMeta,
+    fieldMeta: DeclaredFieldType
+  ): BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase.RevisionDetails py-server
+}

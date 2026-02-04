@@ -1,0 +1,159 @@
+@beta
+abstract type TimeseriesStdLib<E> mixes Value {
+
+  iter:              abstract inline member function(): Iterator<E>
+  _iter_:            private abstract inline member function(): native
+  _length_:          private abstract inline member function(): !int
+  size:              abstract inline property(): !int
+  isEmpty:           abstract inline member function(): boolean
+  collect:           abstract member function(limit: int): [E]
+  collectArrays:     abstract member function<T>(limit: int): [[T]]
+  abs:               abstract member function(): Timeseries<E>
+  aggImplementation: abstract member function<R>(spec: !?AggSpec, op: !string enum AggOp): R
+  aggImplementation: abstract member function<R>(spec: !?AggSpec, aggregator: !lambda(a: R, b: E): R): R
+
+  aggImplementation: abstract member function<T, R>(spec: !?AggSpec,
+                                                    folder: !lambda(accumulator: T, e: E): T,
+                                                    aggregator: !lambda(aggregated: R, e: T): R): R
+
+  sumDbl:            abstract member function(): !double
+  sumDiff:           abstract member function(absoluteValues: boolean): !double
+  cusum:             abstract member function(threshold: double = 1, drift: double = 0): [int]
+  normalize:         abstract member function(): Timeseries<E>
+  at:                abstract member function(index: !int): E
+  pluck:             abstract member function<T>(fieldPath: !?string serialized FieldPath,
+                                                 vtOverride: ValueType): Timeseries<T>
+  first:             abstract member function(): E
+  first:             abstract member function(n: !int): Timeseries<E>
+  first:             abstract member function(test: !lambda(e: E): boolean): E
+  firstNotNull:      abstract member function(): !?E
+  firstNotNull:      abstract member function<T>(mapper: !lambda(e: E): T): !?T
+  firstNotEmpty:     abstract member function(): !E
+  firstNotEmpty:     abstract member function<T>(mapper: !lambda(e: E): T): !T
+  last:              abstract member function(): E
+  last:              abstract member function(n: !int): Timeseries<E>
+  last:              abstract member function(test: !lambda(e: E): boolean): E
+  lastNotNull:       abstract member function(): !?E
+  lastNotNull:       abstract member function<T>(mapper: !lambda(e: E): T): !?T
+  lastNotEmpty:      abstract member function(): !E
+  lastNotEmpty:      abstract member function<T>(mapper: !lambda(e: E): T): !T
+  minImplementation: abstract member function(spec: AggSpec): E
+  minImplementation: abstract member function(comparator: !lambda(a: E, b: E): @comparator int32): E
+  minBy:             abstract member function(value: !lambda(e: E): any): E
+  maxImplementation: abstract member function(spec: AggSpec): E
+  maxImplementation: abstract member function(comparator: !lambda(a: E, b: E): @comparator int32): E
+  maxBy:             abstract member function(value: !lambda(e: E): any): E
+  count:             abstract member function<R>(spec: AggSpec): R
+  sumImplementation: abstract member function<R>(spec: AggSpec): R
+  allImplementation: abstract member function<R>(spec: AggSpec): R
+  prod:              abstract member function<R>(spec: AggSpec): R
+  avg:               abstract member function<R>(): R
+  avgDbl:            abstract member function(): !double
+  median:            abstract member function<R>(): R
+  medianDbl:         abstract member function(): !double
+  percentile:        abstract member function<R>(percentile: !double): R
+  percentileDbl:     abstract member function(percentile: !double): !double
+  stddev:            abstract member function<R>(): R
+  stddevDbl:         abstract member function(): !double
+  variance:          abstract member function<R>(): R
+  varianceDbl:       abstract member function(): !double
+  aggDbl:            abstract member function(aggFunc: !string enum AggOp, percentile: double): !double
+  round:             abstract member function(decimals: int): Timeseries<E>
+  invert:            abstract member function(): Timeseries<E>
+  only:              abstract member function(failIfNotSingleton: boolean): E
+  contains:          abstract member function(element: !?any): boolean
+  containsAll:       abstract member function(elements: E ...): boolean
+  containsAll:       abstract member function(c: !?Collection<E>): boolean
+  containsAll:       abstract member function(predicate: !lambda(e: E): boolean): boolean
+  containsAny:       abstract member function(predicate: !lambda(e: E): boolean): boolean
+  findAny:           abstract member function(predicate: !lambda(e: E): boolean): E
+  findAny:           abstract member function(fields: !?map<string, any>): E
+  anyNotNull:        abstract member function(): !?E
+  anyNotNull:        abstract member function<T>(mapper: !lambda(e: E): T): !?T
+  anyNotEmpty:       abstract member function(): !E
+  anyNotEmpty:       abstract member function<T>(mapper: !lambda(e: E): T): !T
+  each:              abstract member function(action: !lambda(e: E))
+  eachWhile:         abstract member function(action: !lambda(e: E): boolean): boolean
+  mapToSame:         abstract member function(mapper: !lambda(e: E): E): Timeseries<E>
+  map:               abstract member function<T>(mapper: !lambda(e: E): T): Timeseries<T>
+  mapToStr:          abstract member function(mapper: !lambda(e: E): string): Timeseries<string>
+  mapTo:             abstract member function<T>(elementType: !ValueType, mapper: !lambda(e: E): T): Timeseries<T>
+  flatMapToSame:     abstract member function(mapper: !lambda(e: E): CollectionStdLib<E>): Timeseries<E>
+  flatMap:           abstract member function<T>(mapper: !lambda(e: E): CollectionStdLib<T>): Timeseries<T>
+
+  flatMapTo: abstract member function<T>(elementType: !ValueType,
+                                         mapper: !lambda(e: E): CollectionStdLib<T>): Timeseries<T>
+
+  flatMapRecursive: abstract member function<I>(toInters: !lambda(e: E): CollectionStdLib<I>,
+                                                fromInter: !lambda(i: I): E): Timeseries<E>
+
+  fold:     abstract member function<T>(folder: !lambda(e: E, accumulator: T): T): T
+  fold:     abstract member function<T>(initial: !?T, folder: !lambda(e: E, accumulator: T): T): T
+  compact:  abstract member function(): Timeseries<E>
+  unique:   abstract member function(): Timeseries<E>
+  uniqueBy: abstract member function(key: lambda(e: E): any): Timeseries<E>
+  filter:   abstract member function(predicate: !lambda(e: E): boolean): Timeseries<E>
+  filter:   abstract member function(filter: !?string serialized Expr): Timeseries<E>
+  filter:   abstract member function(fields: !?map<string, any>): Timeseries<E>
+
+  fillMissingBy: abstract member function(method: string enum FillMethod = PREVIOUS,
+                                          spec: FillMissingSpec): Timeseries<E>
+
+  fillMissing:        abstract member function(value: !any, spec: FillMissingSpec): Timeseries<E>
+  fieldNames:         abstract member function(): [string]
+  fieldValueType:     abstract member function(field: !string): ValueType
+  reject:             abstract member function(predicate: !lambda(e: E): boolean): Timeseries<E>
+  include:            abstract member function(include: !?string serialized Include): Timeseries<E>
+  include:            abstract member function(positions: !Collection<int>): Timeseries<E>
+  exclude:            abstract member function(exclude: !?string serialized Include): Timeseries<E>
+  replaceByPredicate: abstract member function(e: !?E, predicate: !lambda(e: E): boolean): Timeseries<E>
+  sorted:             abstract member function(descending: boolean): Timeseries<E>
+  sorted:             abstract member function(comparator: !lambda(a: E, b: E): @comparator int32): Timeseries<E>
+
+  sorted: abstract member function(descending: !boolean,
+                                   comparator: !lambda(a: E, b: E): @comparator int32): Timeseries<E>
+
+  sorted:                  abstract member function(order: !?string): Timeseries<E>
+  sortedBy:                abstract member function(key: !lambda(e: E): any): Timeseries<E>
+  sortedBy:                abstract member function(descending: !boolean, key: !lambda(e: E): any): Timeseries<E>
+  sortedIndex:             abstract member function(element: !E, value: !lambda(e: E): any): !int
+  sortedIndex:             abstract member function(element: !E, fieldName: !string): !int
+  batch:                   @java(returnWildcardVarBindings=true) abstract member function(batchSize: int)
+                                                                                   : stream<Timeseries<E>>
+  partition:               abstract member function(partitioner: !lambda(e: E): boolean): map<boolean, [E]>
+  countBy:                 abstract member function(key: !lambda(e: E): string): map<string, int>
+  countBy:                 abstract member function<T>(keyType: !ValueType, key: !lambda(e: E): T): map<T, int>
+  every:                   abstract member function(predicate: !lambda(e: E): boolean): boolean
+  elementCartesianProduct: abstract member function<T>(): [[T]]
+  flatten:                 abstract member function<T>(shallow: boolean): Timeseries<T>
+  flatten:                 abstract member function<T>(depth: !int, include: string serialized Include): Timeseries<T>
+  sample:                  abstract member function(spec: SampleSpec): Timeseries<E>
+  slice:                   abstract member function(fromPos: !int, toPos: int, stride: int): Timeseries<E>
+  slice:                   abstract member function(positions: !?Collection<int>): Timeseries<E>
+  sliceByKey:              abstract member function(keys: !?Collection<any>): Timeseries<E>
+  sliceByKey:              abstract member function(secondaryIndex: !string, keys: !?Collection<any>): Timeseries<E>
+  summarize:               abstract member function(spec: DigestSpec): !Digest<any, Digest, DigestBuilder>
+  downsample:              abstract member function(spec: !DownsampleSpec): Timeseries<E>
+  leastSquares:            abstract member function(): !LeastSquaresResult
+  rollingDiff:             abstract member function(stride: int = 1): Timeseries<E>
+  pctChange:               abstract member function(stride: int = 1): Timeseries<E>
+  unaryOp:                 abstract member function(op: !string enum UnaryOp): Timeseries<E>
+  shape:                   abstract member function(): [int]
+  toObj:                   abstract member function(): Obj
+  fetch:                   abstract member function(spec: FetchSpec): Timeseries<E>
+
+  largest: abstract member function(n: !int,
+                                    comparator: lambda(a: E, b: E): @comparator int32,
+                                    keep: string enum KeepOp): [E]
+
+  histogram:          abstract member function(spec: HistogramSpec): !Histogram<any, any, HistogramBuilder>
+  neg:                abstract member function(): Timeseries<E>
+  approxMostFrequent: abstract member function(spec: CountMinSketchSpec): map<string, int>
+  timeseries:         abstract member function<R>(spec: DataTimeseriesSpec): Timeseries<R>
+
+  timeseries: abstract member function<R>(tsFieldSpec: !map<string, TimeseriesFieldSpec>,
+                                          spec: TimeseriesSpec): Timeseries<R>
+
+  elementType: abstract member function(): !ValueType
+  stream:      abstract member function(): stream<E>
+}

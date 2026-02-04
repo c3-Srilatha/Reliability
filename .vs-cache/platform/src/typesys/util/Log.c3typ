@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Namespace for all inner types for log-reading. For log-writing, see {@link Logger}.
+ */
+type Log {
+
+  /**
+   * Read error exceptions from openSearch and summarize for a given interval
+   */
+  summaryForInterval: function(begin: !datetime, end: !datetime, limit: int = 10000): string py-data-server
+
+  /**
+   * Get Summary of exceptions for a duration
+   */
+  summary: function(period: string serialized Duration, limit: int = 10000): string py-data-server
+
+  /**
+   * Return a reference to a specific log file.
+   */
+  file: function(file: !File): !Log.File
+
+  /**
+   * Return a reference to a specific log file.
+   */
+  file: function(file: !string serialized FileUrl): !Log.File
+}

@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type containing functions for all write operations (e.g. create/update/upsert/merge/remove and all of their batch
+ * equivalents).
+ */
+type Writable mixes Upsertable {
+
+  /**
+   * Removes an instance of a C3 type.  If the operation fails an exception will be thrown.
+   *
+   * If archiving is enabled, the instance will not be physically removed.  Instead it will be serialized to XML and
+   * saved in the archive table for the type.  Archived entries can be recovered by calling the {@link #unremove}
+   * function.
+   *
+   * @param spec
+   *         Various parameters that control the operation of function.
+   * @return True if the obj existed and was deleted and false if it didn't exist.  Otherwise an exception is thrown
+   *
+   * @see Ann.Db#archive
+   */
+  @action(group+='delete')
+  remove: abstract member function(spec: UpsertSpec): boolean
+
+  /**
+   * Removes multiple instances of a C3 type. If the operation fails and {@link UpsertSpec#dontThrowOnBatchError} is not
+   * specified (the default), then a C3BatchException will be thrown.  Otherwise {@link ObjList#errors errors} will be
+   * reported in the returned {@link ObjList}.
+   *
+   * If archiving is enabled, the instances will not be physically removed.  Instead they will be serialized to XML and
+   * saved in the archive table for the type.  Archived entries can be recovered by calling the {@link #unremove}
+   * function.
+   *
+   * @param objs
+   *         Objs to remove.
+   * @param spec
+   *         Various parameters that control the operation of function.
+   * @return List any errors encountered (if {@link UpsertSpec#dontThrowOnBatchError} is true.
+   *
+   * @see Ann.Db#archive
+   */
+  @action(group+='delete')
+  removeBatch: abstract function(objs: !?[mixing Writable], spec: UpsertSpec): ObjList<mixing Writable>
+
+  /**
+   * Removes multiple instances of a C3 type based.
+   *
+   * If archiving is enabled, the instances will not be physically removed.  Instead they will be serialized to JSON and
+   * saved in the archive table for the type.  Archived entries can be recovered by calling the {@link #unremove}
+   * function.
+   *
+   * For kv types, data that is currently being compacted will not be removed and thus will not guarantee
+   * that all data will be removed. If you need a strong guarantee, use {@link clearCollection} instead.
+   *
+   * @param spec
+   *         Spec controlling the operation
+   * @param confirm
+   *         Must be specified as true.  Otherwise request will be rejected.
+   * @return The number of objs removed.  Note that under some circumstances the total number removed may not be
+   *         known (e.g. when {@link RemoveAllSpec#allowMultiProcessing spec.allowMultiProcessing} is true and the
+   *         connection can't return the value).  In those cases, this will return -1.
+   */
+  @action(group+='delete')
+  removeAll: abstract function(spec: RemoveAllSpec, confirm: !boolean): !int
+
+  /**
+   * Replaces all instances of a C3 type. If the operation fails errors will be reported in the returned {@link ObjList}.
+   *
+   * @param objs
+   *         Updated or new objs.  Any existing objs that aren't included in objs will be removed.
+   * @param spec
+   *         Various parameters that control the operation of function.
+   * @return List of created and updated objs, number of objs removed and any errors encountered.  If an include spec is
+   *         specified in the {@link UpsertSpec#include} field, then the returned objs will have only those fields
+   *         populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='delete')
+  replace: abstract function(objs: !?[mixing Writable], spec: UpsertSpec): ObjList<mixing Writable>
+
+  update:               abstract ~
+  upsert:               abstract ~
+  merge:                abstract ~
+  touch:                abstract ~
+  updateBatch:          abstract ~
+  updateObjs:           abstract ~
+  upsertBatch:          abstract ~
+  upsertObjs:           abstract ~
+  mergeBatch:           abstract ~
+  mergeObjs:            abstract ~
+  mergeAll:             abstract ~
+  create:               abstract ~
+  createBatch:          abstract ~
+  touchBatch:           abstract ~
+  createBatchObjStream: abstract ~
+}

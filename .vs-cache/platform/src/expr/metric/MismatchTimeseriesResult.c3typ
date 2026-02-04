@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result type for @see detectMismatch function. It contains
+ * 1. The metric for which timeseries results mismatch
+ * 2. Source Id for the mismatched timeseries
+ * 3. Common Part of the timeseries 1 with its original query range
+ * 4. Common Part of the timeseries 2 with its original query range
+ * Only overlapping time period is returned for both timeseries since it is the part when one would expect the
+ * values to be same irrespective of time-period.
+ */
+type MismatchTimeseriesResult {
+
+  /**
+   * The metric for which timeseries results mismatch. Simple or Compound
+   */
+  metric: Metric
+
+  /**
+   * Source Id for the mismatched timeseries
+   */
+  srcId: string
+
+  /**
+   * Field that differs in value
+   */
+  errField: string
+
+  /**
+   * Common Part of the timeseries 1 with its original query range
+   */
+  ts1: MismatchTimeseriesWithRange
+
+  /**
+   * Common Part of the timeseries 2 with its original query range
+   */
+  ts2: MismatchTimeseriesWithRange
+
+  /**
+   * Id of the metric (for internal use)
+   */
+  id: string
+
+  /**
+   * Name of the metric (for internal use)
+   */
+  name: string
+}

@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Runs notebook cells.
+ * Kernel is taken from `.ipynb` file. Runner expect that kernel will be there.
+ * There are a few ways to control how cell will be executed. Please note that you will need to use exact notations,
+ * and preserve all spaces.
+ * - Give cell a name (by default first line will be used as name): `# Name: <name>`.
+ * - Skip cells: `# Skip: <reason>`. <reason> will be displayed in test results.
+ * - If you want to not verify some type of results form cell you can use `# NotVerify: <output type>` where
+ *   <output type> could be one of `result`, `stderr`, `stdout`, `image`, `all`. Cell will be run, but some of
+ *   verifications will be skipped. If you choose to use `# NotVerify: all`, cell will be run without any validations.
+ *     * You can specify more than one `<output type>`, here is example: `# NotVerify: result, stderr`
+ * - If test should fail you can use `# Fail: <reason>`
+ * - You can use `# JsonResult` if you would like to compare result as a json. For example, it useful when order of
+ *   items in a dict is not stable.
+ *     * Also this option helps if you would like to compare only sub-path of result json: `# JsonResult: .a.b`.
+ *     * Note that `.a` could be json, in this case for each object in `.a` field `.b` will be collected.
+ *     * One more option is exclusion of some fields: `# JsonResult: !.a.b`. You can apply multiple rules as follow:
+ *       `# JsonResult: !.a.b, !.a.c`. In this case fields `.b` and `.c` will be removed from path `.a`. You can use
+ *       syntax `.[1]` to get (or exclude) element from array.
+ *
+ * Note that these modifiers (in any order) should be first lines in the cell.
+ *
+ * For skipping entire notebook from testing, add the following to `.ipynb` file:
+ * ```
+ * {
+ *   "metadata": {
+ *     "c3": {
+ *       "skip_test": "my reason to skip all cells in notebook"
+ *     }
+ *   }
+ * }
+ * ```
+ */
+type TestRunnerNotebook {
+
+  /**
+   * Tests the given Jupyter Notebook on cluster
+   *
+   * @param content
+   *           The string content of .ipynb file.
+   *
+   * @param fileName
+   *           The file name of notebook.
+   *
+   * @param url
+   *           Url to Jupyter Notebook Server.
+   *
+   * @param token
+   *           Access token to Jupyter Notebook Server.
+   */
+  @action(authzChildActions=true)
+  notebookTest: function(content: !string, fileName: !string, url: !string, token: !string): TestSuiteResult py
+}

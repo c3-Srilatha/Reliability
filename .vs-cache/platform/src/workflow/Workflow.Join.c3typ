@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized {@link Workflow.Vertex} that represents an aggregation of control-based {@link Workflow.Signal}.
+ * It is primarily used to feed multiple "$success" signals to a single "$start" input.
+ * NOTE: this is not to be confused with {@link Workflow.Make}, which merges data.
+ * Every {@link Workflow.Join} has a number of input ports, specified upon construction, one each for each
+ * {@link Workflow.Signal} to be joined. In general, the input to a join should be control-based {@link Workflow.Signal}.
+ * Output ports that represent data should simply be connected to the data input of the target vertex.
+ * Every {@link Workflow.Join} has a single output port: "$success".
+ * See {@link Workflow} for more details on port "$success".
+ * ```
+ * -------------------                         ---------------------                       ------------------
+ * | Workflow.Action | $success --------> $in1 |                   |                       |                |
+ * -------------------                         |                   |                       |                |
+ *                                             |  Workflow.Join    | $success ----> $start | Workflow.Batch | ...
+ * -------------------                         |                   |                       |                |
+ * | Workflow.Action | $success --------> $in2 |                   |                       |                |
+ * -------------------                         ---------------------                       ------------------
+ * ```
+ */
+type Workflow.Join mixes Workflow.Vertex {
+
+  /**
+   * @param n
+   *           number of input ports to join.
+   * @return new vertex.
+   */
+  fromNumInputs: function(n: !int, name: string): !mixing Workflow.Join
+}

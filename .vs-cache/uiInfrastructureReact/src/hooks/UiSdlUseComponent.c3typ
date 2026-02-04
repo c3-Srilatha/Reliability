@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A React Hook to import a component by its {@link UiSdlComponent#id metadata id}.
+ */
+@typeScript
+private type UiSdlUseComponent {
+
+  /**
+   * React Hook that asynchronously loads the React component with the given metadata id.
+   *
+   * @param metadataId
+   *           The id of the component. This corresponds to the filename of your
+   *           UI metadata (JSON) file.
+   *
+   * @return a React component that lazily resolves to the referenced component.
+   */
+  useComponent: function(metadataId: string): ReactComponent ts-client
+
+  /**
+   * Returns an async function that takes a callback and a default value. When the function
+   * is called, it will invoke the callback, await its response, and return the resolved value.
+   *
+   * If the callback is rejected, then this function will dispatch a `CHUNK_LOADING_ERROR`
+   * to the current site and return the provided `defaultValue`.
+   *
+   * @returns An async function that takes a callback and a default value.
+   */
+  useAsyncImporterWithErrorHandling: private function(): lambda(asyncImporter: !lambda(): Promise<native>,
+                                                                defaultValue: @java !native): Promise<native> ts-client
+
+  /**
+   * Asynchronously loads the React component with the given metadata id.
+   *
+   * @param metadataId
+   *           The id of the component. This corresponds to the filename of your
+   *           UI metadata (JSON) file.
+   *
+   * @return a Promise that resolves to a React component.
+   */
+  importComponent: function(metadataId: string): Promise<ReactComponent> ts-client
+}

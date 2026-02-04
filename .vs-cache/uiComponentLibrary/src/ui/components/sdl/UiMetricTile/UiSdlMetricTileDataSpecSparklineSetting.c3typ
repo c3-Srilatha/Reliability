@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link UiSdlMetricTile} data spec for sparkline plots.
+ */
+@typeScript
+type UiSdlMetricTileDataSpecSparklineSetting {
+
+  /**
+   * Label for the sparkline plot
+   */
+  name: string
+
+  /**
+   * Prefix text before the time horizon below the sparkline plot, eg Past, Next etc.
+   */
+  prefix: string
+
+  /**
+   * Label for the time horizon, Eg, 12 months, 1 week, 1 day etc. This is prefixed with
+   * {@link UiSdlMetricTileDataSpecSparklineSetting#prefix} to generate the full text below the sparkline plot.
+   */
+  timeHorizonLabel: string
+
+  /**
+   * Time horizon for which sparkline plot metric is evaluated, defaults to 12 months.
+   */
+  timeHorizon: string enum('36MONTHS', '24MONTHS', '12MONTHS', '3MONTHS', '2MONTHS', '1MONTH', '7DAYS', '24HOURS', '1HOUR') = '12MONTHS'
+
+  /**
+   * End point to determine what time the end and start timestamp should get calculated.
+   * Default is `BEGINNING_OF_DAY`, meaning starts from mid-night.
+   * Configurable to be CURRENT_DATE_TIME, meaning starts from now.
+   * For example, say right now is 2023/8/3 4:20PM.
+   * {
+   *  "timeHorizon": "24HOURS",
+   *  "endpoint": "CURRENT_DATE_TIME"
+   * }
+   * this configuration will generate:
+   * start time: 2023/8/3 4:20PM
+   * end time: 2023/8/4 4:20PM
+
+   * However if endpoint sets to be BEGINNING_OF_DAY:
+   * start time: 2023/8/3 12:00 AM
+   * end time: 2023/8/4 12:00 AM
+
+   * Endpoint config will only apply for 'HOUR' and 'DAY' intervals  
+   * because we don't want to get the timestamp for the current month or year, 
+   * since that would calculate a month or year forward into the future.
+   */
+  endpoint: string enum('CURRENT_DATE_TIME', 'BEGINNING_OF_DAY') = 'BEGINNING_OF_DAY'
+
+  /**
+   * The color used for the sparkline plot. If Dynamic coloring is turned on, this will be overridden.
+   */
+  color: string enum UiSdlChartColor = SLATE
+
+  /**
+   * Configuration used to dynamically color the sparklines.
+   */
+  dynamicSparklineSetting: UiSdlMetricTileSparklineDynamicColoring
+
+  precision: int
+}

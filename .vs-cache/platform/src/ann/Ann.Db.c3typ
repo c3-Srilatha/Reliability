@@ -1,0 +1,409 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@annotation(appliesTo=['module', 'type', 'field'])
+type Ann.Db mixes Annotation {
+
+  /**
+   * Data Domain for this entity type
+   */
+  domain: string serialized Db.Domain
+
+  /**
+   * Datastore for entity types (e.g. "kv").  The datastore indicates where the data will be persisted.  If not
+   * specified, the data will be persisted in the default datastore for the app (e.g. the relational datastore.
+   */
+  datastore: string
+
+  /**
+   * Secondary datastore (e.g. "redshift").  When set, the contents of the type will automatically be synchronized to
+   * the specified secondary datastore.
+   */
+  secondaryDatastore: string
+
+  /**
+   * Only valid for types persisted in Postgres.
+   *
+   * @see PgPartitionDef for details
+   */
+  pgPartition: PgPartitionDef
+
+  /**
+   * For {@link Partitionable} types only - Partition key field (e.g. parent field).
+   * The parent field is the field that objs will be grouped by in persistence.  If specified, only filters that include
+   * the parent field will be allowed (filtering by additional fields is allowed).  If not specified, then only
+   * filtering by id is supported.
+   */
+  partitionKeyField: string
+
+  /**
+   * For {@link Partitionable} types only, this field will allow splitting data for a partition key into multiple
+   * {@link KvRow}s based on an expression. Currently the recommended expression is using date information with format
+   * year-month-day. For example:
+   * ```
+   * concat(year(start), "-", month(start), "-", day(start))    // start is a datetime filed in the type
+   * concat(year(start), "-", month(start))
+   * ```
+   */
+  partitionKeyBin: string serialized Expr
+
+  /**
+   * If set, attempts to use the partition strategy as indicated. A best effort will be adopted to incorporate the
+   * strategy. However, the engine may optimize storage internally and doesn't guarantee exact strategy semantics
+   */
+  defaultPartitionStrategy: PartitionBucketStrategy
+
+  /**
+   * Order spec for persisting objs within a partition key. Any unique indexes must also be specified in the persistence
+   * order. See {@link DataPartitionBucket}.
+   *
+   * Note the following behavior when specifying persistence order:
+   * 1. If meta field is used in persistence order, de-duplication will be disabled, so use with caution!
+   * 2. It is recommended to use primitive value types when possible to provide better performance.
+   */
+  persistenceOrder: string
+
+  /**
+   * If true, duplicate rows will be kept.  By default, a duplicate row matches every field except the id. This can be
+   * configured using the @db(unique) annotation. For example:
+   * @db(datastore="kv",
+   *   partitionKeyField='parent',
+   *   persistenceOrder='start',
+   *   persistDuplicates=true,
+   *   compactType=true,
+   *   unique=['parent, start'],
+   * )
+   */
+  persistDuplicates: boolean
+
+  /**
+   * Indicates that the type is owned by the server framework.
+   */
+  systemType: boolean
+
+  /**
+   * Indicates that the type will not persist the {@link Persistable#meta} field.  Used for certain high velocity types
+   * and types that are very large where created/updated info is not required.
+   */
+  compactType: boolean
+
+  /**
+   * Indicates that once a field in an obj is persisted, it may not be modified.  This differs from {@link createOnly}
+   * in that if the value is initially null when the obj is created, a non-null value will be allowed to be set on an
+   * existing obj where the value is null.
+   */
+  writeOnce: boolean
+
+  /**
+   * Indicates that a field may not be updated by the user.  Only updates from the system are allowed.
+   */
+  systemUpdateOnly: boolean
+
+  /**
+   * If specified on a field, indicates that the field may only have its value set when an obj is being created.  No
+   * updates to the field for existing objs will be allowed.
+   *
+   * If specified on a type, indicates that instances of the type may be created (and removed), but not updated.
+   */
+  createOnly: boolean
+
+  /**
+   * Indicates that a field is used for full text search.  For full text search fields, a full text search index is
+   * created in the relational datastore.  Not applicable for KV datastores.
+   */
+  textSearchField: boolean
+
+  /**
+   * Order spec used for ordering values returned in an entity type or an fkey arry field.
+   *
+   * @see fkey
+   * @see key
+   */
+  order: string
+
+  /**
+   * List of unique indexes to be created for the type.  Each index is a comma separated list of fields.
+   */
+  @annotation(declarationOnly=true)
+  unique: [string]
+
+  /**
+   * List of non-unique indexes to be created for the type.  Each index is a comma separated list of fields with
+   * optional ascending/descending and nulls first/last support.  By default, null values appear last in an ascending
+   * sort and first in a descending sort.  To specify the opposite null sorting, specify the field in the appropriate
+   * sort function.  For example:
+   *
+   * @db(index = ['ascending(f1, true), f2']) - ascending on f1 with nulls first and ascending on f2 with nulls last
+   * @db(index = ['descending(f1, true), f2']) - descending on f1 with nulls last and ascending on f2 with nulls last
+   */
+  index: [string | any]
+
+  /**
+   * If true, automatically generated unique ids for objs being created will be short, and their format configurable by
+   * {@link shortIdPrefix} and {@link shortIdSuffix} rather than being GUIDs.
+   */
+  shortId: boolean
+
+  /**
+   * If {@link shortId} is true, then this is the prefix that will be used for every generated short id.
+   */
+  shortIdPrefix: string
+
+  /**
+   * If {@link shortId} is true, then this will be the type for the suffix for each generated id.  Possible values are:
+   * enum ("numeric", "alphanumeric") = numeric.
+   */
+  shortIdSuffixType: string
+
+  /**
+   * If {@link shortId} is true, the database is used to reserve ranges of unique ids for each server.  This specifies
+   * the number of ids to reserve when requesting a new short id for the type and there are no reserved ids left.  If
+   * the value is very small, the database will be hit more often.  If it is very large, then large numbers of ids may
+   * get wasted when a server is restarted.
+   */
+  shortIdReservationRange: int
+
+  /**
+   * A filter expression that can be used to restrict values returned when including an fkey field.  Note that this
+   * filter is not applied when filtering on the fkey field.  When filtering on the fkey field, the entire contents of
+   * the fkey relationship are included.
+   *
+   * @see fkey
+   * @see key
+   */
+  filter: string
+
+  /**
+   * The maximum number of values returned in an fkey field (-1 or null means all). Note that this limit is not applied
+   * when filtering on the fkey field.  When filtering on the fkey field, the entire contents of the fkey relationship
+   * are included.
+   *
+   * @see fkey
+   * @see key
+   */
+  limit: int
+
+  /**
+   * Filter for a database view.  A database view is any type that is not an entity type itself that mixes in an entity
+   * type.  Specifying the viewFilter limits the objs returned by any fetch/get operation on the view type to those
+   * specified.  Runtime filters will only further restrict the returned objs.
+   */
+  viewFilter: string
+
+  /**
+   * Indicates that a type's instances should be archived, rather than physically removed during
+   * {@link Persistable#remove}.  Archived instances can be restored using {@link Persistable#unremove}.  An archived
+   * instance will remain indefinitely.  Care should be taken to not create a new instance with an archived instance's
+   * id as that new instance will then itself not be removable/archivable due to a unique index collision in the archive
+   * table.  Also, having an instance with the same id as an archived instance will cause the original archived instance
+   * to not be recoverable due to a unique index violation in the root table.
+   */
+  archive: boolean
+
+  /**
+   * If true, then any update to an obj will be recorded in the {@link Persistable#versionEdits} field.  This recorded
+   * history can be used to retrieve objs at the state they were in based on a previous time or version.
+   *
+   * @see Persistable#get
+   * @see Meta#getVersion
+   * @see Meta#getVersionAsOf
+   */
+  versionHistory: boolean
+
+  /**
+   * For counter fields in cassandra types.
+   */
+  counter: boolean
+
+  /**
+   * If specified on a field that mixes in {@link TimedValue}, then it identifies the history field that is linked with
+   * it. That field must be an fkey array of a type that mixes in {@link TimedValueHistory} and otherwise contain the
+   * same value fields as the field that specifies this.  For fields that specify this, any updates to the field will be
+   * added to the history and and any changes to the history type that change the most recent value will cause the field
+   * to be updated with the latest value.
+   *
+   * Note that this is not valid for {@link TimedCharacteristic} fields.  For those, use
+   * {@link timeCharacteristicHistoryField}.
+   */
+  timedValueHistoryField: string
+
+  /**
+   * For timed value history fields (e.g. fields referenced in {@link timedValueHistoryField}) where the timedValue
+   * field mixes in {@link TimedIntervalValue}, if this is set to true, then the history will not allow overlapping time
+   * range.  Existing time ranges will be cropped, if necessary when new entries are added to the history.
+   */
+  timedValueHistoryPreventOverlaps: boolean
+
+  /**
+   * Timed relations can only be deduped in one direction and the default is to dedup based on the from side.  Set this
+   * to true on the timed relation history type if deduping should instead be based on the to side.
+   */
+  timedRelationHistoryDedupToSide: boolean
+
+  /**
+   * Can only be specified on a map field with a key value type of string and an element type of a type that mixes in
+   * {@link TimedCharacteristic}.  The field specified must be an fkey array field of a type that mixes in
+   * {@link TimedCharacteristicHistory} and has the same value fields as the field this is specified on.
+   *
+   * The field that this is specified on will become read only and treated as a stored calc field which will be updated
+   * to maintain the latest values for each characteristic in the history.  Note that this is a different behavior to
+   * {@link timedValueHistoryField}.
+   */
+  timedCharacteristicHistoryField: string
+
+  /**
+   * If this parameter is set, then we'll attempt to store data in a columnar compressed format. This is mostly
+   * applicable to timeseries data points. This cannot be used with extendable types.
+   */
+  columnarStorage: boolean
+
+  /**
+   * When specified on a reference field (generic obj or normal reference field), the entire contents of a referenced
+   * type (even if it's an external type) will be stored in the field, rather than just the id.  This enables persisting
+   * snapshots of external references or storing heterogeneous included refs. Note that once this annotation is set,
+   * filtering on individual fields may not be supported or performant.
+   */
+  persistAllFields: boolean
+
+  /**
+   * Default include for a reference field.  This will be applied if the field is included (either explicitly or by an
+   * empty include/this).  For fkey fields, this will also cause them to be fetched by default instead of requiring an
+   * explicit include.
+   */
+  include: string
+
+  /**
+   * Include for a database view.  A database view is any type that is not an entity type itself that mixes in an entity
+   * type.  Specifying the viewInclude limits the fields returned by any fetch/get operation on the view type to those
+   * specified.  However, for included fields that are reference fields, further traversal via a runtime include is
+   * permitted.  Filtering on fields that aren't included is permitted.
+   */
+  viewInclude: string
+
+  /**
+   * If specified, the default commit size used in UpsertTask operations.  May be overridden by
+   * {@link UpsertSpec#commitSize}.  If set to -1, the entire operation will be performed as one batch/transaction.
+   */
+  defaultCommitSize: int
+
+  /**
+   * Used by {@link SqlSourceCollection.inferSourceType} to allow a string "id" field to work properly if the underlying
+   * column in the external table is not a string.
+   */
+  dataTypeOverride: string
+
+  /**
+   * If true on a type that mixes {@link AclEnabled}, then acls will always be enforced, regardless of whether or not an
+   * entry exists in {@link EnableAclPrivilege}.
+   */
+  enforceAcl: boolean
+
+  /**
+   * If true on a type that mixes {@link AclEnabled}, then acl authorization will be applied during updates, even for
+   * roles that would ordinarily not be subject to acl authz.
+   */
+  enforceUpdateAclForNonClusterAdmin: boolean
+
+  /**
+   * If true, then any stored calc fields defined in the type will not be automatically recomputed when anything they
+   * depend on changes.  This should only be set for types where the stored calc refresh will be scheduled independently
+   * (e.g. via a cron job).
+   */
+  @beta
+  disableAutoStoredCalcRefresh: boolean
+
+  @beta
+  cacheData: boolean
+
+  @beta
+  fkeyConstraint: boolean
+
+  @beta
+  tempTable: boolean
+
+  /**
+   * If true, then all read calcs will be returned by default (including for any included child refs that specify the
+   * default include), if false, only those specifically requested via the `include` will be returned.
+   */
+  includeReadCalcs: boolean
+
+  /**
+   * When set on one of the {@link Persistable} functions (e.g. before..., after..., created, updated, removed) the
+   * callback function will be ignored.  This is useful in a remix situation where a type being remixed has a callback
+   * which is not appropriate in the remixed scenario.
+   */
+  callbackDisabled: boolean
+
+  /**
+   * Some databases (e.g. Impala), require casting of varchar columns with the defined length of the column.  If this is
+   * set to true and the value of {@link: Ann.Constraint#length} > 0, casting will be done for those databases in
+   * insert/update sql statements.  The length should be set to the defined length of the column in the database.
+   */
+  castVarcharLength: boolean
+
+  /**
+   * When using the H2 db for testing, text columns of unlimited size are more complicated than they are in Postgres and
+   * have issues in some circumstances (notably they can't be indexed and cause NPEs in some concurrency scenarios. As a
+   * result it is not the default behavior.  Set this to `true` if a particular field needs to have a length longer than
+   * the maximum H2 character value length (1048576) when running/testing using the H2 database.  It will be ignored for
+   * Postgres.
+   *
+   * Note that if specified for a collection field (e.g. map<string, string>, map<string, json>, etc.), it will be
+   * applied to the column holding the value.  If the value is not a string or json value, this will be ignored.
+   */
+  h2UseClobCol: boolean
+
+  /**
+   * Maps fields in a reference to a {@link CompositeKey} type to fields in the type owning the reference.
+   *
+   * See {@link CompositeKey} for details
+   */
+  @annotation(allowsRemixOverride=false)
+  compositeKeyFieldMapping: map<string, string>
+
+  /**
+   * When applied to a field and the database is Postgres (or H2), field values will be persisted as typed json values
+   * regardless of the field's value type.  The data type of the column in the database will be JSONB (JSON for H2).
+   * This will be ignored for all other databases.
+   *
+   * Note the following for fields that specify this:
+   *
+   * 1. This differs from specifying a value type of json for a field in that this applies to persistence only and the
+   *    values that are set/retrieved for the field will retain their designated value types.
+   * 2. If specified for a collection field (e.g. array/set/map), then the entire collection will be serialized to typed
+   *    json and persisted, not the individual elements of the collection.  If the elements are references, the entire
+   *    contents of the ref will be persisted in the json (e.g. equivalent to also specifying persistAllFields.
+   * 3. References will not be traversable via the include spec during fetch.
+   * 4. For maps, only non-indexed maps with primitive keys are supported.  All arrays and sets are supported.
+   *    Additional value types may be supported in the future as use cases are identified.
+   * 5. Filtering will be extremely limited.  At this time, filtering is only supported on Postgres for collections of
+   *    primitive values and only with the following patterns:
+   *    - "jsonbMap['hello'] == 'world'" - filters for entries with the specified key and value
+   *    - "exists(jsonbMap['hello'] == 'world')" - filters for entries with the specified key and value
+   *    - "jsonbMap.key() == 'hello'" - filters for entries with the specified key
+   *    - "exists(jsonbMap['hello'])" - filters for entries with the specified key
+   *    - "intersects(jsonbMap.key(), ['hello', 'other'])" - filters for entries that match any of the specified keys
+   *    - "exists(jsonbMap['hello'] || jsonbMap['other'])" - filters for entries that match any of the specified keys
+   *    Additional filtering patterns may be provided in the future as use cases are identified.
+   */
+  pgPersistAsJson: boolean
+
+  /**
+   * When set on one of the {@link Persistable} functions (e.g. before..., after...) the callback function may not be
+   * disabled via the {@link UpsertSpec}.  Attempts to do so will be ignored.
+   */
+  callbackRequired: boolean
+  
+  /**
+   * When true and specified on a field with a reference to a type where acl is being applied for the current user, any
+   * attempts by the user to filter or order by traversing that field will result in an exception being thrown.  When
+   * specified on a type, any such attempts to filter or order on any field that references that type will similarly
+   * result in an exception being thrown.
+   */
+  blockAclRefFiltering: boolean
+}

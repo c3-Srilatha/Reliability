@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link Microservice} type used to share large content efficiently across clients.
+ * Inherited {@link Content} APIs can be used like they normally would for other subtypes (ex. {@link File}).
+ */
+type Microservice.Content mixes Identified, Content {
+
+  /**
+   * An optional key that can be used by the service to help retrieve real backing {@link Content}.
+   */
+  name: string
+
+  /**
+   * This field is hijacked to indicate the protocol that should be used to retrieve the real backing {@link Content}.
+   *
+   * We must hijack an existing field for backwards compatibility reasons.
+   */
+  contentLanguage: string enum Microservice.Content.Strategy = SHARED
+
+  /**
+   * Overridable function that is used to determine which {@link Microservice.Iface} to interact with
+   * when retrieving real backing {@link Content}. The interface must mixin {@link Microservice.Content.Iface}.
+   */
+  serviceIface: cached property(): !string serialized Type
+
+  /**
+   * Notifies the service automatically when the real backing {@link Content} has been updated.
+   */
+  clearMetadata: ~
+
+  /**
+   * Specifies the {@link Microservice.Proxy} instance to use when fetching the real backing {@link Content}.
+   */
+  serviceName: string serialized Microservice
+}

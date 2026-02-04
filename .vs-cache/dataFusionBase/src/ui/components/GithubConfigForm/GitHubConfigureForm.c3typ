@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Custom github form that wraps github form of studioComponentLibrary
+ */
+@typeScript
+type GitHubConfigureForm mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Stores the environment Id of the current app
+   */
+  envId: string
+
+  /**
+   * Boolean to check whether a reconfiguration is being made in a running app
+   */
+  reConfigureInRunningApp: boolean
+
+  /**
+   * Action to set form field values of github configure form
+   */
+  @uiSdlActionCreator(actionType='SET_GIT_FORM_FIELD_VALUES')
+  setGitFormFieldValues: private function(githubFormFieldValues: json): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to set form field values of github configure form
+   */
+  @uiSdlActionCreator(actionType='GIT_CONFIGURE_MODAL_BUTTONS_(ENABLE|DISABLE)')
+  disableEnableConfigureModalButtons: private function(isValid: boolean): !UiSdlReduxAction ts-client
+}

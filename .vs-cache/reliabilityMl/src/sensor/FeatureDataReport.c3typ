@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contains metrics about a particular feature in a specific dataset, split across training and validation periods.
+ */
+type FeatureDataReport mixes SensorDataReportBase, WithId {
+
+  /**
+   * When returned by {@link ReliabilityMlDatasetPreparationRun#fetchFeatureDataReport},
+   * this is set to the `sensor.id`. Otherwise, it is unset.
+   */
+  id: ~
+  /**
+   * The dataset for which this report was created.
+   */
+  dataset: !ReliabilityMlDatasetPreparationRun
+
+  /**
+   * Metrics for the training period of the {@link #dataset}
+   */
+  trainingMetrics: !FeatureDataReportMetrics
+  /**
+   * Metrics for the validation period of the {@link #dataset}
+   */
+  validationMetrics: !FeatureDataReportMetrics
+}

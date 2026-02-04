@@ -1,0 +1,105 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A spec to save the arguments and parameters for {@link Genai.Agent.Tool.Util.TableAnsweringModel}.
+ */
+type Genai.Agent.Tool.Util.TableAnsweringModel.Spec mixes Spec {
+
+  /**
+   * The LLM model used to answer the question. Must correspond to a {@link Genai.UnstructuredQuery.Engine.ModelConfig}.
+   */
+  llmModelName: string = "azureGpt35"
+
+  /**
+   * Whether the response from the LLM should be streamed.
+   */
+  streamResponse: boolean
+
+  /**
+   * The template prompt used for generating the LLM-based answer
+   */
+  templatePrompt: !Genai.Prompt
+
+  /**
+   * The prompt used to filter big table if it is not relevant.
+   */
+  preFilterPromptBigTable: Genai.Prompt = "default_prefilter_large_table_prompt"
+
+  /**
+   * The maximum number of rows to send to preFilterPromptBigTable.
+   */
+  preFilterBigTableMaxRows: int = 10
+
+  /**
+   * The maximum number of rows to return an answer with LLM-generated response.
+   * If the row count of the table is smaller or equal to this value, the LLM-based response will be generated.
+   * Setting this to 0 or -1 is the equivalent of setting #doNotUseLlm to true.
+   *
+   * NOTE: This parameter also affects whether statistics are shown. See #showStatistics.
+   */
+  maxRowsForLlmAnswer: int = 20
+
+  /**
+   * If true, the LLM-based response will not be generated and the resulting answer will only have the
+   * 'rule-based' verbalization described at {@link Genai.Agent.Tool.Util.TableAnsweringModel#verbalizeTable}
+   */
+  doNotUseLlm: boolean
+
+  /**
+   * Whether to show statistics for the table.
+   * Big table means the row count is greater than the #maxRowsForLlmAnswer
+   * Small table means the row count is smaller than or equal to the #maxRowsForLlmAnswer
+   */
+  showStatistics: string enum('onlyBigTable', 'onlySmallTable', 'both', 'none') = 'onlyBigTable'
+
+  /**
+   * Verbalize table method.
+   */
+  // TODO: GENAI-4822 enable user to pass a lambda for this.
+  verbalizeTableMethod: !string enum('verbalizeEvalDefault', 'verbalizeEvalMetricsDefault')
+
+  /**
+   * Summarize table method.
+   */
+  // TODO: GENAI-4822 enable user to pass a lambda for this.
+  summarizeTableMethod: string enum("default") = 'default'
+
+  /**
+   * The decimal places for the summary statistics of the table to round to in
+   * {@link Genai.Agent.Tool.Util.TableAnsweringModel}.
+   * If the summary value is smaller than 10 raised to the power of negative summaryStatisticsDecimalPlaces (too small),
+   * or greater than / equal to 10 raised to the power of summaryStatisticsDecimalPlaces (too large),
+   * the statistics will be converted to scientific notations and rounded.
+   * If the value is in between the range, then it will be rounded as a float.
+   * For example, if the value is 2.111, then it will be rounded to 2.11.
+   * If the value is 999999, it will be rounded and converted to 1.00e+06
+   */
+  summaryStatisticsDecimalPlaces: int = 2
+
+  /**
+   * Number of examples to include in the type and field documentation for the Llm prompt
+   */
+  numExamplesForTypeAndFieldDoc: int
+
+  /**
+   * Whether the type of the field should be included in the documentation for the Llm prompt
+   */
+  includeValueType: boolean
+
+  /**
+   * Whether a large table should go through pre-filtering.
+   */
+  doNotPrefilterBigTable: boolean
+
+  /**
+   * Default rule based message to present if table is not relevant to the user query.
+   */
+  defaultUnanswerableQuestionAnswer: string = "I am unable to answer your question. Please rephrase or add more data."
+}

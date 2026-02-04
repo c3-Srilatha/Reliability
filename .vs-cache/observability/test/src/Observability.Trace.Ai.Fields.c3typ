@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test type for custom trace fields
+ */
+type Observability.Trace.Ai.Fields mixes Observability.Trace.Fields {
+
+  /**
+   * Input for trace - uses "APPEND" aggregatioon
+   */
+  prompt: ?[string]
+
+  /**
+   * Output for trace - uses "APPEND" aggregation
+   */
+  response: ?[string]
+
+  /**
+   * Number of total tokens, uses "SUM" aggregation
+   */
+  tokenSum: ?int
+
+  /**
+   * Number of total tokens, uses "MAX" aggregation
+   */
+  maxTokens: ?int
+
+  /**
+   * Tracks best case latency, uses "MIN" aggregation
+   */
+  minLatency: ?float
+
+  /**
+   * True, if any of the span responses are toxic, uses "ANY" aggregation
+   */
+  isToxic: ?boolean
+
+  /**
+   * True, if all of the span responses are valid, uses "AND" aggregation
+   */
+  isValid: ?boolean
+
+  /**
+   * Counts the number of tool calls in trace, uses "COUNT" aggregation
+   */
+  grandChildCount: ?int
+
+  /**
+   * Minimum confidence score of plan step
+   */
+  confidenceScore: ?float
+
+  /**
+   * Maximum duration of plan step
+   */
+  maxDuration: ?float
+
+  /**
+   * Total tokens for prompt-response pair
+   */
+  totalTokens: ?int
+
+  /**
+   * Number of tool calls
+   */
+  numTools: ?int
+
+  /**
+   * Completion text of response
+   */
+  completion: ?[string]
+
+  /**
+   * Prompt of response
+   */
+  input: ?[string]
+}

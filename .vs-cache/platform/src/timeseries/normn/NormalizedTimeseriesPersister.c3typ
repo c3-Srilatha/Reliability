@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to manage NormalizedTimeseries objects in kv store
+ *
+ * Type to persist normalized timeseries
+ */
+entity type NormalizedTimeseriesPersister mixes Value schema name 'TS_NTPRSTR' {
+
+  /**
+   * Delete the given table. See #tableName for obtaining tableName
+   */
+  deleteCollection: function(tableName: !string, confirm: !boolean)
+
+  /**
+   * Deletes all the child normalized timeseries tables
+   */
+  deleteAllCollections: function(confirm: !boolean)
+
+  /**
+   * Put normalized timeseries
+   * @param nts
+   *         Normalized timeseries object
+   * @param spec
+   *         Indicates how normalized values should be written
+   * @return if the put operation was successful or not. If the engine was not able to write, it will return false
+   */
+  put: function(nts: !NormalizedTimeseries, spec: NormalizedTimeseriesPutSpec): !boolean
+
+  /**
+   * Get the normalized timeseries object.
+   * @param id
+   *        Id of the normalized time series object
+   * @param spec
+   *        Indicates how normalized values should be read
+   * @return NormalizedTimeseries object with the included fields
+   */
+  getId: function(id: !string, spec: NormalizedTimeseriesGetSpec): NormalizedTimeseries
+
+  /**
+   * Remove the object from the store
+   */
+  removeId: function(id: !string, spec: NormalizedTimeseriesRemoveSpec)
+
+  /**
+   * NormalizedTimeseries table name for the given data point & normalized timeseries id
+   * @param type
+   *         Data point type for which normalized data is being stored (stores data in a different table)
+   * @param id
+   *        Id of the NormalizedTimeseries object to be sharded further by id if needed
+   * @return table name where the given data will be stored
+   */
+  tableName: function(type: Type, id: string): string
+
+  /**
+   * @return all NormalizedTimeseries tables based on NormalizedTimeseriesShardSpec rules
+   */
+  allTableNames: function(): [string]
+
+  /**
+   * This is a no-op and does not create any NTS tables
+   */
+  upsertCollection: ~
+
+  /**
+   * Creates all NTS tables for all {@link TimedDataPoint} and {@link IntervalDataPoint} types
+   */
+  upsertAllCollections: function(): boolean
+
+  /**
+   * Create NormalizedTimeseries table only for a single raw timeseries data point type
+   */
+  upsertSingleCollection: function(tsDataPointType: !Type)
+
+  /**
+   * Remove all entries from the this collection
+   */
+  clearCollection: ~
+
+  /**
+   * Generate includes for the this type for the given time range
+   */
+  includes: inline function(spec: NormalizedTimeseriesGetSpec): string
+}

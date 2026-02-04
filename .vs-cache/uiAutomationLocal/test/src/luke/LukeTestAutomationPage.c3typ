@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * LukeTestAutomationPage is the base page type for local UI Luke test pages
+ */
+abstract type LukeTestAutomationPage mixes LukeTestPage {
+
+  /**
+   * Initializes an instance of the page.
+   * @param luke
+   *      LukeBrowser instance.
+   * @param urlParams
+   *      URL parameters to be used for the page. json should have 2 keys, `pathParams` and `queryParams`. The values
+   *      are both objects where the keys are param id and value is param value. `pathParams` are used to
+   *      construct the URL path, and `queryParams` are used to construct the query string.
+   */
+  init: function(luke: LukeBrowser,
+                 urlParams: { pathParams: json, queryParams: json },
+                 args: any ...): mixing LukeTestAutomationPage js-client
+
+  _init: abstract function(luke: LukeBrowser,
+                           urlParams: { pathParams: json, queryParams: json },
+                           args: any ...): mixing LukeTestAutomationPage js-client
+
+  /**
+   * Base implementation of {@link #init} that allows any remixer of this page to still call the base implementation.
+   */
+  initInternal: private function(luke: LukeBrowser,
+                                 urlParams: { pathParams: json, queryParams: json },
+                                 args: any ...): mixing LukeTestAutomationPage js-client
+
+  /**
+   * Waits until the page is rendered by checking the {@link #renderingSelectors} and the callback.
+   * @param callback
+   *      Callback to determine if page is rendered. The "this" context will be the page instance.
+   */
+  waitForRendered: member function(callback: lambda()) js-client
+}

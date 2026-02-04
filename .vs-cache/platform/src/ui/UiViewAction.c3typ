@@ -1,0 +1,113 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "view action" is the declaration of a button/menu item action available to the user of a UI hosted on the view.
+ * It defines now arguments are assembled from the model instance on which the action is invoked to build a call to the
+ * associated method.
+ *
+ * @see UiView
+ */
+type UiViewAction mixes Nameable, PartiallyAppliedAction {
+
+  /**
+   * The type for the {@link UiView} which this UiViewAction is part of.
+   */
+  sourceType: !Type
+
+  /**
+   * The name of the action is the key by which it is accessed.
+   */
+  name: !~
+
+  /**
+   * The type against which the action should be dispatched. If not specified, this is the same as the source type of
+   * the parent view.
+   */
+  @constraint(required=false)
+  typeName: ~
+
+  /**
+   * The specification for how to build the arguments to the action. Each entry in the map corresponds to a single
+   * parameter of the action method and its value is the specification of the value as an object hierarchy. All required
+   * parameters must have a specification here so that the action can be dispatched.
+   *
+   * If a value, at top level or within an object value, is a string, that string is the view field name from which the
+   * actual value is taken. If a literal string is desired, it must be quoted twice.
+   *
+   * ```json
+   * {
+   *   "name": "force-commit",
+   *   "action": "commit",
+   *   "args": {
+   *     "this": "this",
+   *     "spec": {
+   *       "comment": "'force-commit from UI'",
+   *       "force": true
+   *     }
+   *   }
+   * }
+   * ```
+   *
+   * In the example above, the "this" parameter refers to the instance of the Obj managed by the model on which the
+   * action is invoked. Expressions rooted with "this" always refer to the model object (never the #argsView).
+   *
+   * The "spec" parameter is an object of which fields are specified:
+   *  - `comment` has a string literal, which must be double-quoted to avoid being interpreted as a view field name
+   *  - `force` has a boolean literal (all non-string values are assumed to be literals)
+   *
+   * Note that field values normally refer to the view on which the action is invoked, but if a custom view is used to
+   * prompt for the values, field names refer to #argsView.
+   */
+  args: ~ schema suffix 'AR'
+
+  /**
+   * If the arguments are to be prompted for using a custom view, this provides the reference to that view.
+   * The #args field references are taken from the model of the view on which they're invoked. If not specified, the
+   * parent view is used.
+   *
+   * ```json
+   * // UiViewAction
+   * {
+   *   "name": "commit",
+   *   "args": {
+   *     "this": "this",
+   *     "spec": {
+   *       "comment": "comment",
+   *       "force": "force"
+   *     }
+   *   },
+   *   "argsView", "commit-spec-prompt"
+   * }
+   *
+   * // UiView
+   * {
+   *   "id": "commit-spec-prompt",
+   *   "sourceType": { "typeName": "CommitSpec" },
+   *   "name": "CommitSpec",
+   *   "fields": [
+   *     { name: "comment" },
+   *     { name: "force" }
+   *   ]
+   * }
+   * ```
+   *
+   * In the example above, we've taken the argument values from the custom view hosted on the type "CommitSpec".
+   *
+   * The "this" parameter refers to the instance of the Obj managed by the model on which the action is invoked.
+   * Expressions rooted with "this" always refer to the model object on which the action was invoked. All other
+   * expression refer to the model model instance created for the argsView.
+   */
+  argsView: UiView
+
+  /**
+   * Resolve the target type for this action and validate it. If not specified in #typeName, the source type of the
+   * parent view is returned.
+   */
+  targetType: inline member function(): native js-client
+}

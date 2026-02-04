@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application wrapper.
+ *
+ * It adds all needed providers to ensure components can work
+ * (I18n, Redux State, Data Context , etc).
+ *
+ * It is used from the index.tsx entry point and from componentRenderer
+ * to render pages and components in the right context.
+ *
+ * By default it will use the SDL.DefaultDataContext component with its
+ * SDL.DefaultSite to add redux data operations. For more control over
+ * the DataContext or the UiSdlSite, you can pass the children prop to replace
+ * the SDL.DefaultDataContext.
+ */
+@uiComponentCategorizer(name='App container', category='Components', hide=true)
+type UiSdlAppContainer mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * The metadata ID of the {@link UiSdlSite}
+   */
+  siteId: string
+
+  /**
+   * Components to render in the body of the app container.
+   */
+  children: private [UiSdlComponentRef<UiSdlComponent<UiSdlNoData>>]
+}

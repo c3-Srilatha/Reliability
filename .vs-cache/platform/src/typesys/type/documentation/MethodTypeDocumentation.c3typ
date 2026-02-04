@@ -1,0 +1,92 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Documentation of a type method. Note that field documentation uses a parallel structure:
+ * {@link FieldTypeDocumentation}.
+ */
+type MethodTypeDocumentation mixes FieldAndMethodTypeDocumentation {
+
+  /**
+   * Whether this is a member function.
+   */
+  member: boolean
+
+  /**
+   * Whether this is accessed as a property in scripting languages.
+   */
+  property: boolean
+
+  /**
+   * Whether this is overloaded.
+   *
+   * @see #overload
+   */
+  overloaded: boolean
+
+  /**
+   * If this method is overloaded, and we're expanding overloads as separate field sections, the 1-based order of the
+   * overload field.
+   *
+   * @see #overloaded
+   */
+  overload: int
+
+  /**
+   * Whether this function must be implemented in the mixing type.
+   */
+  abstract: boolean
+
+  /**
+   * Whether this function may be implemented in the mixing type.
+   */
+  optional: boolean
+
+  /**
+   * Whether this function is not allowed to be redefined.
+   */
+  final: boolean
+
+  /**
+   * The parameters to the function.
+   */
+  parameters: [ParameterDocumentation]
+
+  /**
+   * The return value of the function.
+   */
+  return: ReturnDocumentation
+
+  /**
+   * Authorization group marked on the method using `@action` annotation.
+   *
+   * @see Authorizer#actionGroups
+   */
+  authGroup: string
+
+  /**
+   * All roles authorized to call the method.
+   *
+   * @see Authorizer#actionAuthzRoles
+   */
+  authRoles: [string]
+
+  /**
+   * The the security level of the action.
+   *
+   * @see Authorizer#securityLevel
+   */
+  securityLevel: int
+
+  /**
+   * If this is a native remix method, the action requirement on the native remix type.
+   */
+  nativeRemix: string serialized Action.Requirement
+
+  kind: ~ = METHOD
+}

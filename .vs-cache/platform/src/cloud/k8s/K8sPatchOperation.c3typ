@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a patch operation on a K8s resource.
+ */
+type K8sPatchOperation {
+
+  /**
+   * The operation this patch will perform on the specified path.
+   * See {@link K8sResource.PatchOperationType} for the supported patch operations.
+   */
+  op: !K8sResource.PatchOperationType
+
+  /**
+   * The specified path in the resource YAML file to apply the patch to.
+   */
+  path: !string
+
+  /**
+   * Depending on the operation type, the value to write to the specified path.
+   * If the patch operation type is one that does specify a value, do not provide one
+   * when creating a K8sPatchOperation object.
+   */
+  value: string
+}

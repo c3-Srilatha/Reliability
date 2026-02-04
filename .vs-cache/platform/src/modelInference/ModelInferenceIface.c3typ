@@ -1,0 +1,243 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface for Model Inference
+ */
+@beta
+abstract type ModelInferenceIface mixes Microservice.Iface {
+
+  /**
+   * Set mapping from the route to the {@link MlPipe}'s registered ({@link ModelRegistry.Entry}).
+   *
+   * @param pipeEntry
+   *          {@link ModelRegistry.Entry} where route will point to. Note that we are only accepting
+   *          registered entries for {@link MlAtomicPipe}.
+   * @param route
+   *          String identifying route.
+   * @param overwrite
+   *          If overwrite is False (default) an exception will be thrown upon updating existing route/alias. If
+   *          overwrite is set to True, route will change to new pipe. Note that there can be multiple routes to a pipe.
+   * @param spec
+   *          Specification on how to set route for the pipe entry.
+   */
+  @action(group+='app-admin')
+  setRoute: abstract member function(pipeEntry: !ModelRegistry.Entry,
+                                     route: !string,
+                                     overwrite: boolean,
+                                     spec: ModelInference.SetRouteSpec)
+
+  /**
+   * @return a list of {@link ModelRegistry.Entry} that have been deployed.
+   */
+  deployedEntries: abstract member function(): [ModelRegistry.Entry]
+
+  /**
+   * List all deployed {@link MlPipe}s corresponding to deployed {@link ModelRegistry.Entry}s.
+   *
+   * @return a list of {@link MlPipe}s that have been deployed.
+   */
+  deployedPipes: abstract member function(): ![MlPipe]
+
+  /**
+   * Show all mappings from routes to pipes.
+   *
+   * @return a map from routes to {@link ModelRegistry.Entry}.
+   */
+  listRoutes: abstract member function(): map<string, ModelRegistry.Entry>
+
+  /**
+   * Removes specified `route` that has been set by {@link #setRoute}.
+   *
+   * @param route
+   *           Name of the route to remove.
+   * @param confirm
+   *           Boolean flag that should be set to `true` to remove this route. Otherwise will throw an error.
+   * @return {@link MlAtomicPipe} to which this route was pointing to, or `null` if there was no such route.
+   *
+   * @see: #setRoute
+   */
+  @action(group+='app-admin')
+  removeRoute: abstract member function(route: !string, confirm: boolean): ModelRegistry.Entry
+
+  /**
+   * Deploy the registered {@link MlAtomicPipe} (identified by its matching {@link ModelRegistry.Entry} to stay warm on node(s).
+   *
+   * @param pipeEntry
+   *          {@link MlAtomicPipe} to be deployed that matches {@link ModelRegistry.Entry}.
+   * @param spec
+   *          Specification on how to deploy the pipe.
+   */
+  @action(group+='app-admin')
+  deploy: abstract member function(pipeEntry: !ModelRegistry.Entry, spec: ModelInference.DeploySpec)
+
+  /**
+   * Deploy the registered {@link MlPipeline} to stay warm on node(s).
+   *
+   * @param pipeEntry
+   *          {@link MlPipeline} to be deployed that matches {@link ModelRegistry.Entry}.
+   * @param spec
+   *          Specification on how to deploy the pipeline.
+   */
+  @action(group+='app-admin')
+  deployPipeline: abstract member function(pipelineEntry: !ModelRegistry.Entry,
+                                           spec: ModelInference.Pipeline.DeploySpec)
+
+  /**
+   * Waits for the deployment to be ready according to the {@link WaitSpec}.
+   *
+   * @param pipeEntry
+   *           The entry that has been deployed.
+   * @param waitSpec
+   *           The {@link WaitSpec} that defines how long to wait
+   */
+  waitForDeployment: abstract member function(pipeEntry: !ModelRegistry.Entry, waitSpec: WaitSpec)
+
+  /**
+   * Terminate deployment of the pipe.  The pipe needs to be registered before deployed hence to identify it
+   * we are passing its matching {@link ModelRegistry.Entry}.
+   *
+   * @param pipeEntry
+   *          {@link ModelRegistry.Entry} corresponding to the {@link MlAtomicPipe} to be terminated.
+   * @param spec
+   *          Spec to determine how the pipe will be terminated.
+   * @return A new engine that got deployed for the pipe.
+   */
+  @action(group+='app-admin')
+  terminate: abstract member function(pipeEntry: !ModelRegistry.Entry, spec: ModelInference.TerminateSpec): boolean
+
+  /**
+   * Completion for given input strings.
+   *
+   * Throws an error if no route not supplied and default route not configured or not supported by the service
+   * application. Please use {@link #listRoutes} method to find suitable route.
+   *
+   * @param route
+   *          Route to be used (note that this will link to a pipe). Or use default route of the service.
+   * @param prompts
+   *          Input strings to use for completion.
+   * @param params
+   *          arguments passed for the model used for completion.
+   * @return Output dicts of completion results per prompt.
+   */
+  completion: abstract member function(route: !?string, prompts: ![!string], params: !?json): [map<string, any>]
+
+  /**
+   * Calls process on the deployed {@link MlAtomicPipe} for the given route.
+   *
+   * Throws an error if route is not supplied and default route is not configured or not supported by the service
+   * application. Please use {@link #listRoutes} method to find suitable route.
+   *
+   * @param route
+   *          Route to be used (note that this will link to a pipe). Or use default route of the service.
+   * @param x
+   *          Input strings to use for completion.
+   * @param spec
+   *          json representing arguments passed for the model used for completion.
+   * @return result of calling {@link MlAtomicPipe#process} on the deployed pipe for the route.
+   */
+  process: abstract member function(route: !?string, x: !?any, spec: MlOperationSpec): !any
+
+  /**
+   * Helper function to get the summary of the Model Inference Service.
+   */
+  summaryHelper: private abstract member function(route: string): ![ModelInference.Summary]
+
+  /**
+   * Return summary information about current state of {@link ModelInference}.
+   */
+  summary: abstract member function(route: string): !Data
+
+  /**
+   * Return summary information about current state of deployment of {@link ModelInference}.
+   */
+  deploymentSummary: abstract member function(deploymentName: !string): !Data
+
+  /**
+   * Return summary information about threads from one of the nodes of deployment,
+   * null if there is no thread in its {@link App.Node.ThreadPool thread pool}.
+   * See {@link App.Node.ThreadPool#summarizeThreads}, {@link App.Node.Thread.Info}
+   */
+  threadsSummary: abstract member function(deploymentName: !string, node: !string serialized App.Node): Data
+
+  /**
+   * Return next element of the Stream encoded as a string.
+   *
+   * @param streamIdAndNode
+   *          Pair of stream id and the {@link App.Node.Id id} of {@link App.Node} where the stream gets generated.
+   * @param maxWaitMillis
+   *          Time in millis for how long to wait for next token before throwing an error.
+   * @param requestInfo
+   *          Information about the request returned by {@link #streamCompletionsInternal}. It should be passed only to
+   *          first completion, as this indicates that time to first token should be recorded.
+   * @return  Next object(s) encoded as string.
+   *
+   * @see: {@link #streamCompletions}
+   * @see: {@link #streamCompletionsInternal}
+   */
+  streamCompletionsNext: private abstract member function(streamIdAndNode: !Pair<int, string>,
+                                                          maxWaitMillis: !int,
+                                                          requestInfo: ModelInference.StreamRequestInfo): string
+
+  /**
+   * Starts completion request for given prompt and params.
+   *
+   * Throws an error if no route not supplied and default route not configured or not supported by the service
+   * application. Please use {@link #listRoutes} method to find suitable route.
+   *
+   * @param route
+   *          Route to be used (note that this will link to a pipe). Or use default route of the service.
+   * @param prompt
+   *          Input string to use for completion.
+   * @param params
+   *          arguments passed for the model used for completion.
+   * @return First element of the pair is pair of stream id and the {@link App.Node.Id id} of {@link App.Node} where
+   *         the stream gets generated. Second element - {@link ModelInference.StreamRequestInfo}.
+   *
+   * @see: {@link #streamCompletions}
+   * @see: {@link #streamCompletionsNext}
+   */
+  // TODO PLAT-83438 Convert return type back to `!Pair<Pair<int, string>, ModelInference.StreamRequestInfo>`
+  streamCompletionsInternal: private abstract member function(route: !?string,
+                                                              prompt: !string,
+                                                              params: !?json): !Pair<any, any>
+
+  /**
+   * Starts completion request for given prompt and params.
+   *
+   * Throws an error if no route not supplied and default route not configured or not supported by the service
+   * application. Please use {@link #listRoutes} method to find suitable route.
+   *
+   * @param route
+   *          Route to be used (note that this will link to a pipe). Or use default route of the service.
+   * @param prompt
+   *          Input string to use for completion.
+   * @param params
+   *          arguments passed for the model used for completion.
+   * @param maxWaitMillis
+   *          max time to wait for next token before throwing an error.
+   * @return Stream of completion results.
+   */
+  @reClaim(inherit=true)
+  streamCompletions: member function(route: !?string,
+                                     prompt: !string,
+                                     params: !?json,
+                                     maxWaitMillis: int = 10000): !stream<Map<string, any>>
+
+  /**
+   * If given error is not implemented error constructs and returns RouteIsNotSupported Error.
+   *
+   * @param methodName
+   *          Name of the method to include in Error message.
+   * @param error
+   *          Caught error
+   * @return  Error if `error` matches not implemented error, `null` otherwise.
+   */
+  @reClaim(inherit=true)
+  errorDefaultRouteIsNotSupported: private member function(methodName: !string, error: !string): Error
+}

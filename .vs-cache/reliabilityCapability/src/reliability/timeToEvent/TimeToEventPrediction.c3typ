@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Created by parsing a {@link TimeToEventForecastResult} and extracting the relevant information for UI purposes.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+entity type TimeToEventPrediction schema name 'TTE_PRED' {
+
+  /**
+   * Equipment-event category combination that this prediction is for
+   */
+  physicalAssetEventCategoryRelation: EquipmentEventCategoryRelation stored calc parent.physicalAssetEventCategoryRelation
+
+  /**
+   * The ML pipeline result that this prediction is based off of
+   */
+  parent: !TimeToEventForecastResult
+
+  /**
+   * Category of this prediction
+   */
+  predictionCategory: !string enum TimeToEventPredictionCategoryEnum
+
+  /**
+   * "Most likely" predicted date. Represents when the main forecast crosses the threshold. If null, indicates that the main forecast never crosses the threshold
+   */
+  predictedValueExceedsThresholdDate: datetime
+
+  /**
+   * Represents when the lower bound forecast crosses the threshold. May be sooner or later than the `predictedValueExceedsThresholdDate` depending on the diagnostic of the forecast.
+   */
+  predictedLowerBoundExceedsThresholdDate: datetime
+
+  /**
+   * Represents when the upper bound forecast crosses the threshold. May be sooner or later than the `predictedValueExceedsThresholdDate` depending on the diagnostic of the forecast.
+   */
+  predictedUpperBoundExceedsThresholdDate: datetime
+
+  /**
+   * Represents the lower bound of the range of predicted dates for the event, i.e. the earliest an event is predicted to happen, with 95% confidence.
+   */
+  lowerBoundPredictedDate: datetime stored calc predictionCategory == "SURVIVAL" || parent.diagnostic == "LOW" ? predictedLowerBoundExceedsThresholdDate : predictedUpperBoundExceedsThresholdDate
+
+  /**
+   * Represents the upper bound of the range of predicted dates for the event, i.e. the latest an event is predicted to happen, with 95% confidence
+   */
+  upperBoundPredictedDate: datetime stored calc predictionCategory == "SURVIVAL" || parent.diagnostic == "LOW" ? predictedUpperBoundExceedsThresholdDate : predictedLowerBoundExceedsThresholdDate
+
+  /**
+   * Days until the predicted date when value exceeds threshold.
+   */
+  numDaysToPredictedDate: int stored calc round(max((toMillis(predictedValueExceedsThresholdDate) - toMillis(now()))/(1000 * 60 * 60 * 24),0))
+
+  /**
+   * Days until the predicted date when lower bound exceeds threshold.
+   */
+  numDaysToPredictedDateLowerBound: int stored calc round(max((toMillis(lowerBoundPredictedDate) - toMillis(now())) / (1000 * 60 * 60 * 24), 0))
+
+  /**
+   * Days until the predicted date when upper bound exceeds threshold.
+   */
+  numDaysToPredictedDateUpperBound: int stored calc round(max((toMillis(upperBoundPredictedDate) - toMillis(now())) / (1000 * 60 * 60 * 24), 0))
+
+  /**
+   * Days until the predicted date (formatted). The extra preceding spaces are to make this a sortable field, e.g. to make '  2 Days' come before '100 Days'.
+   */
+  numDaysToPredictedDateFormatted: string stored calc concat(numDaysToPredictedDate < 10 ? "  " : numDaysToPredictedDate < 100 ? " " : "", `string(numDaysToPredictedDate), numDaysToPredictedDate == 1 ? " Day" : " Days")
+
+  /**
+   * Refreshes all stored calcs of {@link TimeToEventPrediction} to update days to predicted dates
+   */
+  refreshDaysToPredictedDate: function() js-rhino
+}

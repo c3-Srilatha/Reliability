@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a hierarchical rollup relationship between organizational departments.
+ * This relationship type extends {@link PartyRoleRelation} to establish parent-child
+ * relationships within organizational structures, enabling
+ * the modeling of complex organizational hierarchies and reporting structures.
+ */
+entity type OrganizationRollup extends PartyRoleRelation mixes Relation<Organization> type key 'OROL' {
+
+  /**
+   * The parent {@link Department} in this rollup relationship
+   */
+  fromRole: Department
+
+  /**
+   * The child {@link Department} in this rollup relationship
+   */
+  toRole: Department
+
+  /**
+   * The parent {@link Organization} derived from the parent department
+   */
+  parent: Organization stored calc fromRole.party
+
+  /**
+   * The child {@link Organization} derived from the child department
+   */
+  child: Organization stored calc toRole.party
+
+  /**
+   * The ownership percentage or involvement level in this rollup relationship
+   */
+  ownership: decimal = 1.0
+
+  /**
+   * The relationship identifier for this organizational rollup
+   */
+  relationship: ~ = 'PREL:OROL'
+
+  /**
+   * Denormalized reference to the parent organization
+   */
+  from: ~ stored calc parent
+
+  /**
+   * Denormalized reference to the child organization
+   */
+  to: ~ stored calc child
+
+  /**
+   * Denormalized type identifier of the parent department role
+   */
+  fromInfo: ~ stored calc fromRole.typeIdent
+
+  /**
+   * Denormalized type identifier of the child department role
+   */
+  toInfo: ~ stored calc toRole.typeIdent
+
+  /**
+   * Denormalized ownership percentage for hierarchy calculations
+   */
+  involvement: ~ stored calc ownership
+}

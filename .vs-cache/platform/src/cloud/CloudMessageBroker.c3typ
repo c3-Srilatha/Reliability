@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract private type CloudMessageBroker<M: CloudMessage, S: CloudReceiveMessagesSpec> mixes CloudResource {
+
+  /**
+   * Send an array of CloudMessage to this cloud message broker
+   *
+   * @param messages
+   *              Array of messages to be sent to the cloud message broker
+   * @return Errors with CloudMessage id as key
+   */
+  @action(group+='provision')
+  sendMessages: abstract member function(messages: [M]): map<string, Error>
+
+  /**
+   * Send an array of Obj to this cloud message broker
+   *
+   * @param objs
+   *              Array of objs to be sent to the cloud message broker
+   * @param spec
+   *              Spec for defining {@link CloudMessage} sent to broker.
+   * @return Errors with CloudMessage id as key
+   */
+  @action(group+='provision')
+  sendObjs: member function(objs: [Obj], spec: CloudMessageBrokerSendSpec): map<string, Error>
+
+  /**
+   * Receive an array of CloudMessage from this cloud message broker
+   *
+   * @param spec
+   *          The spec defining the behavior of receiveMessages
+   */
+  @action(group+='provision')
+  receiveMessages: abstract member function(spec: S): [M]
+
+  /**
+   * Determines whether this broker registers to receive messages asynchronously.
+   */
+  @action(group+='provision')
+  receivesMessagesAsync: function(): boolean
+
+  /**
+   * Registers to receive messages asynchronously from this cloud message broker
+   *
+   * @param spec
+   *          The spec defining the behavior of receiveMessages
+   */
+  @action(group+='provision')
+  registerReceiveMessagesAsync: optional member function(spec: S)
+
+  /**
+   * Deregisters to receive messages from this cloud message broker
+   */
+  @action(group+='provision')
+  deregisterReceiveMessagesAsync: optional member function()
+
+  /**
+   * Construct a CloudMessageProcessor based on this CloudMessageBroker
+   */
+  @action(group+='provision')
+  processor: abstract optional member function(): CloudMessageProcessor<M, S>
+
+  /**
+   * Remove all the messages in the cloud message broker and return the number of messages removed
+   *
+   * @param confirm
+   *             Set to true to confirm you want to delete all the messages in this broker
+   */
+  @action(group+='provision')
+  removeAll: abstract optional member function(confirm: boolean): int
+
+  /**
+   * Counts the number of messages in a partition of this CloudStream
+   */
+  @action(group+='provision')
+  approximateCount: abstract optional member function(partition: !string, cloudConsumer: string): !int
+
+  fromConfigTemplate: ~
+
+  @typesys(todo="PLAT-130532 - Remove Config#forConfigKey override from CloudMessageBroker")
+  forConfigKey: ~
+}

@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the parameters for generating synthetic data for the Reliability Risk application.
+ */
+@beta
+type ReliabilityOrchestrator.ReliabilityRisk.Spec.SyntheticData mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  /**
+   * Name of the workflow created by this spec from the {@link #createWorkflow} API.
+   */
+  name: ~ = 'ReliabilityRisk_SyntheticDataGeneration'
+
+  /**
+   * Control the parameters of the {@link ReliabilitySyntheticData.ReliabilityRisk.DataGenerationJob}
+   * through its fields.
+   */
+  syntheticDataGenerationJobFields: !ReliabilitySyntheticData.ReliabilityRisk.DataGenerationJobFields
+
+  /**
+   * Control the concurrency, node pool, and other runtime options of the
+   * {@link ReliabilitySyntheticData.ReliabilityRisk.DataGenerationJob} through
+   * {@link BatchJobOptions}.
+   */
+  syntheticDataGenerationJobOptions: BatchJobOptions
+
+  /**
+   * Synthetic data that is generated will have to be moved to their corresponding
+   * {@link FileSourceCollection#inboxUrl}s. Control the distributed nature of the
+   * {@link BatchJob} by providing an optional {@link DynBatchJobSpec}
+   */
+  moveDataToInboxUrlOptions: DynBatchJobSpec
+
+  /**
+   * Helper function to make a {@link Workflow.Batch} vertex that manages the generation
+   * of synthetic data.
+   * @returns a {@link Workflow.Batch}
+   */
+  makeSyntheticDataGenerationWorkflowVertex: private member function(): Workflow.Batch py
+
+  /**
+   * Synthetic data is written to a location in the {@link FileSystem} that is not
+   * compatible with the `Data Integration` process. This helper functionn will make
+   * a {@link Workflow.Batch} vertex which will coordinate the copying of files from
+   * the original location where it was created to the {@link FileSourceCollection#inboxUrl}s
+   * of all the relevant {@link FileSourceCollection}s to `reliabilityRisk`.
+   */
+  makeMoveGeneratedDataWorkflowVertex: private member function(): Workflow.Batch py
+
+  /**
+   * Validation function to ensure that all required conditions are met before the refresh process begins.
+   */
+  validate: ~ py
+
+  /**
+   * Pre-validation function to perform any necessary checks or transformations before the main validation
+   * process starts.
+   */
+  preValidate: ~ py
+
+  /**
+   * Post-validation function to carry out any actions or logging after the validation process has been completed.
+   */
+  postValidate: ~ py
+
+  /**
+   * The main function to create a {@link Workflow} for the synthetic data generation process.
+   */
+  createWorkflow: ~ py
+}

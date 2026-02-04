@@ -1,0 +1,202 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * In order to convert between native language objects and made C3 instances, it's convenient to have simple
+ * methods that behave consistently across languages and are available on the corresponding `ImplLanguage` type.
+ * NativeCompat methods of the form `toNativeX` convert from a C3 value to the corresponding native value (e.g.
+ * `toNativeObject`); those which are simply `toX` (no `Native` infix) convert from a native value 'to' the C3 value
+ * specified (e.g. `toArray`).
+ *
+ * ```java
+ * List<Long> list = new ArrayList<>();
+ * list.add(1);
+ * list.add(12);
+ * Array<Long> a = Java.toArrayOfInt(list);
+ * ```
+ *
+ * ```js
+ * let a = Js.toArrayOfInt([1, 12]);
+ * let b = Js.toNativeObject(Echo.echoJson({n: 42}));
+ * b['n'] = 123
+ * ```
+ *
+ * ```py
+ * a = c3.Py.toArrayOfInt([1, 12])
+ * ```
+ *
+ * ** `to` C3 converter rules **
+ *  * If the native value cannot be made into constructed C3 values, empty values are returned.
+ *  * If the target value is a collection and individual elements cannot be made, they will be substituted with `null`.
+ * Thus only valid values are returned, unless the `failIfInvalid` parameter is true in which case an error is thrown.
+ *
+ * @see ImplLanguage
+ */
+abstract type NativeCompat mixes Value {
+
+  /**
+   * Build a made array of the specified type from the specified native array or list. The elements are made by
+   * making them as the element type of the specified array type. The made array corresponds to the specified
+   * array type.
+   */
+  toArray: abstract function<E>(v: !?native, type: !ArrayType, failIfInvalid: boolean): [E]
+
+  /**
+   * Build a made array of `any` from the specified native array or list. The elements are made by guessing the type.
+   */
+  toArrayOfAny: abstract function(v: !?native, failIfInvalid: boolean): [any]
+
+  /**
+   * Build a made array of `double` from the specified native array or list. The elements are made as necessary.
+   *
+   * @see ArrayType#ofDbl
+   */
+  toArrayOfDbl: abstract function(v: !?native, failIfInvalid: boolean): [double]
+
+  /**
+   * Build a made array of `int` from the specified native array or list. The elements are made as necessary.
+   *
+   * @see ArrayType#ofInt
+   */
+  toArrayOfInt: abstract function(v: !?native, failIfInvalid: boolean): [int]
+
+  /**
+   * Build a made array of `string` from the specified native array or list. The elements are made as necessary.
+   *
+   * @see ArrayType#ofStr
+   */
+  toArrayOfStr: abstract function(v: !?native, failIfInvalid: boolean): [string]
+
+  /**
+   * Build a made map of the specified type from the specified native map or dictionary. The keys and values are
+   * made by making them as the element type of the specified map type. The made map corresponds to the specified
+   * map type.
+   */
+  toMap: abstract function<K, V>(v: !?native, type: !MapType, failIfInvalid: boolean): map<K, V>
+
+  /**
+   * Build a made map of `any` from the specified native map or dictionary. The keys and values are made by
+   * guessing the types.
+   */
+  toMapOfAny: abstract function(v: !?native, failIfInvalid: boolean): map<any, any>
+
+  /**
+   * Build a made map of `string` to `any` from the specified native map or dictionary. The values are made by
+   * guessing the types.
+   */
+  toMapOfStrToAny: abstract function(v: !?native, failIfInvalid: boolean): map<string, any>
+
+  /**
+   * Build a made map of `double` from the specified native map or dictionary. The keys and values are made as
+   * necessary.
+   *
+   * @see MapType#ofStrToDbl
+   */
+  toMapOfStrToDbl: abstract function(v: !?native, failIfInvalid: boolean): map<string, double>
+
+  /**
+   * Build a made map of `int` from the specified native map or dictionary. The keys and values are made as
+   * necessary.
+   *
+   * @see MapType#ofStrToInt
+   */
+  toMapOfStrToInt: abstract function(v: !?native, failIfInvalid: boolean): map<string, int>
+
+  /**
+   * Build a made map of `string` from the specified native map or dictionary. The keys and values are made as
+   * necessary.
+   *
+   * @see MapType#ofStrToStr
+   */
+  toMapOfStrToStr: abstract function(v: !?native, failIfInvalid: boolean): map<string, string>
+
+  /**
+   * Build a made instance of a type. Note that this might not actually be an Obj if the specified type does not mixin
+   * Obj. If the value specifies a type more specific that than given the more specific type is used. If it specifies
+   * an unrelated type, null is returned or an error is thrown.
+   *
+   * If the type is an Obj, then a field initializer map (either made or unmade) or a JSON object may be specified.
+   *
+   * If the type mixes {@link StringSerializable}, then the string representation may be specified.
+   *
+   * @see Obj#make
+   */
+  toObj: abstract function<O: Value>(v: !?native, type: !Type, failIfInvalid: boolean): O
+
+  /**
+   * Build a made set of the specified type from the specified native array or list. The elements are made by
+   * making them as the element type of the specified set type. The made set corresponds to the specified
+   * set type.
+   */
+  toSet: abstract function<E>(v: !?native, type: !SetType, failIfInvalid: boolean): set<E>
+
+  /**
+   * Build a made set of `double` from the specified native array or list. The elements are made as necessary.
+   *
+   * @see SetType#ofDbl
+   */
+  toSetOfDbl: abstract function(v: !?native, failIfInvalid: boolean): set<double>
+
+  /**
+   * Build a made set of `int` from the specified native array or list. The elements are made as necessary.
+   *
+   * @see SetType#ofInt
+   */
+  toSetOfInt: abstract function(v: !?native, failIfInvalid: boolean): set<int>
+
+  /**
+   * Build a made set of `string` from the specified native array or list. The elements are made as necessary.
+   *
+   * @see SetType#ofStr
+   */
+  toSetOfStr: abstract function(v: !?native, failIfInvalid: boolean): set<string>
+
+  /**
+   * Build a made stream of the specified type from the specified native collection or iterator. The elements are made
+   * by making them as the element type of the specified stream type. The made stream corresponds to the specified
+   * stream type.
+   */
+  toStream: abstract function<E>(v: !?native, type: !StreamType, failIfInvalid: boolean): stream<E>
+
+  /**
+   * Build a made stream of `any` from the specified native collection or iterator. The elements are made by guessing
+   * the type.
+   */
+  toStreamOfAny: abstract function(v: !?native, failIfInvalid: boolean): stream<any>
+
+  /**
+   * Build a made stream of `double` from the specified native collection or iterator. The elements are made as
+   * necessary.
+   */
+  toStreamOfDbl: abstract function(v: !?native, failIfInvalid: boolean): stream<double>
+
+  /**
+   * Build a made stream of `int` from the specified native collection or iterator. The elements are made as necessary.
+   */
+  toStreamOfInt: abstract function(v: !?native, failIfInvalid: boolean): stream<int>
+
+  /**
+   * Build a made stream of `string` from the specified native collection or iterator. The elements are made as
+   * necessary.
+   */
+  toStreamOfStr: abstract function(v: !?native, failIfInvalid: boolean): stream<string>
+
+  /**
+   * Construct a made value for the specified value type.
+   *
+   * @see ValueType#makeValue
+   */
+  toValue: abstract function(v: !?native, type: !ValueType, failIfInvalid: boolean): any
+
+  /**
+   * Returns a language-native key-value object for scripting languages: JavaScript Object or Python dict.
+   * The only supported input types are C3 `json` values and the language native equivalents (for which `toNativeObject`
+   * is a no-op).
+   */
+  toNativeObject: abstract function(o: !?native): native
+}

@@ -1,0 +1,144 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Sub-types of this type produce script source code that loads types in an SDK client environment.
+ *
+ * @see ServerConnection
+ */
+abstract type Remote.TypeLoader {
+
+  /**
+   * The package from which types will be loaded.
+   */
+  pkg: !Pkg
+
+  /**
+   * The {@link Action.Engine action engine} for which this loader was constructed.
+   */
+  actionEngine: !string serialized Action.Engine
+
+  /**
+   * Produce an artifact that can be used to load the necessary base types into the client SDK environment. This
+   * artifact is language and environment specific, but must be capable of instantiating a type in memory with only the
+   * standard bootstrap provided by the client entry point.
+   */
+  bootstrap: member function(spec: Remote.TypeLoaderSpec): !string
+
+  /**
+   * Produce an artifact that can be used to load a single type into the client SDK environment. This artifact is
+   * language and environment specific, but must be capable of instantiating a type in memory with only the standard
+   * bootstrap provided by the client entry point and the #bootstrap types (if previously loaded).
+   */
+  loadType: member function(type: !Type, spec: Remote.TypeLoaderSpec): !string
+
+  /**
+   * Produce an artifact that can be used to load a set of types into the client SDK environment. This artifact is
+   * language and environment specific, but must be capable of instantiating a type in memory with only the standard
+   * bootstrap provided by the client entry point and the #bootstrap types (if previously loaded).
+   */
+  loadTypes: member function(types: ![Type], spec: Remote.TypeLoaderSpec): !string
+
+  /**
+   * Whether this type loader is capable of producing a source map, that maps from the delivered artifact to a
+   * better representation of the original sources files for debugging.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Tools/Debugger/How_to/Use_a_source_map
+   */
+  supportsSourceMap: abstract member function(): boolean
+
+  /**
+   * Produce a snippet that should be appended to the delivered artifact to indicate the location of the source
+   * map is available at the specified URL. This is null by default, and should be reimplemented by type loaders
+   * to use the appropriate syntax.
+   *
+   * @see #supportsSourceMap
+   */
+  sourceMapPointer: member function(url: !string serialized Url): string
+
+  /**
+   * Produce a source map for the bootstrap artifact.
+   *
+   * @see #supportsSourceMap
+   */
+  bootstrapSourceMap: optional member function(spec: Remote.TypeLoaderSpec): !string
+
+  /**
+   * Produce a source map for the single type loading artifact.
+   *
+   * @see #supportsSourceMap
+   */
+  loadTypeSourceMap: optional member function(type: !Type, spec: Remote.TypeLoaderSpec): !string
+
+  /**
+   * Produce a source map for the single type loading artifact.
+   *
+   * @see #supportsSourceMap
+   */
+  loadTypesSourceMap: optional member function(type: ![Type], spec: Remote.TypeLoaderSpec): !string
+
+  /**
+   * Get the types which are needed for bootstrapping the type system. These are the key type system types themselves
+   * and the ones necessary for type behavior itself and serialization and deserialization. Note that more types will
+   * be loaded if {@link Remote.TypeLoaderSpec#preload} is true.
+   */
+  bootstrapTypes: cached member function(spec: Remote.TypeLoaderSpec): set<Type>
+
+  /**
+   * Get the types which are needed for making a fetch call on Persistable.
+   */
+  persistableRelatedTypes: cached optional member function(spec: Remote.TypeLoaderSpec): set<Type>
+
+  /**
+   * Get the types which are needed for the remote type system itself. These types get some special help during
+   * bootstrapping to make sure they can function stand-alone.
+   */
+  remoteTypes: cached member function(): set<Type>
+
+  /**
+   * Get the {@link Action.Engine engines} supported by this type loader. This should be each distinct action engine for which a bootstrap
+   * slug may be pre-computed.
+   */
+  supportedActionEngines: abstract member function(): set<string serialized Action.Engine>
+
+  /**
+   * Get the distinct tiers supported by this type loader.
+   */
+  supportedTiers: abstract member function(): set<string enum Remote.Tier>
+
+  /**
+   * Get whether asynchronous type systems are supported by this type loader.
+   */
+  supportsAsync: abstract member function(): boolean
+
+  /**
+   * Construct a type loader generator for the current package and specified action engine.
+   */
+  forActionEngine: function(actionEngine: !string serialized Action.Engine, failIfNone: boolean): Remote.TypeLoader
+
+  /**
+   * Construct a type loader generator for the specified package and action engine.
+   */
+  forActionEngine: function(pkg: !Pkg,
+                            actionEngine: !string serialized Action.Engine,
+                            failIfNone: boolean): Remote.TypeLoader
+
+  /**
+   * Produce an artifact that can be used to load a set of types into the client SDK environment. This does not assume
+   * that the bootstrap types have been loaded, and in fact is used to implement #bootstrap as well as #loadTypes.
+   *
+   * @param types the types to load
+   * @param bootstrap true for the bootstrap slug
+   * @param spec type loading options
+   * @param seen types already delivered and should be omitted
+   */
+  _loadTypes: abstract member function(types: ![Type],
+                                       bootstrap: boolean,
+                                       spec: !Remote.TypeLoaderSpec,
+                                       seen: !SetBuilder<Type>): !string
+}

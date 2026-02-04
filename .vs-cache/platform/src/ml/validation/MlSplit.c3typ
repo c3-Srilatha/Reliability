@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type representing a single train / validation split of input and target output data. Refer to {@link MlSplit.Technique}
+ * to see all possible validation techniques.
+ */
+// TODO: PLAT-40162 Investigate if validation should be a part of HPO or a part of the train API on MlPipe itself.
+type MlSplit<DX, DY> {
+
+  /**
+   * The train split of the input data
+   */
+  x: DX
+
+  /**
+   * The train split of the target output data
+   */
+  y: DY
+
+  /**
+   * The validation split of the input data
+   */
+  xValidate: DX
+
+  /**
+   * The validation split of the target output data
+   */
+  yValidate: DY
+
+  /**
+   * Shape of {@link #x}. The keys match the key of `x` if `x` is a collection. Otherwise, key is "x".
+   */
+  xShape: map<string, [int]>
+
+  /**
+   * Shape of {@link #y}. The keys match the key of `y` if `y` is a collection. Otherwise, key is "y".
+   */
+  yShape: map<string, [int]>
+
+  /**
+   * Shape of {@link #xValidate}. The keys match the key of `xValidate` if `xValidate` is a collection. Otherwise, key is "x".
+   */
+  xValidateShape: map<string, [int]>
+
+  /**
+   * Shape of {@link #yValidate}. The keys match the key of `yValidate` if `yValidate` is a collection. Otherwise, key is "y".
+   */
+  yValidateShape: map<string, [int]>
+}

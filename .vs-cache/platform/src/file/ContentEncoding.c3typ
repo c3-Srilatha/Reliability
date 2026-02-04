@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enum type of all supported content encoding.
+ */
+enum type ContentEncoding {
+
+  /**
+   * No encoding / compression
+   */
+  IDENTITY = 'identity'
+
+  /**
+   * Gzip compression
+   */
+  GZIP = 'gzip'
+
+  /**
+   * Snappy compression
+   */
+  SNAPPY = 'snappy'
+
+  /**
+   * LZ4 compression
+   */
+  LZ4 = 'lz4'
+
+  /**
+   * Default file extension for the given content encoding
+   */
+  defaultFileExt: inline function(contentEncoding: !string): !string
+
+  /**
+   * Guess the content encoding from the given file path
+   */
+  guessContentEncoding: inline function(filePath: !string,
+                                        defaultContentEncoding: string): string enum ContentEncoding
+
+  /**
+   * Compress the given content from byte stream into the given byte push stream
+   * Input streams will be closed after access, however, output push stream will NOT be closed. Please make sure to
+   * close it after all operations on output push stream are complete
+   *
+   * @return new compressed byte push stream
+   */
+  compress: inline function(contentEncoding: !?string enum ContentEncoding,
+                            content: !ByteStream,
+                            out: !BytePushStream): !BytePushStream java | js
+
+  /**
+   * @return a new byte push stream that is going to write compressed content with provided encoding into the given byte
+   *         push stream
+   */
+  compress: inline function(contentEncoding: !?string, out: !BytePushStream): !BytePushStream java | js
+
+  /**
+   * Uncompress the given content from input byte stream into the given byte push stream
+   * Input streams will be closed after access, however, output stream will NOT be closed. Please make sure to close it
+   * after all operations on output stream are complete
+   *
+   * @return new decoded/uncompressed byte push stream
+   */
+  uncompress: inline function(contentEncoding: !?string enum ContentEncoding,
+                              content: !ByteStream,
+                              out: !BytePushStream): !BytePushStream java | js
+
+  /**
+   * @return byte stream of decoded/uncompressed content
+   */
+  uncompress: inline function(contentEncoding: !?string, content: !ByteStream): !ByteStream java | js
+
+  /**
+   * Whether or not this content encoding is #IDENTITY (or null).
+   */
+  isIdentity: inline function(contentEncoding: !?string): boolean java | js
+}

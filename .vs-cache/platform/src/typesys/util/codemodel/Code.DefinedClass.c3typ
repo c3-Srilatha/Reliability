@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "defined class" represents a single class definition that may have methods and fields.
+ */
+@code(js="2015", py="2.2")
+type Code.DefinedClass mixes Code.Class, Code.AnnotationTarget, Code.DocumentationTarget, Code.WithMods {
+
+  /**
+   * If this class extends others, the references to those class.
+   */
+  extends: member function(): [Code.Class]
+
+  /**
+   * If this class implements interfaces, the reference to those classes.
+   */
+  implements: member function(): [Code.Class]
+
+  /**
+   * All elements of the class, in the order defined.
+   */
+  body: member function(): [Code.Node]
+
+  /**
+   * The fields defined by this class.
+   */
+  fields: member function(): [Code.FieldVar]
+
+  /**
+   * The constructors defined by this class.
+   */
+  constructors: member function(): [Code.Constructor]
+
+  /**
+   * The methods defined by this class.
+   */
+  methods: member function(): [Code.Method]
+
+  /**
+   * The property getters defined by this class.
+   */
+  getters: member function(): [Code.Getter]
+
+  /**
+   * The property setters defined by this class.
+   */
+  setters: member function(): [Code.Setter]
+
+  /**
+   * Inner classes defined by this class.
+   */
+  innerClasses: member function(): [Code.DefinedClass]
+
+  /**
+   * Validate children of a certain type are unique (none or one).
+   *
+   * @param b issue builder to add to
+   * @param type child node type to check
+   */
+  validateUnique: private member function(b: !ArrayBuilder<Pkg.Issue>, type: !Type<<Code.Node>>)
+
+  /**
+   * Validate children of a certain type have unique names.
+   *
+   * @param b issue builder to add to
+   * @param type child node type to check
+   */
+  validateUniqueNames: private member function(b: !ArrayBuilder<Pkg.Issue>, type: !Type<<Code.Node>>)
+
+  _extends: private [Code.Class]
+
+  @code(js="none", py="none")
+  _implements: private [Code.Class]
+
+  _body: private [Code.Node]
+
+  @code(js="none", py="none")
+  _mods: ~
+}

@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A C3 Type that represents "Camel Case Pattern".
+ *
+ * E.g. string "AbstractBaseClass" will match against patterns such as "ABC", "AB", "BC", "Base" etc.
+ */
+type CamelCasePattern mixes RegexPattern {
+
+  /**
+   * Will match pattern even if first letter of input string is lower case. E.g. "asBoolean" will match camel case
+   * pattern "AB" only if `allowLowerCamelCase` is `true`.
+   */
+  allowLowerCamelCase: boolean
+
+  /**
+   * Construct a CamelCasePattern from the given input pattern
+   *
+   * @param s
+   *           input pattern
+   * @param allowLowerCamelCase
+   *           should we camel case strings that start with lower case.
+   * @param fileNameOnly
+   *           this flag will ignore file path if input is a url.
+   * @return the compiled CamelCasePattern
+   */
+  fromString: ~
+
+  fromString: inline function(s: !string,
+                              allowLowerCamelCase: !boolean,
+                              fileNameOnly: !boolean): !mixing CamelCasePattern
+
+  fromString:        inline function(s: !string, allowLowerCamelCase: !boolean): !mixing CamelCasePattern
+  computeMatchScore: ~
+  mapMatchGroups:    ~
+  explicitGroups:    private @java(class='java.util.BitSet') native
+}

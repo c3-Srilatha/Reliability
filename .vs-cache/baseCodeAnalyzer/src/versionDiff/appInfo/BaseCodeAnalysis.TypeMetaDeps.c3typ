@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A lighter version of {@link TypeMetaDeps} that only includes relevant information for
+ * comparing {@link App} [versions](SemanticVersion).
+ *
+ * {@link TypeMetaDeps} cannot be used directly for comparing versions because most of its
+ * fields directly reference {@link Type}s. When comparing two versions, the complete Type
+ * system might not be available for each version, so any Types that no longer exist in a
+ * given version but are referenced by {@link TypeMetaDeps} would cause invalid reference
+ * errors when trying to construct the object.
+ *
+ * @see BaseCodeAnalysis.TypeInfo
+ */
+type BaseCodeAnalysis.TypeMetaDeps {
+
+  /**
+   * Type names of all Types that are mixed into this Type either explicitly or implicitly
+   * through other mixins, ordered from closest to farthest mixin.
+   */
+  mixins: @indexed set<!string>
+}

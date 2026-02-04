@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// Parameters for creating Data lake tables
+@beta
+type DataLake.CreateTableSpec {
+
+  // Table name
+  name: !string
+
+  // Table schema
+  schema: !TupleType
+
+  // Optional table namespace, if missing default namespace will be used.
+  namespace: string
+
+  /**
+   * List of {@link Expr} that defines how the table is partitioned.
+   * Each expression must be a valid {@link Expr} that calculate a partition value from table's source value
+   * Function supported in the expression is limited to the following: "day", "month", "year", "hour", "bucket"
+   * For bucket partition,you need an additional parameter to specify the number of buckets.
+   * e.g.
+   * "day(t)" would partition table based on the day of column t (which must be a date/timestamp column)
+   * "bucket(asset, 8)" would partition table based on the hash of column asset mod 8
+   */
+  partitionExpressions: [string serialized Expr]
+
+  // Table description.
+  description: string
+
+  // Table meta-data..
+  metaFields: map<string, string>
+
+  // Create spec from Source type. Schema would be derived from the source's type meta and name would be the type name.
+  fromSource: function(type: !string): DataLake.CreateTableSpec
+}

@@ -1,0 +1,276 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Reader for a log written by the C3 {@link Logger}. This should have constructors from various log
+ * storage systems (e.g. local file, splunk, ELK stack). In addition to basic methods for streaming through the
+ * {@link Log.Entry}, this profiler type should be a centralized place to implement various filtering and aggregation
+ * operations.
+ * Example usage
+ * ```
+ * log = Log.Profile.fromFile("path/to/my/file.log")
+ * log.entries().each(...)
+ * ```
+ */
+type Log.Profile {
+
+  /**
+   * Basic constructor, reads from a single file.
+   * @param file
+   *           file to read the log from.
+   * @return a constructed Log.Profile that can be used to filter/aggregate the entries of the log.
+   */
+  fromFile: function(file: !string serialized File): !Log.FileProfile
+
+  /**
+   * Create the Log.FileProfile instance using c3-server.log from localFileSystem. This function only works in single-node
+   * deployments, in=n multi-node deployments, each server (leader, task,..) has its own logs, and this method will be
+   * executed randomly on one of the leader nodes.
+   * @return {@link Log.FileProfile} contains all {@link Log.Entry.Action} used to plot timeseries for each c3 Action.
+   */
+  fromC3ServerLog: function(): !Log.FileProfile
+
+  /**
+   * Return a stream of entries in the log.
+   * @param limit
+   *          Number of lines to be streamed from the log. (Note some logs may occupy multiple lines). If -1, all lines will be read.
+   * @param head
+   *          if true, return the first (oldest) `limit` entries, otherwise return the last (newest) `limit` entries.
+   * @return a stream of each entry in the log, in the order they were logged.
+   */
+  entries: abstract member function(limit: !int = -1, head: boolean): !?stream<Log.Entry>
+
+  /*
+   * Same as {@link #entries}, except filters for {@link Log.Entry.Action}
+   *  @param spec
+   *            See {@link Log.Profile.ActionsSpec}. If null, defaults will be used
+   *  @return a stream of Log.Entry.Action filtered by root action id, if provided.
+   *  Actions are returned in the order they were logged.
+   *  Assumes that `rootId` is a root action (ie. there exist actions with `rootId` as their actionRoot or asyncRoot).
+   *  If no actions are found, the action with `rootId` as its action ID is identified and
+   *  returns all actions sharing a root (actionRoot and asyncRoot) with this action.
+   *  Actions are grouped by node and ordered by logging time, last to first (this generally means the reverse order in which they were completed).
+   */
+  actions: abstract member function(spec: !Log.Profile.ActionsSpec): !?stream<Log.Entry.Action>
+
+  /**
+   * Same as {@link #entries}, except filters for {@link Log.Entry.Action}
+   * @param rootId
+   *           Id of the root action. Uses default values for {@link Log.Profile.ActionsSpec} and sets the rootId
+   * @return a stream of Log.Entry.Action filtered by root action id, if provided.
+   * If `rootId` is not a root action (ie. no actions have `rootId` as their actionRoot or asyncRoot),
+   * returns all actions sharing a root (actionRoot and asyncRoot) with `rootId`.
+   */
+  actions: abstract member function(rootId: string): !?stream<Log.Entry.Action>
+
+  /**
+   * Filters profiling logs for ones descending from the given action, given a stream of a superset of actions.
+   * Useful for filtering logs for a specific action, after calling Log.FileProfile#actions,
+   * which may return a superset of actions descending from the given actionId if actionId is not a root action.
+   */
+  narrowActions: function(actions: !?stream<Log.Entry.Action>, actionId: !string): !?stream<Log.Entry.Action> py
+
+  /**
+   * Aggregates actions with a common typeName and actionName.
+   * @param actionsSpec
+   *           see {@link Log.Profile.ActionsSpec}
+   * @param fetchSpec
+   *           see {@link FetchSpecBase}
+   * @return array of {@link Log.Profile.AggregateResult} for each action type and name
+   */
+  actionProfiler: function(actionsSpec: !?Log.Profile.ActionsSpec,
+                           fetchSpec: FetchSpecBase): [Log.Profile.AggregateResult]
+
+  /**
+   * Aggregates actions with a common typeName and actionName, using default values for {@link Log.Profile.ActionsSpec}.
+   * Recommended to use above method with a custom {@link Log.Profile.ActionsSpec} for more control
+   * @param actionId
+   *           action ID to be profiled. See `actionId` in {@link Log.Profile.ActionsSpec}. If empty string (""), no filtering will be applied (all actions will be profiled).
+   * @param fetchSpec
+   *           see {@link FetchSpecBase}
+   * @return array of {@link Log.Profile.AggregateResult} for each action type and name
+   */
+  actionProfiler: function(actionId: !?string, fetchSpec: FetchSpecBase): [Log.Profile.AggregateResult]
+
+  /**
+   * Aggregate the log entry actions into one log entry action.
+   * @param actions
+   *           stream of log entry results to aggregate.
+   * @return a single log entry result that aggregates the individual fields of the provided log entry results.
+   */
+  aggregate: function(actions: !stream<Log.Entry.Action>): !Log.Entry.Action
+
+  aggregate: function(actions: ![Log.Entry.Action]): !Log.Entry.Action
+
+  /**
+   * Create a Pandas DataFrame from the log entries.
+   * @param actions
+   *           stream of profiled data for the action.
+   * @param root_id
+   *           action id of the root action. If not provided, no filtering will be applied.
+   */
+  create_data: function(actions: !stream<Log.Entry.Action>, root_id: string): Data py-data
+
+  /**
+   * Create a visualization plotting start and end timestamps for all the provided actions filtered by root_id.
+   * @param actions
+   *           stream of profiled data for the action.
+   * @param rootId
+   *           action id of the root action. If not provided, no filtering will be applied.
+   * @param new_tab
+   *           if true, the visualization will be opened in a new tab.
+   * @return native plot object.
+   */
+  ganttChart: function(actions: !stream<Log.Entry.Action>, rootId: string): native py
+
+  /**
+   * Helper method for {@link #flamegraph}. See LogTreeNode in Log.Profile.py
+   * LogTreeNode structure:
+   * ```python
+   * class LogTreeNode:
+   *       def __init__(self, log_entry):
+   *           self.log = log_entry # type Log.Entry.Action
+   *           self.children = [] # child nodes
+   *           self.value = -1 # total time in milliseconds for the action and all of its descendant actions to complete,
+   *                           # which is used to determine the relative width of the action in the flamegraph visualization
+   *           self.data = None # dictionary populated with data for Log.Profile#flamegraphHtml
+   *       def populate_values(self): # traverses tree and populates value and data fields
+   *       def populate_graph(actions): # static method, returns dictionary of nodes keyed by action_id and root nodes
+   *       def get_children(self): # returns all descendant nodes, including self as the first entry
+   *       def get_actions(self): # returns all descendant logs, including self as the first entry
+   * ```
+   * @param actions
+   *           stream of profiled data for the action.
+   * @param actionId
+   *           action id of the root action for the graph. If not provided, will assume the first root action in `actions`
+   * @return native LogTreeNode python object
+   */
+  flameRootNode: private function(actions: !stream<Log.Entry.Action>, actionId: string): native py
+
+  /*
+   * Returns the data required for a flamegraph with the following fields (note that depending on the entry, some fields may be missing):
+   *    typeName: C3 type for the action
+   *    actionName: name of the action method
+   *    value: total time in milliseconds for the action and all of its descendant actions to complete
+   *    time: start time of the action
+   *    id: action id
+   *    asyncParent: id of the parent action in the async tree
+   *    parent: id of the parent action in the action tree
+   *    asyncRoot: id of the root action in the async tree
+   *    root: id of the root action in the action tree
+   *    numMerged: number of actions with the same name merged into this cell
+   *    state: state of the action {@see ActionState}
+   *    netTime: difference between the completion time of action and of its synchronous children
+   *    pct95: 95th percentile time spent on the action, across all calls.
+   *    pct99: 99th percentile time spent on the action, across all calls.
+   *    minTime: Time spent on the shortest call. Note that if an action is faster than 25ms, it will not appear in the logs.
+   *    maxTime: Time spent on the longest call.
+   *    avgTime: Average time spent on the action, across all calls.
+   *    children: list of child actions (same format as this object)
+   * @param arg
+   *           action id of the root action for the graph, or the list of actions to include in the graph.
+   * @param top_k
+   *           Use top k slowest actions. 0 means all actions.
+   * @param keep_workflow_actions
+   *          To keep {@link Workflow.Run} and {@link WorkflowQueue} actions or not.
+   * @return json of flamegraph data
+   */
+  flamegraphJson: private function(arg: !string | !stream<Log.Entry.Action> | ![Log.Entry.Action] | !Log.Profile.ActionsSpec,
+                                   topK: int,
+                                   keepWorkflowActions: boolean): json py-server
+
+  /**
+   * Returns native ipython.display.HTML object of {@link #flamegraphHtml}
+   * @param arg
+   *           action id of the root action for the graph, or the list of actions to include in the graph.
+   * @param top_k
+   *           Use top k slowest actions. 0 means all actions.
+   * @param keep_workflow_actions
+   *          To keep {@link Workflow.Run} and {@link WorkflowQueue} actions or not.
+   */
+  flamegraph: private function(arg: !string | !stream<Log.Entry.Action> | ![Log.Entry.Action] | !Log.Profile.ActionsSpec,
+                               topK: int,
+                               keepWorkflowActions: boolean): native py
+
+  /**
+   * Create a flamegraph {@link https://www.brendangregg.com/flamegraphs.html} for all provided actions filtered by action_id.
+   * @param arg
+   *           action id of the root action for the graph, or the list of actions to include in the graph.
+   * @param top_k
+   *           Use top k slowest actions. 0 means all actions.
+   * @param keep_workflow_actions
+   *          To keep {@link Workflow.Run} and {@link WorkflowQueue} actions or not.
+   * @return string an html representing the flamegraph
+   */
+  flamegraphHtml: private function(arg: !string | !stream<Log.Entry.Action> | ![Log.Entry.Action] | !Log.Profile.ActionsSpec,
+                                   topK: int,
+                                   keepWorkflowActions: boolean): string py-server
+
+  /*
+   * Executes the lambda_ in `py-jep` runtime and measures the performance and displays the flamegraph.
+   * lambda_ must return
+   *
+   * Example usage:
+   * ```python
+   * def f():
+   *     import pandas as pd
+   *     import numpy as np
+   *     df = pd.DataFrame(np.arange(2**20))
+   *     data = c3.Data.from_pandas(df)
+   *     return data
+   * actions, data = c3.Log.Profile.flameit(f)
+   * ```
+   *
+   * ```python
+   * def f(data):
+   *     mean_ = data.mean()
+   *     max_ = data.max()
+   *     return [mean_, max_]
+   * actions, [mean_, max_] = c3.Log.Profile.flameit(f, [data])
+   * ```
+   *
+   * @param lambda_
+   *           The lambda that should be profiled
+   * @param args
+   *           The positional arguments to the lambda_
+   * @param actionRequirement
+   *           the requirement for execution of the action. Default is `py-jep`.
+   * @param top_k
+   *           Use top k slowest actions, default is to use all actions
+   * @param keep_workflow_actions
+   *          To keep {@link Workflow.Run} and {@link WorkflowQueue} actions or not.
+   * @return prints the profiling info and display flamegraph. Returns a tuple of (actions, result) where result is the
+   *  output of the lambda. Returned actions are sorted and could be used for plottingTimestamp.
+   */
+  flameit: private function(lambda_: !lambda(args: any ...): any,
+                            args: [any],
+                            actionRequirement: string,
+                            topK: int,
+                            keepWorkflowActions: boolean): native py
+
+  /*
+   * Use [pyinstrument](https://pyinstrument.readthedocs.io/en/latest/) or both pyinstrument and Python [cProfile](https://docs.python.org/3/library/profile.html)
+   * to profile a lambda function.
+   * See {@link #flameit}.
+   *
+   * Example usage:
+   * ```python
+   * def f():
+   *     import pandas as pd
+   *     import numpy as np
+   *     df = pd.DataFrame(np.arange(2**20))
+   *     data = c3.Data.from_pandas(df)
+   *     return data
+   * out = c3.Log.Profile.pyProfiler(f)
+   * ```
+   */
+  pyProfiler: private function(lambda_: !lambda(args: any ...): any,
+                               args: [any],
+                               actionRequirement: string,
+                               cProfiler: boolean): native py
+}

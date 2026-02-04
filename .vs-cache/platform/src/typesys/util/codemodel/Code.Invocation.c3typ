@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An "invocation" represents a simple function call to a known method. This is the best form when the function name
+ * and arguments are known at code-generation time.
+ *
+ * For example:
+ * ```java
+ * Jsn.parse(s)
+ * ```
+ * Here the method is known as well as the expression that makes up the only argument.
+ *
+ * This also supports python keyword arguments:
+ * ```py
+ * c3.Jsn.parse(json=s)
+ * ```
+ *
+ * @see Code.Apply
+ * @see Code.Call
+ * @see Code.New
+ */
+type Code.Invocation mixes Code.Expr {
+
+  /**
+   * The object on which the method is being invoked, if any. If this is a static method, the target will be a class or
+   * reference type. If it's a member method, the target will be an expression that resolves to the instance.
+   * If null, the function is a global declared in the same compilation unit.
+   */
+  left: member function(): Code.Expr | Code.TypeBase
+
+  /**
+   * The name of the method being called.
+   */
+  method: member function(): !string
+
+  /**
+   * The positional arguments to call with.
+   */
+  args: member function(): [!Code.Expr]
+
+  /**
+   * The keyword arguments to call with.
+   */
+  kwargs: member function(): @indexed map<!string, !Code.Expr>
+
+  _left:   private Code.Expr | Code.TypeBase
+  _method: private !string
+  _args:   private [!Code.Expr]
+
+  @code(java="none", js="none")
+  _kwargs: private @indexed map<!string, !Code.Expr>
+}

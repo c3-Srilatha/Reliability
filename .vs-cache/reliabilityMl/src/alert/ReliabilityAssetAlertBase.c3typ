@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generic type of alert that contains the shared fields found in both "real" ({@link ReliabilityAssetAlert}) and
+ * validation alerts ({@link ReliabilityAssetValidationAlert}).
+ * It is associated with a particular {@link ReliabilityAsset}, indicating abnormal behavior in a specific attribute,
+ * and is based on a {@ReliabilityMlModel} that defines the criteria for triggering the alert.
+ *
+ * This type is abstract and should not be used directly. Instead, use one of the concrete subtypes.
+ */
+abstract entity type ReliabilityAssetAlertBase mixes TimedValue {
+
+  /**
+   * The {@link ReliabilityAsset} linked to this alert.
+   */
+  parent: !ReliabilityAsset
+
+  /**
+   * The {@link ReliabilityMlModel} which triggered this alert.
+   */
+  triggeringModel: ReliabilityMlModel
+
+  /**
+   * The id of the {@link ReliabilityAssetAlert#triggeringModel}.
+   */
+  triggeringModelId: string stored calc !exists(triggeringModel) ? 'No Live Model' : triggeringModel.id
+
+  /**
+   * Direct mapping of feature name to value based off of the feature contributions associated with the alert.
+   * These feature contributions are normalized and they add up to 1.
+   * They are displayed on the contributions grid on the alert detail page.
+   */
+  featureContributionMap: map<string, double> schema name 'FEAT_CONT_MAP'
+
+  /**
+   * A field capturing information about the model output for the {@link timestamp} that the alert is raised.
+   * Supports multiple formats for display in the UI.
+   */
+  primaryModelOutput: ReliabilityAssetAlert.ModelOutput
+
+  /**
+   * A field capturing information about the model output for the {@link timestamp} that the alert is raised.
+   * Supports multiple formats for display in the UI.
+   */
+  allPrimaryModelOutputs: map<string, ReliabilityAssetAlert.ModelOutput>
+
+}

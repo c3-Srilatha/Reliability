@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * ML Configurations for Reliability application.
+ */
+type ReliabilityMLConfig mixes Singleton, Config {
+
+  // TODO: REL-22723: Add `const` to Ml Project IDs in ReliabilityMLConfig type
+
+  /**
+   * The default {@link MlProject} used to calculate risk scores in reliability.
+   * **NOTE**: Do not modify this ML project ID field here — changing it may break the application and lead to unpredictable behavior.
+   */
+  reliabilityRiskMLProjectId: string = 'reliabilityRisk'
+
+  /**
+   * The default {@link MlProject} used to calculate risk scores for control valve {@link ReliabilityAsset}s in reliability.
+   * **NOTE**: Do not modify this ML project ID field here — changing it may break the application and lead to unpredictable behavior.
+   */
+  reliabilityRiskControlValveMLProjectId: string = 'reliabilityRiskForControlValves'
+
+  /**
+   * The default {@link MlProject} used to calculate time to event in reliability.
+   * **NOTE**: Do not modify this ML project ID field here — changing it may break the application and lead to unpredictable behavior.
+   */
+  reliabilityTimeToEventMLProjectId: string = 'reliabilityTimeToEvent'
+
+  /**
+   * The default {@link MlProject} used to calculate risk scores with residual diagnostics in reliability.
+   * **NOTE**: Do not modify this ML project ID field here — changing it may break the application and lead to unpredictable behavior.
+   */
+  reliabilityRiskWithResidualDiagnosticsMLProjectId: string = 'reliabilityRiskWithResidualDiagnostics'
+
+  /**
+   * The interval used for training {@link ReliabilityMlModel}s for different {@link MlProject}s inside of Reliability.
+   */
+  mlProjectTrainingIntervalMap: map<string, string>
+
+  /**
+   * Prefix added to {@link Metric} names to form {@link Feature} names for Reliability Risk {@link ReliabilityMlModel}s.
+   */
+  sensorFeatureNamePrefix: string = 'Feature_'
+
+  /**
+   * The name for the created metric which operates to only train on data from user-specified intervals.
+   */
+  userSpecifiedTrainingPeriodExclusionMaskName: string = 'mask_AdHocTraining'
+
+  /**
+   * The name of the key that maps to the {@link ReliabilityMlModel}'s features in {@link MlModel#xFeatures}
+   */
+  reliabilityMLModelFeaturesKey: string = 'features'
+
+  /**
+   * Batch Size for Data Preparation.
+   */
+  dataPreparationBatchSize: int = 1
+
+  /**
+   * Max Concurrency for Data Preparation.
+   */
+  dataPreparationMaxConcurrency: int = 1
+
+  /**
+   * Max Concurrency Per Node for Data Preparation.
+   */
+  dataPreparationMaxConcurrencyPerNode: int = 1
+
+  /**
+   * Used with {@link ReliabilityMLConfig#featureValueLookbackHorizon} to calculate feature values.
+   */
+  featureValueEvalInterval: string enum Interval
+
+  /**
+   * Used to calculate feature values in `FeatureFetchBase#getEvalMetricsFeatureValues` and {@link Sensor#getSensorValues}.
+   * Time units are determined by {@link ReliabilityMLConfig#featureValueEvalInterval}.
+   */
+  featureValueLookbackHorizon: int
+
+  /**
+   * Used to calculate feature values in `FeatureFetchBase#getEvalMetricsFeatureVariances` and {@link Sensor#getSensorVariances}.
+   * Time units are determined by {@link ReliabilityMLConfig#featureVarianceEvalInterval}.
+   */
+  featureVarianceLookbackHorizon: int
+
+  /**
+   * Used with {@link ReliabilityMLConfig#featureVarianceLookbackHorizon} to calculate feature variances.
+   */
+  featureVarianceEvalInterval: string enum Interval
+
+  /**
+   * Used to calculate feature values and variances for {@link Sensor}s in the app.
+   */
+  sensorValueMetricName: string
+
+  /**
+  * Used to set the limit for sensors fetched to retrieve sensors without Physical Point Measurement Series
+  */
+  ppmSensorFetchBaseLimit: int
+
+  /**
+   * Limit of how many sensor features a dataset can have
+   */
+  maxFetchFeaturesSensorsPerDataset: int = 2000
+
+  /**
+   * This value is used as the default for Dataset Preparation Jobs, if {@link ReliabilityMlDatasetPreparationSpec#jobName} is not specified during creation.
+   * **Note** that the job name is also used as a prefix for the datasets' names.
+   */
+  datasetPreparationJobFallbackName: string
+
+  /**
+   * This value is used as the default for Model Configuration Jobs, if a name for the training job is not specified during creation.
+   */
+  modelConfigRunFallbackName: string
+}

@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract base type for external Vaults.
+ */
+abstract private type ExternalVault mixes ConfigStore, DefaultInstance<ExternalVault> {
+
+  /**
+   * Whether external Vault is enabled.
+   */
+  enabled: inline function(): boolean
+
+  /**
+   * Gets the value from Vault.
+   */
+  @action(group+='read')
+  get: abstract member function(key: !?string): string
+
+  /**
+   * Puts the data into Vault.
+   */
+  @action(group+='write')
+  put: abstract member function(key: !?string, data: !string)
+
+  /**
+   * Removes the data at specific path from Vault.
+   */
+  @action(group+='write')
+  delete: abstract member function(key: !?string)
+
+  /**
+   * Lists the files on a path in Vault.
+   */
+  @action(group+='read')
+  list: abstract member function(key: !?string): [ExternalVaultFileValue]
+
+  loadConfigAndSecret:  ~
+  loadConfig:           ~
+  loadSecret:           ~
+  loadFromOverride:     ~
+  setConfigValue:       ~
+  setConfig:            ~
+  clearConfig:          ~
+  configAndSecretFiles: ~
+  inst:                 ~
+}

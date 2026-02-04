@@ -1,0 +1,159 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines a "Stress" / Performance, Scalability & Reliability test case aka Maxim Gun options (bullet magazine).
+ */
+type MaximGunOptions mixes ExecutionEnvironment, Identifiable {
+
+  /**
+   * Test action. This action will be executed in the target cluster as REST request.
+   *
+   * @see @requestSupplier
+   */
+  action: lambda() schema suffix 'AC'
+
+  /**
+   * Optional test action parameters that will be applied randomly at each iteration.
+   *
+   * Value should be: [map<string, any>]
+   */
+  // TODO: [map<string, any>] schema suffix 'AR'
+  actionArgs: json
+
+  /**
+   * Test request supplier. I.e. action that gets executed in the test driver cluster to compute HttpRequests for target
+   * cluster.
+   *
+   *
+   * requestSupplier: MaximGunRequestSupplier schema suffix 'REQ'
+   */
+  // TODO: PLAT-12070 Detected included type circular dependency in type MaximGunRequestSupplier field apply
+  requestSupplier: lambda(user: MaximGunUser): [HttpRequest] schema suffix 'REQ'
+
+  /**
+   * Total count of approximately how many test actions / requests will be executed. Actual count could be bit more then
+   * this number but never less then this number.
+   */
+  count: !int = 1
+
+  /**
+   * Max number of concurrent actions at any point in time. Note that if cluster that is driving the test doesn't have
+   * available threads MaximGunFire.activeConcurrency could be less then this number.
+   *
+   * Also it's important to note that even if `#userCount > #concurrency` there could still be concurrent actions
+   * running for a given user.
+   */
+  concurrency: !int = 1
+
+  /**
+   * Min and max seconds to wait before executing the first test action for a given test user. This is effectively a
+   * ramp up period. If not provided then there will be no delay.
+   */
+  initialWaitSecs: DoublePair
+
+  /**
+   * Min and max seconds to wait before executing the next test action for a given test user.  If not provided then
+   * there will be no delay.
+   */
+  waitSecs: DoublePair
+
+  /**
+   * Number of test users. They will be picked randomly for executing a test action. Number of test run per user will be
+   * approximately `#count / #userCount`.
+   * NOTE: this option will be ignored iff {@link #uniqueUserPerThread} is true.
+   */
+  userCount: int = 1
+
+  /**
+   * If true, each concurrent thread will be a unique user. This means that {@link #userCount} will be ignored and
+   * presumed to be equal to {@link #concurrency}.
+   */
+  uniqueUserPerThread: boolean
+
+  /**
+   * Test user name prefix. Suffix is going to be number in the [1..#userCount] range.
+   */
+  userPrefix: string = "test.user."
+
+  /**
+   * If set then Basic Authentication header will be generated using this password.
+   */
+  userBasicAuthPwd: string
+
+  /**
+   * If #userBasicAuthPwd is not set then #userCount and #userPrefix will be ignored and random authentication header
+   * will be picked up from this array.
+   */
+  authHeaders: [string] schema suffix 'AUTH'
+
+  /**
+   * When true, the fire action will wait for its completion
+   */
+  synchronous: boolean
+
+  /**
+   * When true, record the successful responses obtained from the requests
+   */
+  recordResponses: boolean
+
+  /**
+   * Number of seconds before the request times out
+   */
+  timeoutSeconds: int = 180
+
+  /**
+   * Number of seconds before the batch job times out
+   */
+  jobTimeoutSeconds: int = 1800
+
+  /**
+   * Any steps that should be done before the test.  These are not counted in the performance timing.
+   * It can return a string or a JSON object that will be stored in {@link setupInputValue}.
+   *
+   * If the return value is a string, which can be a session id that is used by the test and cleaned up by {@link teardownLambda}, for example,
+   * that value will be passed to {@link action} and {@link teardownLambda} as the `setupInput` parameter.
+   *
+   * If multiple strings or a more complex data structure is returned in the setupLambda as a JSON object,
+   * the JSON object will be partially applied to the {@link action} and {@link teardownLambda}.
+   *
+   * Example:
+   * For the following setupLambda: Lambda.fromJavaScript(function () { return { setupObj: { a: 1, b: 2, c: 'this is a string' } }; }),
+   * the action lambda and teardownLambda functions can consume the returned object in the following format:
+   *
+   * Action: Lambda.fromJavaScript(function (setupObj) { return setupObj.a + setupObj.b; })
+   * teardownLambda: Lambda.fromJavaScript(function (setupObj) { TestEntity.remove(setupObj.c); })
+   */
+  setupLambda: lambda() schema suffix 'SU'
+
+  /**
+   * Any steps that should be done after the test.  These are not counted in the performance timing.
+   */
+  teardownLambda: lambda() schema suffix 'TD'
+
+  /**
+   * An argument passed from {@link setupLambda} to {@link action} and {@link teardownLambda}.
+   * This is set by {@link MaximGun.fire}.
+   */
+  setupInputValue: string
+
+  /**
+   * Field names of the action return value which will be used to calculate the stats instead of the API duration
+   * Note: the field value needs to be double
+   */
+  customMeasurementFields: [string] schema suffix 'MF'
+
+  /**
+   * Creates or changes passwords for test users and places them in the provided group. Only valid if #userBasicAuthPwd
+   * is provided.
+   */
+  upsertTestUsers: member function(group: !?UserGroup): [User]
+
+  initialMillis: private inline member function(): !int
+  nextMillis:    private inline member function(): !int
+}

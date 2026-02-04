@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a {@link WorkOrder}, which can be loaded from an external source.
+ */
+type CanonicalWorkOrder mixes Canonical<CanonicalWorkOrder> {
+
+  /**
+   * Work Order number from Source System
+   */
+  workOrderNum: !string
+
+  /**
+   * Reference to parent for this work order
+   */
+  parent: !string
+
+  /**
+   * Functional location of the work order. Used to connect work order to subsystem.
+   */
+  functionalLocation: !string
+
+  /**
+   * Type of work order: Planned vs. Unplanned
+   */
+  workOrderType: !string
+
+  /**
+   * Maintenance activity type: Predictive vs. Corrective Maintenance
+   */
+  maintActivityType: string
+
+  /**
+   * Priority of work order. Used identify the importance of the work order
+   */
+  priority: string
+
+  /**
+   * Date time when work order was requested
+   */
+  requiredStartDatetime: datetime
+
+  /**
+   * Date time when work order was started
+   */
+  actualStartDatetime: !datetime
+
+  /**
+   * Date time when work order was finished
+   */
+  actualFinishDatetime: !datetime
+
+  /**
+   * Helps identify the root cause
+   */
+  symptomCode: string
+
+  /**
+   * Helps identify the root cause
+   */
+  apparentCause: string
+
+  /**
+   * Helps identify the root cause
+   */
+  causeText: string
+
+  /**
+   * Helps identify the root cause
+   */
+  codingIncludingTextField: string
+
+  /**
+   * Reference to {@link Item}} for maintenance in this work order
+   */
+  maintItem: string
+
+  /**
+   * Identify importance of the work order
+   */
+  totalActCosts: decimal
+
+  /**
+   * Description according to Priority Code
+   */
+  priorityDescription: string
+}

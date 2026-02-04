@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This implementation of {@link DataGrid} is based on a collection of {@link Obj} instances. There is one row for
+ * each instance and columns for each of the fields of the Obj. If the collection is a {@link Map} row labels are the
+ * map keys and otherwise row labels are the indices.
+ *
+ * If the collection is a {@link Stream}, the totalSize will return `null` until the stream has been exhausted.
+ *
+ * Normally only fields are included, but if properties or methods are annotated with `@dataGrid(show=true)`, they
+ * will be included as well.
+ */
+type DataGrid.Objs mixes DataGrid.CollBase {
+
+  /**
+   * The type which all the instances mix in. In most cases, this will be a more specific type than **Obj**.
+   * If the collection is of heterogenous types, it will be a parent type of them all.
+   */
+  sourceType: !Type<<Obj>>
+
+  /**
+   * Use the specified collection of Objs as the basis for the visualization. This is the only valid way to instantiate
+   * an instance so that state is properly set up.
+   */
+  fromCollection: function(coll: !Collection<Obj>, spec: DataGrid.LoadSpec): !DataGrid.Objs java | js
+
+  /**
+   * Get the methods and properties that have an explicit `@dataGrid(show=true)` annotation.
+   */
+  showMethods: cached function(type: !Type): [string]
+
+  /**
+   * Get the fields that have an explicit `@dataGrid(hide=true)` annotation.
+   */
+  hideFields: cached function(type: !Type): [string]
+
+  /**
+   * Get both #showMethods and #hideFields in one shot.
+   */
+  showHide: cached function(type: !Type): !Pair<[string], [string]>
+
+  row:     ~ java | js
+  _coll:   private !Collection<Obj>
+  _stream: private stream<Obj>
+  _buffer: private @java(class="ArrayList<c3.platform.typesys.value.Pair<String, Obj>>") native
+  _access: private @java(class="HashMap<String, c3.platform.data.DataGrid_Objs_Methods$Accessor>") native
+}

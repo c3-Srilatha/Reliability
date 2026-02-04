@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a Min-Max scaling pipeline for data processing in machine learning models. This entity type
+ * extends the base functionality of a generic scaling pipeline and provides specific logic for transforming and training
+ * data based on the Min-Max scaling algorithm. This involves learning the minimum and maximum values for each feature in
+ * the dataset and then applying these learned values to scale the data to a desired range, typically [0, 1] or [-1, 1].
+ * This is commonly used for normalizing data before feeding it into machine learning models.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Scaler.MinMaxScalerPipe extends ReliabilityRiskMl.Scaler.Pipe<Data, Data> type key 'MMSP' {
+
+  /**
+   * The map that stores the learned results of the Min-Max scaler, with the feature name as the key and
+   * the learned scaling parameters (minimum and maximum values) as the value.
+   * This map is used to store the results after training the scaler and is essential for transforming data.
+   * The schema suffix 'SSTR' identifies the storage format for the scaling results.
+   */
+  trainedResults: private map<string, [double]> schema suffix 'SSTR'
+
+  /**
+   * The minimum value of the scaling range. By default, this is set to `0`. It can be adjusted to
+   * scale the data to a different range (e.g., [-1, 1] or [0, 5]).
+   */
+  rangeMin: double = 0
+
+  /**
+   * The maximum value of the scaling range. By default, this is set to `1`. It can be adjusted in conjunction
+   * with `rangeMin` to scale the data to a custom range.
+   */
+  rangeMax: double = 1
+
+  /**
+   * The function used to process the data during the transformation phase. This function applies the scaling logic
+   * using the learned scaling parameters (`rangeMin` and `rangeMax`). The actual implementation of this function
+   * is provided in the `py-data-science` method and should be customized as needed.
+   */
+  doProcess: ~ py-data-science
+
+  /**
+   * The function used to train the Min-Max scaler by learning the minimum and maximum values for each feature
+   * in the provided dataset. This function computes and stores the scaling parameters for later use in the
+   * `trainedResults` map. The training process is handled by the `py-data-science` method, and it may require
+   * customization.
+   */
+  doTrain: ~ py-data-science
+
+  /**
+   * A post-training function that is executed after the scaler has been trained. This function allows for
+   * additional logic such as saving the trained results or performing any other post-processing steps.
+   * The function is executed through the `py` method and may be customized.
+   */
+  afterTrain: ~ py
+
+  /**
+   * Defines the function to be used during the transformation of the data. By default, the `transform` function
+   * is used to apply the Min-Max scaling. This field can be customized to use other functions if needed for
+   * specific data transformations.
+   */
+  processFunc: ~ = 'transform'
+}

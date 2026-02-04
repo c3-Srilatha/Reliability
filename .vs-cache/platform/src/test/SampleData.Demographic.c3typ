@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides realistic sets of data that can be used to fill out information about people and places for
+ * testing and demonstration purposes. The values are always sorted from most to least common, so selecting from
+ * these values with early weighting will produce more realistic distributions; see {@link Array#sample}.
+ *
+ * There are various categories available, such as:
+ *  - given names
+ *  - surnames
+ *  - country sub-divisions (states/provinces)
+ *
+ * ```py
+ * for i in range(10):
+ *     print(c3.SampleData.Demographic.forNameCountry('surname', 'CN').values.sample()[0] + \
+ *           c3.SampleData.Demographic.forNameCountry('givenName', 'CN').values.sample()[0])
+ * ```
+ *
+ * ```js
+ * for (let i = 0; i < 10; i++) {
+ *   console.log(SampleData.Demographic.forNameCountry('surname', 'CN').values.sample()[0] +
+ *               SampleData.Demographic.forNameCountry('givenName', 'CN').values.sample()[0])
+ * }
+ * ```
+ */
+type SampleData.Demographic mixes WithName {
+
+  /**
+   * The name of the category, such as "givenName".
+   *
+   * @see #names
+   */
+  name: !~
+
+  /**
+   * The country code for which this data is representative.
+   */
+  country: !string
+
+  /**
+   * The values for this category and country, ordered from most to least common (by population). Thus selecting from
+   * these values with early weighting will produce more realistic distributions.
+   */
+  values: ![!string]
+
+  /**
+   * Return the categories of demographic data available.
+   */
+  names: cached function(): @indexed set<!string>
+
+  /**
+   * Return the categories and countries of demographic data available. The map keys are the categories (the #name
+   * field when loaded) and the values are the countries for which data is available.
+   */
+  namesAndCountries: function(): !map<!string, [!string]>
+
+  /**
+   * Load demographic data category for a particular country. This will return null/fail if there is no value that
+   * matches exactly.
+   *
+   * @see #namesAndCountries
+   */
+  forNameCountry: function(name: !string, country: !string, failIfNone: boolean): SampleData.Demographic
+
+  /**
+   * Load demographic data category for a desired particular country. This will return null/fail if there is no data of
+   * that category, but will fall back to another country if the desired country is not found.
+   */
+  forName: function(name: !string, country: string, failIfNone: boolean): SampleData.Demographic
+
+  _dataFiles: private cached function(): [!native]
+}

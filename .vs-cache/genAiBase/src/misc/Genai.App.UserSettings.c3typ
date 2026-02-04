@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Per-user settings for the Genai application.
+ */
+// NOTE: This should be a UserSingleton config, but until PLAT-68491 is fixed,
+// configs do not work properly in multi-node envs.
+@db(index+=['user'])
+extendable entity type Genai.App.UserSettings mixes Genai.ProjectAware, Genai.ProjectAware.Active {
+  /**
+   * The user that these settings belong to.
+   */
+  user: !User
+
+  /**
+   * Get the settings for a user.
+   * @param user
+   *          The user to get the settings for.
+   * @param doNotCreateDefault
+   *          Controls the behavior when no settings exist for the user.
+   *            - If `true`, an error will be thrown
+   *            - Otherwise, a default settings instance will be created for the user
+   */
+  forUser: function(user: !User, doNotCreateDefault: boolean): !Genai.App.UserSettings js-rhino
+
+  /**
+   * Helper function that returns whether the user's project is the tutorial project.
+   */
+  isUsingTutorial: member function(): boolean js
+
+  /**
+   * Set the currently activeProject for this user.
+   */
+  setActiveProject: member function(project: !Genai.Project): !Genai.App.UserSettings js-rhino
+}

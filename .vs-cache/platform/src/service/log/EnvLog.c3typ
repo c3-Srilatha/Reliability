@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Environment log that records admin events. (Instance should only live in all-env).
+ */
+extendable entity type EnvLog type key 'ENVLOG' schema name 'ENV_LOG' {
+
+  /**
+   * The cluster id of this envLog.
+   */
+  clusterId: !string
+
+  /**
+   * The tenant of this envLog.
+   */
+  tenant: !string
+
+  /**
+   * The tag of this envLog.
+   */
+  tag: !string
+
+  /**
+   * Name of the action.
+   */
+  action: string
+
+  /**
+   * Timestamp of the log entry.
+   */
+  timestamp: !datetime
+
+  /**
+   * Category about the log.
+   */
+  category: !string enum('ServerReport', 'AppReport', 'CronJobReport', 'UserReport', 'InvalidationQueueReport')
+
+  /**
+   * Invalidation Queue.
+   */
+  queue: string
+
+  /**
+   * Input of the action.
+   */
+  value: !double
+
+  /**
+   * More information about this envLog.
+   */
+  detail: string
+
+  /**
+   * Id of the alert.
+   */
+  alertId: string
+
+  /**
+   * DownTime in seconds.
+   */
+  downTime: double
+
+  /**
+   * Log message.
+   */
+  message: string
+
+  /**
+   * Log level for this message.
+   */
+  level: string
+
+  /**
+   * Target C3 URL for this alert.
+   */
+  url: string
+}

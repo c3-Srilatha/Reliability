@@ -1,0 +1,242 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AwsElastiCache is a fast in-memory KV store with Redis and Memcached as the supported engines. AwsElastiCache type
+ * provides APIs to perform cluster operations like create, reboot and delete.
+ */
+@cloud(hasResourceArn=false,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='ecache')
+type AwsElastiCache mixes AwsResource {
+
+  /**
+   * The service endpoint used by Redis/Memcached clients to connect.
+   */
+  endpoint: string
+
+  /**
+   * AwsElastiCache supports Redis cluster and Memcached
+   */
+  engine: !string enum AwsElastiCacheEngineType
+
+  /**
+   * Engine version. For latest supported versions visit
+   * http://docs.aws.amazon.com/AmazonElastiCache/latest/UserGuide/SelectEngine.MemcachedVersions.html - Memcached
+   * http://docs.aws.amazon.com/AmazonElastiCache/latest/UserGuide/SelectEngine.RedisVersions.html - Redis
+   */
+  engineVersion: string serialized SemanticVersion
+
+  /**
+   * Parameters can be grouped into parameter groups and assigned during cluster creation. You can either create your a
+   * new group or use the ones provided by AWS.
+   * http://docs.aws.amazon.com/AmazonElastiCache/latest/UserGuide/ParameterGroups.html
+   */
+  parameterGroupName: string
+
+  /**
+   * The node type. For Redis cluster, Multi-AZ and automatic failover is not supported for nodeTypes T1 and T2
+   */
+  nodeType: string
+
+  /**
+   * This is a memcahed only parameter and will be ignored for Redis cluster operations.
+   *
+   * Number of nodes that constitute the cluster. For 40 GB cache, you may choose 13 `cache.t2.medium` nodes.
+   */
+  numNodes: int = 1
+
+  /**
+   * This is a Redis only parameter and will be ignored for Memcached cluster operations.
+   *
+   * The number of shards (partitions) you want for this Redis cluster. In Redis once you create the cluster the number
+   * of shards is fixed and cannot be changed. If you find you need more or fewer  shards, you must create a new cluster
+   * with the new number of shards.
+   *
+   * If the `numShards` value is 1 then we consider the redis cluster to be `cluster-mode disabled` and when the value
+   * is > 1, then the redis cluster is `cluster-mode enabled`.
+   */
+  numShards: int = 1
+
+  /**
+   * This is a Redis only parameter and will be ignored for Memcached cluster operations.
+   *
+   * The number of read replica nodes you want in each shard. The number of read replicas per shard is fixed and cannot
+   * be changed. If you find you need more or fewer replicas per shard, you must create a new cluster with the new
+   * number of replicas.
+   */
+  readReplicasPerShard: int = 0
+
+  /**
+   * The name of the subnet group that is associated with the cluster.
+   */
+  subnetGroupName: !string
+
+  /**
+   * The current status of the cluster.
+   */
+  status: member function(): !string enum AwsElastiCacheStatus
+
+  /**
+   * The current state of the nodes.
+   */
+  nodes: member function(): [AwsElastiCacheNode]
+
+  /**
+   * The availability zone in which the service is running.
+   */
+  availabilityZone: string enum AwsAvailabilityZone
+
+  /**
+   * The date and time when the cluster was created.
+   */
+  created: member function(): datetime
+
+  /**
+   * A list of VPC Security Groups to be associated with the cluster.
+   */
+  securityGroupIds: [string]
+
+  /**
+   * Specifies if the ElastiCache cluster is a Multi-AZ deployment.
+   */
+  isMultiAz: boolean
+
+  /**
+   * The weekly time range during which system maintenance can occur, in Universal Coordinated Time (UTC).
+   * Must be in the format ddd:hh24:mi-ddd:hh24:mi. Times should be in Universal Coordinated Time (UTC).
+   * Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+   * Must be at least 30 minutes window
+   */
+  preferredMaintenanceWindow: string = 'sun:04:00-sun:05:00'
+
+  isReplicated: private boolean
+
+  /**
+   * Reboots a node in the cluster. This operation is not supported for Redis cluster-mode enabled. The status of the
+   * reboot can be tracked using \{@link nodeStatus}. Rebooting nodes of cluster-mode enabled Redis cluster is not
+   * allowed by AWS.
+   *
+   * @param nodeId
+   *           The nodeId of the cluster node.
+   */
+  rebootNode: member function(nodeId: !string)
+
+  /**
+   * Reboots the cluster. The status of the reboot can be tracked using \{@link clusterStatus}. Rebooting nodes of
+   * cluster-mode enabled Redis cluster is not allowed by AWS. You can create a manual snapshot, delete cluster and
+   * re-create the cluster from the snapshot.
+   */
+  rebootCluster: member function()
+
+  /**
+   * Internal method to create replicated cluster
+   */
+  createReplicatedCluster: private member function(): !AwsElastiCache
+
+  /**
+   * Internal method to create replicated cluster
+   */
+  createNonReplicatedCluster: private member function(): !AwsElastiCache
+
+  /**
+   * Internal method to list all replicated cluster
+   */
+  listReplicatedClusters: private member function(): [AwsElastiCache]
+
+  /**
+   * Internal method to list all replicated cluster
+   */
+  listNonReplicatedClusters: private member function(): [AwsElastiCache]
+
+  /**
+   * Internal method to reboot replicated cluster
+   */
+  rebootReplicatedCluster: private member function()
+
+  /**
+   * Internal method to reboot non replicated cluster
+   */
+  rebootNonReplicatedCluster: private member function()
+
+  /**
+   * Internal method to get status of  replicated cluster
+   */
+  replicatedClusterStatus: private member function(): !string enum AwsElastiCacheStatus
+
+  /**
+   * Internal method to get status of non replicated cluster
+   */
+  nonReplicatedClusterStatus: private member function(): !string enum AwsElastiCacheStatus
+
+  /**
+   * Internal method to get replicated cluster info
+   */
+  replicatedCluster: private member function(): AwsElastiCache
+
+  /**
+   * Internal method to get non replicated cluster info
+   */
+  nonReplicatedCluster: private member function(): AwsElastiCache
+
+  /**
+   * Internal method to reboot replicated cluster node
+   */
+  rebootReplicatedClusterNode: private member function(nodeId: !string)
+
+  /**
+   * Internal method to get reboot non replicated cluster node
+   */
+  rebootNonReplicatedClusterNode: private member function(nodeId: !string)
+
+  /**
+   * Get node info for a replicated cluster
+   */
+  replicatedClusterNodes: private member function(): [AwsElastiCacheNode]
+
+  /**
+   * Get node info for a non replicated cluster
+   */
+  nonReplicatedClusterNodes: private member function(): [AwsElastiCacheNode]
+
+  /**
+   * Get creation time of a replicated cluster
+   */
+  replicatedClusterCreatedTime: private member function(): datetime
+
+  /**
+   * Get creation time of a non replicated cluster
+   */
+  nonReplicatedClusterCreatedTime: private member function(): datetime
+
+  /**
+   * Delete replicated cluster
+   */
+  deleteReplicatedCluster: private member function(deletePrimary: boolean = true)
+
+  /**
+   * Delete non replicated cluster
+   */
+  deleteNonReplicatedCluster: private member function()
+
+  /**
+   * Maximum supported redis shards
+   */
+  MAX_REDIS_SHARDS: const int = 15
+
+  /**
+   * Maximum supported memcached nodes
+   */
+  MAX_MEMCACHED_NODES: const int = 20
+
+  hasTags: ~
+  isGone:  ~
+}

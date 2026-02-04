@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Displays an icon and the value for the path `UiSdlReliabilityIconCell#fieldPath`.
+ *
+ * {@link UiSdlDataGridDataSpecColumnFieldSetting}s that this component respects:
+ *
+ *   1. [redirectLink](UiSdlDataGridDataSpecColumnFieldSetting#redirectLink) - Requires the use of #redirectLink on this type.
+ *   2. [subInformation](UiSdlDataGridDataSpecColumnFieldSetting#subInformation) - Not including the format spec.
+ *   3. [actionSuffix](UiSdlDataGridDataSpecColumnFieldSetting#actionSuffix)
+ *
+ * All other fields that change the specific cell are not officially supported.
+ *
+ * When clicked, this cell will always trigger {@link UiSdlDataGrid#clickRowAction}.
+ */
+type UiSdlReliabilityIconCell extends UiSdlDataGridCell {
+
+  /**
+   * Mapping from value of the field to the desired status indicator.
+   */
+  valueToIndicatorMapping: map<string, UiSdlReliabilityIconCellConfig>
+
+  /**
+   * Array of JavaScript expressions with the desired status indicator.
+   * Configures the indicator shown if the expression holds true.
+   * The field will overwrite the indicator of #valueToIndicatorMapping.
+   * In addition, the array would give priority to the earlier expressions.
+   */
+  expressionToIndicator: [UiSdlReliabilityIconCellExpressionToIndicator]
+
+  /**
+   * Array of JavaScript expressions with the desired tooltip.
+   * Configures the tooltip shown if the expression holds true.
+   * If this field is empty or no expression is accomplished a
+   * tooltip won't appear.
+   */
+  expressionToTooltip: [UiSdlReliabilityIconCellExpressionToTooltip]
+
+  /**
+   * Unit for the cell value. Supports translation.
+   */
+  unit: string
+
+  /**
+   * Whether the field value should be formatted by replacing underscores with spaces.
+   */
+  formattedUnderscore: boolean
+
+  /**
+   * Whether the field value should be hidden.
+   */
+  hideText: boolean
+
+  /**
+   * The URL to which the {@link User} is redirected upon clicking the cell value.
+   */
+  redirectLink: UiSdlLinkTemplate
+
+  /**
+   * Path to the font-awesome icon name and color.
+   */
+  pathToIconConfig: UiSdlReliabilityIconCellPathConfig
+}

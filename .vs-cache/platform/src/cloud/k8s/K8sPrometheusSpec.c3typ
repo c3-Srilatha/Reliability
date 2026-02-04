@@ -1,0 +1,148 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification of the desired behavior of the Prometheus cluster.
+ * See documentation https://coreos.com/operators/prometheus/docs/latest/api.html#prometheusspec
+ */
+@beta
+private type K8sPrometheusSpec mixes K8sResourceSpecBase {
+
+  /**
+   * Standard object’s metadata. More info: https://github.com/kubernetes/community/blob/master/contributors/devel/api-conventions.md#metadata Metadata Labels and Annotations gets propagated to the prometheus pods.
+   */
+  podMetadata: K8sObjectMeta
+
+  /**
+   * ServiceMonitors to be selected for target discovery.
+   */
+  serviceMonitorSelector: K8sLabelSelector
+
+  /**
+   * Version of Prometheus to be deployed.
+   */
+  version: string
+
+  /**
+   * When a Prometheus deployment is paused, no actions except for deletion will be performed on the underlying objects.
+   */
+  paused: boolean
+
+  /**
+   * Base image to use for a Prometheus deployment.
+   */
+  baseImage: string
+
+  /**
+   * An optional list of references to secrets in the same namespace to use for pulling prometheus and alertmanager images from registries see http://kubernetes.io/docs/user-guide/images#specifying-imagepullsecrets-on-a-pod
+   */
+  imagePullSecrets: [K8sLocalObjectReference]
+
+  /**
+   * Number of instances to deploy for a Prometheus deployment.
+   */
+  replicas: int
+
+  /**
+   * Time duration Prometheus shall retain data for.
+   */
+  retention: string
+
+  /**
+   * Log level for Prometheus be configured in.
+   */
+  logLevel: string
+
+  /**
+   * Interval between consecutive scrapes.
+   */
+  scrapeInterval: string
+
+  /**
+   * Interval between consecutive evaluations.
+   */
+  evaluationInterval: string
+
+  /**
+   * The labels to add to any time series or alerts when communicating with external systems (federation, remote storage, Alertmanager).
+   */
+  externalLabels: map<string, string>
+
+  /**
+   * The external URL the Prometheus instances will be available under. This is necessary to generate correct URLs. This is necessary if Prometheus is not served from root of a DNS name.
+   */
+  externalUrl: string
+
+  /**
+   * The route prefix Prometheus registers HTTP handlers for. This is useful, if using ExternalURL and a proxy is rewriting HTTP routes of a request, and the actual ExternalURL is still true, but the server serves requests under a different route prefix. For example for use with kubectl proxy.
+   */
+  routePrefix: string
+
+  /**
+   * Storage spec to specify how storage shall be used.
+   */
+  storage: K8sPrometheusStorageSpec
+
+  /**
+   * A selector to select which ConfigMaps to mount for loading rule files from.
+   */
+  ruleSelector: K8sLabelSelector
+
+  /**
+   * Define details regarding alerting.
+   */
+  alerting: K8sPrometheusAlertingSpec
+
+  /**
+   * Define resources requests and limits for single Pods.
+   */
+  resources: K8sResourceRequirements
+
+  /**
+   * Define which Nodes the Pods are scheduled on.
+   */
+  nodeSelector: map<string, string>
+
+  /**
+   * ServiceAccountName is the name of the ServiceAccount to use to run the Prometheus Pods.
+   */
+  serviceAccountName: string
+
+  /**
+   * Secrets is a list of Secrets in the same namespace as the Prometheus object, which shall be mounted into the Prometheus Pods.
+   * The Secrets are mounted into /etc/prometheus/secrets/.
+   * Secrets changes after initial creation of a Prometheus object are not reflected in the running Pods. To change the secrets mounted into the Prometheus Pods, the object must be deleted and recreated with the new list of secrets.
+   */
+  secrets: [string]
+
+  /**
+   * If specified, the pod's scheduling constraints.
+   */
+  affinity: K8sAffinity
+
+  /**
+   * If specified, the pod's tolerations.
+   */
+  tolerations: [K8sToleration]
+
+  /**
+   * If specified, the remote_write spec.
+   * This is an experimental feature, it may change in any upcoming release in a breaking way.
+   */
+  remoteWrite: [K8sPrometheusRemoteWriteSpec]
+
+  /**
+   * If specified, the remote_read spec. This is an experimental feature, it may change in any upcoming release in a breaking way.
+   */
+  remoteRead: [Obj]
+
+  /**
+   * SecurityContext holds pod-level security attributes and common container settings. This defaults to non root user with uid 1000 and gid 2000 for Prometheus >v2.0 and default PodSecurityContext for other versions.
+   */
+  securityContext: K8sPodSecurityContext
+}

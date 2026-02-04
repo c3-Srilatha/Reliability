@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * **TESTING PURPOSES ONLY**
+ *
+ * Helper functions for running tests in the `baseCodeAnalyzer` package.
+ */
+final type BaseCodeAnalysis.TestHelper mixes Value {
+
+  /**
+   * Helper function to mimic the behavior of `jasmine.objectContaining` and `jasmine.arrayWithExactContents`
+   * since these functions provide difficult-to-read error messages.
+   *
+   * @param actual
+   *           The actual object to compare against the expected object.
+   * @param expected
+   *           The expected object to compare against the actual object.
+   * @param context
+   *           The label to use in the error message when the actual and expected objects don't match.
+   */
+  validateProperties: inline function(
+    actual: native,
+    expected: native,
+    context: string = 'results'
+  ) js-rhino-test
+
+  /**
+   * Helper function to validate that all {@link BaseCodeAnalysis.Metric.Result}s
+   * contain no [internal error messages](BaseCodeAnalysis.Metric.Result#internalErrorMessage).
+   *
+   * @param results
+   *           The array of {@link BaseCodeAnalysis.Metric.Result}s to validate.
+   */
+  validateNoInternalErrors: inline function(results: native) js-rhino-test
+
+  /**
+   * Helper function to get a list of {@link BaseCodeAnalysis.FileSpec}s for testing.
+   *
+   * @returns An array of {@link BaseCodeAnalysis.FileSpec}s.
+   */
+  getTestFileSpecsForParseDirectives: function(): [BaseCodeAnalysis.FileSpec] js-rhino
+
+  /**
+   * Helper function to get the map of file paths to the array of parsed {@link BaseCodeAnalysis.Metric.Directive}s.
+   * This function is useful for testing the functionality of parsing directives from an array of {@link BaseCodeAnalysis.FileSpec}s.
+   *
+   * @returns A map of file paths to the array of parsed {@link BaseCodeAnalysis.Metric.Directive}s.
+   */
+  getExpectedResultForParseDirectives: function(): map<string, [BaseCodeAnalysis.Metric.Directive]> js-rhino
+}

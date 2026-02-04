@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ClusterNode {
+
+  id:                   string
+  httpPort:             int
+  host:                 string
+  state:                string
+  nodeId:               string
+  vmId:                 string
+  instanceType:         string
+  hardwareProfile:      HardwareProfile
+  serverInfo:           map<string, string>
+  serverUpTime:         string
+  startedUp:            datetime
+  lastActiveHour:       datetime
+  nodeCreatedAt:        datetime
+  spotReqId:            string
+  role:                 string
+  dynamic:              boolean
+  lowPriority:          boolean
+  vmInstance:           VmInstance
+  pkgName:              string
+  requestedAt:          datetime
+  zkSessionId:          string
+  isContainer:          boolean
+  ipAddress:            string
+  isMaster:             inline member function(): boolean
+  isWorker:             inline member function(): boolean
+  isTagBound:           inline member function(): boolean
+  isRunning:            inline member function(): boolean
+  isIdle:               inline member function(): boolean
+  isLowPriority:        inline member function(): boolean
+  executionEnvironment: member function(): !ExecutionEnvironment
+  actions:              member function(tenant: string, tag: string, byThread: boolean): [Action]
+  forNodeId:            function(nodeId: !string): ClusterNode
+  fromNodeId:           function(nodeId: !string): ClusterNode
+  hostname:             member function(): string
+}

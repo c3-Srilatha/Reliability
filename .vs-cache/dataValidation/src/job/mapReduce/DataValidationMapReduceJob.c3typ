@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The map reduce to evaluate the {@DataValidationRuleset}`s for all the subject {@DataValidationMapReduceJob#targetType}
+ * filter by {@link DataValidationMapReduceJob#filter}.
+ */
+entity type DataValidationMapReduceJob extends MapReduce<DataValidationSubject, string, DataValidationRun, DataValidationRun> type key 'DVMR' {
+
+  /**
+   * The {@link DataValidationRun}`s for which this job is responsible for generating results.
+   * Each run belongs to a subject.
+   */
+  dataValidationRuns: [DataValidationRun](jobId)
+
+  /**
+   * The sorted rules this batch job is responsible for running in each subject.
+   * Rules need to be sorted by {@link DataValidationRule#topologicalSort}
+   */
+  sortRules: ![DataValidationRule] schema suffix 'DVSR'
+
+  /**
+   * Indicates whether the {@link DataValidationResult} and {@link DataValidationRulesetResult} are going to be persisted or not.
+   */
+  persistResults: boolean
+
+  /**
+   * Options to run this job with
+   */
+  options: MapReduceOptions
+
+  /**
+   * @inheritdoc
+   */
+  map: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  completed: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  failed: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  reduce: ~ js-rhino
+
+  /**
+   * Creates a {@link DataValidationMapReduceJob} without starting it
+   * @param subjectType
+   *    The type to run map reduce on.
+   * @param sortRules
+   *    The rules to run in topological sort order.
+   * @param filter
+   *    The filter to apply to subjectType to get the entities map reduce is run on.
+   * @param spec
+   *    Specifies the options to use for map reduce.
+   * @return
+   *    The created job.
+   */
+   createJob: function(subjectType: !Type,
+                        sortRules: ![DataValidationRule],
+                        filter: !Filter,
+                        spec: !?DataValidationExecutionSpec): !DataValidationMapReduceJob js-rhino
+  /**
+   * Starts a {@link DataValidationMapReduceJob}.
+   * @param sync
+   *    If true, the job will be run synchronously. Otherwise, it will be run as a MapReduce job.
+   */
+  startJob: member function(sync: boolean) js-rhino
+
+  /**
+   * If true, the {@link DataValidationRun} will not be marked with a runStatus of complete this job finishes.
+   */
+  doNotMarkComplete: boolean = false
+}

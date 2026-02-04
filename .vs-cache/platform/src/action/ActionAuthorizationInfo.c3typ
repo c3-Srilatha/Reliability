@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Authorization check result for the given action in a env/app. If {@link #username} is populated, {@link #allowedRoles},
+ * , {@link #deniedRoles}, {@link #groups} and {@link #authorized} are the ones that {@link #username} has and can be applied
+ * to the target action {@link #env}.{@link #action} in {@link #Env} {@link #App}, then {@link #authorized} represents if
+ * the {@link username} has granted permission to the action or not.
+ *
+ * If {@link username} field is not populated, then all the fields represents all the authorization information applied
+ * to the target action. i.e (@link #allowedRoles) would have all the roles that have permission to the target action
+ * {@link #env}.{@link #action} in {@link #env} {@link #app}.
+ */
+type ActionAuthorizationInfo {
+
+  /**
+   * Action authorization for this user.
+   */
+  username: string
+
+  /**
+   * Action authorization in this env.
+   */
+  env: !string
+
+  /**
+   * Action authorization in this app.
+   */
+  app: !string
+
+  /**
+   * Action authorization target type name.
+   */
+  typeName: !string
+
+  /**
+   * Action authorization target action name.
+   */
+  action: !string
+
+  /**
+   * List of action-groups for the action.
+   */
+  actionGroups: [string]
+
+  /**
+   * The minimum securityLevel (user must have same or lower value) of the target action.
+   */
+  actionSecurityLevel: int
+
+  /**
+   * The securityLevel of the user trying to execute the action.
+   */
+  userSecurityLevel: int
+
+  /**
+   * Arry of {@link Permission} that grant access the target action. To know all permissions that a User have, please refer to
+   * {@link User.allPermissions}.
+   *
+   * The key stands for the source of permission, could come from {@link Role} or {@link PageGroup}.
+   */
+  allowedPermission: [Pair<Permission, string>]
+
+  /**
+   * Arry of {@link Permission} that deny access the target action. To know all permissions that a User have, please refer to
+   * {@link User.allPermissions}.
+   *
+   * The key stands for the source of permission, could come from {@link Role} or {@link PageGroup}.
+   */
+  deniedPermissions: [Pair<Permission, string>]
+
+  /**
+   * Arry of Roles that can be applied to the target action. To know all roles that a User have, please refer to
+   * {@link User.allRoles}.
+   */
+  roles: [Role]
+
+  /**
+   * Arry of {@link PageGroup} that grant permission to access the target action.
+   */
+  @deprecated(finalVersion="8.10", details="Read Role-based access control for application developers")
+  pageGroups: [PageGroup]
+
+  /**
+   * If {@link #username} field is populated, authorized means if the {@link username} is authorized to do
+   * {@link #typename}.{@link #action}
+   */
+  authorized: string
+}

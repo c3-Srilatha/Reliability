@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+  * Defines the specification for data cleanup within the reliability risk workflow.
+  * - Specifies entity types to be cleaned up before or after workflow execution.
+  * - Supports structured data removal to ensure a consistent state for model training and inference.
+  * - Enables controlled execution through workflow orchestration.
+  */
+@beta
+type ReliabilityOrchestrator.ReliabilityRisk.Spec.DataCleanup mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  /**
+   * The name identifier for this data cleanup specification.
+   */
+  name: ~ = 'ReliabilityRisk_DataCleanup'
+
+  /**
+   * List of entity types that should be cleaned up as part of the workflow.
+   *
+   * - This includes facility-related data, reliability assets, sensor relations, events,
+   *   ML-related datasets, models, predictions, alerts, and cases.
+   * - Ensures stale or redundant data is removed before executing new workflow steps.
+   * - Helps maintain data consistency for training, inference, and operational workflows.
+   */
+  typeNamesToCleanup: ![string] = [
+    'Facility', 'FacilityHierarchicalRelation', 'FacilityReliabilityAssetHierarchicalRelation',
+    'ReliabilityAsset', 'ReliabilityAssetHierarchicalRelation', 'ReliabilityAssetSensorRelation',
+    'Sensor', 'PointPhysicalMeasurementSeries', 'PointMeasurement', 'ReliabilityAssetEvent',
+    'SourceFile', 'DataIntegStatus',
+    'Feature', 'Feature.Set',
+    'ReliabilityMlDatasetPreparationRun',
+    'MlModel', 'MlModel.Route', 'MlModel.Train.Job', 'MlModel.Train.JobRun', 'MlOperationRun',
+    'MlModel.Train.Result', 'MlSubject.OperationJob',
+    'ReliabilityAssetToRiskModelRelation',
+    'ReliabilityRiskScoreMlPredictionHeader', 'ReliabilityRiskScoreMlPrediction',
+    'ReliabilityRiskScoreMlContributionHeader', 'ReliabilityRiskScoreMlContribution',
+    'ReliabilityAssetAlert', 'ReliabilityAssetAlertStateHistory', 'ReliabilityAssetAlertFeedback',
+    'ReliabilityAssetCase'
+  ]
+
+  /**
+   * Retrieves the default list of entity types that should be cleaned up.
+   *
+   * @returns A list of default entity type names for cleanup.
+   */
+  defaultCleanupTypeNames: private function(): [string] py
+
+  /**
+   * Creates a workflow for performing data cleanup on specified entity types.
+   *
+   * @param id
+   *        The unique identifier for the cleanup workflow.
+   * @param name
+   *        The name assigned to the cleanup workflow.
+   * @param typesToClear
+   *        The list of entity types to be removed as part of the cleanup process.
+   * @returns A `Workflow` instance that executes the cleanup job.
+   */
+  createDataCleanupWorkflow: private function(id: !string,name: !string, typesToClear: ![string]): Workflow py
+
+  createWorkflow: ~ py
+}

@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type representing metadata about datasets stored in blob storage
+ */
+entity type ExMachinaDatasetMetadata mixes AclEnabled,ExMachinaUserGroupShareableRelated<ExMachinaDatasetMetadata> schema name 'EXM_DATASET_META' {
+  
+  /**
+   * Dataset Id
+   */
+  id: !string
+
+  /**
+   * Dataset name
+   */
+  name: !string
+
+  /**
+   * Dataset description
+   */
+  description: string
+
+  /**
+   * Project where dataset was saved
+   */
+  project: ExMachinaProjectRoot
+
+  /**
+   * Dataset format
+   */
+  format: !string enum ExMachinaDatasetFormat
+
+  /**
+   * Current set of partitions for this dataset.
+   * Some partitions from partitionsHistory are selected here to represent this dataset content.
+   */
+  partitions: [ExMachinaDatasetPartitionMetadata]
+
+  /**
+   * Dataset schema in json format
+   */
+  dataSchema: string
+
+  /**
+   * Dataset digest in json format
+   */
+  digest: string
+
+  /**
+   * Dataset topic
+   */
+  @constraint(required=true)
+  topic: ExMachinaDatasetTopic
+
+  /**
+   * Ancestor dataset.
+   * This is assigned when deriving a dataset out of existing dataset by adding and/or removing partitions.
+   */
+  ancestor: ExMachinaDatasetMetadata
+
+  /**
+   * Before creating the dataset metadata, we ensure that the user has permissions to update the
+   * parent {@link topic}. If not, we prevent the user from creating a new version of the dataset.
+   */
+  beforeCreate: ~ js-server
+
+  /**
+   * After creating the dataset metadata, remove the default ACL to prevent the creator
+   * from retaining viewing permissions even after transferring ownership and leaving the team
+   */
+  afterCreate: ~ js-server
+}

@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the relationship between a {@link ReliabilityAssetAlert} and a {@link ReliabilityAssetCase}.
+ * This type links an alert that was triggered on a ReliabilityAsset to the case created to investigate
+ * or resolve that alert. It helps track which alerts are being handled by specific cases.
+ */
+@db(unique=['from, to'])
+entity type ReliabilityAssetAlertToCaseRelation mixes FilterableByFacility schema name 'ALRT_CS_RLTN' {
+
+  /**
+   * The {@link ReliabilityAssetAlert} in this relation.
+   */
+  from: !ReliabilityAssetAlert
+
+  /**
+   * The {@link ReliabilityAssetCase} in this relation.
+   */
+  to: !ReliabilityAssetCase
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["from.parent.facility", "to.facility"]
+
+  /**
+   * Whether or not this {@link ReliabilityAssetAlert} was added automatically to this {@link ReliabilityAssetCase}.
+   */
+  addedThroughAutomaticAlertGrouping: boolean
+
+  /**
+   * Displayed value for whether or not this {@link ReliabilityAssetAlert} was added automatically to this {@link ReliabilityAssetCase}.
+   */
+  displayedAddedThroughAutomaticAlertGrouping: string calc addedThroughAutomaticAlertGrouping ? 'Reliability.Yes' : 'Reliability.No'
+
+  /**
+   * Create a {@link ReliabilityAssetAlertToCaseRelationCaseActivity} and a {@link ReliabilityAssetAlertToCaseRelationAlertActivity} to log the action of adding a {@link ReliabilityAssetAlert}
+   * to a {@link ReliabilityAssetCase}.
+   */
+  @dependency(include = "from.name, meta.created, to.name, addedThroughAutomaticAlertGrouping")
+  afterCreate: ~ js-rhino
+
+  /**
+   * Create a {@link ReliabilityAssetAlertToCaseRelationCaseActivity} and a {@link ReliabilityAssetAlertToCaseRelationAlertActivity} to log the action of removing a {@link ReliabilityAssetAlert}
+   * from a {@link ReliabilityAssetCase}.
+   */
+  @dependency(include = "from.name, to.name")
+  afterRemove: ~ js-rhino
+}

@@ -1,0 +1,93 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper methods for {@link BaseCodeAnalyzer} to format comments being posted on PRs.
+ */
+type BaseCodeAnalyzer.Formatter mixes Value js-rhino {
+
+  /**
+   * A comment string to be appended to the top of every comment posted by C3 AI Code Analyzer to
+   * help differentiate from comments posted by the actual author.
+   */
+  CODE_ANALYZER_IDENTIFIER: private const string = '<!-- Created by C3 AI Code Analyzer -->'
+
+  /**
+   * Helper to mark a message with the {@link #CODE_ANALYZER_IDENTIFIER} at the top of the message.
+   *
+   * @param message
+   *           The message to be market.
+   * @returns a message marked with {@link #CODE_ANALYZER_IDENTIFIER}.
+   */
+  markMessageWithIdentifier: inline function(message: !string): !string
+
+  /**
+   * Helper to remove indentation from the beginning of the message. Useful
+   * for ensure the message template is readable in code but doesn't have
+   * undesired indentation.
+   *
+   * @param message
+   *           The message to be de-indented.
+   * @returns the de-indented message.
+   */
+  removeIndentation: inline function(message: !string): !string
+
+  /**
+   * Helper to format a metric code to be displayed in the comment.
+   *
+   * @param metricCode
+   *           The metric code to format.
+   * @return The metric code wrapped in a code span. If there is a [documentation URL](BaseCodeAnalysis.Metric.Meta.Docs#url)
+   *         for the metric, the code span will also be a link to the documentation.
+   */
+  formatMetricCode: inline function(metricCode: !string enum BaseCodeAnalysis.Metric.Code): !string
+
+  /**
+   * Helper to format a comment by adding the appropriate icon based on message severity.
+   *
+   * @param message
+   *           The processed metric message to format.
+   * @param metricCode
+   *           If provided, the [formatted metric code](formatMetricCode) will be included
+   *           between the icon and the message.
+   * @returns a message formatted to include the appropriate icon based on severity.
+   */
+  formatMessageWithSeverity: inline function(
+    message: BaseCodeAnalysis.Metric.Message.Processed,
+    metricCode: string enum BaseCodeAnalysis.Metric.Code
+  ): !string
+
+  /**
+   * Function to get the summary message section to be posted on the PR for which code analysis is being
+   * performed.
+   *
+   * @param summaryMessageSections
+   *           The summary sections used to generate the full summary message.
+   * @returns the summary message to be posted on the PR.
+   */
+  getCodeAnalysisSummaryMessage: inline function(summaryMessageSections: [BaseCodeAnalyzer.Formatter.SummarySection]): !string
+
+  /**
+   * Function to get the message to be posted in the body of the review comment. Posts information about how many new
+   * comments need to be addressed and points to previous comments that are yet to be addressed.
+   *
+   * @param processedResults
+   *           The processed results from which to extract the messages to be posted on the PR as inline comments.
+   * @param anchors
+   *           The file- and line-level anchors to redirect users to the appropriate diff the review comment.
+   * @param newCommentCount
+   *           The number of new comments being posted as part of this review.
+   * @returns the review comment body to be posted on the PR.
+   */
+  getReviewCommentBody: inline function(
+    processedResults: [BaseCodeAnalysis.Result.Processed],
+    anchors: BaseCodeAnalyzer.SourceControlGadget.Anchors,
+    newCommentCount: int
+  ): !string
+}

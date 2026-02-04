@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the configuration for model creation within a {@link ReliabilityOrchestrator.TrainingJob}.
+ * This type defines how models are trained using pipelines and templates, including naming conventions
+ * and hyperparameter settings.
+ */
+type ReliabilityOrchestrator.TrainingJob.ModelCreationSpec {
+
+  /**
+   * Which {@link ReliabilityMl.Pipeline}s to train as a part of {@link ReliabilityOrchestrator.TrainingJob}.
+   * At least one of {@link #pipeline} and {@link #template} must be specified.
+   * The {@link ReliabilityMl.Pipeline} should be upserted before passing to the training run.
+   * The job will fail immediately if the pipeline is not upserted.
+   */
+  pipeline: ReliabilityMl.Pipeline
+
+  /**
+   * Names to be used for the newly trained model corresponding to the provided {@link #pipeline}.
+   * Empty string or null value for a specific entry will lead to that model being unnamed.
+   */
+  modelName: string
+
+  /**
+   * Utilize the {@link ModelTemplate} as {@link ReliabilityMlModel#template} when generating a new model.
+   * If specified, it will override the given {@link #pipeline}.
+   * If the value is null, no {@link ModelTemplate} was applied to the created model.
+   */
+  template: ModelTemplate
+
+  /**
+   * Set the hyperparameters passed into either {@link #pipeline}, or the pipeline created from the
+   * {@link #template}.
+   */
+  hyperparamOverrides: map<string, any>
+}

@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the timeseries data to be plotted in a {@link UiApTimeseriesChart}.
+ */
+type UiApTimeseriesChartTsDataset {
+  /**
+   * The timeseries data to be plotted in the chart. This will be directly used as a ECharts dataset.
+   * The shape is the following:
+   * ```
+   * {
+   *   "source": [[timestamp, value1, value2, ...], ...]
+   *   "dimensions": ["timestamp", "value1", "value2", ...]
+   * }
+   * ```
+   */
+  data: json
+
+  /**
+   * A map of dimension to unit. This is used to determine the units of each dimension in `data`.
+   */
+  unitMap: map<string, Unit>
+
+  /**
+   * A map of dimension to label. This is used to determine the labels of each dimension in `data`.
+   */
+  labelMap: map<string, string>
+
+  /**
+   * Utility function to get the timestamps from a timeseries. This is used to determine the
+   * timestamps for the x-axis of the chart. Utilized by {@link UiApTimeseriesChartTsDataset#make}
+   * in order to populate the first column of `data.source`.
+   *
+   * @param timeseries The timeseries to get the timestamps from.
+   * @return The timestamps from the timeseries. This represents all the timestamps for which the timeseries has data.
+   */
+  getTimestamps: inline function (timeseries: Timeseries<any>): [datetime] js-rhino
+
+}

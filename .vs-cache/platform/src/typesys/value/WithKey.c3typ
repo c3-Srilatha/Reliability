@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for things that have a string key that can be used to identify instances in a set [ or subset ].
+ *
+ * Note it does not necessarily claim that sub type instances have a globally unique key - just that in a typical use
+ * subset instances will have key values that are unique within this subset.
+ *
+ * One of the advantages of identifying such sub types is so that we can have meaningful and convenient defaults and
+ * helper methods.
+ *
+ * @see Nameable
+ * @see Named
+ * @see Identifiable
+ * @see Identified
+ * @see Collection#toMap
+ */
+abstract type WithKey mixes WithType, Value {
+
+  /**
+   * @return key field type.
+   */
+  keyFieldType: abstract function(): !FieldType
+
+  /**
+   * @return key field value.
+   */
+  keyFieldValue: abstract member function(): string
+
+  /**
+   * Build a map of the correct type with a single element which is this instance and key field value as key.
+   */
+  // TODO: PLAT-20260 - :V8: - beat Java into submission to get rid of `The return type is incompatible with ...` errors in code-gen
+  // TODO: !map<string, mixing WithKey>
+  singletonMap: member function(): !map<string, WithKey>
+}

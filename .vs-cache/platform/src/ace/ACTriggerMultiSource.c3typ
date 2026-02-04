@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ACTriggerMultiSource mixes Value {
+
+  /**
+   * When data load finishes, or the underlying object structure changes, all relevant DFEs
+   * for a set of source objects (any metric or event) need to be evaluated to invoke any
+   * downstream analytics.
+   *
+   * Instead of calling this directly, apps code should call AnalyticsQueue.invalidateSources
+   * so any duplicate calls may be consolidated before execution.
+   *
+   * @param sources
+   *           sources with metric groups
+   *
+   * @param options
+   *           trigger options or extended InvalidateSourcesOptions
+   *
+   * @see InvalidateSourcesOptions
+   */
+  invalidateSources: function(sources: [MetricGroupInvalidationSpec],
+                              options: TriggerAnalyticsOptions): InvocationStats
+
+  /**
+   * A set of analytics may be specifically fired for development purposes, or for rebuilding state
+   * after a change to the analytic logic or other indirect dependency not visible to the
+   * analytics container.  If the array of analytics is empty, all analytics for that source
+   * object are fired.
+   */
+  fireAnalytics: function(sources: [MetricGroupInvalidationSpec],
+                          analytics: [string],
+                          options: TriggerAnalyticsOptions): InvocationStats
+}

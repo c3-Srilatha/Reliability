@@ -1,0 +1,194 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@restful(endpoint='echo')
+type Echo mixes StringSerializable {
+
+  message:  string
+  content:  [Obj]
+  files:    map<string, map<string, [ByteStream]>>
+  surprise: boolean
+  echoJs:   inline member function(): Echo js-server
+  echo:     member function(): Echo
+  echoN:    function(doIt: boolean, times: int = 1): Echo
+  wait:     member function(surprise: boolean, sec: int = 1): Echo
+  noop:     function() js-server
+  busyWait: inline function(iterations: !int): !double java | js | py
+
+  @restful(subPath='content')
+  echoContent: function(msg: string): ContentValue js-server
+
+  @restful(subPath='contents')
+  @call(apiContentType='application/zip')
+  echoContents: function(contents: stream<Content>): stream<Content>
+
+  @restful(subPath='staticContent')
+  echoStaticContent: function(): ContentValue js-server
+
+  echoAbstractContent: function(content: Content): ContentValue js-server
+
+  @restful(subPath='text')
+  echoText: function(msg: string): ContentValue js-server
+
+  echoEcho: function(): !string
+
+  @restful(subPath='surprise')
+  echoStatic: function(msg: Echo): !Echo
+
+  echoActionInfo: function(): map<string, string>
+  echoSleep:      function(msg: Echo = { message: '42' }): !Echo
+  echoStr:        function(msg: string): string
+  echoJson:       function(in: !json): !json
+  echoBool:       function(msg: boolean): boolean js-server
+  echoFloat:      function(msg: float): float
+  echoBinary:     function(in: !?binary, times: int = 1): binary
+
+  // TODO: PLAT-64186 Change `native` to `binary`
+  echoBinaryPy: function(bin: !native): !native py
+
+  @call(stayInEngine={py: true})
+  echoAny: function(msg: any): any java | py
+
+  @call(stayInEngine=true)
+  echoDateTime: function(msg: datetime): datetime java | py | js
+
+  echoAnyInline:             inline function(msg: any): any
+  echoAnyInlineTypeParam:    inline function(msg: any): any
+  echoInline:                inline member function(): string
+  echoInlineTypeParamMember: inline member function(): string
+  echoAnyTurbo:              function(msg: any): any
+  echoAnyJs:                 function(msg: any): any js-server
+  echoAnyJsInline:           inline function(msg: any): any js-server
+  echoAnyPy:                 function(msg: any): any py-server
+  echoAnyJava:               function(msg: any): any
+  echoSpec:                  function(msg: !string, spec: EchoSpec): !string js
+  echoSpecJava:              function(msg: !string, spec: EchoSpec): !string
+  echoDateTimeJava:          function(msg: !datetime): !datetime
+  echoMemberSpec:            member function(msg: !string, spec: EchoSpec): !string js
+  echoMemberOnlySpec:        member function(spec: EchoSpec): !EchoSpec js
+  echoHttp:                  function(req: !HttpRequest): !HttpResponse
+
+  @restful(subPath='httpHeaders')
+  echoHttpHeaders: function(req: !HttpRequest): map<string, [string]>
+
+  @restful(subPath='redirect')
+  echoRedirect: function(): !HttpResponse
+
+  echoSpecStayInEngine:       function(msg: !string, spec: EchoSpec): !string py
+  echoMemberSpecStayInEngine: member function(msg: !string, spec: EchoSpec): !string py
+  sayTrue:                    function(): boolean
+  sayTrueJs:                  function(): boolean js
+
+  // TODO: DATA-1887 - Make calls from PY back to C3 more convenient
+  echoAnyPySandwich: function(msg: any, port: int): any py-server
+
+  echoVarArgs: function(args: [string]): string
+  echoPublic:  function(msg: int): int js-server
+
+  @action(authz='always')
+  echoSecret: function(msg: @value(secret=true) string): string js-server
+
+  echoNativeCharSequence: function(chars: @java(class="java.lang.CharSequence") native)
+                            : @java(class="java.lang.String") native
+
+  echoOverload:       function(msg: !string): string
+  echoOverload:       function(int: !int): int
+  echoOverloadMember: member function(msg: !string): string
+  echoOverloadMember: member function(int: !int): int
+  whoAreYou:          function(): !string js | py | java
+  apply:              function<R>(action: !lambda(): R): R
+  apply:              function<T, R>(arg: T, action: !lambda(arg: T): R): R
+  apply:              function<T1, T2, R>(arg1: T1, arg2: T2, action: !lambda(arg1: T1, arg2: T2): R): R
+
+  apply: function<T1, T2, T3, R>(arg1: T1, arg2: T2, arg3: T3, action: !lambda(arg1: T1, arg2: T2, arg3: T3): R): R
+
+  apply: function<T1, T2, T3, T4, R>(arg1: T1,
+                                     arg2: T2,
+                                     arg3: T3,
+                                     arg4: T4,
+                                     action: !lambda(arg1: T1, arg2: T2, arg3: T3, arg4: T4): R): R
+
+  apply: function<T1, T2, T3, T4, T5, R>(arg1: T1,
+                                         arg2: T2,
+                                         arg3: T3,
+                                         arg4: T4,
+                                         arg5: T5,
+                                         action: !lambda(arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): R): R
+
+  test: function<T>(arg: T, action: !lambda(arg: T): boolean): boolean
+  test: function<T1, T2>(arg1: T1, arg2: T2, action: !lambda(arg1: T1, arg2: T2): boolean): boolean
+
+  test: function<T1, T2, T3>(arg1: T1,
+                             arg2: T2,
+                             arg3: T3,
+                             action: !lambda(arg1: T1, arg2: T2, arg3: T3): boolean): boolean
+
+  test: function<T1, T2, T3, T4>(arg1: T1,
+                                 arg2: T2,
+                                 arg3: T3,
+                                 arg4: T4,
+                                 action: !lambda(arg1: T1, arg2: T2, arg3: T3, arg4: T4): boolean): boolean
+
+  test: function<T1, T2, T3, T4, T5>(arg1: T1,
+                                     arg2: T2,
+                                     arg3: T3,
+                                     arg4: T4,
+                                     arg5: T5,
+                                     action: !lambda(arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5): boolean)
+          : boolean
+
+  run: function(action: !lambda())
+  run: function<T>(arg: T, action: !lambda(arg: T))
+  run: function<T1, T2>(arg1: T1, arg2: T2, action: !lambda(arg1: T1, arg2: T2))
+  run: function<T1, T2, T3>(arg1: T1, arg2: T2, arg3: T3, action: !lambda(arg1: T1, arg2: T2, arg3: T3))
+  run: function<T1, T2, T3, T4>(arg1: T1,
+                                arg2: T2,
+                                arg3: T3,
+                                arg4: T4,
+                                action: !lambda(arg1: T1, arg2: T2, arg3: T3, arg4: T4))
+
+  run: function<T1, T2, T3, T4, T5>(arg1: T1,
+                                    arg2: T2,
+                                    arg3: T3,
+                                    arg4: T4,
+                                    arg5: T5,
+                                    action: !lambda(arg1: T1, arg2: T2, arg3: T3, arg4: T4, arg5: T5))
+
+  language:                function(): !string
+  thread:                  function(): !string
+  userName:                function(): !string
+  rootActionUserName:      function(): !string
+  clientVersion:           function(): !string serialized SemanticVersion.MajorMinor
+  clientVersionMajorMinor: function(): !SemanticVersion.MajorMinor
+  clientAppId:             function(): !string
+  clientUserId:            function(): !string
+
+  @call(stayInEngine=true)
+  whoAmI: function(): !string js | py | java
+
+  pairOfInts:          function(): Pair<int, int>
+  echoArray:           function(msg: !string, count: !int = 1): [string]
+  echoTuple:           function(msg: { a: string, b: int }): { a: string, b: int }
+  echoAsync:           member function(): !Promise<Echo>
+  echoMsgAsync:        function(msg: string): Promise<string>
+  echoValueType:       function(valueType: !ValueType): !ValueType
+  echoStrWithSleep:    function(str: !string, sleepSec: double = 1): string
+  toString:            inline member function(prefix: !string): string
+  fromString:          function(prefix: !string, suffix: !string): !Echo
+  echoError:           function(msg: string) js-server
+  echoBigInt:          function(n: @js(bigInt=true) !int): @js(bigInt=true) !int
+  echoByteStream:      function(in: !?ByteStream): ByteStream
+  streamBytes:         function(limit: int = 2000): ByteStream
+  streamChars:         function(limit: int = 2000): CharStream
+  streamInts:          function(limit: int = 2000, slowly: boolean): stream<int>
+  streamDurations:     function(limit: int = 2000, slowly: boolean): stream<Duration>
+  throwInvalidValue:   function(msg: string)
+  beforeMake:          ~
+  echoStrWithBusyWait: function(str: !string, waitSec: double = 1, notThrowOnException: boolean): string
+  echoAfterLoop:       function(str: !string, loopSec: double = 1): string
+}

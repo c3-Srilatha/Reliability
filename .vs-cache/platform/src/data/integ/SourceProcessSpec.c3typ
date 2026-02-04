@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for processing (data-loading) source content/objs into the C3 type system.
+ * used in {@link Source#process}
+ */
+type SourceProcessSpec mixes Spec {
+
+  /**
+   * Should be provided if #archiveContent, #collectStats, or #archiveErrors is set to true.
+   */
+  sourceCollectionId: string
+
+  /**
+   * If set then it will chunk content to the chunkSize specified in the annotation on #source type.
+   * {@see Ann.DataLoad#chunkSize}
+   */
+  chunkContent: boolean
+
+  /**
+   * If set then stats will be persisted in {@link SourceFile} or in {@link SourceCollection#statsUrl}.
+   * Errors will not be persisted in SourceFile either.
+   * Please provide #sourceCollectionId
+   */
+  collectStats: boolean
+
+  /**
+   * If set then source content will not be persisted in {@link SourceCollection#completedContentUrl}
+   * on completion.
+   */
+  archiveContent: boolean
+
+  /**
+   * If set then if source content failed during processing or parsing, content will be persisted
+   * in {@link SourceCollection#rejectedContentUrl} / {@link SourceCollection#failedContentUrl}.
+   * Also serailized {@link FailedSource} will be written to failedSourcesUrl
+   */
+  archiveErrors: boolean
+
+  /**
+   * If set to true then
+   * 1) #chunkContent is false
+   * 2) #collectStats is false
+   * 3) #archiveContent is false
+   * 4) #archiveErrors is false
+   * 5) processing of content is synchronous
+   */
+  deferred: boolean
+
+  /**
+   * Determines whether the process returns immediately or not.
+   */
+  async: boolean
+
+  /**
+   * Generates the SourceContentMeta for the source content before processing(data-loading) begins.
+   */
+  readMetadataOnly: boolean
+
+  /**
+   * Prefix to specify for a process, could be a prefix with content url.
+   */
+  sourceContentUrl: private string
+
+  /**
+   * chunkId for a process, could be batchId.
+   */
+  chunkId: private string
+
+  /**
+   * chunk number being processed.
+   */
+  chunkNumber: private int
+
+  /**
+   * Meta information for the processing of the sources
+   */
+  meta: private Meta
+
+  /**
+   * @returns the source collection from the source process spec.
+   */
+  sourceCollection: member function(): SourceCollection
+}

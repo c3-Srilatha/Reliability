@@ -1,0 +1,179 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type defines some commonly-used methods which are made available {@link GlobalProtocol globally}.
+ *
+ * In addition to these methods, it also adds all top-level types in the current package into the global
+ * namespace object for easy access. (This augments the global protocol by making all types global as well.)
+ *
+ * ```js
+ * C3.Duration === C3.type('Duration')
+ * ```
+ *
+ * ```py
+ * c3.Duration is c3.type('Duration')
+ * ```
+ */
+abstract final type C3 mixes Remote, Value {
+
+  /**
+   * Get the current Cluster.
+   */
+  cluster: inline function(): !Cluster java | js-client
+
+  /**
+   * Get the current Env.
+   */
+  env: inline function(): !Env java | js-client
+
+  /**
+   * Get the current App.
+   */
+  app: inline function(): !App java | js-client
+
+  /**
+   * Get the current package.
+   */
+  pkg: inline function(): !Pkg java | js-client
+
+  /**
+   * Get the current user.
+   */
+  user: inline function(): !User java | js-client
+
+  /**
+   * Get the current user session token.
+   */
+  userSessionToken: inline function(): !SessionToken
+
+  /**
+   * Get the client call version, this is derived either from a declaring C3 application package version if call is
+   * made from a C3 method implementation or from Api Server URL path version component, i.e. `/api/<verstion>/type/...`
+   */
+  @beta
+  clientVersion: inline function(): !string serialized SemanticVersion.MajorMinor
+
+  /**
+   * Get the client call version, this is derived either from a declaring C3 application package version if call is
+   * made from a C3 method implementation or from Api Server URL path version component, i.e. `/api/<verstion>/type/...`
+   */
+  clientVersionMajorMinor: inline function(): !SemanticVersion.MajorMinor
+
+  /**
+   * Get the client app id if this is a App <-> App communication.
+   */
+  clientAppId: inline function(): !string
+
+  /**
+   * Get the client user id if this is a App <-> App communication.
+   */
+  clientUserId: inline function(): !string
+
+  /**
+   * Get the current Action
+   */
+  action: inline function(): !Action java | py-client
+
+  /**
+   * Load a type from the current package by name.
+   */
+  type: inline function(name: !string, failIfMissing: boolean): Type java | js-client
+
+  /**
+   * @return a {@link Logger} for the current type.
+   */
+  // TODO Implement in Java PLAT-36009 and JS PLAT-36008
+  @call(stayInEngine=true)
+  log: inline function(): !Logger java | py
+
+  /**
+   * Get logger by name.
+   */
+  logger: inline function(name: !string): !Logger java | js-client
+
+  /**
+   * Random value generator for testing environments and for reliably reproducing synthesized data. Random seed can be
+   * set manually to reproduce a specific sequence.
+   *
+   * @return singleton Rnd instance.
+   */
+  rnd: inline function(): !Rnd java | js-client
+
+  /**
+   * Get the current Context
+   */
+  @call(stayInEngine=true)
+  context: inline function(): !Context java | py | js-client
+
+  /**
+   * Generic dispatch of the C3 Action - i.e. application of function on a C3 Type. It handles both static and member
+   * functions. For static methods #thisArg should be `null`.
+   *
+   * @see #callKwargs
+   * @see #callJson
+   */
+  // TODO: PLAT-111942 Make dispatcher=true imply authzChildActions=true
+  @call(dispatcher=true)
+  @action(authzChildActions=true)
+  call: function<T>(type: !string, action: !string, thisArg: !?any, args: native ...): T
+
+  /**
+   * Generic dispatch of the C3 Action - i.e. application of function on a C3 Type. It handles both static and member
+   * functions. For methods #kwargs is expected to have element with name {@link FunctionParam#This} ('this')
+   * unless target type is {@link DefaultInstance}.
+   *
+   * @see #call
+   * @see #callJson
+   * @see #callJsonKwargs
+   */
+  @call(dispatcher=true)
+  @action(authzChildActions=true)
+  callKwargs: function<T>(type: !string, action: !string, kwargs: map<!string, native>): T
+
+  /**
+   * Generic dispatch of the C3 Action - i.e. application of function on a C3 Type. It handles both static and member
+   * functions. For static methods #thisArg should be `null`. #args is expected to be a JSON array with method
+   * arguments.
+   *
+   * @see #callKwargs
+   * @see #callJson
+   */
+  @call(dispatcher=true)
+  @action(authzChildActions=true)
+  callJson: function<T>(type: !string, action: !string, thisArg: !?json, args: json): T
+
+  /**
+   * Generic dispatch of the C3 Action - i.e. application of function on a C3 Type. It handles both static and member
+   * functions. For methods #kwargs is expected to have field with name {@link FunctionParam#This} ('this')
+   * unless target type is {@link DefaultInstance}. #kwargs is expected to be a JSON object with fields for method
+   * arguments.
+   *
+   * @see #call
+   * @see #callKwargs
+   * @see #callJson
+   */
+  @call(dispatcher=true)
+  @action(authzChildActions=true)
+  callJsonKwargs: function<T>(type: !string, action: !string, kwargs: json): T
+
+  /**
+   * Runs the given lambda asynchronously.
+   */
+  async: function<E>(action: lambda())
+
+  /**
+   * Runs the given lambda in parallel for all of the elements in the given collection.
+   */
+  eachParallel: inline function<E>(collection: !?Collection<E>, action: !lambda(e: E))
+
+  /**
+   * This method returns all the methods accessible via the c3 variable. This is used by the Python SDK
+   */
+  pyGlobalMethods: private cached inline function(): set<string>
+}

@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+private type K8sDeploymentUpsertOperationSpec mixes K8sResourceOperationSpec {
+
+  /**
+   * Additional volumes to be added to the deployment.
+   * The key is the name of the container to which the volume will be added.
+   */
+  additionalVolumes: map<string, [K8sVolume]> = {}
+
+  /**
+   * Additional volume mounts to be added to the deployment.
+   * The key is the name of the container to which the volume mount will be added.
+   */
+  additionalVolumeMounts: map<string, [K8sVolumeMount]> = {}
+
+  /**
+   * K8sContainerConfigs for the specific containers in the deployment.
+   */
+  k8sContainerConfigOverrides: map<string, K8sContainerConfig> = {}
+
+  /**
+   * Readiness probe for the c3 server container.
+   * This probe is used to determine if the container is ready to accept traffic.
+   * It is of type {@link K8sProbe}.
+   */
+  readinessProbe: K8sProbe = null
+
+  /**
+   * Liveness probe for the c3 server container.
+   * This probe is used to determine if the container is ready to accept traffic.
+   * It is of type {@link K8sProbe}.
+   */
+  livenessProbe: K8sProbe = null
+
+  /**
+   * Startup probe for the c3 server container.
+   * This probe is used to determine if the container is ready to accept traffic.
+   * It is of type {@link K8sProbe}.
+   */
+  startupProbe: K8sProbe = null
+
+  /**
+   * Add an additional volume to the pod spec of the deployment on which the upsert operation is performed.
+   * @param containerName
+   *          The name of the container to which the volume will be added.
+   * @param volumeMount
+   *          The array of {@link K8sVolume} to add.
+   * @return the operation spec.
+   */
+  addAdditionalVolumes: member function(containerName: !string,
+                                        volumes: [K8sVolume]): K8sDeploymentUpsertOperationSpec
+
+  /**
+   * Add an additional volume mount to the pod spec of the deployment on which the upsert operation is performed.
+   * @param containerName
+   *          The name of the container to which the volume mount will be added.
+   * @param volumeMounts
+   *          The array of {@link K8sVolumeMount} to add.
+   * @return the operation spec.
+   */
+  addAdditionalVolumeMounts: member function(containerName: !string,
+                                             volumeMounts: [K8sVolumeMount]): K8sDeploymentUpsertOperationSpec
+
+  /**
+   * Add a size limit for volumes for a pod on which the upsert operation is performed.
+   * @param mapping
+   *          The volume name and size mapping to be added.
+   * @return the operation spec.
+   */
+  addSizeLimitVolumeOverrides: member function(mapping: map<!string enum App.NodePool.Config.Volumes, string>)
+                                        : K8sDeploymentUpsertOperationSpec
+}

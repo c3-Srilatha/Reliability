@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This component arranges a set of other components into a grid. There can be up to sixteen columns in each row and an
+ * unlimited number of rows.
+ *
+ * If the rows have different number of columns, the rows with fewer columns will widen them. A weight may be specified
+ * on columns and the extra space will be apportioned in relation to the width. If widths are unspecified, the space
+ * will be divided equally (within the constraint of a fixed number of underlying columns).
+ */
+type GridLayout mixes ReactClass {
+
+  /**
+   * The rows of nested components. There must be at least one row and each row must have at least one column.
+   */
+  rows: ![GridLayout.Row]
+
+  /**
+   * Whether there is a dividing line between the cells:
+   *  - `vertical` dividing lines between rows only
+   *  - `horizontal` dividing lines between columns only
+   *  - `internal` dividing lines between both rows and columns
+   *  - `celled` dividing lines between rows and columns and around outside
+   */
+  divided: string enum('vertical', 'horizontal', 'internal', 'celled')
+}

@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Metadata about files written to {@link Feature.Store}.
+ */
+private type Feature.Store.WriteMetadata {
+
+  /**
+   * Id in the table where data is stored.
+   *
+   * @see Feature.Store#readData
+   */
+  uuid: !string
+
+  /**
+   * The name of the action being represented. For example, this can be {@link Feature.Store#readDataFromArrow} for a
+   * {@link Data} written in {@link Data.PersistedFormat#ARROW}.
+   *
+   * @see Data.Persisted#create
+   */
+  action: !string
+
+  /**
+   * Name of the table where the data is stored.
+   *
+   * @see Feature.Store#readData
+   */
+  tableName: !string
+
+  /**
+   * Base directory in {@link FileSystem} where files are stored.
+   */
+  baseDir: !string
+
+  /**
+   * The number of files written for a call to {@link Feature.Store#write_pandas_to_store}.
+   */
+  numFiles: !int = 0
+
+  /**
+   * Size in memory of the native pandas dataframe.
+   */
+  nativeMemSizeBytes: int
+
+  /**
+   * Format data was written in the {@link Feature.Store}.
+   */
+  format: !string enum Data.PersistedFormat = ARROW
+
+  /**
+   * Configurations used for writing to {@link Feature.Store}.
+   */
+  writeSpec: Feature.Store.WriteSpec
+}

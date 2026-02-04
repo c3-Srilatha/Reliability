@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * All source of information for setting Jdbc property.
+ */
+private type JdbcPropertyContext {
+
+  /**
+   * The name of the property
+   */
+  name: string
+
+  /**
+   * The final JDBC URL constructed from templates, credentials, and input config.
+   */
+  url: string
+
+  /**
+   * Credential fields such as database, schemaName, etc.
+   */
+  creds: JdbcCredentialsFields
+
+  /**
+   * The JDBC driver and connection specification, including driver info and datastore metadata.
+   */
+  spec: JdbcConnectSpec
+
+  /**
+   * User-supplied and system-evaluated configuration for the JDBC store.
+   */
+  cfg: JdbcStoreConfig
+
+  /**
+   * The fully resolved set of properties to be used when initializing the JDBC connection.
+   */
+  props: map<string, any>
+
+  /**
+   * Returns the resolved secret key associated with this connection from credentials and connect spec
+   */
+  secretKey: private member function(): string
+
+  /**
+   * If the property exists in Jdbc url or jdbc property map.
+   */
+  exist: private member function(): boolean
+
+  /**
+   * Determines if the authentication scheme is OAuth based on properties or JDBC URL.
+   */
+  isAuthSchemeOAuth: private member function(): boolean
+
+  /**
+   * Determines if the authentication scheme is OAuthJWT based on properties or JDBC URL.
+   */
+  isAuthSchemeOAuthJwt: private member function(): boolean
+
+  /**
+   * Returns the native private key by fetching the nativePrivateKey from the privateKeyAuth.
+   */
+  privateKey: private member function(): @java(class="java.security.PrivateKey") native
+}

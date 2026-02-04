@@ -1,0 +1,117 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Markdown collapsible is a section with a title and body, where the body can be expanded/collapsed. This uses
+ * the `details` HTML element for rendering.
+ *
+ * ```md
+ * +++ Spoiler
+ * The _butler_ did it.
+ * +++
+ * ```
+ *
+ * +++ Spoiler
+ * The _butler_ did it.
+ * +++
+ *
+ * To make the collapsible initially expanded, the last plus sign should be a `>` (and this is included in the length
+ * for nesting purposes):
+ *
+ * ```md
+ * ++> Spoiler
+ * The _butler_ did it.
+ * +++
+ * ```
+ *
+ * ++> Spoiler
+ * The _butler_ did it.
+ * +++
+ *
+ * Collapsibles are implemented using the HTML `details` element.
+ *
+ * # Accordions
+ *
+ * Also, a series of these in a row _without_ terminating lines between creates an "accordion", where only one of the
+ * sections may be open at a time:
+ *
+ * ```md
+ * +++ First Act
+ * Characters introduced, initial plot unfolds.
+ * +++ Second Act
+ * Plot complication, minor drama.
+ * +++ Third Act
+ * Additional complication, major drama, resolution.
+ * +++
+ * ```
+ *
+ * +++ First Act
+ * Characters introduced, initial plot unfolds.
+ * +++ Second Act
+ * Plot complication, minor drama.
+ * +++ Third Act
+ * Additional complication, major drama, resolution.
+ * +++
+ *
+ * These are implemented using multiple `details` elements with the same name.
+ *
+ * One of the sections can be initially open using `++>` as in any collapsible (see above).
+ *
+ * # Non-exclusive Accordions
+ *
+ * A sequence of collapsibles _with_ terminating lines between creates a non-exclusive accordion, where multiple
+ * sections may be open. (This is essentially just a series of collapsibles.)
+ *
+ * ```md
+ * +++ First Act
+ * Characters introduced, initial plot unfolds.
+ * +++
+ * +++ Second Act
+ * Plot complication, minor drama.
+ * +++
+ * +++ Third Act
+ * Additional complication, major drama, resolution.
+ * +++
+ * ```
+ *
+ * +++ First Act
+ * Characters introduced, initial plot unfolds.
+ * +++
+ * +++ Second Act
+ * Plot complication, minor drama.
+ * +++
+ * +++ Third Act
+ * Additional complication, major drama, resolution.
+ * +++
+ *
+ * Any of the sections can be initially open using `++>` (see above).
+ */
+type MarkdownCollapsible mixes MarkdownNode {
+
+  /**
+   * Whether the collapsible should start expanded (by default it starts collapsed).
+   * This is enabled with an opening ending in a greater-than, such as `++>`.
+   */
+  startExpanded: member function(): boolean
+
+  /**
+   * Whether this is part of an (exclusive) accordion. This means the subsequent collapsible was started
+   * without a closing line between (concatenated to this one).
+   */
+  concatenated: member function(): boolean
+
+  /**
+   * If this is part of an (exclusive) accordion, the name associated with each collapsible section.
+   */
+  name: member function(): string
+
+  /**
+   * The title specified on the opening line. This is plain text only (no markup).
+   */
+  title: member function(): string
+}

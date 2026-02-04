@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type governs how the Common Subexpression Elimination optimization handles a specific port when comparing
+ * {@link Workflow.Action} vertices for the same action.
+ */
+type Workflow.Cse.Rule.PortRule {
+
+  /**
+   * Returns true if the previous vertices for the ports are equivalent. By default, this
+   * returns true iff the ids of the previous vertices are the same.
+   *
+   * @param p1
+   *           The first {@link FlowGraph.Port} to check equivalence for.
+   * @param p2
+   *           The second {@link FlowGraph.Port} to check equivalence for.
+   * @param workflow
+   *           The original {@link Workflow} to which both 'p1' and 'p2' belong.
+   * @return true if the previous vertices for the ports are equivalent.
+   */
+  prevVerticesAreEquivalent: member function(p1: !FlowGraph.Port,
+                                             p2: !FlowGraph.Port,
+                                             workflow: !Workflow): boolean java | py
+}

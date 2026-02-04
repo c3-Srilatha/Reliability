@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * For sending email messages from code. This is not intended for marketing or mass emails,
+ * but for notifications that are generated in response to actions or thresholds.
+ *
+ * The Mail record should be upserted before sending the email.
+ * The email sent is recorded in the server logs, so may be searched in Splunk.
+ */
+entity type Mail mixes Configurable<MailConfig> schema name 'EMAIL_MAIL' {
+
+  /**
+   * The From address to be used in the email. If a Member is given, instead of a string, it will use the email
+   * address for the Member record.
+   */
+  from: !(string | AccessControlEntity)
+
+  /**
+   * The list of To addresses to be used in the email. If a Member is given, instead of a string, it will use the email
+   * address for the Member record.
+   */
+  to: ![string | AccessControlEntity] schema name 'TO'
+
+  /**
+   * The list of CC addresses to be used in the email. If a Member is given, instead of a string, it will use the email
+   * address for the Member record.
+   */
+  cc: [string | AccessControlEntity] schema name 'CC'
+
+  /**
+   * The list of BCC addresses to be used in the email. If a Member is given, instead of a string, it will use the email
+   * address for the Member record.
+   */
+  bcc: [string | AccessControlEntity] schema name 'BCC'
+
+  /**
+   * The subject line of the email
+   */
+  subject: !string
+
+  /**
+   * The body of the email. It may be plain text or html, as specified in the content_type.
+   */
+  @deprecated(finalVersion='7.9', details=' Use {@link Template}')
+  content: !string
+
+  /**
+   * This Template DOES NOT use {@link Template}. {@link Template} uses FreeMarker for templates. This is literal string
+   * substitution.
+   *
+   * As template variables to specify the fields on the subject and content.
+   *
+   * Example: In the content/subject template, `Hi it is nice to meet you $USER at $PLACE.`
+   * with vars passed as `{"USER": "c3User", "PLACE": "1400SeaPort"}`  =>  `Hi it is nice to meet you c3User at 1400Seaport.`
+   */
+  vars: map<string, string> schema name 'VAR'
+
+  /**
+   * The content type of the email, default is 'text/plain' if not specified.
+   */
+  @deprecated(finalVersion='7.1', details=' Use {@link contentType}')
+  content_type: string enum('text/plain', 'text/html') = 'text/plain'
+
+  /**
+   * The content type of the email, default is 'text/plain' if not specified.
+   */
+  contentType: string enum('text/plain', 'text/html')
+
+  /**
+   * A single attachment that may be sent with the email.
+   * It should be created before the Mail record.
+   */
+  @deprecated(finalVersion='8.3', details='Use `attachments` instead')
+  attachment: File
+
+  /**
+   * Attach one or more files in an email. Supported by only certain {@link MailConfig.serviceProvider}s.
+   */
+  attachments: [File] schema name 'ATTACHMENTS'
+
+  /**
+   * Once a Mail record has been saved to the DB, it can be sent. It may be sent as many times as desired.
+   * There is no DB record of the sending, but it is logged in the server logs and so may be checked with Splunk.
+   *
+   * @param email
+   *           The email that is to be sent.
+   *
+   * @return the email that was sent, or null if none was sent.
+   */
+  send: function(email: !Mail): Mail
+
+  /**
+   * Validates an email address.
+   */
+  isValidEmail: function(email: !?string): boolean
+
+  /**
+   * @return a string representation of the email address, including name if applicable.
+   * Example: "C3 AI <user@c3.ai>"
+   */
+  formatEmail: function(email: !?string, name: string): string
+}

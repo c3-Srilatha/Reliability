@@ -1,0 +1,144 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Fields used to govern the behavior of {@link ReliabilitySyntheticData.ReliabilityRisk.DataGenerationJob}.
+ */
+@constraint(
+  condition='(exists(templateExcel) && empty(replicatedExcel)) || (empty(templateExcel) && exists(replicatedExcel))',
+  message='Either templateExcel or replicatedExcel must be provided, but not both.')
+type ReliabilitySyntheticData.ReliabilityRisk.DataGenerationJobFields {
+
+  /**
+   * The Excel workbook containing asset hierarchy and sensor data.
+   *
+   * @see ReliabilityExcelParser
+   * @see ReliabilitySyntheticData.ReliabilityRisk.AssetHierarchySpreadsheet
+   */
+  templateExcel: File
+
+  /**
+   * If the desired Excel workbook has already been parsed and replicated, the replicated
+   * entity can be provided here instead of #templateExcel.
+   *
+   * The `job` field of this entity will be overwritten with the current job.
+   */
+  replicatedExcel: ReliabilitySyntheticData.ReliabilityRisk.AssetHierarchySpreadsheet
+
+  /**
+   * Whether or not to skip the generation of relational data (e.g., {@link ReliabilityAssetEvent},
+   * {@link PointPhysicalMeasurementSeries}). This is useful when relational data has already been
+   * loaded and only {@link PointMeasurement} data needs to be incrementally generated.
+   */
+  skipRelationalDataGeneration: boolean = false
+
+  /**
+   * The number of replicas of assets *within a single facility* found in #templateExcel
+   * to generate before writing individual CSVs to the {@link FileSystem}. Example:
+   *
+   * ```
+   * Initial spreadsheet hierarchy
+   *
+   *     Facility 1
+   *    /          \
+   * Asset 1    Asset 2
+   *
+   * With intrafacilityReplicationFactor = 3
+   *
+   *                      Facility 1
+   *                          |
+   * Asset 1  Asset 2  Asset 3  Asset 4  Asset 5  Asset 6
+   * ```
+   *
+   * If #replicatedExcel is provided instead of #templateExcel, this field ignored.
+   *
+   * @see interfacilityReplicationFactor
+   * @see ReliabilitySyntheticData.ReliabilityRisk.AssetHierarchySpreadsheet#replicate
+   */
+  intrafacilityReplicationFactor: !int
+
+  /**
+   * The number of replicas of *the facility itself* found in #templateExcel to
+   * generate before writing individual CSVs to the {@link FileSystem}. Example:
+   *
+   * ```
+   * Initial spreadsheet hierarchy
+   *
+   *     Facility 1
+   *    /          \
+   * Asset 1    Asset 2
+   *
+   * With interfacilityReplicationFactor = 3
+   *
+   *     Facility 1            Facility 2            Facility 3
+   *    /          \          /          \          /          \
+   * Asset 1    Asset 2    Asset 3    Asset 4    Asset 5    Asset 6
+   * ```
+   *
+   * If #replicatedExcel is provided instead of #templateExcel, this field is ignored.
+   *
+   * @see intrafacilityReplicationFactor
+   * @see ReliabilitySyntheticData.ReliabilityRisk.AssetHierarchySpreadsheet#replicate
+   */
+  interfacilityReplicationFactor: !int
+
+  /**
+   * The number of additional {@link Sensor}s to generate per {@link ReliabilityAsset}
+   * in addition to the {@link Sensor}s linked to them in the "REL_Asset_Hierarchy" sheet
+   * of #templateExcel. The additional {@link Sensor}s can be thought of as "floating"
+   * {@link Sensor}s.
+   */
+  numberOfExternalSensorsPerAsset: !int
+
+  /**
+   * The target expected sensor name for external sensors.
+   */
+  targetExpectedSensorForExternalSensors: string
+
+  /**
+   * The time range for generating {@link Sensor} data is defined on the "Time_Range" sheet
+   * of #templateExcel. This field allows for overriding that time range to make data loads
+   * in incremental batches easier.
+   *
+   * The interval from the "Time_Range" sheet will be used as the base interval for generating data,
+   * and the {@link TimeRange} provided here will always be converted to [UTC](TimeZone#UTC).
+   *
+   * **NOTE:** Overriding the timestamps of {@link ReliabilityAssetEvent}s (the "Events" sheet)
+   *           is not supported. This can only be used for {@link Sensor} data.
+   */
+  overrideTimeRange: TimeRange
+
+  /**
+   * Even though the data may be generated for a long period of time, the way it is
+   * written to disk may be in a chunked manner. For example, each file could contain
+   * data for all sensors but only for a period of a month.
+   */
+  chunkDuration: !Duration
+
+  /**
+   * A map of failure mode names to lambda functions.
+   */
+  failureModeLambdas: map<string, Lambda<function(df: any, expected_sensor_to_sensor_id: any, abnormal_sensor_bounds_for_failure_mode: any): any>>
+
+  /**
+   * The path to the folder where all generated `Canonical` data will be written.
+   *
+   * For incremental data generation, make sure each new batch of generated data
+   * is written to a different folder to avoid reprocessing the same data through data integration.
+   * It is recommended to name the folder with the start and end dates of #overrideTimeRange.
+   * E.g., `syntheticCanonicalDataIncremental/2024_01_01_00:00:00Z__2024_01_01_01:00:00Z/`.
+   */
+  folderPath: !string
+
+  /**
+   * Represents the number of batches of data for which data will be generated
+   * by each process.
+   */
+  batchSize: !int
+}

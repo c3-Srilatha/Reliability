@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Custom {@link ExpressionEngineFunction}s used to calculate complex calc fields for {@link Genai.Query.Result}
+ */
+type Genai.Query.Result.ExpressionEngineFunction mixes ExpressionEngineFunction {
+  /**
+   * Function to obtain the time in milliseconds that the query took from creation to completion.
+   * @param id
+   *        The ID of the {@link Genai.Query.Result}.
+   * @return The latency of the query in milliseconds.
+   */
+  getQueryLatency: function(id: !string): !int js-rhino
+
+  /**
+   * Returns the parsed JSON of a {@link Genai.Query.Result}.
+   * @param id
+   *        The ID of the {@link Genai.Query.Result}.
+   * @return The parsed engine log JSON.
+   */
+  getParsedEngineLog: function(id: !string): !json js-rhino
+
+  /**
+   * Function to obtain the email of the user that created the query
+   * @param userId
+   *           the id of the user
+   * @return the email associated with the provided user id
+   */
+  getUserEmail: function(userId: string): !string js-rhino
+
+  /**
+   * Function to obtain the UI result for the provided {@link Genai.Query.Result} id
+   */
+  retrieveGetForUiResult: function(id: !string): !Genai.Query.Result.GetForUiResult js-rhino
+}

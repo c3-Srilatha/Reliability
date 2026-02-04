@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result of an object validation.
+ */
+type ValidateObjResult mixes Result {
+
+  /**
+   * All errors discovered during validation. If this is empty, the object is valid.
+   */
+  errors: map<string serialized FieldPath, Error>
+
+  /**
+   * Whether or not the object is valid (no issues were discovered).
+   */
+  isValid: member function(): boolean
+
+  /**
+   * Throws formatted error if invalid
+   */
+  failIfInvalid: member function()
+
+  /**
+   * Build an Error object from the validation issues. If there are multiple issues, a BatchError is produced.
+   */
+  toError: member function(): Error
+
+  /**
+   * Throws error if invalid
+   */
+  throwError: member function()
+}

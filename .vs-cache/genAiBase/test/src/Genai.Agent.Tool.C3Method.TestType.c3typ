@@ -1,0 +1,106 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A test type for {@link Genai.Agent.Tool.C3Method}.
+ */
+type Genai.Agent.Tool.C3Method.TestType {
+
+  /**
+   * A valid method for Tool.C3Method.
+   * @param s
+   *           A string.
+   * @param i
+   *           An integer.
+   * @param d
+   *           A datetime.
+   *
+   * @return A double.
+   */
+  validMethod: function(s: !string, i: !int, d: datetime): !double js | py
+
+  /**
+   * Another valid method for Tool.C3Method.
+   * @param f
+   *           A float.
+   */
+  validMethod: function(f: float) js | py
+
+  /**
+   * A third valid method for Tool.C3Method.
+   * @param f
+   *           A float.
+   * @param b
+   *           A boolean.
+   * @param s
+   *           A string.
+   *
+   * @return A string
+   */
+  validMethod: function(f: float, b: boolean, s: string="foo"): string js | py
+
+  /**
+   * A valid method with only one overload/implementation
+   * @param b
+   *           A boolean.
+   * @param i
+   *           An integer.
+   */
+  validMethodOneOverload: function(b: boolean, i: int=42): !string py
+
+  /**
+   * An invalid method for Tool.C3Method.
+   */
+  invalidMethod: function(s: !string, t: !Genai.Agent.Tool.TestTool2) js
+
+  /**
+   * Another invalid method for Tool.C3Method.
+   */
+  invalidMethod: function(m: map<string, string>, b: boolean): !FetchSpec js
+
+  /**
+   * A third invalid method for Tool.C3Method.
+   */
+  invalidMethod: function(is: [int]): !string js
+
+  /**
+   * A no docs method for Tool.C3Method.
+   */
+  noDocsMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * A test method that has no parameters documented
+   */
+  noParamsDocMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * A test method that is missing documentation for some parameters
+   * @param s
+   *           A string.
+   * @param d
+   *           A datetime.
+   */
+  notAllParamsDocMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * Given the details of an applicant, determine their insurance rate
+   *
+   * @param age
+   *           The age of the applicant
+   * @param income
+   *           The income of the applicant
+   * @param livesInCity
+   *           Whether the applicant lives in a city
+   * @param numChildren
+   *           The number of children the applicant has
+   *
+   * @return A json object with the arguments the function was called with. For testing purposes.
+   */
+  calculateInsuranceRate: function(age: !int, income: !double, livesInCity: boolean, numChildren: int): json js
+}

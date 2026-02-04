@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a prediction related to the risk score in the context of machine learning or reliability modeling.
+ * This entity captures predicted values, along with their upper and lower bounds, for assessing potential risks.
+ * The entity mixes the properties of `TimedDataPoint` and includes metadata from `ReliabilityRiskScoreMlPredictionHeader` for additional context.
+ * For details on other information stored in this Type, refer to the documentation on each of the fields of this Type.
+ */
+@db(datastore='cassandra',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    compactType=true,
+    shortIdReservationRange=100000)
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskScoreMlPrediction mixes TimedDataPoint<ReliabilityRiskScoreMlPredictionHeader> schema name 'MLMDLTPRD' {
+  /**
+   * The predicted risk score value derived from a machine learning model or reliability model.
+   * It represents the forecasted risk score, which could be used for asset health assessments, failure probabilities,
+   * or other risk-related metrics within reliability models.
+   *
+   * `@ts(treatmentPath="parent.treatment", unitPath="parent.unitConstraint")` - Specifies the path to retrieve the
+   * treatment value and unit constraints from the parent entity. This ensures that the value is appropriately treated
+   * and conforms to the expected units.
+   */
+  @ts(treatmentPath="parent.treatment", unitPath="parent.unitConstraint")
+  value: !double
+
+  /**
+   * The upper bound for the predicted risk score value.
+   * This field defines the maximum allowable value for the risk score prediction. It serves as a threshold to ensure that
+   * the predicted value doesn't exceed a reasonable or acceptable limit. For example, it could ensure that predictions
+   * don't surpass 100% risk or any other pre-defined upper limit based on business logic or safety concerns.
+   */
+  valueUpperBound: double
+
+  /**
+   * The lower bound for the predicted risk score value.
+   * This field defines the minimum allowable value for the risk score prediction. It ensures that the risk score does not
+   * drop below a predefined minimum threshold, which might be useful to avoid implausibly low predictions or to guarantee
+   * that the model does not produce invalid or extreme negative predictions.
+   */
+  valueLowerBound: double
+}

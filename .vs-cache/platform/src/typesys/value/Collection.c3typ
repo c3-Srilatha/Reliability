@@ -1,0 +1,1156 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all collections. Collections always have an "element type" and maps additionally have a "key type".
+ * Collections normally may not include `null` elements, but nulls may be allowed using the "allows empty" syntax:
+ * `[?int]` (see {@link Array}).
+ *
+ * An {@link Array} is a 1-dimensional, ordered set of elements that allows duplicates. All values are kept in memory.
+ *
+ * A {@link Set} is a 1-dimensional, unordered set of elements that does _not_ allow duplicates. All values are kept in
+ * memory.
+ *
+ * A {@link Map} is an unordered set key/value pairs. It does not allow duplicate keys, but does allow duplicate
+ * elements. All elements are kept in memory.
+ *
+ * A {@link Stream} is a producer of elements. The elements need not necessarily all be in memory, and whenever the
+ * number of elements is large, streams are the preferred way to work with them to avoid memory problems.
+ *
+ * Collections provide a rich set of functional programming methods to operate on them concisely and efficiently.
+ * We strongly recommend using this style rather than explicit iteration.
+ */
+// TODO: PLAT-26180 Collection mixes ItemProtocol
+// ItemProtocol,
+/*
+ * TODO: PLAT-39507 Inheriting using "~ from" doesn't work for generic types
+ * these methods should be: ~ from CollectionWithIndex
+ * containsAll
+ * containsAny
+ * countBy
+ * each
+ * filter
+ * findAny
+ * flatMap
+ * flatMapTo
+ * flatMapToSame
+ * fold
+ * maxBy
+ * minBy
+ * reject
+ * sortBy
+ * sortedIndex
+ * uniqueBy
+ */
+abstract inline type Collection<E> mixes CollectionStats, Serializable, WithToString, Fingerprintable, MemoryMeasurable, CollectionStdLib<E>, WithType, Zippable<E>, Instance, Value {
+
+  /**
+   * @returns true if the collection has been validated
+   */
+  validated: abstract member function(): boolean
+
+  /**
+   * @return value type of this collection
+   */
+  collectionType: abstract member function(): !CollectionType java | js
+
+  /**
+   * @return value type of elements in this collection
+   */
+  elementType: member function(): !ValueType java | py | js
+
+  /**
+   * @return a collection with potentially more specialized element type by inferring element value types
+   */
+  inferType: member function(): mixing Collection
+
+  /**
+   * @return true if this collection can have null elements
+   */
+  hasNullElements: member function(): boolean
+
+  /**
+   * @return true if this instance is empty
+   */
+  isEmpty: abstract member function(): boolean java | py
+
+  /**
+   * @return true if this instance has same size and type as other collection and contains same elements. Return false
+   *         otherwise including when other is not a collection
+   */
+  isSame: abstract member function(other: !?any): boolean
+
+  /**
+   * @return true if this instance has same size and elements as other collection but is potentially of different type
+   */
+  hasSameElements: abstract member function(other: !?Collection<any>, ignoreElementOrder: boolean): boolean
+
+  /**
+   * @return true if this collection discards duplicate elements
+   */
+  isUnique: member function(): boolean
+
+  /**
+   * @return true if this collection is sorted
+   */
+  isSorted: member function(): boolean
+
+  /**
+   * @return true if this collection is indexed, i.e. has a meaningful order of elements and has #at(int) method
+   *         enabled
+   */
+  isIndexed: member function(): boolean
+
+  /**
+   * @return a stream of index values for all elements in this collection
+   */
+  indices: member function(): stream<int>
+
+  /**
+   * @return index of first occurrence of provided element or -1 if element is not in this collection
+   */
+  indexOf: member function(element: !?E): !int java | js
+
+  /**
+   * Finds first index of element in this collection satisfying provided condition.
+   */
+  indexOfAny: member function(test: !lambda(element: !?E): boolean): !int java | js
+
+  /**
+   * @return index of last occurrence of provided element or -1 if element is not in this collection
+   */
+  lastIndexOf: member function(element: !?E): !int java | js
+
+  /**
+   * Finds last index of element in this collection satisfying provided condition.
+   */
+  lastIndexOfAny: member function(test: !lambda(e: E): boolean): !int java | js
+
+  /**
+   * @return first element in this collection.
+   */
+  first: ~ java | js
+
+  /**
+   * Find first non null element in this collection. Note that element can still be #isEmpty()
+   */
+  firstNotNull: abstract ~ java | js
+
+  /**
+   * Finds first non empty element.
+   */
+  firstNotEmpty: abstract ~ java | js
+
+  /**
+   * @return last element of this collection.
+   */
+  last: ~ java | js
+
+  /**
+   * Find last non null element in this collection. Note that element can still be #isEmpty()
+   */
+  lastNotNull: abstract ~ java | js
+
+  /**
+   * Finds last non empty element.
+   */
+  lastNotEmpty: abstract ~ java | js
+
+  /**
+   * @return
+   * 1. element with minimum value of the primitive collection.
+   * 2. new element with minimum value for each field for the obj collection.
+   * 3. new collection with minimum value for each index for collection of collections.
+   *
+   * e.g:
+   * ```
+   * d = [{a:1,b:2,c:3}, {a:3,b:0,c:2}]
+   * d.min() === {a:1,b:0,c:2}
+   *
+   * d = [1,2,3]
+   * d.min() === 1
+   *
+   * d = [[1,2,3], [1,1,4,7]]
+   * d.min() === [1,1,3,7]
+   * ```
+   */
+  min: member function(spec: AggSpec): E java | js
+
+  /**
+   * @return element of the collection with minimum value based on provided comparator.
+   */
+  min: member function(comparator: !lambda(a: E, b: E): @comparator int32): E java | js
+
+  /**
+   * @return element of the collection with minimum value based on provided value supplier.
+   */
+  minBy: abstract ~ java | js
+
+  /**
+   * @return
+   * 1. element with maximum value of the primitive collection.
+   * 2. new element with maximum value for each field for the obj collection.
+   * 3. new collection with maximum value for each index for collection of collections.
+   *
+   * e.g:
+   * ```js
+   * d = [{a:1,b:2,c:3}, {a:3,b:0,c:2}]
+   * d.max() === {a:3,b:2,c:3}
+   *
+   * d = [1,2,3]
+   * d.max() === 3
+   *
+   * d = [[1,2,3], [1,1,4]]
+   * d.max() == [1,2,4]
+   * ```
+   */
+  max: member function(spec: AggSpec): E java | js
+
+  /**
+   * @return element of the collection with maximum value based on provided comparator.
+   */
+  max: member function(comparator: !lambda(a: E, b: E): @comparator int32): E java | js
+
+  /**
+   * @return element of the collection with maximum value based on provided value supplier.
+   */
+  maxBy: abstract ~ java | js
+
+  /**
+   * @return
+   * 1. sum of all elements of the primitive collection.
+   * 2. new element with summed value for each field for the obj collection.
+   * 3. new collection with summed value for each index for collection of collections.
+   * Please note that for **Boolean** fields, values will be converted to **Integer** fields before summing.
+   *
+   * e.g:
+   * ```js
+   * d = [{a:1,b:2,c:3,d:True,e:False}, {a:3,b:0,c:2,d:False,e:False}]
+   * d.sum() === {a:4,b:2,c:5,d:1,e:0}
+   *
+   * d = [1,2,3]
+   * d.sum() === 6
+   *
+   * d = [[1,2,3], [1,1,4]]
+   * d.sum() == [2,3,7]
+   *
+   * d = [False, True, False]
+   * d.sum() === d.or()
+   * d.sum() === True
+   * ```
+   * @see #agg
+   * @see #add
+   * @see #min
+   * @see #or
+   */
+  sum: member function<R>(spec: AggSpec): R java | js
+
+  /**
+   * Sums up evaluation result of a provided expression for each element in this collection.
+   */
+  sum: member function<R>(projection: !string serialized Expr, spec: AggSpec): R java | js
+
+  /**
+   * @return
+   * 1. AND (`&&`) of all elements of the primitive collection.
+   * 2. new element with AND (`&&`) value for each field for the obj collection.
+   * 3. new collection with AND (`&&`) value for each index for collection of collections.
+   * e.g:
+   * ```js
+   * d = [{a:False,b:True,c:True}, {a:True,b:True,c:True}]
+   * d.all() === {a:False,b:True,c:True}
+   *
+   * d = [True,True,False]
+   * d.all() === False
+   *
+   * d = [[True,True,False], [True,False,False]]
+   * d.all() == [True, False, False]
+   * ```
+   */
+  all: member function<R>(spec: AggSpec): R java | js
+
+  /**
+   * Aggregates the Collection into a single element based on the aggregator provided.
+   * Used in operators like min, max to get min and max value of the Collection respectively.
+   *
+   * @see #agg
+   * @see #min
+   * @see #max
+   */
+  agg: member function<R>(spec: !?AggSpec, op: !AggOp): R java | js
+
+  /**
+   * Aggregates the Collection into a single value based on the aggregator provided.
+   * Used in operators like min, max to get min and max value of the Collection respectively.
+   * @param aggregator
+   *        Defines the aggregation operation over the collection
+   * @param spec
+   *        Specialize/influence the Aggregation operation.
+   *
+   * @see AggSpec
+   * @see #min
+   * @see #max
+   * @see #agg
+   */
+  agg: member function<R>(spec: !?AggSpec, aggregator: !lambda(a: R, b: E): R): R java | js
+
+  /**
+   * @return an aggregated value by applying a folder lambda over a chunk/partition of data and aggregator over
+   * the stream of intermediate results. Unlike {@link #agg} which has the same folder lambda aggregating data
+   * **within and across chunk/partition**, this method allows for different lambdas to be applied in each case.
+   * {@link #avg} and {@link #variance} uses this internally in the implementation, whereas {@link #sum} uses
+   * {@link #agg} underneath.
+   *
+   * @see #agg
+   */
+  agg: member function<T, R>(spec: !?AggSpec,
+                             folder: !lambda(accumulator: T, e: E): T,
+                             aggregator: !lambda(aggregated: R, e: T): R): R java | js
+
+  /**
+   * Sum up all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3] => 6
+   * ```
+   */
+  sumDbl: ~ java | js
+
+  /**
+   * Compute the mean of all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3] => 2
+   * ```
+   */
+  avg: ~ java | js
+
+  /**
+   * Compute the mean of all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3] => 2.0
+   * ```
+   */
+  avgDbl: ~ java | js
+
+  /**
+   * Compute median of all the values in the collection
+   * E.g.
+   * ```js
+   *    [0,1,2,3] => 1.5
+   * ```
+   */
+  median: ~ java | js
+
+  /**
+   * Compute median of all the values in the collection
+   * E.g.
+   * ```js
+   *    [0,1,2,3] => 1.5
+   * ```
+   */
+  medianDbl: ~ java | js
+
+  /**
+   * Compute percentile of all the values in the collection
+   * E.g.
+   * ```js
+   *    percentile([0,1,2,3], 0.50) => 1.5
+   * ```
+   */
+  percentile: ~ java | js
+
+  /**
+   * Compute percentile of all the values in the collection
+   * E.g.
+   * ```js
+   *    percentile([0,1,2,3], 0.50) => 1.5
+   * ```
+   */
+  percentileDbl: ~ java | js
+
+  /**
+   * Compute standard deviation of all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3,4] => 1.2909944487358
+   * ```
+   */
+  stddev: ~ java | js
+
+  /**
+   * Compute standard deviation of all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3,4] => 1.2909944487358
+   * ```
+   */
+  stddevDbl: ~ java | js
+
+  /**
+   * Compute variance of all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3,4] => 1
+   * ```
+   */
+  variance: ~ java | js
+
+  /**
+   * Compute variance of all the values in the collection
+   * E.g.
+   * ```js
+   *    [1,2,3,4] => 1
+   * ```
+   */
+  varianceDbl: ~ java | js
+
+  /**
+   * Aggregate values in the current collection using the given aggregation function
+   * @param aggFunc
+   *            Aggregation function to aggregate by
+   * @param percentile
+   *            If the aggregation function is {@link AggOp.PERCENTILE}
+   * @return the aggregated value
+   */
+  agg: member function(aggFunc: !string enum AggOp, percentile: double): E java | js
+
+  /**
+   * Aggregate values in the current collection using the given aggregation function
+   * @param aggFunc
+   *            Aggregation function to aggregate by
+   * @param percentile
+   *            If the aggregation function is {@link AggOp.PERCENTILE}
+   * @return the aggregated value
+   */
+  aggDbl: ~ java | js
+
+  /**
+   * @return one and only element of the collection or null if collection is empty or is not a singleton i.e. has more
+   *         then one elements.
+   */
+  only: abstract ~ java | js
+
+  /**
+   * @return `true` if this collection contains provided element.
+   */
+  // TODO: PLAT-26180 redundant with CollectionProtocol
+  contains: abstract ~ java | js
+
+  /**
+   * @return `true` if this collection contains all elements of provided collection.
+   */
+  containsAll: abstract ~ java | js
+
+  /**
+   * @return true if this collection contains any elements satisfying provided condition.
+   */
+  containsAny: abstract ~ java | js
+
+  /**
+   * Finds some element in this collection satisfying provided condition.
+   */
+  findAny: abstract ~ java | js
+
+  /**
+   * Find any non null element in this collection. Note that element can still be #isEmpty()
+   */
+  anyNotNull: abstract ~ java | js
+
+  /**
+   * Finds any non empty element.
+   */
+  anyNotEmpty: abstract ~ java | js
+
+  /**
+   * Invokes action for each element.
+   */
+  each: abstract ~ java | js
+
+  /**
+   * Invokes action for each element while given action returns `true`. Returns `true` if provided action did not
+   * interrupt iteration.
+   */
+  eachWhile: abstract ~ java | js
+
+  /**
+   * @return new collection for all elements of this collection transformed by applying provided lambda function.
+   */
+  mapToSame: abstract ~
+
+  /**
+   * @return new collection based on all elements of this collection by applying provided mapping specification.
+   */
+  map: abstract member function(spec: !FetchStreamSpec): mixing Collection<E> java | js
+
+  /**
+   * @return new collection based on all elements of this collection by applying provided mapping specification.
+   */
+  // TODO: PLAT-19885 - :V8: - Collection.map(spec: CollectionMapSpec): mixing Collection<E>
+
+  /**
+   * @return new collection of any with all elements of this collection transformed by applying provided lambda function.
+   */
+  map: abstract ~ java | js
+
+  /**
+   * @return new collection of string with all elements of this collection transformed by applying provided lambda function.
+   */
+  mapToStr: abstract ~ java | js
+
+  /**
+   * @return new collection of provided type with all elements of this collection transformed by applying provided lambda function.
+   */
+  mapTo: abstract ~ java | js
+
+  /**
+   * @return a collection of same type consisting of the results of replacing each element of this collection with
+   *         mapped array elements.
+   */
+  flatMapToSame: abstract ~ java | js
+
+  /**
+   * @return returns a collection of any consisting of the results of replacing each element of this collection with mapped array elements.
+   */
+  flatMap: abstract ~ java | js
+
+  /**
+   * @return returns a collection of provided element type consisting of the results of replacing each element of this collection with mapped array elements.
+   */
+  flatMapTo: abstract ~ java | js
+
+  /**
+   * @return new collection of this type produces by recursively applying `toInter` + `fromInter` lambdas for every
+   *         unique element of this collection and elements returned by `fromInter`.
+   */
+  flatMapRecursive: abstract ~ java | js
+
+  /**
+   * @return single value that is a result of aggregation of all elements by provided lambda.
+   */
+  fold: abstract ~ java | js
+
+  /**
+   * @return new collection with empty elements removed.
+   */
+  compact: abstract ~ java | js
+
+  /**
+   * @return new collection with duplicate elements removed.
+   */
+  unique: abstract ~ java | js
+
+  /**
+   * @return new collection with duplicate elements removed based on provided key supplier.
+   */
+  uniqueBy: abstract ~ java | js
+
+  /**
+   * Filters elements from this collection based on evaluation result of the provided filter predicate.
+   */
+  filter: abstract ~ java | js
+
+  /**
+   * Rejects elements from this collection based on evaluation result of the provided filter expression.
+   */
+  reject: abstract ~ java | js
+
+  /**
+   * Maps this collection to another by removing fields from every element that are not part of the provided include
+   * spec. If include spec is not provided then does nothing.
+   */
+  include: abstract ~ java | js
+
+  /**
+   * Maps this collection to another by removing fields from every element that are part of provided exclude spec.
+   * If include spec is not provided then does nothing.
+   */
+  exclude: abstract ~ java | js
+
+  /**
+   * Maps this collection to another by re-ordering elements based on natural sorting order.
+   *
+   * If stream contains null elements, in ascending order null elements were arranged in the last part of the returned
+   * stream, while in descending order, null elements were at the beginning of the returned stream.
+   */
+  sorted: ~ java | js
+
+  /**
+   * Maps this collection to another by re-ordering elements based on natural sorting order of a key computed using
+   * provided lambda.
+   */
+  sortedBy: ~ java | js
+
+  /**
+   * Uses a binary search to determine the index at which the value should be inserted into this sorted collection in
+   * order to maintain collections sorted order.
+   */
+  sortedIndex: ~ java | js
+
+  /**
+   * Maps this collection to a new stream of arrays of the original element type.  The size of each batch is determined
+   * by the {@link batchSize} parameter.
+   */
+  batch: ~ java | js
+
+  /**
+   * Partitions the stream into two arrays based on the truth value of the provided lambda function
+   */
+  partition: abstract ~ java | js
+
+  /**
+   * Counts values returned by the output of the provided string key function
+   */
+  countBy: abstract ~ java | js
+
+  /**
+   * Checks if predicate returns true for all elements of collection
+   */
+  every: abstract ~ java | js
+
+  /**
+   * @return new collection with all nested arrays flattened. The nesting can be to any depth unless `shallow`
+   *         parameter is `true` in which case this collection will only be flattened a single level.
+   */
+  flatten: abstract ~ java | js
+
+  /**
+   * Produce a random sample from this collection with `count` number of elements.
+   */
+  sample: abstract ~ java | js
+
+  // Computes the shape of the collection.
+  shape: abstract ~ java | js | py
+
+  /**
+   * Creates a new collection from elements starting at #fromIndex. Positive value of index is relative to the first
+   * position in the collection. Negative value of the index is relative to last position in the collection.
+   * If #fromIndex is 0, returns same collection.
+   */
+  slice: ~ java | js
+
+  /**
+   * Converts this collection to a stream.
+   */
+  stream: abstract member function(): stream<E> java | js
+
+  /**
+   * Converts this collection to an array.
+   *
+   * @param limit
+   *          the maximum number of elements in the resulting array; if null or negative, the whole collection is
+   *          converted.
+   */
+  collect: abstract member function(limit: int): [E]
+
+  /**
+   * Converts this collection to an array of arrays. If element type is not a collection then returns an array of
+   * singleton arrays.
+   */
+  collectArrays: abstract member function<T>(limit: int): [[T]]
+
+  /**
+   * Converts this collection to an array of provided type
+   */
+  toArray: abstract member function<T>(arrayType: !ArrayType, failIfElementIsInvalid: boolean): [T]
+
+  /**
+   * Converts this collection to a set of its elements without annotations. The set does not preserve order of the elements.
+   */
+  toSet: abstract member function(): set<E>
+
+  /**
+   * Converts this collection to a set of its elements with provided setType (including annotations e.g. indexed, sorted, unique)
+   */
+  toSet: abstract member function<T>(setType: !SetType, failIfElementIsInvalid: boolean): set<T>
+
+  /**
+   * Converts this collection to an stream of provided type
+   */
+  toStream: abstract member function<T>(streamType: !StreamType, failIfElementIsInvalid: boolean): stream<T> java | js
+
+  /**
+   * Converts this collection of instances of WithKey type to a map using natural key of it's elements. If collection
+   * contains duplicate elements for the same key then only last element will be preserved if collection is with index
+   * or arbitrary one will survive otherwise. In such cases it's better to use group
+   *
+   * @see group
+   * @see WithKey
+   */
+  toMap: abstract member function(): map<string, E>
+
+  /**
+   * Converts this collection to a map using provided key lambda function. If collection contains duplicate elements for
+   * the same key then only last element will be preserved if collection is with index or arbitrary one will survive
+   * otherwise. In such cases it's better to use group.
+   *
+   * @see group
+   */
+  toMap: abstract member function(key: !lambda(e: E): string): map<string, E>
+
+  /**
+   * Converts this collection to a map using provided key lambda function. If collection contains duplicate elements for
+   * the same key then only last element will be preserved if collection is with index or arbitrary one will survive
+   * otherwise. In such cases it's better to use group.
+   *
+   * @see group
+   */
+  toMapOf: abstract member function<T>(keyType: !ValueType, key: !lambda(e: E): T): map<T, E>
+
+  /**
+   * Converts this collection to a map of any to any using provided lambda function producing map entry
+   */
+  toMapOfAny: abstract member function<T1, T2>(entry: !lambda(e: E): Pair<T1, T2>): map<T1, T2>
+
+  /**
+   * Converts this collection to a map of provided type
+   */
+  toMapOfType: abstract member function<T1, T2>(mapType: !MapType, failIfElementIsInvalid: boolean): map<T1, T2>
+
+  /**
+   * Converts this collection to a collection of provided collection type but same element type
+   */
+  toCollection: abstract member function(collectionType: !CollectionType): Collection<E>
+
+  /**
+   * Converts this collection to a collection of same kind but potentially different element type. If provided
+   * collection type is same as type of this collection does nothing. If provided collection type is assignable from
+   * this collection type then simply changes collection type but keeps elements as is. Otherwise also converts
+   * elements.
+   */
+  toMixingCollection: abstract member function<T>(collectionType: !CollectionType,
+                                                  failIfInvalid: boolean): mixing Collection<T>
+
+  /**
+   * Converts this collection to a collection of provided collection type
+   */
+  toCollectionOfType: abstract member function<T>(collectionType: !CollectionType,
+                                                  failIfElementIsInvalid: boolean): Collection<T>
+
+  /**
+   * Converts this collection to appropriate collection that is stored in memory
+   */
+  toInMemory: abstract member function(): CollectionInMemory<E>
+
+  /**
+   * Serializes contents of this collection as "`prefix` + elements separated by `separator` + `suffix`".
+   *
+   * Note that if collection is empty then if `emptyString` is true returns "" otherwise returns "`prefix` + `suffix`"
+   */
+  toString: abstract member function(prefix: !?string,
+                                     separator: !?string,
+                                     suffix: ?string,
+                                     emptyString: boolean): ?string
+
+  /**
+   * Serializes contents of this collection as elements separated by `separator`, with no prefix or suffix.
+   *
+   * Note that if collection is empty returns ""
+   */
+  toString: abstract member function(separator: !?string): ?string
+
+  /**
+   * Serializes contents of this collection as elements separated by `", "` and surrounded by brackets or braces
+   * (JSON array style for simple collections and object style for maps).
+   *
+   * Note that if collection is empty, it returns "[]" or "{}".
+   */
+  toString: abstract ~: !string
+
+  /**
+   * @return Boxed instance of this collection.
+   */
+  // TODO:
+  // box: abstract member function(): Boxed<mixing Collection<E>>
+  box: abstract member function(): Boxed<Collection<E>>
+
+  /**
+   * @return copy of this collection with all elements Boxed.
+   */
+  boxElements: abstract member function(): mixing Collection<Boxed<E>>
+
+  /**
+   * Maps this collection to another by obfuscating fields.
+   * @param spec
+   *            A spec use for additional fields that you want to anonymize in addition to already defined pii fields
+   *            in c3 type and quasi identifier fields that you want to anonymize using data anonymization algorithm,
+   *            which ensure k-anonymity in the collection
+   * @return A Collection that has requested pii fields obfuscated and/or requested quasi identifier fields anonymized
+   * @see Anonymizer.anonymize, Anonymizer.anonymizeBatch
+   */
+  anonymize: abstract member function(spec: AnonymizationSpec): mixing Collection<E>
+
+  /**
+   * Descriptive statistics based on a normal distribution. Values which cannot be calculated are null.
+   * Empty populations will have only sum and count. Non-numeric values are ignored.
+   */
+  descriptiveStatistics: inline member function(): !DescriptiveStatisticsResult
+
+  /**
+   * Examine all the numeric values in an array and produce a new array with the numbers that fall within the specified
+   * bounds. If there are not enough points for determining one of the bounds, that bound does not apply. Non-numeric
+   * and non-finite values are removed as well.
+   *
+   * By default, this removes points beyond 2σ from the mean, but many other options are possible by specifying
+   * different combinations of options in the {@link OutliersSpec spec}.
+   *
+   * @param spec configuration of the high and low filter criteria
+   */
+  withoutOutliers: inline member function(spec: OutliersSpec = { stddev: 2 }): !mixing Collection<E>
+
+  /**
+   * Examine all the numeric values in an array and produce a new array with the numbers that fall outside the specified
+   * bounds. If there are not enough points for determining one of the bounds, that bound does not apply. Non-numeric
+   * and non-finite values are not included.
+   *
+   * By default, this extracts points beyond 2σ from the mean, but many other options are possible by specifying
+   * different combinations of options in the {@link OutliersSpec spec}.
+   *
+   * @param spec configuration of the high and low filter criteria
+   */
+  extractOutliers: inline member function(spec: OutliersSpec = { stddev: 2 }): !mixing Collection<E>
+
+  /**
+   * Examine all the numeric values in an array and determine whether the specified value falls outside the specified
+   * bounds. If there are not enough points for determining one of the bounds, that bound does not apply. Non-numeric
+   * and non-finite values are not considered (and never outliers).
+   *
+   * By default, this identifies values beyond 2σ from the mean, but many other options are possible by specifying
+   * different combinations of options in the {@link OutliersSpec spec}.
+   *
+   * @param value sample value to check as outlier
+   * @param spec configuration of the high and low filter criteria
+   */
+  isOutlier: inline member function(value: !E, spec: OutliersSpec = { stddev: 2 }): boolean
+
+  /**
+   * @return new collection with a new element added to it.
+   */
+  with: abstract member function(e: !?E): !mixing Collection<E> java | js
+
+  /**
+   * @return new collection with a new elements added to it.
+   */
+  withSome: abstract member function(e: !?E, more: E ...): !mixing Collection<E> java | js
+
+  /**
+   * @return new collection with the provided elements added to it.
+   */
+  withAll: abstract member function(elements: !?Collection<E>): mixing Collection<E> java | js
+
+  /**
+   * @return new collection without the provided element.
+   */
+  without: abstract member function(e: !?E): mixing Collection<E>
+
+  /**
+   * @return new collection without the provided elements.
+   */
+  withoutSome: abstract member function(e: !?E, more: E ...): mixing Collection<E>
+
+  /**
+   * @return new collection without elements satisfying provided predicate.
+   */
+  withoutAny: abstract member function(predicate: !lambda(e: E): boolean): mixing Collection<E> java | js
+
+  /**
+   * @return new collection with the provided elements removed.
+   */
+  withoutAll: abstract member function(elements: !?[E]): mixing Collection<E>
+
+  /**
+   * @return new collection with elements that are not present in provided collection.
+   */
+  difference: abstract member function(other: !?Collection<E>): mixing Collection<E>
+
+  /**
+   * @return new collection of unique items, in order, that are present in all of the input collections.
+   */
+  intersection: abstract function(collections: Collection<E> ...): mixing Collection<E>
+
+  /**
+   * Merges together the values of each of the collection with the values at the corresponding position.
+   */
+  zip: abstract function(collections: Collection<any> ...): [[any]]
+
+  /**
+   * The opposite of zip. Converts a collection of collections into a series of arrays with each source
+   * element placed in the returning nested array of the same index.
+   */
+  unzip: abstract member function(): [[any]]
+
+  /**
+   * Merge multiple strings into a smaller number using JaroWrinkler text similarity to match up strings. The complexity
+   * is O(n * m) where n is the size of the collection and m is the number of merged clusters.
+   * @return list of pairs where fst() is the merged result and snd() is the size of merged cluster
+   */
+  mergeSimilar: inline member function(spec: MergeSimilarSpec): stream<MergeSimilarCluster>
+
+  /**
+   * Merge the obj references that are same within the current collection. Element order may not be preserved after merge
+   * @param deep
+   *        If set, traverses the reference fields within the obj as well for a deep merge
+   * @param objKey
+   *        lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+   * @param filter
+   *        Field paths that need to be filtered from this merge
+   * @return Obj with child references merged
+   */
+  mergeChildren: member function(deep: boolean,
+                                 objKey: lambda(child: Obj): any,
+                                 filter: lambda(fieldPath: !string serialized FieldPath): boolean): !mixing Collection
+
+  /**
+   * Create a summary from elements in this Collection.
+   */
+  summarize: ~ java | js
+
+  /**
+   * Downsample points to a coarser frequency a.k.a aggregate values at a coarser frequency
+   * e.g. a 10 element collection needs to be downsampled to a 5 element collection by taking a "SUM" aggregation
+   * ```js
+   *    [1,2,3,4,5,6,7,8,9,10] => [3,7,11,15,19]
+   * ```
+   */
+  downsample: ~ java | js
+
+  /**
+   * Analyze the finite numeric values to detect positive and negative changes using CUSUM (Cumulative Sum). This
+   * method uses a single value for ω, providing a way to dampen changes. Non-numeric values are ignored.
+   *
+   * Sn+1 = max(0, Sn + xn - drift)
+   *
+   * Here _xn_ is the difference between two successive array values and drift is an argument (default 0).
+   *
+   * @param threshold CUSUM _threshold_ parameter (must be positive)
+   * @param drift CUSUM _ω_ value, subtracted from each delta
+   * @return indexes in array identified as changes
+   * @see https://en.wikipedia.org/wiki/CUSUM
+   */
+  cusum: ~ java | js
+
+  /**
+   * Generate a linear regression of the finite numeric values using Ordinary Least Squares. If there are too few
+   * values, the return value is null; otherwise it is an object with the intercept (α) and slope (β) as well as other
+   * meta-information. Note that the _x_ observations are the indexes into the array. Non-numeric values are ignored.
+   *
+   * @see https://en.wikipedia.org/wiki/Ordinary_least_squares
+   */
+  leastSquares: ~ java | js
+
+  /**
+   * Calls specific method on collection visitor based on type of this collection. Skips empty collections.
+   */
+  visit: private abstract member function<T>(visitor: @java(class='c3.platform.typesys.value.ValueVisitor.CollectionVisitor<T>') !native)
+                                   : T
+
+  /**
+   * Calls specific method on collection visitor based on type of this collection. If includeEmpty is true will call
+   * visitor even if collection is empty.
+   */
+  visit: private abstract member function<T>(includeEmpty: !boolean,
+                                             visitor: @java(class='c3.platform.typesys.value.ValueVisitor.CollectionVisitor<T>') !native)
+                                   : T
+
+  /**
+   * Maps this collection to new one by invoking Obj#withDefaults on every element
+   */
+  withDefaults: member function(includeEmptyRefsWithDefaults: boolean,
+                                defaultFields: [string]): mixing Collection<E> java | js | py
+
+  /**
+   * Generate a Timeseries from the fields in the given reference collection. If you have [number] {@see Timeseries.fromValues}
+   * @tsSpec
+   *        Spec indicating fields to use to generate a Timeseries
+   * @timeInfo
+   *        TimeInfo specifying the range/interval of the result Timeseries
+   * @return resultant Timeseries as per the given spec
+   */
+  evalTimeseries: member function(spec: !EvalTimeseriesSpec): Timeseries
+
+  toJson:      ~ java | py | js
+  toTypedJson: ~ java | py | js
+
+  /**
+   * Groups the collection by the output of the provided key function, resulting in an intermediate structure
+   * that can perform an operation on each group.
+   *
+   * @param data
+   *           the collection to perform the groupby operation on.
+   * @param keyType
+   *           Type of the key by which to group by.
+   * @param key
+   *           function to compute the key from the element in the collection.
+   * @return an intermediate structure that records the groupby operation, for performing subsequent actions.
+   */
+  groupBy: member function<T>(keyType: !ValueType, key: !lambda(e: E): T): CollectionGroupBy<E>
+
+  /**
+   * Groups the collection by the output of the provided key function, resulting in an intermediate structure
+   * that can perform an operation on each group.
+   *
+   * @param data
+   *           the collection to perform the groupby operation on.
+   * @param key
+   *           function to compute the key from the element in the collection.
+   * @return an intermediate structure that records the groupby operation, for performing subsequent actions.
+   */
+  groupBy: member function(key: !lambda(e: E): string): CollectionGroupBy<E>
+
+  /**
+   * Groups the collection by the element field or element fields, resulting in an intermediate structure
+   * that can perform an operation on each group.
+   *
+   * @param data
+   *           the collection to perform the groupby operation on.
+   * @param fields
+   *           Represents a single element field (or integer position) or a list of element fields (or integer
+   *           positions), which allows us to group by the fields of the elements (equivalent to grouping by columns in
+   *           a 2D table).
+   * @return an intermediate structure that records the groupby operation, for performing subsequent actions.
+   */
+  groupBy: member function(fields: !?string serialized Include): CollectionGroupBy<E>
+
+  /**
+   * Resamples (normalizes the timeseries) on the Collection. If element type is a reference then resampling happens on
+   * only the numeric fields. Rules of normalization can be reviewed {@link normalization}
+   *
+   * Note: if element type is {@link Partitionable}, this will create a Timeseries per partition key -> see {@link Partitionable} & {@link Collection#groupBy}
+   * unless TimeseriesSpec.doNotPartition is set
+   *
+   * E.g.
+   * ```js
+   * col = [{ "a" : 0.9, "b" : 1, "c": "foo", "d": "2010-01-01", "e": true  },
+   *        { "a" : 1.1, "b" : 2, "c": "bar", "d": "2010-01-02", "e": false  },
+   *        { "a" : 2.1, "b" : 3, "c": "foo", "d": "2010-01-03", "e": false  }]
+   *
+   * // resample by 1 month frequency on field "d"
+   * r = col.resample(ResampleSpec.forFields('d', '1m')).sum()
+   * [{ "d": "2010-01-01", "a" : 4.1, "b" : 6, "e": true  }]
+   *
+   * // resample by 8h frequency on field "d"
+   * r = col.resample(ResampleSpec.forFields('d', '8h')).sum()
+   * [{ "d": "2010-01-01T00:00:00", "a" : 0.9, "b" : 1, "e": true  },
+   * [{ "d": "2010-01-01T08:00:00", "a" : 0.0, "b" : 0, "e": false  },
+   * [{ "d": "2010-01-01T16:00:00", "a" : 0.0, "b" : 0, "e": false  },
+   * [{ "d": "2010-01-02T00:00:00", "a" : 1.1, "b" : 2, "e": false  },
+   * [{ "d": "2010-01-02T08:00:00", "a" : 0.0, "b" : 0, "e": false  },
+   * [{ "d": "2010-01-02T16:00:00", "a" : 0.0, "b" : 0, "e": false  },
+   * [{ "d": "2010-01-03T00:00:00", "a" : 2.1, "b" : 3, "e": false  },
+   * ```
+   * @param spec
+   *           Fields indicating how the Collection should be resampled. {@link ResampleSpec#forFields}
+   * @return an intermediate structure that records the resample operation, for performing subsequent actions
+   */
+  resample: member function(spec: ResampleSpec): !CollectionResample<E>
+
+  /**
+   * Records the first step of selecting the window of a rolling (a.k.a. moving) window operation in an intermediate
+   * structure that can perform further operations on the values in the window.  Each element field is operated on
+   * independently of the other fields, rather than operating on each element as a whole (equivalent to calculating
+   * on each column in a 2D table independently when there are multiple columns).
+   *
+   * For a general description and examples of what are rolling window operations, see
+   * [pandas.DataFrame.rolling](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rolling.html)
+   * which is very similar to this method.
+   *
+   * @param data
+   *           Input data.
+   * @param window
+   *           Size of the moving window.  An integer represents a fixed number of non-missing values in the window,
+   *           while a {@link Period} represents the time period of each window, and is only valid for datetime-like
+   *           indices.
+   * @param minValues
+   *           Minimum number of non-missing values in a window required for the final result of an
+   *           operation on the returned {@link CollectionRolling} to have a value for the window.
+   *           Otherwise, the final result for the window is null or NaN.  "Non-missing value" here refer to an
+   *           individual element field, not the entire element.
+   *           When `window` is a {@link Period}, the default value of this parameter is 1.  Otherwise, this parameter
+   *           defaults to the size of the window.
+   * @param on
+   *           The name of a datetime-like element field (equivalent to datetime-like column on a 2D table) on which to
+   *           calculate the rolling window, rather than the index.  If this is not the name of a datetime-like element
+   *           field (e.g. an integer element field), this method argument will be ignored.
+   * @return an intermediate structure that records the rolling operation, for performing subsequent actions.
+   */
+  rolling: member function(window: !(int | Period | WindowSpec),
+                           minValues: int,
+                           spec: DataTimeseriesSpec): CollectionRolling<E>
+
+  /**
+   * Returns a timeseries/collection where the value of every data point is computed by aggregating every "step'th"
+   * point in the window starting at "offset" and spanning "span" data points.
+   *
+   * Example: `rolling(AVG, sum(normalized.data.quantity), -20, 21, 3)`
+   *
+   * @param agg
+   *           Name of the aggregation function.
+   * @param data
+   *           Input data.
+   * @param offset
+   *           Start point in the window.
+   * @param span
+   *           Number of points to span from the offset.
+   * @param step
+   *           Step of the window.
+   * @return a timeseries/collection where the value of every data point is computed by aggregating every "step'th"
+   *         point in the window starting at "offset" and spanning "span" data points.
+   */
+  rolling: member function(agg: !string enum AggOp, offset: !int, span: !int, step: int): mixing Collection<E>
+
+  /**
+   * Find the union element value type for some number of collections. This will fall back to `any` if no collections
+   * are passed.
+   */
+  mergedElementType: function(collections: Collection ...): !ValueType java | js | py
+
+  /*
+   * TODO: PLAT-26180 Collection mixes ItemProtocol
+   * _item_: ~
+   */
+  _item_: abstract member function(key: !?any): any
+
+  /**
+   * Convert the given Collection into {@link Data}. If Type & include are not specified, all fields will be converted
+   * to Data
+   */
+  @deprecated(finalVersion="8.8", details="This method will be removed in future releases.")
+  toData: member function(include: string serialized Include): Data
+
+  /**
+   * For collections, the natural language collection will be returned. Normally, `toNative` will be called on each
+   * element in the returned collection (and it will be a copy). If `doNotCopy` is true, the native collection _may_
+   * be the same one used internally and will not have called `toNative` on the elements.
+   *
+   * ## Array
+   * - Python: `list`
+   * - JavaScript: `Array`
+   * - Java: `java.util.List`
+   *
+   * ## Set
+   * - Python: `set`
+   * - JavaScript: `Set`
+   * - Java: `java.util.Set`
+   *
+   * ## Map
+   * - Python: `dict`
+   * - JavaScript: `Map`
+   * - Java: `java.util.Map`
+   *
+   * ## Stream
+   * - Python: generator
+   * - JavaScript: generator
+   * - Java: `java.util.stream.Stream`
+   */
+  toNative: abstract ~ java | js | py
+
+  fromJson:    ~
+  valueType:   ~ java | js | py
+  valueTypeOf: ~ java | js | py
+}

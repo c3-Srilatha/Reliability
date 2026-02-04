@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The options for detecting extreme values of a population based on standard statistics of that population.
+ * All of the fields are optional, which means by default nothing will be detected. If multiple filters are specified,
+ * _all_ must be met for a point to not match.
+ *
+ * Having separate high and low filter ranges allows rejection of points where the population variance is not the same
+ * at the high and low ends. For example, a tightly clustered population with occasional high outliers might benefit
+ * from a tight high filter (say 2σ) and a loose low filter (say P₁₀), or even no low filter at all.
+ *
+ * For example a filter for _mean_ ± 2σ would be: `{ stddev: 2 }` and a filter for positive values below
+ * _mean_ + 3σ would be: `{ range: { min: 0, minExclusive: true }, stddev: { max: 3 } }`.
+ *
+ * Note that instead of removing values, they may be also be clipped to the relevant bound by setting the #clip field
+ * to `true`. For example, `{ range: { min: 0, max: 100, maxInclusive: true }, clip: true }` would convert all values
+ * into the range [0..100] without dropping any (without maxInclusive, it would be [0..100) since max is exclusive by
+ * default).
+ *
+ * @see NumCollection#withoutOutliers
+ */
+type OutliersSpec mixes Spec {
+
+  /**
+   * Simple value filter; the values are directly compared to the specified min/max. Note that for a useful filter, the
+   * max value should be larger than the min (when both are specified).
+   */
+  range: DblRange
+
+  /**
+   * Standard-deviation filter. If a single value is provided, the same number of standard deviations above and below
+   * the mean are filtered. If a range is provided, the min and max may be different. If specified the min/max should
+   * be positive and the bounds will be: _mean_ ± _stddev.min_ σ.
+   *
+   * For example: `{ stddev: 2 }` would remove points 2 standard deviations above and below the mean while
+   * `{ stddev: { min: 3, max: 2 }` would remove points 3 standard deviations above and 2 below the mean.
+   */
+  stddev: double | DblRange
+
+  /**
+   * Percentile rank range in [1..99]. For example `{ percentile: { min: 10, max: 90 }` would filter to values between
+   * the 10th and 90 percentiles. Note that for a useful filter, the max percentile should be larger than the min
+   * (when both are specified).
+   */
+  percentile: DblRange
+
+  /**
+   * Clip out-of-bound values instead of removing them. This retains all (numeric) values, but adjusts them to the
+   * declared range.
+   */
+  clip: boolean
+
+  /**
+   * Ignore values that are above the range.
+   */
+  ignoreHigh: boolean
+
+  /**
+   * Ignore values that are below the range.
+   */
+  ignoreLow: boolean
+
+  /**
+   * Returns the low and high filter that specifies the range of the outlier. Any values that don't fall within that range
+   * is an outlier
+   * @param input
+   *           collection on which low and high filter needs to be detected
+   * returns the low and high filter that specifies the range of the outlier
+   */
+  lowAndHighFilter: private member function(input: [number]): Pair<double, double>
+}

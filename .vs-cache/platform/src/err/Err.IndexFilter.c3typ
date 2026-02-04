@@ -1,0 +1,19 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing index creation error due to syntax of filter sql.
+ */
+type Err.IndexFilter mixes Err.Db {
+
+  @error(message="Error creating filter sql for index for table '${tableName}', sql: (${sql}): ${message}")
+  indexFilterSql: function(tableName: !string, sql: !string, message: !string) : !Err.IndexFilter
+
+  @error(message="Error creating filter sql for index for type '${typeName}', expression: (${filter}): ${message}")
+  indexFilterExpr: function(typeName: !string, filter: !string, message: !string) : !Err.IndexFilter
+}

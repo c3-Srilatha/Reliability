@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the model monitoring workflow that will be executed to monitor a single
+ * {@link ReliabilityMlModel} - {@link ReliabilityAsset} pair, and for a specific {@link MlProject}.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+entity type ReliabilityOrchestrator.ModelMonitoringJobResult extends MlWorkflowCoordinatableResult type key 'REL_MTR' {
+
+  name: ~ = 'Reliability_ModelMonitoring'
+
+  /**
+   * Specify the {@link ReliabilityMl.Project} for which model monitoring should be run.
+   */
+  project: !ReliabilityMl.Project
+
+  /**
+   * The {@link ReliabilityAsset} for which model monitoring should be run.
+   */
+  asset: !ReliabilityAsset
+
+  /**
+   * The {@link ReliabilityMlModel} for which the model monitoring job is run.
+   */
+  model: !ReliabilityMlModel
+
+  /**
+   * The reference period for which a {@link ReliabilityMl.ModelOutput}s are generated in order to determine how the
+   * model performs. This usually can correspond to the training period for the model, since the model is expected to
+   * perform well on the training data
+   *
+   * Use `ReliabilityMl.TimeRange.TRAIN` to use the training time range associated with a {@link ReliabilityMlModel},
+   * or instead provide your own custom time range.
+   *
+   * The model outputs from this period can be compared with the model outputs generated for the {@link #comparisonTimeRange} to
+   * classify or monitor a model.
+   */
+  referenceTimeRange: !TimeRange | ReliabilityMl.TimeRange
+
+  /**
+   * The comparison period for which a {@link ReliabilityMl.ModelOutput}s are generated in order to determine how the
+   * model performs. This will usually refer to a custom time range corresponding to the most recent live data, and the model is
+   * expected to continue to perform as well on the live data as it does on the training data.
+   */
+  comparisonTimeRange: !TimeRange | ReliabilityMl.TimeRange
+
+  /**
+   * Creates the model output, which contains the outputs of {@link #model} and
+   * {@link #model} for either the {@link #referenceTimeRange} or the {@link #comparisonTimeRange}.
+   * @param timeRange
+   *           The time range for which to create model outputs.
+   * @param processOutputs
+   *           Tuple containing the process outputs.
+   * @param interpretOutputs
+   *           Tuple containing the interpret outputs.
+   * @return A {@link ReliabilityMl.ModelOutput} object for the specified time range.
+   */
+  createModelOutputForTimeRange: function(
+    timeRange: !TimeRange,
+    processOutputs: !Tuple,
+    interpretOutputs: Tuple
+  ): !ReliabilityMl.ModelOutput py
+
+  /**
+   * Creates a {@link ReliabilityMlModel.MonitoringScore} from the {@link ReliabilityMlModel.ClassificationScore} created
+   * by the {@link #project}, and deletes the classification score.
+   * @param classificationScore
+   *           The classification score to convert to a monitoring score.
+   * @return A {@link ReliabilityMlModel.MonitoringScore} object.
+   */
+  createModelMonitoringScore: function(
+    classificationScore: ReliabilityMlModel.ClassificationScore
+  ): !ReliabilityMlModel.MonitoringScore py
+
+  /**
+   * Creates the {@link Workflow} to run the model monitoring job for the {@link #asset} - @{link-model} combination,
+   * that is started by {@link #startWorkflow}.
+   * @return A {@link Workflow} object for the model monitoring job.
+   */
+  createWorkflow: member function(): !Workflow py
+
+  startWorkflow: ~ py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

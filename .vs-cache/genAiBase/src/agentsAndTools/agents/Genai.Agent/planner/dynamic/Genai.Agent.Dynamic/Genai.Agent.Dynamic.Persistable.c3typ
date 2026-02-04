@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper Type to configure agents in the context of a project. Provides methods to save
+ * and test specific configurations, as well as to toggle the agent's active state.
+ */
+entity type Genai.Agent.Dynamic.Persistable extends Genai.Agent.Persistable<Genai.Agent.Dynamic.Config, Genai.Agent.Dynamic.InitializationSpec> type key "DYN" {
+
+  @dependency(include='config, promptParamValues')
+  initialize: ~ py-query_orchestrator
+
+  /**
+   * Answers a user query using a specific agent configuration. It does not require the configuration to be saved,
+   * and is useful for testing purposes.
+   * @param spec
+   *           The initialization spec that should be used to answer the query.
+   * @param inProgressQueryResult
+   *           The in-progress query result that should be used to answer the query.
+   *
+   * @return The query result.
+   */
+  @dependency(include='name, config')
+  queryFromTestCase: member function(spec: !Genai.Agent.Dynamic.TestSpec,
+                              inProgressQueryResult: !Genai.Query.Result): !Genai.Query.Result py-query_orchestrator
+
+  /**
+   * Convenience function to get the {@link Genai.Agent.Dynamic.Persistable.Engine}.
+   * @return the engine
+   */
+  engine: private member function(): !Genai.Agent.Dynamic.Persistable.Engine py
+
+  /**
+   * Convenience function to call {@link Genai.Agent.Dynamic.Persistable.Engine#terminate}.
+   */
+  terminateEngine: private member function() py
+
+  /**
+   * Convenience function to call {@link Genai.Agent.Dynamic.Persistable.Engine#terminate}
+   * on all running {@link Genai.Agent.Dynamic.Persistable.Engine}s.
+   */
+  terminateAllEngines: private function() py
+}

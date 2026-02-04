@@ -1,0 +1,105 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a Dns record in GoDaddy domain.
+ */
+@beta
+@facade(tenant='c3', tag='c3')
+type GoDaddyDnsRecord mixes REST {
+
+  /**
+   * The domain name for which this record is valid
+   */
+  name: string
+
+  /**
+   * The target address dns name resolves to.
+   * This could be ip address, canonical name, nae server etc.
+   */
+  data: string
+
+  /**
+   * The TTL is a value in a DNS record that determines the number of seconds
+   * before subsequent changes to the record go into effect
+   */
+  ttl: int
+
+  /**
+   * the priority of the target host, lower value means more preferred.
+   * The priority can be any number 0 and 65535
+   * This field is used by SRV Records.
+   */
+  priority: int
+
+  /**
+   * The name that refers to the desired service.
+   * This field is used by SRV Records.
+   */
+  service: string
+
+  /**
+   * The protocol of the desired service; this is usually either TCP or UDP.
+   * This field is used by SRV Records.
+   */
+  protocol: string
+
+  /**
+   * The TCP or UDP port on which the service is to be found.
+   * The port can be any number 0 and 65535,
+   * This field is used by SRV Records.
+   */
+  port: int
+
+  /**
+   * A relative weight for records with the same priority. Determines which of the records with the
+   * same priority are delivered more frequently. Enter the proportional volume of traffic as a percent.
+   * This field is used by SRV Records.
+   */
+  weight: int
+
+  /**
+   * Retrieve DNS Records for the specified Domain,
+   *
+   * @param domain
+   *            Domain name whose details are to be retrieved
+   * @param limit
+   *            Maximum number of domains record set to return
+   * @param type
+   *            DNS Record Type for which DNS Records are to be retrieved
+   * @param name
+   *            DNS Record Name for which DNS Records are to be retrieved
+   */
+  @rest(uri='/v1/domains', method='GET')
+  listResources: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/records')
+                                   domain: !string,
+                                   @rest(partOfURI=true, uriPrefix='/')
+                                   type: string enum DnsRecordSetType,
+                                   @rest(partOfURI=true, uriPrefix='/')
+                                   name: string,
+                                   @rest(parameterName='limit')
+                                   limit: int): json
+
+  /**
+   * Replace all DNS Records for the specified Domain with the specified Type
+   *
+   * @param domain
+   *            Domain whose DNS Records are to be replaced
+   * @param type
+   *            DNS Record Type for which DNS Records are to be replaced
+   * @param records
+   *            DNS Records to replace whatever currently exists
+   */
+  @rest(uri='/v1/domains', method='PUT', bodyType='json')
+  upsertResource: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/records')
+                                    domain: !string,
+                                    @rest(partOfURI=true, uriPrefix='/')
+                                    type: !string enum DnsRecordSetType,
+                                    @rest(doNotUseParameterName=true)
+                                    records: ![GoDaddyDnsRecord])
+}

@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Query specifications for the {@link ModelScenarioChartHandler#getChartConfig}.
+ */
+type ModelScenarioChartHandler.Spec mixes Spec {
+
+  /**
+   * The {@link ReliabilityMlModel} for which the chart data is requested.
+   */
+  model: !ReliabilityMlModel
+
+  /**
+   * The start datetime for the chart data.
+   */
+  start: !datetime
+
+  /**
+   * The end datetime for the chart data.
+   */
+  end: !datetime
+
+  /**
+   * The {@link Interval} for the chart data.
+   */
+  interval: !Interval
+
+  /**
+   * The list of {@link Feature}s to be included in the chart.
+   */
+  selectedFeatures: ![string serialized Feature]
+
+  /**
+   * Map of overridden features and their value generators.
+   * The key is the {@link Feature#id}, and the value is a {@link ReliabilityMlModelScenario.ValueGenerator}
+   * that will generate the {@link Timeseries} data for it.
+   */
+  overriddenFeatures: map<string serialized Feature, ReliabilityMlModelScenario.ValueGenerator>
+}

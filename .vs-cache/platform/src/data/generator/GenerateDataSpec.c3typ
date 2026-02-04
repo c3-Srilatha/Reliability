@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification of the options/parameters for the {@link Persistable#generateData} function.
+ */
+type GenerateDataSpec mixes UpsertSpec {
+
+  /**
+   * Relative number of objects to generate.
+   */
+  cardinality: int = 1
+
+  /**
+   * Spec describing random data generation options; only one of randomData or carbon parameters can be present.
+   */
+  randomData: RandomDataSpec | RandomTimeseriesDataSpec
+
+  /**
+   * Carbon code that generates data; only one of randomData or carbon parameters can be present.
+   */
+  carbon: string
+}

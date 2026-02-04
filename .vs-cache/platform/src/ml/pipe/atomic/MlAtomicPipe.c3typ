@@ -1,0 +1,603 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipe} that does not compose any other {@link MlPipe}. For compositions
+ * and nesting of pipes, use {@link MlPipeline}.
+ *
+ * @see MlPipe
+ * @see MlPipeline
+ */
+abstract entity type MlAtomicPipe<DX, DY, DO> extends MlPipe<DX, DY, void, DO, void> mixes WithInitialState type key 'ATOM' {
+
+  /**
+   * Map of urls of saved model files
+   * key - model file name, value - {@link Url} corresponding to model file name
+   */
+  modelFiles: private map<string, Url>
+
+  /**
+   * A map containing {Module Name: Compressed Source Code} key-value pairs. The module name is the name of the
+   * module from where the source code was taken from. (i.e. numpy).
+   */
+  customModelCode: private map<string, binary>
+
+  /**
+   * Name for the function on the native model to call to do {@link MlProcessable#process}.
+   */
+  processFunc: string
+
+  /**
+   * Blocking call to {@link #beforeTrain} followed by {@link doTrain} in a single action.
+   */
+  beforeAndDoTrain: private member function(x: !?native,
+                                            y: native,
+                                            model: native,
+                                            customCodePath: string,
+                                            spec: MlOperationSpec): !native py
+
+  /**
+   * Creates a {@link Workflow} for {@link #train} where each function needed for training is represented by a separate
+   * {@link Workflow.Vertex}.
+   */
+  expandedTrainWorkflow: private function(): !Workflow py
+
+  /**
+   * Updates the model files.
+   */
+  updateModelFiles: private member function(modelFiles: !?map<string, Url>,
+                                            spec: MlOperationSpec): !mixing MlAtomicPipe py
+
+  /**
+   * Hook to do preprocessing on the model and inputs.
+   *
+   * DEVELOPER NOTE: Could be overwritten to handle any other processing on the model or inputs.
+   * @param x
+   *          The `x` input in the native format specified by {@link #nativeInputFormats}. The conversion from `DX` to
+   *          the native format is handled automatically using {@link #convertPipeInputsToNative} before this method is
+   *          invoked.
+   * @param y
+   *          The `y` input in the native format specified by {@link #nativeInputFormats}. The conversion from `DY` to
+   *          the native format is handled automatically using {@link #convertPipeInputsToNative} before this method is
+   *          invoked.
+   * @return A native python dictionary that holds the model, x, and y.
+   */
+  // TODO: PLAT-48466: Remove once before/do/after are merged into a single function
+  beforeTrain: private member function(x: !?native, y: native, model: native, spec: MlOperationSpec): !native py
+
+  /**
+   * The synchronous, blocking implementation for {@link doTrain}.
+   *
+   * DEVELOPER NOTE: this is where the "business logic" for your training should go.
+   *
+   * @param beforeTrainResults
+   *           The output of {@link #beforeTrain} - a native python dictionary that holds the native `model`, `x`,
+   *           and `y`.
+   * @param spec
+   *           An {@link MlOperationSpec} object.
+   * @return A native python dictionary that holds the native trained `model` and fields on the pipe with updated
+   * values.
+   */
+  // TODO: PLAT-48466: Remove once before/do/after are merged into a single function
+  doTrain: private optional member function(beforeTrainResults: !native, spec: MlOperationSpec): !native
+
+  /**
+   * Persist the trained model.
+   * @param doTrainOutputs
+   *           The output of {@link #doTrain} - a native python dictionary that holds the native `model` and updated
+   *           values for fields on the pipe.
+   * @param spec
+   *           An {@link MlOperationSpec} object.
+   * @return mixin MlAtomicPipe with a trained model and updated fields.
+   */
+  // TODO: PLAT-48466: Change signature when before/do/afterTrain are merged to return the native model and the trained pipe
+  @dependency(include='this')
+  afterTrain: private member function(doTrainOutputs: !native, spec: MlOperationSpec): !mixing MlAtomicPipe py
+
+  /**
+   * Blocking call to {@link #beforeProcess}, {@link #doProcess}, and {@link #afterProcess} in a single action.
+   */
+  // TODO: PLAT-48466: Remove once before/do/after are merged into a single function
+  beforeDoAfterProcess: private member function(x: !?native,
+                                                model: native,
+                                                customCodePath: string,
+                                                spec: MlOperationSpec): !native py
+
+  /**
+   * Creates a {@link Workflow} for {@link #process} where each function needed for processing is represented by a
+   * separate {@link Workflow.Vertex}.
+   */
+  expandedProcessWorkflow: private function(): !Workflow py
+
+  /**
+   * Hook to do preprocessing on the native model and inputs
+   * @param x
+   *          The `x` input in the native format specified by {@link #nativeInputFormats}. The conversion from `DX` to
+   *          the native format is handled automatically using {@link #convertPipeInputsToNative} before this method is
+   *          invoked.
+   * @return A native python dictionary that holds the model and x.
+   */
+  // TODO: PLAT-48466: Remove once before/do/after are merged into a single function
+  beforeProcess: private member function(x: !?native, model: native, spec: MlOperationSpec): !native py
+
+  /**
+   * The synchronous, blocking implementation for {@link doProcess}.
+   *
+   * DEVELOPER NOTE: this is where the "business logic" for your processing should go. In rare cases, you may choose to
+   * override {@link process}. If so, you will still need to have a stub implementation for {@link doProcess}.
+   *
+   * @param beforeProcessOutputs
+   *           The output of {@link #beforeProcess} - a native python dictionary that holds the native `model` and `x`.
+   * @param spec
+   *           An {@link MlOperationSpec} object.
+   * @return A native python dictionary with the key `out` that holds the native output.
+   */
+  doProcess: private abstract optional member function(beforeProcessOutputs: !native,
+                                                       spec: MlOperationSpec): native py
+
+  /**
+   * Returns the native model output.
+   * @param doProcessOutputs
+   *           The output of {@link #doProcess} - native python dictionary with the key `out` that holds the native
+   *           output.
+   * @param spec
+   *           An {@link MlOperationSpec} object.
+   * @return the native output.
+   */
+  // TODO: PLAT-48466: Remove once before/do/after are merged into a single function
+  afterProcess: private member function(doProcessOutputs: !native, spec: MlOperationSpec): native py
+
+  /**
+   * Returns a map of model {@link Url}s.
+   * key - model file name, value - {@link Url} corresponding to model file name.
+   * @param model a python native model. e.g. sklearn estimator, keras native model.
+   * @return a map of model file {@link Url}s.
+   */
+  saveNativeModel: private member function(model: native): !?map<string, Url> py
+
+  /**
+   * @return The native model that is saved on the pipe.
+   * It is recommended not to use this method to read a native model that is saved on the pipe.
+   * Use {@link MlAtomicPipe#loadCodeAndModel['nativeModel'] to get the native model.
+   */
+  // TODO: PLAT-39467 Add caching to nativeModel() of MlAtomicPipe
+  @dependency(include='this')
+  nativeModel: private member function(): !native py
+
+  /**
+   * Returns a tuple containing the source code of the native Python class, as well as the relative file path to the
+   * source code. If the native Python class was written in a Jupyter Notebook, then the relative file path will be
+   * returned as "jupyter".
+   * @param native_class
+   *           A native Python class
+   * @return
+   *           A tuple containing ( source_code, relative_file_path )
+   */
+  getPythonSource: private function(native_class: !native): !native py
+
+  /**
+   * Given a native Python model, custom written or not, and a set of additional source code files, bundle and return
+   * all the necessary source code into a single dictionary, where the key is the relative file path to the source
+   * code, and the value is the compressed source code string. If the model belongs to a runtime library, as in it is
+   * not custom written, then a null dictionary will be returned because no source code is necessary to operate on
+   * a runtime library object.
+   * @param nativeObject
+   *           A native Python object.
+   * @param additionalFiles
+   *           A list of file paths to additional source code that may be necessary to operate on the native model.
+   *           See {@link MlConvertSpec#sourceFilePaths} for more details.
+   * @return
+   *           A dictionary containing { relative_file_path: compressed_source_code }
+   */
+  bundleSourceCode: private function(nativeObject: native, additionalFiles: [string]): map<string, binary> py
+
+  /*
+   * Load the source code stored in {@link MlAtomicPipe#customModelCode) into the global Python scope, in the case the
+   * code originated from Jupyter, or into a temporary directory in the case tbe code came from a separate file.
+   * If a temporary directory is created, add the path to Python's sys.path to allow importing of the files.
+   * @returns The absolute path of where the code is stored. A null path is returned if no code is
+   *          stored on the local file system.
+   */
+  @dependency(include='this')
+  loadSourceCode: private member function(): !string py
+
+  /*
+   * Wrapper API that calls {@link MlAtomicPipe#loadSourceCode) followed by {@link MlAtomicPipe#nativeModel).
+   * @returns A native python dictionary that holds native model and the absolute path of where the custom model code is stored.
+   */
+  @dependency(include='this')
+  loadCodeAndModel: private member function(): !native py
+
+  /**
+   * Convert `x` and `y` from `DX` and `DY` type to python native format. By default, this method will invoke
+   * {@link #convertXToNative} and {@link #convertYToNative} respectively. If either `x` or `y` require custom,
+   * independent conversion logic, do not override this method - instead, override either {@link #convertXToNative} or
+   * {@link #convertYToNative}.
+   *
+   * NOTE: the canonical format for evaluated data from a {@link Feature.Set} will have a column for `subject id` and
+   *       (optionally) a column for `time`. It varies which libraries require these columns. If your {@link MlAtomicPipe}
+   *       does not require these columns, then you can remove them by using {@link #setFeatureIndices}. This can be done
+   *       either by overriding the {@link #convertXToNative} and {@link #convertYToNative} APIs or within your {@link #doTrain}
+   *       and {@link #doProcess} functions.
+   *
+   * NOTE: Overriding this function may result in a performance loss since redundant data conversion may occur.
+   *       Therefore, only override this function iff both `x` and `y` inputs are simultaneously required to do the
+   *       conversion to native format. If overridden, it will likely be necessary to also override
+   *       {@link #convertNativeToNative} to match the conversion logic.
+   */
+  // TODO PLAT-46069 Remove inline claim
+  @dependency(include='this')
+  convertPipeInputsToNative: private inline member function(x: !?DX, y: DY, spec: MlOperationSpec): !native py
+
+  /**
+   * Convert `x` from `DX` type to python native format. Default implementation uses {@link #convertInputToNativeFormat}.
+   *
+   * @param x
+   *           data to convert.
+   * @param spec
+   *           any customizations for the conversion.
+   * @return converted data.
+   */
+  // TODO PLAT-46069 Remove inline claim
+  convertXToNative: private inline member function(x: !?DX, spec: MlOperationSpec): !native py
+
+  /**
+   * Convert `y` from `DY` type to python native format. Default implementation uses {@link #convertInputToNativeFormat}.
+   *
+   * @param y
+   *           data to convert.
+   * @param spec
+   *           any customizations for the conversion.
+   * @return converted data.
+   */
+  // TODO PLAT-46069 Remove inline claim
+  convertYToNative: private inline member function(y: !?DY, spec: MlOperationSpec): !native py
+
+  /**
+   * Convert a {@link Data} input or a collection of {@link Data} inputs to its native format. This method will always
+   * choose to convert {@link Data} instances to the first format in {@link #nativeInputFormats}
+   * (i.e. `nativeInputFormats[0]`). Collections will be converted to their Python equivalent (e.g. {@link Map} to
+   * `dict`, named {@link Tuple} to `collections.namedtuple`). Non {@link Data} inputs will be ignored.
+   *
+   * @param input
+   *           data to convert.
+   * @param spec
+   *           any customizations for the conversion.
+   * @return converted data.
+   */
+  @dependency(include='this')
+  convertInputToNativeFormat: private member function(input: any, spec: MlOperationSpec): native py
+
+  /**
+   * Convert output from python native format to `DO`
+   * Developer Note: Be careful when overriding this method! The implementation should only convert the native output
+   * to a C3 type. Any modifications to the native type should happen within {@link #doProcess} itself! This allows
+   * the platform to implement advanced optimizations like {@link Workflow.MlPipeline.Rdce}, which basically allows
+   * passing of intermediate pipeline data in its native state. For this to work properly, the native output needs to
+   * be equivalent in format to the c3 output of this function.
+   * For example, suppose the native output of the native model is a list of `np.array` and you desire the native output to be
+   * a dictionary instead. The conversion of list to dict should happen within {@link #doProcess}.
+   */
+  convertNativeToPipeOutputs: private member function(output: !?native, datasetId: string): !DO py
+
+  /**
+   * Static method to convert native Python objects into instances of C3 Data. If the output is a dictionary of native
+   * objects, this method will return a map of C3 Data instances.
+   */
+  // TODO PLAT-46257 remove `native` from the return value types
+  // TODO PLAT-98104 make action requirement py-data
+  convertNativeToData: function(out: !?native, datasetId: string): !(native | Data | map<string, Data>) py
+
+  /**
+   * Serialize and save a native model to the client's file system. Used by e.g. {@link #afterTrain} to save
+   * a trained model to then be uploaded and associated with the trained pipe.
+   * @param modelDir
+   *           path to local directory to save the model file(s).
+   * @param model
+   *           the native model to save.
+   */
+  saveModel: private member function(modelDir: !string, model: native) py
+
+  /**
+   * Load and deserialized a native model from the client's file system. Used by e.g. {@link #beforeTrain} after
+   * model is downloaded.
+   * @param modelDir
+   *           path to local directory to load the model file(s) from.
+   * @return the deserialized native model.
+   */
+  loadModel: private member function(modelDir: !string): !native py
+
+  /**
+   * Creates a copy of the pipe with behavior specified by the spec. The underlying model files are unchanged. If there
+   * are no differences between the pipe and the behavior defined in the spec, the pipe is returned unchanged.
+   * Also calls {@link #afterConvert}.
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return a new instance of {@link MlPipe}.
+   */
+  @dependency(include='this')
+  withNewSpec: private member function(spec: MlConvertSpec): !mixing MlAtomicPipe py
+
+  convert: ~ py
+
+  /**
+   * Returns an instance of the pipe after the convert is done.
+   *
+   * DEVELOPER NOTE: Any post conversion logic should go here.
+   * @param model
+   *           the native model that is passed to {@link #convert}.
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return a new instance of {@link MlAtomicPipe}
+   */
+  afterConvert: private member function(model: !native, spec: MlConvertSpec): !mixing MlAtomicPipe py
+
+  /**
+   * Helper function to check if the xType, yType, outType, xNames, yNames, and outNames in the {@link MlConvertSpec}
+   * (if specified) match the bindings for the pipe.
+   * Throws an error if any do not match the expected values.
+   * @param spec
+   *        an {@link MlConvertSpec} to be validated
+   * @param expectedSpec
+   *        an {@link MlConvertSpec} that is the ground truth to compare against the spec
+   */
+  validateInputOutputBindings: private function(spec: MlConvertSpec, expectedSpec: MlConvertSpec) py
+
+  /**
+   * Validate the pipe.
+   *
+   * @param context
+   *        any additional information that should be passed in to validate the pipe. For example,
+   *        {@link VllmPipe#validate} expects the context to contain the "deploySpec" key with a
+   *        {@link MlAtomicPipe.Engine.DeploySpec} value in order to do validation during deployment to an
+   *        {@link MlAtomicPipe.Engine}.
+   */
+  validate: private member function(context: map<string, any>) py
+
+  /**
+   * Delete model's persisted files
+   */
+  @dependency(include='this')
+  deleteFiles: member function() py
+
+  /**
+   * @return list of x input names expected for this pipe instance. For single-input-single-output, hardcoded to
+   *  return `['x']`
+   */
+  xNames: private cached property(): [string] py
+
+  /**
+   * @return list of y input names expected for this pipe instance. For single-input-single-output, hardcoded to
+   *  return `['y']`
+   */
+  yNames: private cached property(): [string] py
+
+  /**
+   * @return list of output names expected for this pipe instance. For single-input-single-output, hardcoded to
+   *  return `['out']`
+   */
+  outNames: private cached property(): [string] py
+
+  /**
+   * Creates an {@link MlPipe.Bindings} object based on the provided `xTypes`, `yTypes`, and `outTypes` maps. A dynamic
+   * Obj is created if the x/y/outTypes map contain more than one element. If the map contains only a single element,
+   * the corresponding 'dx', 'dy', or 'do' is not considered as a multi-input object. For example,
+   * `xTypes={'x': c3:Data}` will bind {@link MlPipe.Bindings#dx} to `Data` and represents a single input.
+   *
+   * @param xTypes
+   *             The type(s) for each x input.
+   * @param yTypes
+   *             The type(s) for each y input.
+   * @param outTypes
+   *             The type(s) for each output.
+   * @return an {@link MlPipe.Bindings} object that contains the binding information for the pipe
+   */
+  // TODO PLAT-45857: Remove inline claim
+  bindVars: private inline function(xTypes: ?map<string, ValueType>,
+                                    yTypes: ?map<string, ValueType>,
+                                    outTypes: ?map<string, ValueType>): !MlPipe.Bindings py
+
+  /**
+   * Returns the Url where the native Python class is stored.
+   * @param name
+   *           Name of the file in which python class is stored.
+   * @param classSource
+   *           A native Python class
+   * @return
+   *           A Url where the native python class is stored.
+   */
+  uploadPyNativeClass: private function(name: string, classSource: native): !Url py
+
+  /**
+   * Returns the native Python class, downloaded from a native class url where the python class
+   * files are stored
+   * @param nativeClassUrl
+   *           A url for accessing the saved native class source code.
+   * @param doNotCleanUp
+   *           If true, the class definition remains in the scope of __main__
+   * @return
+   *           A native Python class.
+   */
+  downloadPyNativeClass: private function(nativeClassUrl: Url, doNotCleanUp: boolean): native py
+
+  /**
+   * Set the `subject` and `timestamp` columns as indices on the input {@link Data} for time series data.
+   * Sets the `subject` column as index on the input {@link Data} for non-time series data.
+   * This method will only set the new
+   * indices if __all__ of the following conditions are satisfied:
+   * - The input is an instance of {@link Data} or `pd.DataFrame`
+   * - The columns of the input must include both `subject` and `timestamp` (or) `subject` (non-time series data)
+   * - The input contains only a single index
+   * - The index either has no name or is the default name "index"
+   * @param input
+   *           The input to {@link #process}
+   * @return
+   *           If all conditions are satisfied, returns the input with a `subject` and `timestamp` index. Otherwise,
+   *           return the same input.
+   */
+  setFeatureIndices: function(input: any): !any py
+
+  /**
+   * The native input formats the pipe expects.
+   */
+  nativeInputFormats: private inline member function(): ![MlNativeDataFormat] py
+
+  /**
+   * Dataset id of the input.
+   */
+  getInputDatasetId: private function(x: DX): !string py
+
+  /**
+   * Convert `x` and `y`, which are already in a native format, to a native format that is supported by this atomic
+   * pipe. This method will first check if the current format of `x` and `y` are supported by this pipe. If so, no
+   * conversion will take place. Otherwise, this method will attempt to convert the inputs into a native format
+   * specified by {@link #nativeInputFormats}. Note that this function replaces {@link #convertPipeInputsToNative} if
+   * the {@link Workflow.MlPipeline.Rdce} optimization is applied.
+   */
+  convertNativeToNative: private member function(x: !?native, y: native, spec: MlOperationSpec): !native py
+
+  /**
+   * Convert `x` which is already in a native format, to a native format that is supported by this atomic
+   * pipe. This method will first check if the current format of `x`is supported by this pipe. If so, no
+   * conversion will take place. Otherwise, this method will attempt to convert the inputs into a native format
+   * specified by {@link #nativeInputFormats}. Note that this function replaces {@link #convertXToNative} if
+   * the {@link Workflow.MlPipeline.Rdce} optimization is applied.
+   */
+  convertXNativeToNative: private member function(x: !?native, spec: MlOperationSpec): !native py
+
+  /**
+   * Convert `y` which is already in a native format, to a native format that is supported by this atomic
+   * pipe. This method will first check if the current format of `y`is supported by this pipe. If so, no
+   * conversion will take place. Otherwise, this method will attempt to convert the inputs into a native format
+   * specified by {@link #nativeInputFormats}. Note that this function replaces {@link #convertYToNative} if
+   * the {@link Workflow.MlPipeline.Rdce} optimization is applied.
+   */
+  convertYNativeToNative: private member function(y: !?native, spec: MlOperationSpec): !native py
+
+  train:        ~ py
+  isTraining:   ~ py
+  process:      ~ py
+  freeze:       ~ py
+  unfreeze:     ~ py
+  searchResult: ~ py
+
+  /**
+   * Note: This function is dispatched to the runtime that {@link #doTrain} specifies.
+   */
+  trainSync: ~ py
+
+  /**
+   * Note: This function is dispatched to the runtime that {@link #doProcess} specifies.
+   */
+  processSync: ~ py
+
+  @dependency(include='this')
+  cleanUp: ~ py
+
+  /**
+   * Add or change a set of parameter spaces for the hyperparameters of an {@link MlAtomicPipe}.
+   * Example usage:
+   * For a sample {@link MlAtomicPipe} created using Linear Regression in Sklearn:
+   *
+   * ```py
+   * lr_pipe = c3.MlPipe.convert(native_lr)
+   * updated_lr_pipe = lr_pipe.withHyperparamSpaces({"normalize": c3.Hp.ParamSpace.Categorical.fromValues([True, False])})
+   * ```
+   *
+   * @param paramSpaces
+   *           Map key represents the hyperparameter names. Map value represents the parameter spaces to be
+   *           defined for each respective hyperparameter.
+   * @return a {@link MlAtomicPipe} with added parameter spaces for each desired hyperparameter.
+   */
+  // TODO: PLAT-52135 Move declaration back to MlPipe with param type "!map<string, any>"
+  withHyperparamSpaces: member function(paramSpaces: !map<string, Hp.ParamSpace>): !mixing MlAtomicPipe py
+
+  /**
+   * Helper method to determine action requirement for a given ml operation action.
+   *
+   * @param actionName
+   *           the name of the action to get the requirement for, e.g. "doTrain" or "doProcess"
+   * @return the action requirement name for the corresponding action or null if the action is not implemented.
+   */
+  actionRequirementForAction: private cached member function(actionName: !string): string java
+
+  /**
+   * Helper method to determine action requirement for calling a particular operation.
+   *
+   * @return the action requirement name.
+   */
+  actionRequirementFor: private cached member function(opName: !MlDataOpName): string java
+
+  /**
+   * Helper function to deploy the pipe to stay warm on some node(s) chosen based on spec.
+   *
+   * @param spec
+   *          {@link MlAtomicPipe.DeploySpec} to identify how to deploy the pipe.
+   */
+  /*
+   * TODO: PLAT-69453: Implement deployInApp
+   * deployInApp: member function(spec: MlAtomicPipe.DeploySpec)
+   */
+
+  /**
+   * Helper function to destroy deployments related to that pipe given a spec.
+   *
+   * @param spec
+   *          {@link MlAtomicPipe.DestroySpec} to identify how to destroy deployments related to the pipe.
+   */
+  /*
+   * TODO: PLAT-69454: Implement destroy
+   * destroy: member function(spec: MlAtomicPipe.DestroySpec)
+   */
+
+  /**
+   * Warmup the model for the pipe.
+   */
+  warmupModel: private member function() py
+
+  /**
+   * Loads native model into memory. The native model can be accessed using {@link C3#getVar}, with the pipe's id as
+   * the key.
+   */
+  loadInitialState: ~ py
+
+  /**
+   * Actions to run when an {@link MlAtomicPipe.Engine} that deploys this pipe is terminated.
+   */
+  onEngineTerminate: private member function() py
+
+  clearState: ~ py
+
+  @dependency(include='this')
+  isTrainable: ~ py
+
+  score_var:               ~ py
+  interpret_var:           ~ py
+  replaceEntityReferences: ~ py
+
+  /**
+   * Returns the {@link MlAtomicPipe.Engine} for the pipe. If the spec and engineType is not provided, the default is used.
+   */
+  engineSpec: private member function(): !MlAtomicPipe.Engine.DeploySpec
+
+  /**
+   * Generates a {@link Workflow} with a single {@link Workflow.Action} vertex which calls {@link #processSync}.
+   */
+  processSyncWorkflow: private cached inline property(): !Workflow py
+
+  /**
+   * The key used to populate {@link MlOperationRun#runContext}.
+   */
+  runContextKey: private abstract optional member function(): !string
+
+  /**
+   * Returns True if the pipe (directly or through a mixin) overrides {@link #convertPipeInputsToNative}. This is used
+   * to determine the proper {@link #expandedTrainWorkflow} and {@link expandedProcessWorkflow}.
+   */
+  overridesConvertPipeInputsToNative: private inline function(): !boolean py
+}

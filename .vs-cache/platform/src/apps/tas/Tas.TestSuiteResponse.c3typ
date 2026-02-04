@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Tas.Response when TAS acts upon a test failure. Contains modified {@link TestSuiteResult} along with
+ * various TAS information.
+ */
+entity type Tas.TestSuiteResponse mixes Tas.Response {
+
+  /**
+   * Full name of test, taken from {@link TestCaseResult}
+   */
+  testName: !string
+
+  /**
+   * {@link Tas.TestCase} representation of each testcase with more TAS-related information
+   */
+  testCases: ![Tas.TestCase]
+
+  /**
+   * A modified copy of the {@link TestSuiteResult} after TAS handles known errors.
+   */
+  testSuiteResult: !TestSuiteResult not persistable
+
+  /**
+   * The attempt count of the test
+   */
+  attemptNum: int
+}

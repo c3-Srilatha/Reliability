@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * `UiSdlComponentDataSpec` to allow `UiSdlForm` component instance to specify the `PartiallyAppliedAction`
+ * to execute when submit is executed.
+ */
+@typeScript
+type UiSdlFormSubmitDataSpec mixes UiSdlFieldBasedDataSpec {
+
+  /**
+   * Converts the data spec to an array of partially applied actions.
+   */
+  toPartiallyAppliedActions: ~ ts-client
+
+  /**
+   * We should not be making the request to save when the form is rendered.
+   */
+  disableDataRequestOnFirstRender: ~ = true
+
+  /**
+   * We should not be making the request to save outside of directly wanting to.
+   */
+  ignoreAllContextVarResolution: ~ = true
+
+  /**
+   * Name of the action to call on the dataType.
+   */
+  actionName: string
+
+  /**
+   * Name of the argument the action expects. The argument value will be the form object.
+   */
+  submitArgument: !string
+}

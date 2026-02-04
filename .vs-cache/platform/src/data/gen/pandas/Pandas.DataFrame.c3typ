@@ -1,0 +1,717 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@deprecated(finalVersion="8.9",
+            details="All the pandas subtypes apis are deprecated on Data types and will be removed in a future release")
+abstract type Pandas.DataFrame mixes Value {
+
+  T:     abstract property(): ?Data
+  attrs: abstract property(): ?map<any, any>
+
+  @pandas(canReturnData=true)
+  axes: private abstract property(): ?[any]
+
+  columns: private abstract property()
+                              : ?(Data.Index | Data.RangeIndex | Data.MultiIndex | Data.CategoricalIndex | Data.IntervalIndex | Data.PeriodIndex | Data.DatetimeIndex | Data.TimedeltaIndex | Data.Int64Index | Data.UInt64Index | Data.Float64Index)
+
+  dtypes: private abstract property(): ?Data.Series
+  empty:  abstract property(): ?any
+  flags:  private abstract property(): ?any
+  iat:    private abstract property(): ?any
+  iloc:   abstract property(): ?DataIlocIndexer
+
+  index: abstract property()
+                    : ?(Data.Index | Data.RangeIndex | Data.MultiIndex | Data.CategoricalIndex | Data.IntervalIndex | Data.PeriodIndex | Data.DatetimeIndex | Data.TimedeltaIndex | Data.Int64Index | Data.UInt64Index | Data.Float64Index)
+
+  loc:        abstract property(): ?DataLocIndexer
+  ndim:       abstract property(): ?int
+  shape:      abstract property(): ?[int]
+  size:       abstract property(): ?int
+  style:      private abstract property(): ?any
+  values:     private abstract property(): ?any
+  abs:        abstract member function(): ?Data
+  add:        abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  add_prefix: abstract member function(prefix: ?string): ?Data
+  add_suffix: abstract member function(suffix: ?string): ?Data
+  agg:        abstract member function(func: ?any, axis: ?any): ?(Data | Data.Series)
+  aggregate:  private abstract member function(func: ?any, axis: ?any): ?(Data | Data.Series)
+
+  @pandas(canReturnData=true)
+  align: abstract member function(other: ?any,
+                                  join: ?string,
+                                  axis: ?any,
+                                  level: ?any,
+                                  copy: ?any,
+                                  fill_value: ?any,
+                                  method: ?string,
+                                  limit: ?any,
+                                  fill_axis: ?any,
+                                  broadcast_axis: ?any): ?[any]
+
+  all:      abstract member function(axis: ?any, bool_only: ?any, skipna: ?any, level: ?any): ?(Data | Data.Series)
+  any:      abstract member function(axis: ?any, bool_only: ?any, skipna: ?any, level: ?any): ?(Data | Data.Series)
+  append:   private abstract member function(other: ?any,
+                                             ignore_index: ?any,
+                                             verify_integrity: ?any,
+                                             sort: ?any): ?Data
+  applymap: abstract member function(func: ?any, na_action: ?string): ?Data
+  asfreq:   abstract member function(freq: ?any, method: ?any, how: ?string, normalize: ?any, fill_value: ?any): ?Data
+  asof:     abstract member function(where: ?any, subset: ?any): ?(Data | Data.Series)
+  astype:   abstract member function(dtype: ?any, copy: ?any, errors: ?string): ?Data
+  at_time:  abstract member function(time: ?any, asof: ?any, axis: ?any): ?Data
+  backfill: abstract member function(axis: ?any, inplace: ?any, limit: ?int, downcast: ?any): ?Data
+
+  between_time: abstract member function(start_time: ?any,
+                                         end_time: ?any,
+                                         include_start: ?any,
+                                         include_end: ?any,
+                                         axis: ?any): ?Data
+
+  bfill: abstract member function(axis: ?any, inplace: ?any, limit: ?int, downcast: ?any): ?Data
+  bool:  private abstract member function(): ?any
+
+  boxplot: private abstract member function(column: ?any,
+                                            by: ?any,
+                                            ax: ?any,
+                                            fontsize: ?any,
+                                            rot: ?any,
+                                            grid: ?any,
+                                            figsize: ?any,
+                                            layout: ?any,
+                                            return_type: ?any,
+                                            backend: ?any): ?any
+
+  clip:          abstract member function(lower: ?any, upper: ?any, axis: ?any, inplace: ?any): ?Data
+  combine:       abstract member function(other: ?Data, func: ?any, fill_value: ?any, overwrite: ?any): ?Data
+  combine_first: abstract member function(other: ?Data): ?Data
+  compare:       abstract member function(other: ?Data, align_axis: ?any, keep_shape: ?any, keep_equal: ?any): ?Data
+
+  convert_dtypes: abstract member function(infer_objects: ?any,
+                                           convert_string: ?any,
+                                           convert_integer: ?any,
+                                           convert_boolean: ?any,
+                                           convert_floating: ?any): ?Data
+
+  copy:     abstract member function(deep: ?any): ?Data
+  corr:     abstract member function(method: ?((lambda(a: any, b: any): float) | string), min_periods: ?int): ?Data
+  corrwith: abstract member function(other: ?any, axis: ?any, drop: ?any, method: ?any): ?Data.Series
+  count:    abstract member function(axis: ?any, level: ?any, numeric_only: ?any): ?(Data | Data.Series)
+  cov:      abstract member function(min_periods: ?int, ddof: ?int): ?Data
+  cummax:   abstract member function(axis: ?any, skipna: ?any): ?Data
+  cummin:   abstract member function(axis: ?any, skipna: ?any): ?Data
+  cumprod:  abstract member function(axis: ?any, skipna: ?any): ?Data
+  cumsum:   abstract member function(axis: ?any, skipna: ?any): ?Data
+
+  describe: abstract member function(percentiles: ?any,
+                                     include: ?any,
+                                     exclude: ?any,
+                                     datetime_is_numeric: ?any): ?Data
+
+  diff:   abstract member function(periods: ?int, axis: ?any): ?Data
+  div:    abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  divide: abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  dot:    abstract member function(other: ?any): ?(Data | Data.Series)
+
+  drop: abstract member function(labels: ?any,
+                                 axis: ?any,
+                                 index: ?any,
+                                 columns: ?any,
+                                 level: ?any,
+                                 inplace: ?any,
+                                 errors: ?string): ?Data
+
+  drop_duplicates: abstract member function(subset: ?any, keep: ?any, inplace: ?any, ignore_index: ?any): ?Data
+  droplevel:       abstract member function(level: ?any, axis: ?any): ?Data
+  dropna:          abstract member function(axis: ?any,
+                                            how: ?string,
+                                            thresh: ?any,
+                                            subset: ?any,
+                                            inplace: ?any): ?Data
+  duplicated:      abstract member function(subset: ?any, keep: ?any): ?Data.Series
+  eq:              abstract member function(other: ?any, axis: ?any, level: ?any): ?Data
+
+  @pandas(canReturnData=true)
+  eval: private abstract member function(expr: ?string, inplace: ?any): ?any
+
+  ewm: private abstract member function(com: ?float,
+                                        span: ?float,
+                                        halflife: ?any,
+                                        alpha: ?float,
+                                        min_periods: ?int,
+                                        adjust: ?any,
+                                        ignore_na: ?any,
+                                        axis: ?any,
+                                        times: ?any): ?any
+
+  expanding: private abstract member function(min_periods: ?int, center: ?any, axis: ?any, method: ?string): ?any
+  explode:   abstract member function(column: ?any, ignore_index: ?any): ?Data
+  ffill:     abstract member function(axis: ?any, inplace: ?any, limit: ?int, downcast: ?any): ?Data
+
+  fillna: abstract member function(value: ?any,
+                                   method: ?any,
+                                   axis: ?any,
+                                   inplace: ?any,
+                                   limit: ?int,
+                                   downcast: ?any): ?Data
+
+  filter:            abstract member function(items: ?any, like: ?string, regex: ?string, axis: ?any): ?Data
+  first:             abstract member function(offset: ?any): ?Data
+  first_valid_index: abstract member function(): ?any
+  floordiv:          abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  ge:                abstract member function(other: ?any, axis: ?any, level: ?any): ?Data
+
+  @pandas(canReturnData=true)
+  get: abstract member function(key: ?any, default: ?any): ?any
+
+  groupby: abstract member function(by: ?any,
+                                    axis: ?any,
+                                    level: ?any,
+                                    as_index: ?any,
+                                    sort: ?any,
+                                    group_keys: ?any,
+                                    squeeze: ?any,
+                                    observed: ?any,
+                                    dropna: ?any): ?Data.GroupBy
+
+  gt:   abstract member function(other: ?any, axis: ?any, level: ?any): ?Data
+  head: abstract member function(n: ?int): ?Data
+
+  hist: private abstract member function(column: ?any,
+                                         by: ?any,
+                                         grid: ?any,
+                                         xlabelsize: ?int,
+                                         xrot: ?float,
+                                         ylabelsize: ?int,
+                                         yrot: ?float,
+                                         ax: ?any,
+                                         sharex: ?any,
+                                         sharey: ?any,
+                                         figsize: ?(int, int),
+                                         layout: ?(int, int),
+                                         bins: ?any,
+                                         backend: ?string,
+                                         legend: ?any): ?any
+
+  idxmax:        abstract member function(axis: ?any, skipna: ?any): ?Data.Series
+  idxmin:        abstract member function(axis: ?any, skipna: ?any): ?Data.Series
+  infer_objects: abstract member function(): ?Data
+
+  info: abstract member function(verbose: ?any,
+                                 buf: ?any,
+                                 max_cols: ?int,
+                                 memory_usage: ?any,
+                                 show_counts: ?any,
+                                 null_counts: ?any): ?any
+
+  @pandas(isMutable=true)
+  insert: abstract member function(loc: ?any, column: ?any, value: ?any, allow_duplicates: ?any): ?Data
+
+  interpolate: abstract member function(method: ?string,
+                                        axis: ?any,
+                                        limit: ?int,
+                                        inplace: ?any,
+                                        limit_direction: ?string,
+                                        limit_area: ?string,
+                                        downcast: ?string): ?Data
+
+  isin:       abstract member function(values: ?any): ?Data
+  isna:       abstract member function(): ?Data
+  isnull:     abstract member function(): ?Data
+  items:      abstract member function(): ?any
+  iteritems:  abstract member function(): ?any
+  iterrows:   abstract member function(): ?any
+  itertuples: abstract member function(index: ?any, name: ?string): ?any
+
+  join: abstract member function(other: ?any,
+                                 on: ?any,
+                                 how: ?string,
+                                 lsuffix: ?string,
+                                 rsuffix: ?string,
+                                 sort: ?any): ?Data
+
+  @pandas(canReturnData=true)
+  keys: abstract member function(): ?any
+
+  kurt:             abstract member function(axis: ?any,
+                                             skipna: ?any,
+                                             level: ?any,
+                                             numeric_only: ?any): ?(Data | Data.Series)
+  kurtosis:         abstract member function(axis: ?any,
+                                             skipna: ?any,
+                                             level: ?any,
+                                             numeric_only: ?any): ?(Data | Data.Series)
+  last:             abstract member function(offset: ?any): ?Data
+  last_valid_index: abstract member function(): ?any
+  le:               abstract member function(other: ?any, axis: ?any, level: ?any): ?Data
+  lookup:           private abstract member function(row_labels: ?any, col_labels: ?any): ?any
+  lt:               abstract member function(other: ?any, axis: ?any, level: ?any): ?Data
+  mad:              abstract member function(axis: ?any, skipna: ?any, level: ?any): ?(Data | Data.Series)
+
+  mask: abstract member function(cond: ?any,
+                                 other: ?any,
+                                 inplace: ?any,
+                                 axis: ?any,
+                                 level: ?any,
+                                 errors: ?any,
+                                 try_cast: ?any): ?Data
+
+  max:    abstract member function(axis: ?any, skipna: ?any, level: ?any, numeric_only: ?any): ?(Data | Data.Series)
+  mean:   abstract member function(axis: ?any, skipna: ?any, level: ?any, numeric_only: ?any): ?(Data | Data.Series)
+  median: abstract member function(axis: ?any, skipna: ?any, level: ?any, numeric_only: ?any): ?(Data | Data.Series)
+
+  melt: abstract member function(id_vars: ?any,
+                                 value_vars: ?any,
+                                 var_name: ?any,
+                                 value_name: ?any,
+                                 col_level: ?any,
+                                 ignore_index: ?any): ?Data
+
+  memory_usage: abstract member function(index: ?any, deep: ?any): ?Data.Series
+
+  merge: abstract member function(right: ?any,
+                                  how: ?string,
+                                  on: ?any,
+                                  left_on: ?any,
+                                  right_on: ?any,
+                                  left_index: ?any,
+                                  right_index: ?any,
+                                  sort: ?any,
+                                  suffixes: ?any,
+                                  copy: ?any,
+                                  indicator: ?any,
+                                  validate: ?string): ?Data
+
+  min:        abstract member function(axis: ?any,
+                                       skipna: ?any,
+                                       level: ?any,
+                                       numeric_only: ?any): ?(Data | Data.Series)
+  mod:        abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  mode:       abstract member function(axis: ?any, numeric_only: ?any, dropna: ?any): ?Data
+  mul:        abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  multiply:   private abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  ne:         abstract member function(other: ?any, axis: ?any, level: ?any): ?Data
+  nlargest:   abstract member function(n: ?int, columns: ?any, keep: ?string): ?Data
+  notna:      abstract member function(): ?Data
+  notnull:    abstract member function(): ?Data
+  nsmallest:  abstract member function(n: ?int, columns: ?any, keep: ?string): ?Data
+  nunique:    abstract member function(axis: ?any, dropna: ?any): ?Data.Series
+  pad:        abstract member function(axis: ?any, inplace: ?any, limit: ?int, downcast: ?any): ?Data
+  pct_change: abstract member function(periods: ?int, fill_method: ?any, limit: ?int, freq: ?any): ?Data
+  pivot:      abstract member function(index: ?any, columns: ?any, values: ?any): ?Data
+
+  pivot_table: abstract member function(values: ?any,
+                                        index: ?any,
+                                        columns: ?any,
+                                        aggfunc: ?any,
+                                        fill_value: ?any,
+                                        margins: ?any,
+                                        dropna: ?any,
+                                        margins_name: ?any,
+                                        observed: ?any,
+                                        sort: ?any): ?Data
+
+  pop: abstract member function(item: ?any): ?Data.Series
+  pow: abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+
+  prod: abstract member function(axis: ?any,
+                                 skipna: ?any,
+                                 level: ?any,
+                                 numeric_only: ?any,
+                                 min_count: ?any): ?(Data | Data.Series)
+
+  product: abstract member function(axis: ?any,
+                                    skipna: ?any,
+                                    level: ?any,
+                                    numeric_only: ?any,
+                                    min_count: ?any): ?(Data | Data.Series)
+
+  quantile: abstract member function(q: ?any,
+                                     axis: ?any,
+                                     numeric_only: ?any,
+                                     interpolation: ?string): ?(Data | Data.Series)
+
+  query: abstract member function(expr: ?string, inplace: ?any): ?Data
+  radd:  abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+
+  rank: abstract member function(axis: ?any,
+                                 method: ?string,
+                                 numeric_only: ?any,
+                                 na_option: ?string,
+                                 ascending: ?any,
+                                 pct: ?any): ?Data
+
+  rdiv:    abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  reindex: abstract member function(): ?Data
+
+  reindex_like: abstract member function(other: ?any,
+                                         method: ?string,
+                                         copy: ?any,
+                                         limit: ?any,
+                                         tolerance: ?any): ?Data
+
+  rename: abstract member function(mapper: ?any,
+                                   index: ?any,
+                                   columns: ?any,
+                                   axis: ?any,
+                                   copy: ?any,
+                                   inplace: ?any,
+                                   level: ?any,
+                                   errors: ?string): ?Data
+
+  rename_axis:    abstract member function(mapper: ?any): ?Data
+  reorder_levels: abstract member function(order: ?any, axis: ?any): ?Data
+
+  replace: abstract member function(to_replace: ?any,
+                                    value: ?any,
+                                    inplace: ?any,
+                                    limit: ?int,
+                                    regex: ?any,
+                                    method: ?string): ?Data
+
+  resample: abstract member function(rule: ?any,
+                                     axis: ?any,
+                                     closed: ?string,
+                                     label: ?string,
+                                     convention: ?string,
+                                     kind: ?string,
+                                     loffset: ?any,
+                                     base: ?int,
+                                     on: ?any,
+                                     level: ?any,
+                                     origin: ?any,
+                                     offset: ?any): ?Data.Resample
+
+  reset_index: abstract member function(level: ?any,
+                                        drop: ?any,
+                                        inplace: ?any,
+                                        col_level: ?any,
+                                        col_fill: ?any): ?Data
+
+  rfloordiv: abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  rmod:      abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  rmul:      abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+
+  rolling: abstract member function(window: ?any,
+                                    min_periods: ?int,
+                                    center: ?any,
+                                    win_type: ?string,
+                                    on: ?string,
+                                    axis: ?any,
+                                    closed: ?string,
+                                    method: ?string): ?Data.Rolling
+
+  round:    abstract member function(decimals: ?(Data.Series | int | map<any, int>)): ?Data
+  rpow:     abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  rsub:     abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  rtruediv: abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+
+  sample: abstract member function(n: ?int,
+                                   frac: ?float,
+                                   replace: ?any,
+                                   weights: ?any,
+                                   random_state: ?int,
+                                   axis: ?any,
+                                   ignore_index: ?any): ?Data
+
+  select_dtypes: abstract member function(include: ?any, exclude: ?any): ?Data
+
+  sem: abstract member function(axis: ?any,
+                                skipna: ?any,
+                                level: ?any,
+                                ddof: ?any,
+                                numeric_only: ?any): ?(Data | Data.Series)
+
+  set_axis:  abstract member function(labels: ?any, axis: ?any, inplace: ?any): ?Data
+  set_flags: abstract member function(copy: ?any, allows_duplicate_labels: ?any): ?Data
+
+  set_index: abstract member function(keys: ?any,
+                                      drop: ?any,
+                                      append: ?any,
+                                      inplace: ?any,
+                                      verify_integrity: ?any): ?Data
+
+  shift:       abstract member function(periods: ?int, freq: ?any, axis: ?any, fill_value: ?any): ?Data
+  skew:        abstract member function(axis: ?any,
+                                        skipna: ?any,
+                                        level: ?any,
+                                        numeric_only: ?any): ?(Data | Data.Series)
+  slice_shift: private abstract member function(periods: ?int, axis: ?any): ?Data
+
+  sort_index: abstract member function(axis: ?any,
+                                       level: ?any,
+                                       ascending: ?any,
+                                       inplace: ?any,
+                                       kind: ?string,
+                                       na_position: ?string,
+                                       sort_remaining: ?any,
+                                       ignore_index: ?any,
+                                       key: ?any): ?Data
+
+  sort_values: abstract member function(by: ?any,
+                                        axis: ?any,
+                                        ascending: ?any,
+                                        inplace: ?any,
+                                        kind: ?string,
+                                        na_position: ?string,
+                                        ignore_index: ?any,
+                                        key: ?any): ?Data
+
+  @pandas(canReturnData=true)
+  squeeze: abstract member function(axis: ?any): ?(Data | Data.Series | int)
+
+  stack: abstract member function(level: ?any, dropna: ?any): ?(Data | Data.Series)
+
+  std: abstract member function(axis: ?any,
+                                skipna: ?any,
+                                level: ?any,
+                                ddof: ?any,
+                                numeric_only: ?any): ?(Data | Data.Series)
+
+  sub:      abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  subtract: abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+
+  sum: abstract member function(axis: ?any,
+                                skipna: ?any,
+                                level: ?any,
+                                numeric_only: ?any,
+                                min_count: ?any): ?(Data | Data.Series)
+
+  swapaxes:     abstract member function(axis1: ?any, axis2: ?any, copy: ?any): ?Data
+  swaplevel:    abstract member function(i: ?any, j: ?any, axis: ?any): ?Data
+  tail:         abstract member function(n: ?int): ?Data
+  take:         abstract member function(indices: ?any, axis: ?any, is_copy: ?any): ?Data
+  to_clipboard: private abstract member function(excel: ?any, sep: ?string): ?any
+
+  to_csv: private abstract member function(path_or_buf: ?any,
+                                           sep: ?string,
+                                           na_rep: ?string,
+                                           float_format: ?string,
+                                           columns: ?any,
+                                           header: ?any,
+                                           index: ?any,
+                                           index_label: ?any,
+                                           mode: ?string,
+                                           encoding: ?string,
+                                           compression: ?any,
+                                           quoting: ?int,
+                                           quotechar: ?string,
+                                           line_terminator: ?string,
+                                           chunksize: ?int,
+                                           date_format: ?string,
+                                           doublequote: ?any,
+                                           escapechar: ?string,
+                                           decimal: ?string,
+                                           errors: ?string,
+                                           storage_options: ?any): ?string
+
+  to_dict: private abstract member function(orient: ?string, into: ?any): ?any
+
+  to_excel: private abstract member function(excel_writer: ?any,
+                                             sheet_name: ?string,
+                                             na_rep: ?string,
+                                             float_format: ?string,
+                                             columns: ?any,
+                                             header: ?any,
+                                             index: ?any,
+                                             index_label: ?any,
+                                             startrow: ?any,
+                                             startcol: ?any,
+                                             engine: ?any,
+                                             merge_cells: ?any,
+                                             encoding: ?any,
+                                             inf_rep: ?any,
+                                             verbose: ?any,
+                                             freeze_panes: ?any,
+                                             storage_options: ?any): ?any
+
+  to_feather: private abstract member function(path: ?any): ?any
+
+  to_gbq: private abstract member function(destination_table: ?string,
+                                           project_id: ?string,
+                                           chunksize: ?int,
+                                           reauth: ?any,
+                                           if_exists: ?string,
+                                           auth_local_webserver: ?any,
+                                           table_schema: ?[map<string, string>],
+                                           location: ?string,
+                                           progress_bar: ?any,
+                                           credentials: ?any): ?any
+
+  to_hdf: private abstract member function(path_or_buf: ?any,
+                                           key: ?string,
+                                           mode: ?string,
+                                           complevel: ?int,
+                                           complib: ?string,
+                                           append: ?any,
+                                           format: ?string,
+                                           index: ?any,
+                                           min_itemsize: ?(int | map<string, int>),
+                                           nan_rep: ?any,
+                                           dropna: ?any,
+                                           data_columns: ?any,
+                                           errors: ?string,
+                                           encoding: ?string): ?any
+
+  to_json: private abstract member function(path_or_buf: ?any,
+                                            orient: ?string,
+                                            date_format: ?string,
+                                            double_precision: ?int,
+                                            force_ascii: ?any,
+                                            date_unit: ?string,
+                                            default_handler: ?lambda(a: any): any,
+                                            lines: ?any,
+                                            compression: ?any,
+                                            index: ?any,
+                                            indent: ?int,
+                                            storage_options: ?any): ?string
+
+  to_latex: private abstract member function(buf: ?any,
+                                             columns: ?any,
+                                             col_space: ?any,
+                                             header: ?any,
+                                             index: ?any,
+                                             na_rep: ?any,
+                                             formatters: ?any,
+                                             float_format: ?any,
+                                             sparsify: ?any,
+                                             index_names: ?any,
+                                             bold_rows: ?any,
+                                             column_format: ?any,
+                                             longtable: ?any,
+                                             escape: ?any,
+                                             encoding: ?any,
+                                             decimal: ?any,
+                                             multicolumn: ?any,
+                                             multicolumn_format: ?any,
+                                             multirow: ?any,
+                                             caption: ?any,
+                                             label: ?any,
+                                             position: ?any): ?any
+
+  to_markdown: private abstract member function(buf: ?any, mode: ?string, index: ?any, storage_options: ?any): ?string
+
+  to_parquet: private abstract member function(path: ?any,
+                                               engine: ?string,
+                                               compression: ?string,
+                                               index: ?any,
+                                               partition_cols: ?[string],
+                                               storage_options: ?any): ?any
+
+  to_period:  private abstract member function(freq: ?any, axis: ?any, copy: ?any): ?Data
+  to_pickle:  private abstract member function(path: ?any,
+                                               compression: ?any,
+                                               protocol: ?int,
+                                               storage_options: ?any): ?any
+  to_records: private abstract member function(index: ?any, column_dtypes: ?any, index_dtypes: ?any): ?any
+
+  to_sql: private abstract member function(name: ?string,
+                                           con: ?any,
+                                           schema: ?any,
+                                           if_exists: ?string,
+                                           index: ?any,
+                                           index_label: ?any,
+                                           chunksize: ?any,
+                                           dtype: ?any,
+                                           method: ?any): ?any
+
+  to_stata: private abstract member function(path: ?any,
+                                             convert_dates: ?map<any, string>,
+                                             write_index: ?any,
+                                             byteorder: ?string,
+                                             time_stamp: ?any,
+                                             data_label: ?string,
+                                             variable_labels: ?map<any, string>,
+                                             version: ?int,
+                                             convert_strl: ?any,
+                                             compression: ?any,
+                                             storage_options: ?any): ?any
+
+  to_string: private abstract member function(buf: ?any,
+                                              columns: ?any,
+                                              col_space: ?int,
+                                              header: ?any,
+                                              index: ?any,
+                                              na_rep: ?string,
+                                              formatters: ?any,
+                                              float_format: ?any,
+                                              sparsify: ?any,
+                                              index_names: ?any,
+                                              justify: ?string,
+                                              max_rows: ?int,
+                                              min_rows: ?int,
+                                              max_cols: ?int,
+                                              show_dimensions: ?any,
+                                              decimal: ?string,
+                                              line_width: ?int,
+                                              max_colwidth: ?int,
+                                              encoding: ?string): ?string
+
+  to_timestamp: private abstract member function(freq: ?any, how: ?string, axis: ?any, copy: ?any): ?Data
+  to_xarray:    private abstract member function(): ?any
+
+  to_xml: private abstract member function(path_or_buffer: ?any,
+                                           index: ?any,
+                                           root_name: ?string,
+                                           row_name: ?string,
+                                           na_rep: ?string,
+                                           attr_cols: ?([string] | string),
+                                           elem_cols: ?([string] | string),
+                                           namespaces: ?map<string, string>,
+                                           prefix: ?string,
+                                           encoding: ?string,
+                                           xml_declaration: ?any,
+                                           pretty_print: ?any,
+                                           parser: ?string,
+                                           stylesheet: ?any,
+                                           compression: ?any,
+                                           storage_options: ?any): ?string
+
+  transform:  abstract member function(func: ?any, axis: ?any): ?Data
+  transpose:  abstract member function(copy: ?any): ?Data
+  truediv:    abstract member function(other: ?any, axis: ?any, level: ?any, fill_value: ?any): ?Data
+  truncate:   abstract member function(before: ?any, after: ?any, axis: ?any, copy: ?any): ?Data
+  tshift:     private abstract member function(periods: ?int, freq: ?any, axis: ?any): ?Data
+  tz_convert: abstract member function(tz: ?any, axis: ?any, level: ?any, copy: ?any): ?Data
+
+  tz_localize: abstract member function(tz: ?any,
+                                        axis: ?any,
+                                        level: ?any,
+                                        copy: ?any,
+                                        ambiguous: ?any,
+                                        nonexistent: ?string): ?Data
+
+  unstack: abstract member function(level: ?any, fill_value: ?any): ?(Data | Data.Series)
+
+  update: abstract member function(other: ?any,
+                                   join: ?string,
+                                   overwrite: ?any,
+                                   filter_func: ?any,
+                                   errors: ?string): ?any
+
+  value_counts: abstract member function(subset: ?any,
+                                         normalize: ?any,
+                                         sort: ?any,
+                                         ascending: ?any,
+                                         dropna: ?any): ?Data.Series
+
+  var: abstract member function(axis: ?any,
+                                skipna: ?any,
+                                level: ?any,
+                                ddof: ?any,
+                                numeric_only: ?any): ?(Data | Data.Series)
+
+  where: abstract member function(cond: ?any,
+                                  other: ?any,
+                                  inplace: ?any,
+                                  axis: ?any,
+                                  level: ?any,
+                                  errors: ?any,
+                                  try_cast: ?any): ?Data
+
+  xs: abstract member function(key: ?any, axis: ?any, level: ?any, drop_level: ?any): ?(Data | Data.Series)
+}

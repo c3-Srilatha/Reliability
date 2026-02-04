@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipe} template that outputs a `riskScore` that is a directionally weighted average
+ * of the input residuals. Specifically, each column can accept two weights - a weight applied to all positive
+ * residuals, and a weight for all negative residuals.
+ */
+@beta
+type Reconstruction.Post.DirectionallyWeightedRiskScorePipe extends Reconstruction.Post.RiskScorePipe<{residuals: Data}> type key 'RPDWCP' {
+
+  /**
+   * A map of column name to a pair of weights to be applied to values in that column. The first weight in the pair will
+   * be applied to the positive residuals, and the second will be applied to the negative residuals.
+   */
+  @ML(containsHyperparams=true)
+  directionalWeights: map<string, Pair<double, double>>
+
+  doProcess: ~ py-data
+
+}

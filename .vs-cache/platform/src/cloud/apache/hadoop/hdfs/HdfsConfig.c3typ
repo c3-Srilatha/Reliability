@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * HDFS based C3 file system configurations.
+ * For additional configurations, e.g., to enable Kerberos authentication, please setup through
+ * {@link HadoopSpec#additionalConfigs}.
+ *
+ * Some common configurations that you may need when configuring authentication:
+ * * hadoop.security.authentication: simple/kerberos
+ * * hadoop.security.authorization: true/false. True to enable RPC service-level authorization.
+ * * hadoop.rpc.protection: authentication (default)/integrity/privacy
+ * * dfs.block.access.token.enable: true/false. True to enable HDFS block access tokens for secure operations.
+ * * dfs.namenode.kerberos.principal: Kerberos principal name for the NameNode.
+ *
+ * For a full list of Hdfs configurations, please refer to
+ * [Apache Hdfs](https://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml).
+ */
+type HdfsConfig mixes FileSystemConfigChild, HadoopSpec, ServicePlugin {
+
+  fsDefaultName: string
+
+  /**
+   * Deprecated as mounts is used instead
+   */
+  @deprecated(finalVersion='7.13')
+  pathPrefix: string
+
+  /**
+   * Recover the Apache FileSystem when GSS error occurs if not set or set to false
+   */
+  stetFileSystemOnError: boolean
+}

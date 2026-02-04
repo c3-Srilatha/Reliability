@@ -1,0 +1,158 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to do custom fetch for the grids in the data validation workflow.
+ */
+type ReliabilityAssetRulesUiHelper {
+
+  /**
+   * fetch and return the instrumented {@link Sensor}s of this {@link ReliabilityAsset}
+   * An instrumented sensor is a sensor related to an asset by a {@link ReliabilityAssetSensorHierarchicalRelation}
+   * @param asset
+   *        A {@link ReliabilityAsset} to get the instrumented sensors.
+   * @param spec
+   *        Spec with limit and offset
+   * @return a {@link FetchResult} of {@link Sensor}s.
+   */
+  fetchSensorsInstrumented: function(asset: !ReliabilityAsset, spec: !FetchSpec): !FetchResult<Sensor> js-rhino
+
+  /**
+   * fetch and return the instrumented {@link Sensor}s of this {@link ReliabilityAsset} and add the feature name for the sensor
+   * @param asset
+   *        A {@link ReliabilityAsset} to get the instrumented sensors with features.
+   * @param spec
+   *        Spec with limit and offset
+   * @return a {@link FetchResult} of {@link json}s
+   */
+  fetchSensorsInstrumentedWithFeature: function(asset: !ReliabilityAsset, spec: !FetchSpec): !FetchResult<json> js-rhino
+
+  /**
+   * Get the number of the instrumented {@link Sensor}s of this {@link ReliabilityAsset}
+   * An instrumented sensor is a sensor related to an asset by a {@link ReliabilityAssetSensorHierarchicalRelation}
+   * @param asset
+   *        A {@link ReliabilityAsset} to count expected sensors with fatures.
+   * @param spec
+   *        Spec with limit and offset
+   * @return the number of the instrumented {@link Sensor}s of this {@link ReliabilityAsset}
+   */
+  fetchCountSensorsInstrumented: function(asset: !ReliabilityAsset, spec: FetchSpec): !int js-rhino
+
+  /**
+   * fetch and return the {@link FailureMode}s of this {@link ReliabilityAsset}
+   * @param asset
+   *    The asset for this search
+   * @param spec
+   *    FetchSpec
+   * @return
+   *    Returns a {@link FetchResult} of {@link FailureMode}s.
+   */
+  fetchFailureModes: function(asset: !ReliabilityAsset, spec: !FetchSpec): !FetchResult<Sensor> js-rhino
+
+  /**
+   * Get the number of the {@link FailureMode}s of this {@link ReliabilityAsset}
+   * @param asset
+   *    The asset for this search
+   * @param spec
+   *    FetchSpec
+   * @return
+   *    Returns the number of the {@link FailureMode}s of this {@link ReliabilityAsset}
+   */
+  fetchCountFailureModes: function(asset: !ReliabilityAsset, spec: FetchSpec): !int js-rhino
+
+  /**
+   * Fetch and return the {@link ExpectedSensor}s with this {@link ReliabilityAsset}
+   * that have their {@link Sensor} not set.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link ExpectedSensor}s are associated with
+   * @param spec
+   *    Spec to configure the fetchResult of {@link ExpectedSensor}.
+   * @return
+   *    Returns a {@link FetchResult} of {@link ExpectedSensor}.
+   */
+  fetchExpectedSensorsWithoutSensor: function(asset: !ReliabilityAsset, spec: FetchSpec): !FetchResult<ExpectedSensor> js-rhino
+
+  /**
+   * Get the number of associated {@link ExpectedSensor}s with this {@link ReliabilityAsset}
+   * that have their {@link Sensor} not set.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link ExpectedSensor}s are associated with
+   * @return
+   *    Returns the number of {@link ExpectedSensor}.
+   */
+  fetchCountExpectedSensorsWithoutSensor: function(asset: !ReliabilityAsset): !int js-rhino
+
+  /**
+   * Fetch and return the {@link ExpectedSensor}s with this {@link ReliabilityAsset}
+   * that have their {@link Sensor} set.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link ExpectedSensor}s are associated with
+   * @param spec
+   *    Spec to configure the fetchResult of {@link ReliabilityAssetSensorRelation}.
+   * @return
+   *    Returns a {@link FetchResult} of {@link ReliabilityAssetSensorRelation} containing the {@link ExpectedSensor}.
+   */
+  fetchExpectedSensorsWithSensor: function(asset: !ReliabilityAsset, spec: FetchSpec): !FetchResult<ReliabilityAssetSensorRelation> js-rhino
+
+  /**
+   * Get the number of associated {@link ExpectedSensor}s with this {@link ReliabilityAsset}
+   * that have their {@link Sensor} set.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link ExpectedSensor}s are associated with
+   * @return
+   *    Returns the number of {@link ReliabilityAssetSensorRelation} containing the {@link ExpectedSensor}.
+   */
+  fetchCountExpectedSensorsWithSensor: function(asset: !ReliabilityAsset): !int js-rhino
+
+  /**
+   * Fetch and return the {@link Sensor}s with this {@link ReliabilityAsset}
+   * that are not normalized.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link Sensor}s are associated with.
+   * @param spec
+   *    Spec to configure the {@link Sensor} fetchResult.
+   * @return
+   *    Returns a JSON containing the {@link Sensor} fetchResult.
+   */
+  fetchUnnormalizedSensors: function(asset: !ReliabilityAsset, spec: FetchSpec): !json js-rhino
+
+  /**
+   * Fetch and return the number of {@link Sensor}s with this {@link ReliabilityAsset}
+   * that are not normalized.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link Sensor}s are associated with.
+   * @param spec
+   *    Spec to configure the {@link Sensor} fetchResult.
+   * @return
+   *    Returns the number of unnormalized {@link Sensor}s.
+   */
+  fetchUnnormalizedSensorsCount: function(asset: !ReliabilityAsset, spec: FetchSpec): !int js-rhino
+
+  /**
+   * Fetch and return the {@link Sensor}s related with this {@link ReliabilityAsset}
+   * that are not contained on instrumented {@link Sensor}s of the {@link ReliabilityAsset}.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link Sensor}s are associated with.
+   * @param spec
+   *    Spec to configure the {@link Sensor} fetchResult.
+   * @return
+   *    Returns a {@link FetchResult} of {@link ReliabilityAssetSensorRelation} containing the {@link Sensor}s.
+   */
+  fetchSensorsForMlNotInstrumented: function(asset: !ReliabilityAsset, spec: !FetchSpec): !FetchResult<ReliabilityAssetSensorRelation> js-rhino
+
+  /**
+   * Get the number of the {@link Sensor}s related with this {@link ReliabilityAsset}
+   * that are not contained on instrumented {@link Sensor}s of the {@link ReliabilityAsset}.
+   * @param asset
+   *    {@link ReliabilityAsset} that the {@link Sensor}s are associated with.
+   * @return
+   *    Returns the number of {@link Sensor}s related with this {@link ReliabilityAsset}.
+   */
+  fetchCountSensorsForMlNotInstrumented: function(asset: !ReliabilityAsset): !int js-rhino
+}

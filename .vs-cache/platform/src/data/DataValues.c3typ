@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Collection of possible values. See {@link Data.generate} & ${@link Data.profile}.
+ */
+type DataValues<T> mixes Spec {
+
+  /**
+   * If sourceType is an entity type then it's persisted instances will be used to collect the values. Another option
+   * is an enum type in which case enum values will be used as possible values.
+   */
+  sourceType: Type
+
+  /**
+   * Field name if #sourceType is an entity type.
+   */
+  sourceField: string
+
+  /**
+   * Array of possible values.
+   */
+  values: [T]
+
+  /**
+   * Represents distribution of #values i.e. number of occurrences of the specific value from #values (at 0 based index)
+   * in the sample set. If distribution doesn't exist for an index of value will never generate that value. If there are
+   * more distributions then values then generated value could be `null`.
+   */
+  distribution: [int]
+
+  /**
+   * @return #values or possible values from #sourceType if it is enum type
+   */
+  safeValues: inline member function(): [T]
+
+  next: private inline member function(seed: !int): !RndResult<T>
+}

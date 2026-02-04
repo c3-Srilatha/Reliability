@@ -1,0 +1,223 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper functions to convert Bulk Model Setup UI settings to a workflow run.
+ * Mixed into {@link ReliabilityMl.Project}. Each function can be overridden on a per-project basis using the lambda fields.
+ */
+type ReliabilityMl.Project.OrchestratorHelper {
+
+  /**
+   * Converts {@link BulkDataPreparationUiSettings} to a {@link ReliabilityMlDatasetPreparationSpec}.
+   */
+  dataPrepSettingsToSpec: private member function(settings: BulkDataPreparationUiSettings): ReliabilityMlDatasetPreparationSpec py
+
+  /**
+   * Converts {@link BulkModelConfigUiSettings} to a {@link ReliabilityOrchestrator.TrainingJobSpec}.
+   */
+  modelConfigSettingsToSpec: private member function(settings: BulkModelConfigUiSettings): ReliabilityOrchestrator.TrainingJobSpec py
+
+  /**
+   * Uses {@link BulkModelSetupUiSettings} to start a {@link ReliabilityOrchestrator.DatasetPreparationJob}.
+   * Used as the action for a nested workflow vertex in the model setup workflow.
+   */
+  dataPrepSettingsToJobRun: private member function(settings: BulkDataPreparationUiSettings): MlOperationRun<ReliabilityOrchestrator.DatasetPreparationJobRun> py
+
+  /**
+   * Uses {@link BulkModelConfigUiSettings} to start a {@link ReliabilityOrchestrator.TrainingJob}.
+   * Used as the action for a nested workflow vertex in the model setup workflow.
+   */
+  modelConfigSettingsToJobRun: private member function(
+    settings: BulkModelConfigUiSettings,
+    dataPrepJobRun: ReliabilityOrchestrator.DatasetPreparationJobRun,
+    modelConfigRun: ModelConfigRun,
+    hasPostTraining: boolean
+  ): MlOperationRun<ReliabilityOrchestrator.TrainingJobRun> py
+
+  /**
+   * Function that depending on the {@link ReliabilityMl.Project} configuration, converts {@link BulkModelSetupUiSettings},
+   * which contains the model setup configuration, to a {@link Workflow.Run} that can be started.
+   */
+  modelSetupSettingsToWorkflowRun: member function(
+    settings: BulkModelSetupUiSettings): Workflow.Run py
+
+  /**
+   * Converts {@link BulkModelSetupUiSettings} to a {@link Workflow}, starts it, and returns the {@link Workflow.Run}
+   *
+   * Example:
+   * ```javascript
+   * const settings = BulkModelSetupUiSettings.make({
+   *   modelName: "ExampleModel",
+   *   parameters: { key: "value" },
+   *   sensorData: ["sensor1", "sensor2"]
+   * });
+   * const workflowRun = ReliabilityMl.Project.OrchestratorHelper.agnosticModelSetupSettingsToWorkflowRun(settings);
+   * console.log(workflowRun);
+   * ```
+   *
+   * **NOTE**: Ensure that the `settings` object is properly populated before calling this function.
+   *
+   * @param settings
+   *        The {@link BulkModelSetupUiSettings} object containing configuration for bulk model setup.
+   * @returns A {@link Workflow.Run} object representing the workflow run created based on the provided settings.
+   */
+  agnosticModelSetupSettingsToWorkflowRun: member function(
+    settings: BulkModelSetupUiSettings,
+    modelConfigRun: ModelConfigRun): Workflow.Run py
+
+  /**
+   * Helper function to create a {@link Workflow} for hyperparameter optimization
+   * with the following structure:
+   *
+   * ```
+   * ╭──────────────────────────────╮
+   * │  ╭────────────────────────╮  │
+   * │  │   Pipelines Creation   │  │
+   * │  ╰────────────────────────╯  │
+   * │               │              │
+   * │               v              │
+   * │  ╭────────────────────────╮  │
+   * │  │     Model Training     │  │
+   * │  ╰────────────────────────╯  │
+   * │               │              │
+   * │               v              │              ╭───────────────────────────────╮
+   * │  ╭────────────────────────╮  │              │  Retire non-selected models,  │
+   * │  │  Model Classification  │  │ $sucess ───> │  and update model config run  │
+   * │  ╰────────────────────────╯  │              ╰───────────────────────────────╯
+   * │               │              │
+   * │               v              │
+   * │  ╭────────────────────────╮  │
+   * │  │  Best Model Selection  │  │
+   * │  ╰────────────────────────╯  │
+   * │               │              │
+   * │               v              │
+   * │  ╭────────────────────────╮  │
+   * │  │    Model Validation    │  │
+   * │  ╰────────────────────────╯  │
+   * ╰──────────────────────────────╯
+   * ```
+   *
+   * This method is used specifically for running hyperparameter optimization, using {@link ReliabilityOrchestrator.HpoSpec},
+   * and creating the necessary {@link ModelConfigRun} to monitor the HPO process through the UI.
+   */
+  @beta
+  modelSetupSettingsToHpoWorkflowRun: member function(
+    settings: BulkModelSetupUiSettings
+  ): Workflow.Run py
+
+  /**
+   * Starts a post-training job for the given training run.
+   * Used as the action for a nested workflow vertex in the model setup workflow.
+   */
+  startPostTrainingJob: private member function(
+    settings: BulkModelConfigUiSettings,
+    trainingRun: ReliabilityOrchestrator.TrainingJobRun,
+    modelConfigRun: ModelConfigRun
+  ): MlOperationRun<ReliabilityOrchestrator.PostTrainingJobRun> py
+
+  /**
+   * Lambda to override {@link #dataPrepSettingsToSpec}.
+   */
+  overrideDataPrepSettingsToSpec: Lambda<function(settings: BulkDataPreparationUiSettings): ReliabilityMlDatasetPreparationSpec>
+
+  /**
+   * Lambda to override {@link #modelConfigSettingsToSpec}.
+   */
+  overrideModelConfigSettingsToSpec: Lambda<function(settings: BulkModelConfigUiSettings): ReliabilityOrchestrator.TrainingJobSpec>
+
+  /**
+   * Lambda to override {@link #dataPrepSettingsToJobRun}.
+   */
+  overrideDataPrepSettingsToJobRun: Lambda<function(settings: BulkDataPreparationUiSettings): MlOperationRun<ReliabilityOrchestrator.DatasetPreparationJobRun>>
+
+  /**
+   * Lambda to override {@link #modelConfigSettingsToJobRun}.
+   */
+  overrideModelConfigSettingsToJobRun: Lambda<function(
+    settings: BulkModelConfigUiSettings,
+    dataPrepJobRun: ReliabilityOrchestrator.DatasetPreparationJobRun,
+    modelConfigRun: ModelConfigRun,
+    hasPostTraining: boolean
+  ): MlOperationRun<ReliabilityOrchestrator.TrainingJobRun>>
+
+  /**
+   * Lambda to override {@link #startPostTrainingJob}.
+   */
+  overrideStartPostTrainingJob: Lambda<function(
+    settings: BulkModelConfigUiSettings,
+    trainingRun: ReliabilityOrchestrator.TrainingJobRun,
+    modelConfigRun: ModelConfigRun
+  ): MlOperationRun<ReliabilityOrchestrator.PostTrainingJobRun>>
+
+  /**
+   * Lambda to override {@link #modelSetupSettingsToWorkflowRun}.
+   */
+  overrideModelSetupSettingsToWorkflowRun: Lambda<function(settings: BulkModelSetupUiSettings): Workflow.Run>
+
+  /**
+   * Helper function to create a computational graph of the following nature:
+   * ```
+   * ----------------------                      -----------------------
+   * |     (Optional)     |                      |                     |
+   * | Sensor Association | $success ----------> | Dataset Preparation | $success ----|
+   * |                    |                      |                     |              |
+   * ----------------------                      -----------------------              |
+   *                                                                                  |
+   *                                                                                  |
+   *         -----------------------                     ------------------           |
+   *         |                     |                     |                |           |
+   *         | Post Model Training | <--------- $success | Model Training | <---------|
+   *         |                     |                     |                |
+   *         -----------------------                     ------------------
+   * ```
+   *
+   * @param assetFilter
+   *        The {@link Filter} of {@link ReliabilityAsset}s on which to run model training.
+   * @param sensorAssociationJobId
+   *        The {@link ReliabilityAssetSensorAssociationJob}, based on whose results, a dataset will be prepared for model training.
+   * @param datasetPreparationSpec
+   *        The {@link ReliabilityMlDatasetPreparationSpec}, according to which the dataset will be prepared.
+   * @param modelTrainingSpecs
+   *        A list of {@link ReliabilityOrchestrator.TrainingJobSpec}s, which determine which {@link ReliabilityMlModel}s to train for the `assetFilter`
+   * @param postModelTrainingSpec
+   *        The {@link ReliabilityOrchestrator.PostTrainingJobSpec}, according to which post-model training actions such as model classification, model validation, and model reporting are executed
+   * @param sensorAssociationSpec
+   *        An optional {@link ReliabilityOrchestrator.SensorAssociation}, based on which, a {@link ReliabilityAssetSensorAssociationJob} will be run BEFORE executing dataset preparation and downstream model training.
+   * @param datasetPreparationOptions
+   *        The {@link ReliabilityOrchestrator.JobOptions} that controls the distributed nature of the dataset preparation job.
+   * @param modelTrainingOptions
+   *        The {@link ReliabilityOrchestrator.JobOptions} that controls the distributed nature of the model training job.
+   * @param postModelTrainingOptions
+   *        The {@link ReliabilityOrchestrator.JobOptions} that controls the distributed nature of the post-model training job.
+   * @param modelConfigRun
+   *        An optional {@link ModelConfigRun} to track the status of this {@link Workflow} in the UI.
+   * @param datasetPreparationTrackingJobId
+   *        An optional id to set for the underlying {@link ReliabilityMlDatasetPreparationJob} used to track status.
+   * @param id
+   *        The id of the {@link Workflow}.
+   * @param name
+   *        The name of the {@link Workflow}. If no name is provided, a default name is used.
+   * @return a {@link Workflow}, that executes the above computational graph.
+   */
+  createWorkflowForModelTrainingWithSensorAssociation: private member function(
+    assetFilter: !string serialized Filter,
+    sensorAssociationJobId: !string,
+    datasetPreparationSpec: !ReliabilityMlDatasetPreparationSpec,
+    modelTrainingSpecs: ![ReliabilityOrchestrator.TrainingJobSpec],
+    postModelTrainingSpec: !ReliabilityOrchestrator.PostTrainingJobSpec,
+    sensorAssociationSpec: ReliabilityOrchestrator.SensorAssociation,
+    datasetPreparationOptions: ReliabilityOrchestrator.JobOptions,
+    modelTrainingOptions: ReliabilityOrchestrator.JobOptions,
+    postModelTrainingOptions: ReliabilityOrchestrator.JobOptions,
+    modelConfigRun: ModelConfigRun,
+    datasetPreparationTrackingJobId: string,
+    id: string,
+    name: string
+  ): !Workflow py
+}

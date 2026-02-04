@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This config is the mapping between the gcp cloud identity and the k8s service account for enabling workload identity
+ * This config controls the k8s serviceAccount tied to the apps based on the
+ * cloudCluster hierarchy the config is present.
+ */
+type CloudSecurityProfile.Gcp mixes CloudSecurityProfile {
+
+  getManualSteps: ~
+
+  /**
+   * Name of the associated IAM Service Account in GCP.
+   *
+   * Note: The IAM Service Account fully qualified name is of the following format: 'IAM_SERVICEACCOUNT_NAME@GCP_PROJECT_ID.iam.gserviceaccount.com',
+   * where GCP_PROJECT_ID is the Google Cloud Platform (GCP) project id for this cluster and where the IAM_SERVICEACCOUNT was created.
+   */
+  iamServiceAccount: string
+
+  /**
+   * Google Cloud Platform (GCP) project id for this CloudSecurityProfile.Gcp.
+   * This is the globally unique identifier of your project where the {@link iamServiceAccount} has been created or
+   * will be created. Its details can be found at https://console.cloud.google.com/cloud-resource-manager.
+   */
+  projectId: string
+}

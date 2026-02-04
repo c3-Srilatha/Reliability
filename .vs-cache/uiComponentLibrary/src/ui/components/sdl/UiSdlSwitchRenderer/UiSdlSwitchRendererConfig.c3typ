@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration to render different component based on switch condition at runtime.
+ */
+type UiSdlSwitchRendererConfig<ComponentType> {
+
+  /**
+   * The switch condition that will decide which component to render.
+   *
+   * While the condition type is being imported, a spinner will be temporarily shown,
+   * this behavior cannot be changed but due to optimizations you may not see the spinner
+   * in some cases.
+   *
+   * For possible condition types see mixins of {@link UiSdlRenderSwitchCondition}.
+   */
+  condition: UiSdlRenderSwitchCondition
+
+  /**
+   * The mapping of the value resulting from evaluation of the switch condition, to the component to render for that condition.
+   */
+  componentsToRender: map<any, ComponentType>
+
+  /**
+   * The component to render when the value from the {@link UiSdlRenderSwitchCondition}
+   * is not present as a key in {@link #componentsToRender}
+   */
+  fallbackComponent: ComponentType
+}

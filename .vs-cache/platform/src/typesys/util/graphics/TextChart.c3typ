@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * All functions produce simple text (`text/plain`). These should be displayed with a fixed-width font to provide rough
+ * and ready visualizations. If width and height are unspecified in the spec, charts default to 24 lines of 79 columns
+ * (or smaller).
+ */
+type TextChart mixes ChartBuilder, Value {
+
+  /**
+   * Produce a simple line chart with no ornamentation from a simple series of values. This chart is always one line
+   * high, so the height in the spec is ignored. If the data is too long to fit, it will be resampled by an integer
+   * fraction, if the original data or the resampled values are too short, the line will be shorter than the spec width.
+   */
+  sparkline: ~ js
+
+  /**
+   * Produce a column chart (vertical bars) from the series of values. The chart may be wider than the width from the
+   * spec if there are too many input values. If there are fewer input values and no legend is requested, the chart may
+   * be narrower.
+   */
+  column: ~ js
+
+  /**
+   * Produce a horizontal bar chart from the series of values. This will have one line for each input value, thus the
+   * height in the spec is ignored.
+   */
+  bar: ~ js
+}

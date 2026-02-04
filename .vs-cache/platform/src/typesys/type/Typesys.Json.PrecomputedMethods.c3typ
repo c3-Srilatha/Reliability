@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Structure holding important cached methods memoized for a specific C3 Type for an efficient loading at execution
+ * time.
+ *
+ * @see Typesys.Json
+ */
+inline final private type Typesys.Json.PrecomputedMethods mixes Serializable, Value {
+
+  /**
+   * Parent json these methods belong to.
+   */
+  parent: property(): !Typesys.Json
+
+  /**
+   * `true` if there is a memoized method result for a given method.
+   */
+  hasResult: member function(name: !string): boolean
+
+  /**
+   * Memoized method result.
+   */
+  result: member function(method: !Method): any
+
+  /**
+   * Memoized method result for a specific input.
+   */
+  result: member function(method: !Method, key: !any): any
+
+  /**
+   * Construct instance for a given parent {@Typesys.Json} from methods json.
+   */
+  fromJson: function(parent: !Typesys.Json, json: !?json): !Typesys.Json.PrecomputedMethods
+}

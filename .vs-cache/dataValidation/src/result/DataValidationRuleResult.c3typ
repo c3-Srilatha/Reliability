@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specific violation of a {@link DataValidationRule}, as returned by the target {@link DataValidationRule#action action}.
+ */
+type DataValidationRuleResult {
+
+  /**
+   * How severe a violation of this rule this result indicates.
+   * Recommended range is 0 - 4, like Jira tickets. P0/P1 are critical, P2 are less so, and P3/P4 are nice to fix.
+   */
+  priority: !int
+
+  /**
+   * The message corresponding to this result.
+   */
+  message: !string
+
+  /**
+   * An optional recommendation for action to correct the violation.
+   */
+  recommendation: string
+
+  /**
+   * An optional list of entity IDs to accompany the {@link DataValidationRuleResult}.
+   * May not contain all relevant entities due to limitations of array fields in the type system.
+   */
+  relatedEntities: [string] schema suffix 'ENT'
+
+  /**
+   * An optional list of fields to accompany the {@link DataValidationRuleResult}.
+   * May not contain all relevant fields due to limitations of array fields in the type system.
+   */
+  relatedFields: [string] schema suffix 'FLD'
+
+  /**
+   * It indicates the validation status of a {@link DataValidationRule#action}
+   */
+  status: DataValidationStatus schema suffix 'DVS'
+
+  /**
+   * It its a string representation of the output of a {@link DataValidationRule#action} for example ‘DNE', or ‘EXISTS’.
+   * It could be any string, but should be included in the {@link DataValidationRule#possibleOutputs}.
+   */
+  output: string
+}

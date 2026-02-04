@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type UiSdlMetricTileDataSpecMainValueBaseSetting {
+  /**
+   * Decimal precision of the main number in the metric tile.
+   */
+  precision: int = 0
+
+  /**
+   * A placeholder to be used when the field is not a numerical value and thus NaN at client-side.
+   */
+  placeholder: string = '-'
+
+  /**
+   * Hint message to display when indicator value is using placeholder
+   */
+  placeholderHintMessage: string | UiSdlDynamicValueSpec = 'UiSdlMetricTile.mainValue.placeholderHintMessage'
+
+  /**
+   * Indicates where the main value should be taken from.
+   * If value is `mainValue`, the metric value will be displayed using the value coming from the
+   * {@link UiSdlMetricTileMainValue#singleValue} or the other echarts values coming from mainValue spec and
+   * `metricName`. If value is one of the others {@link UiSdlMetricTileDataSources}, the main value will be displayed
+   * using the value coming from that source results.
+   */
+  dataSourceValue: UiSdlMetricTileDataSources
+
+  /**
+   * Aggregation function to be used for rolling up results of all individual sources into 1 timeseries.
+   */
+  aggregation: string = ''
+}

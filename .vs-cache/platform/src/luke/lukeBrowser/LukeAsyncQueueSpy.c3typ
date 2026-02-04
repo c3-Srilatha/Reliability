@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A subtype of {@link LukeAsyncQueueNode} that resolves with a jasmine.Spy
+ */
+@beta
+type LukeAsyncQueueSpy mixes LukeAsyncQueueNode {
+
+  /**
+   * Attaches an assertion async node to the current node.
+   * When the value from the current node is resolved, it will be used to make an assertion against the expected value.
+   * @param comparator
+   *          The comparator
+   * @param expected
+   *          The expected params with which the spy function is called. For example, if the spy function is called
+   *          like spy(arg1, arg2, arg3), the expected would be [arg1, arg2, arg3]
+   *
+   * @param customMessage
+   *          Custom message that gets appended to the standard error message
+   * @return An async node that resolves or reject based on the assertion result
+   */
+  assert: inline member function(comparator: !string enum LukeAssertionMatcher,
+                                 expected: [any],
+                                 customMessage: string): LukeAsyncQueueNode js
+
+  /**
+   * Attaches a negative assertion async node to the current node.
+   * When the value from the current node is resolved, it will be used to make an assertion against the expected value and negates the result.
+   * @param comparator
+   *          The comparator
+   * @param expected
+   *          The expected params with which the spy function is called. For example, if the spy function is called
+   *          like spy(arg1, arg2, arg3), the expected would be [arg1, arg2, arg3]
+   *
+   * @param customMessage
+   *          Custom message that gets appended to the standard error message
+   * @return An async node that resolves or reject based on the assertion result
+   */
+  assertNot: inline member function(comparator: !string enum LukeAssertionMatcher,
+                                    expected: [any],
+                                    customMessage: string): LukeAsyncQueueNode js
+
+  /**
+   * Makes an assertion after running an expression through the negate argument.
+   * @param comparator
+   *          The comparator
+   * @param expected
+   *          The expected params with which the spy function is called. For example, if the spy function is called
+   *          like spy(arg1, arg2, arg3), the expected would be [arg1, arg2, arg3]
+   * @param customMessage
+   *          Custom message that gets appended to the standard error message
+   * @param negate
+   *          If the results of evaluation should be negated before making the assertion
+   * @return An async node that resolves or rejects based on the assertion result
+   */
+  makeAssertion: private inline member function(comparator: !string enum LukeAssertionMatcher,
+                                                expected: [any],
+                                                customMessage: string,
+                                                negate: boolean): LukeAsyncQueueNode js
+}

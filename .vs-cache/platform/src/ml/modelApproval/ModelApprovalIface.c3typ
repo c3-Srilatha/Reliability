@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface for Model Approval
+ */
+@beta
+abstract type ModelApprovalIface mixes Microservice.Iface, Singleton {
+
+  /**
+   * Updates approval status for a given input.
+   * @param status
+   *    {@link ModelApproval.Update.Status}, inputs required for updating approval status.
+   * @param artifacts
+   *    Optional artifacts required for approval.
+   *    key - category of artifact, value - list of {@link ByteStream}s for artifact files.
+   *
+   * @return an instance of {@link ModelApproval.Status} representing the updated approval status.
+   */
+  update: abstract function(status: !ModelApproval.Update.Status,
+                            artifacts: map<string, [ByteStream]>): !ModelApproval.Status
+
+  /**
+   * List the {@link ModelApproval.Status}s in the Model Registry Approval.
+   * @param modelUri
+   *    {@link ModelRegistry.Entry#uri}, Model identifier to list approvals for.
+   * @param version
+   *    {@link ModelRegistry.Entry#ver}, Model version to list approvals for.
+   * @param spec
+   *    {@link FetchSpec}, customizations for limit and pagination of output.
+   *
+   * @return {@link FetchResult} holding {@link ModelApproval.Status} objects for a given uri and version across all scopes.
+   */
+  list: abstract function(modelUri: !string, modelVersion: !int, spec: FetchSpec): FetchResult<ModelApproval.Status>
+
+  /**
+   * Get the approval status and associated metadata for a given model identifier, version and scope.
+   * @param modelUri
+   *    {@link ModelRegistry.Entry#uri}, Model identifier to read the approval status for.
+   * @param version
+   *    {@link ModelRegistry.Entry#ver}, Model version to read the approval status for.
+   * @param scope
+   *     scope to read the approval status for.
+   *
+   * @return an instance of {@link ModelApproval.Status} corresponding to the modelUri, version and scope.
+   */
+  status: abstract function(modelUri: !string, modelVersion: !int, scope: !string): !ModelApproval.Status
+
+  /**
+   * Read the supporting artifacts of a {@link ModelApproval.Status}.
+   * @param status
+   *    {@link ModelApproval.Status} to read artifacts for.
+   *
+   * @return a map. key - category of artifact, value - list of {@link ByteStream}s for artifact files.
+   */
+  artifacts: abstract function(status: !ModelApproval.Status): map<string, [ByteStream]>
+}

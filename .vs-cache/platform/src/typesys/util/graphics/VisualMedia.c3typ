@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 base type holding all types of VisualMedia for eg.Images/ Videos. Also provides simple way of authoring media content.
+ */
+abstract type VisualMedia {
+
+  /**
+   * Width in pixels of this media if known
+   *
+   * @see readMetadata
+   * @see safeWidth
+   */
+  width: int32
+
+  /**
+   * Height in pixels of this media if known
+   *
+   * @see readMetadata
+   * @see safeWidth
+   */
+  height: int32
+
+  /**
+   * @return width in pixels of this visual media
+   *
+   * @see readMetadata
+   */
+  safeWidth: inline member function(): !int
+
+  /**
+   * @return height in pixels of this visual media
+   *
+   * @see readMetadata
+   */
+  safeHeight: inline member function(): !int
+
+  /**
+   * Reads metadata such as #width and #height. Note if media metadata has not been read it is more efficient to
+   * call #readMetadata first before calling #safeWidth and #safeHeight
+   */
+  readMediaMetadata: private member function(): !mixing VisualMedia
+
+  /**
+   * @return instance of the Visual Media from provided content and optionally reads metadata
+   */
+  fromContent: abstract function(content: !Content, readMetadata: boolean): !mixing VisualMedia
+
+  /**
+   * Constructs instance of the Visual media from provided binary content and optionally reads metadata. It is advisable
+   * to specify content type but if skipped then best effort is made to guess the visual media type.
+   */
+  fromRawBinary: function(data: !binary, contentType: string, width: int, height: int): !mixing VisualMedia
+
+  /**
+   * Constructs instance of the visual media from provided base64 encoded content and optionally reads visual media metadata. It is
+   * advisable to specify content type but if skipped then best effort is made to guess the content type.
+   */
+  fromBase64String: function(data: !string, contentType: string, width: int, height: int): !mixing VisualMedia
+
+  /**
+   * @return binary data for this Visual Media
+   */
+  rawBinary: abstract member function(): binary
+
+  /**
+   * Updates visual media with provided binary data
+   */
+  withRawBinary: abstract member function(data: !binary,
+                                          contentType: string,
+                                          width: int,
+                                          height: int): !mixing VisualMedia
+
+  /**
+   * @return base64 string encoded data for this Image
+   */
+  base64String: member function(): string
+
+  /**
+   * Updates visual media with provided base64 encoded data
+   */
+  withBase64String: member function(data: !string, contentType: string, width: int, height: int): !mixing VisualMedia
+
+  /**
+   * Saves content of the this Media as File.
+   */
+  saveToFile: member function(encodedPathOrUrl: !string): !File
+}

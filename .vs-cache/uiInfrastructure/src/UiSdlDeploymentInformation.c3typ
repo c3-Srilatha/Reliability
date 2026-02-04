@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Information about a deployed app used by {@link UiSdlDeploymentDoctor}.
+ */
+type UiSdlDeploymentInformation {
+  /**
+   * URL to access the deployed app.
+   */
+  envUrl: string
+
+  /**
+   * Platform version of the deployed app.
+   */
+  serverVersion: string
+
+  /**
+   * Root package name of the deployed app.
+   */
+  rootPkgName: string
+
+  /**
+   * Root package version of the deployed app.
+   */
+  rootPkgVersion: string
+
+  /**
+   * Deployed version of all dependency packages.
+   */
+  dependencyPkgsVersion: map<string, any>
+
+  /**
+   * Best versions for each package. This is most likely the artifact deployed in the application. It only wouldn't
+   * the version deployed in the application, if something went wrong in its deployment to ArtifactHub.
+   */
+  artifactVersions: map<string, SemanticVersion>
+
+  /**
+   * Best versions for each package, but the semantic versions are strings.
+   */
+  artifactVersionsAsStrings: map<string, string>
+}

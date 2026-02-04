@@ -1,0 +1,74 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ */
+
+/**
+ * Test type for Observability Client with parent-child span relationships
+ * Test invokes `clientParent()` which creates the following span hierarchy:
+ *   clientParent ----- clientChild1 ------ clientGrandChild
+ *        |
+ *        |
+ *        ------------- clientChild2 ------- clientGrandChild
+ */
+type ObservabilityClientTestType {
+
+  /**
+   * Tracer Type used for tracing
+   */
+  tracer: !Type<<Observability.Tracer>>
+
+  /**
+   * Entry point for test.
+   */
+  parent: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parent}.
+   */
+  child1: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parent}.
+   */
+  child2: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #child1} and {@link #child2}.
+   */
+  grandChild: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Entry point for test with error.
+   */
+  parentWithError: member function(spanSpec: Observability.SpanSpec): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parentWithError}. This action also throws and error.
+   */
+  childWithError: private member function(refActions: !ObservabilityTestRefActions, spanSpec: Observability.SpanSpec): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Entry point for test starting from client, calling server.
+   */
+  parentCallingServer: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parentCallingServer} on the server.
+   */
+  childOnServer: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-testdillobs-server
+
+  /**
+   * Action invoked by {@link #childOnServer} on the server.
+   */
+  grandChildOnServer: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-testdillobs-server
+}

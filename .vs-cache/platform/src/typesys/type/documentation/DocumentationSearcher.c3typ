@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is responsible for executing full-text search queries against the documentation.
+ */
+abstract type DocumentationSearcher mixes Value {
+
+  /**
+   * Search documentation of types.
+   *
+   * @param q
+   *           the search query
+   * @return search results
+   */
+  searchTypes: function(q: !string, spec: DocumentationSearchSpec): DocumentationSearchResult
+
+  /**
+   * Search documentation of topics.
+   *
+   * @param q
+   *           the search query
+   * @return search results
+   */
+  searchTopics: function(q: !string, spec: DocumentationSearchSpec): DocumentationSearchResult
+
+  /**
+   * Search all documentation.
+   *
+   * @param q
+   *           the search query
+   * @return search results
+   */
+  search: function(q: !string, spec: DocumentationSearchSpec): DocumentationSearchResult
+
+  /**
+   * Return true if there is an installed index for the current application's root package.
+   *
+   * @see #index
+   */
+  hasOwnIndex: function(): boolean
+
+  /**
+   * Get the full text index to be used for the current application's root package. If there is an installed index,
+   * that is returned. Otherwise, the first package it depends on that has an installed index is used. If there are no
+   * prebuilt indexes at all, null is returned (searching is not possible).
+   */
+  index: cached function(): DocumentationSearcher.Index
+
+  /**
+   * Return a warning message if appropriate. If #hasOwnIndex would return false, a warning message will be produced
+   * that indicates either the index is for a different root package or does not exist at all.
+   */
+  indexWarning: function(): string
+
+  /**
+   * (Re)build the search index for the current application's root package. This will scan all types and topics in the
+   * package (including its dependencies) and produce search index and install it.
+   *
+   * This process takes several minutes so should be done in a batch job and only when necessary.
+   */
+  buildIndex: function()
+
+  /**
+   * Produce a new search index for the specified package. This creates an artifact that can be used by
+   * #installIndex.
+   */
+  buildIndex: function(pkg: !Pkg): !DocumentationSearcher.Index
+
+  /**
+   * Install a prebuilt or freshly-built index for use with searches against the specified package. This will write
+   * the index artifact into the package's file system as a single file.
+   */
+  installIndex: function(pkg: !Pkg, index: !DocumentationSearcher.Index): !string serialized FileUrl
+}

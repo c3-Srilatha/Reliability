@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Library represents one or more language-specific modules necessary for executing in a given
+ * {@link ImplLanguage.Runtime}.
+ */
+type ImplLanguage.Library mixes ImplLanguage.LibraryBase, StringSerializable {
+
+  /**
+   * Parses a space-separated string in the "<packageManager> <name>" or
+   * "<packageManager> <name> <installationUrl>" format and constructs an instance of {@link ImplLanguage#Library}.
+   *
+   * For example: "conda pandas=4.2.0" will create an instance of {@link ImplLanguage#Library} with {@link #name}
+   *              "pandas=4.2.0" and {@link #packageManager} "conda"
+   */
+  fromString: ~ java | js | py
+
+  /**
+   * Constructs a space-separated string representing this library.
+   * The format is "<packageManager> <name>" or "<packageManager> <name> <installationUrl>" (if the library has a url).
+   * `name` optionally includes the version.
+   *
+   * e.g. Calling `toString` on an instance of {@link ImplLanguage#Library} with {@link #name} "pandas=4.2.0"
+   *      and {@link #packageManager} "conda" will return "conda pandas=4.2.0".
+   * e.g. Calling `toString` on an instance of {@link ImplLanguage#Library} with {@link #name} "my-package",
+   *     {@link #packageManager} "pip", and {@link #installationUrl}
+   *     "https://github.com/my_org/my_repo/releases/download/my_package-0.1.tar.gz" will return
+   *     "pip my-package https://github.com/my_org/my_repo/releases/download/my_package-0.1.tar.gz"
+   */
+  toString: ~ java | js | py
+
+  fromJson:    ~ java | js | py
+  toJson:      ~ java | js | py
+  toTypedJson: ~ java | js | py
+}

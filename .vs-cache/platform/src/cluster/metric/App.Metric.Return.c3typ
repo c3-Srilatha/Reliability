@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+private enum type App.Metric.Return {
+
+  /**
+   * Gets the metric value for the series represented by {@link App.Metric}. Evaluates at {@link App.Metric.EvaluatableSpec#end}.
+   * If not specified, evaluates as current server time.
+   * Each {@link Timeseries.Raw} returned in {@link EvalMetricsResult} will have a single data point
+   * at {@link App.Metric.EvaluatableSpec#end}.
+   */
+  VALUE
+
+  /**
+   * Gets the range of values for the series represented by {@link App.Metric} over a period of time.
+   * Each {@link Timeseries.Raw} returned in {@link EvalMetricsResult} will have timed data points from
+   * {@link App.Metric.EvaluatableSpec#start} to {@link App.Metric.EvaluatableSpec#end} spaced out by
+   * {@link App.Metric.EvaluatableSpec#interval} interval.
+   */
+  VALUE_RANGE
+
+  /**
+   * Gets tags and their values for the series represented by {@link App.Metric} over time.
+   * Each {@link Timeseries.Raw} returned in {@link EvalMetricsResult} will be empty but have
+   * {@link TimeseriesSourceInfo#tags} populated with the tag values.
+   */
+  TAGS_VALUE_RANGE
+
+  /**
+   * Get all values of a tag for all series represented by {@link App.Meter} over time.
+   * When specified, the variable defined in {@link App.Metric#sourceTemplate} is used as the tag to evaluate. In this
+   * scenario, {@link App.Metric#sourceTemplate} must contain 1, and only 1, variable.
+   * Each {@link Timeseries.Raw} returned in {@link EvalMetricsResult} will be empty but
+   * have a single entry in {@link TimeseriesSourceInfo#tags} with the tag value {@link Timeseries#source}.
+   */
+  TAG_VALUE_RANGE
+}

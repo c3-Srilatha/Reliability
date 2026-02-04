@@ -1,0 +1,165 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for collections that have a 0 based index for elements but no keys.
+ */
+abstract private type CollectionWithIndex<E> mixes Value {
+
+  /**
+   * @return element of the collection with minimum value based on provided value supplier.
+   */
+  minBy: abstract member function(value: !lambda(e: E, index: int): any): E java | js
+
+  /**
+   * @return element of the collection with maximum value based on provided value supplier.
+   */
+  maxBy: abstract member function<T>(value: !lambda(e: E, index: int): any): E java | js
+
+  /**
+   * @return new collection with duplicate elements removed based on provided key supplier.
+   */
+  uniqueBy: abstract member function(key: !lambda(e: E, index: int): any): mixing Collection<E> java | js
+
+  /**
+   * Rejects elements from this collection based on evaluation result of the provided filter expression.
+   */
+  reject: abstract member function(predicate: !lambda(e: E, index: int): boolean): mixing Collection<E> java | js
+
+  /**
+   * Uses a binary search to determine the index at which the value should be inserted into this sorted collection in
+   * order to maintain collections sorted order.
+   */
+  sortedIndex: member function(element: !E, value: !lambda(e: E, index: int): any): !int java | js
+
+  /**
+   * @return copy of this collection with new element at provided index.
+   */
+  replace: member function(index: !int, e: !?E): mixing Collection<E>
+
+  /**
+   * Execute the specified lambda against each value of the collection. The first argument is the value and the second
+   * is the collection index.
+   */
+  each: member function(action: !lambda(e: E, index: int))
+
+  /**
+   * @return new collection for all elements of this collection transformed by applying provided lambda function.
+   */
+  mapToSame: abstract member function(mapper: !lambda(e: E, index: int): E): mixing Collection<E>
+
+  /**
+   * @return new collection by evaluating provided expression over this collection elements; element type of the new
+   *         collection is determined by return type of the expression
+   */
+  map: abstract member function<T>(expr: !string serialized Expr): mixing Collection<T> java | js
+
+  /**
+   * @return new collection of any with all elements of this collection transformed by applying provided lambda function.
+   */
+  map: abstract member function<T>(mapper: !lambda(e: E, indx: !int): T): mixing Collection<T> java | js
+
+  /**
+   * @return new collection of string with all elements of this collection transformed by applying provided lambda function.
+   */
+  mapToStr: abstract member function(mapper: !lambda(e: E, indx: !int): string): mixing Collection<string>
+
+  /**
+   * @return new collection of provided type with all elements of this collection transformed by applying provided lambda function.
+   * It is the responsibility of the mapper to convert values to the elementType if needed. The method mapTo will not do any
+   * such conversion.
+   */
+  mapTo: abstract member function<T>(elementType: !ValueType,
+                                     mapper: !lambda(e: E, indx: !int): T): mixing Collection<T>
+
+  /**
+   * @return returns a collection of same type consisting of the results of replacing each element of this collection
+   *         with mapped array elements.
+   */
+  flatMapToSame: abstract member function(mapper: !lambda(e: E, index: int): mixing Collection<E>)
+                                   : mixing Collection<E> java | js
+
+  /**
+   * @return returns a collection of any consisting of the results of replacing each element of this collection with mapped array elements.
+   */
+  flatMap: abstract member function<T>(mapper: !lambda(e: E, indx: !int): mixing Collection<T>): mixing Collection<T> java | js
+
+  /**
+   * @return returns a collection of provided element type consisting of the results of replacing each element of this collection with mapped array elements.
+   */
+  flatMapTo: abstract member function<T>(elementType: !ValueType,
+                                         mapper: !lambda(e: E, indx: !int): mixing Collection<T>)
+                               : mixing Collection<T> java | js
+
+  /**
+   * @return single value that is a result of aggregation of all elements by provided lambda and initial value.
+   */
+  fold: member function<T>(initial: !?T, folder: !lambda(e: E, index: int, accumulator: T): T): T java | js
+
+  /**
+   * Filters elements from this collection based on evaluation result of the provided filter predicate.
+   */
+  filter: abstract member function(predicate: !lambda(e: E, index: int): boolean): mixing Collection<E> java | js
+
+  /**
+   * Maps this collection to another by re-ordering elements based on natural sorting order of a key computed using
+   * provided lambda.
+   */
+  sortedBy: member function(key: !lambda(e: E, index: int): any): mixing Collection<E> java | js
+
+  /**
+   * Maps this collection to another by re-ordering elements based on natural sorting order of a key computed using
+   * provided lambda.
+   */
+  sortedBy: member function(descending: !boolean, key: !lambda(e: E, index: int): any): mixing Collection<E> java | js
+
+  /**
+   * Counts values of the output of the provided key function
+   */
+  countBy: abstract member function<T>(keyType: !ValueType, key: !lambda(e: E, index: int): T): map<T, int> java | js
+
+  /**
+   * Checks if predicate returns true for all elements of collection
+   */
+  every: abstract member function<T>(predicate: !lambda(e: E, index: int): boolean): boolean java | js
+
+  /**
+   * Returns everything but the last N entries of the collection
+   */
+  initial: abstract member function(exceptLastN: !int = 1): !mixing CollectionWithIndex<E>
+
+  /**
+   * @return `true` if every element in this collection satisfies provided predicate.
+   */
+  containsAll: abstract member function(predicate: !lambda(e: E, index: int): boolean): boolean java | js
+
+  /**
+   * @return true if this collection contains any elements satisfying provided condition.
+   */
+  containsAny: abstract member function(predicate: !lambda(e: E, index: int): boolean): boolean java | js
+
+  /**
+   * Finds some element in this collection satisfying provided condition.
+   */
+  findAny: abstract member function(predicate: !lambda(e: E, index: int): boolean): E java | js
+
+  /**
+   * Converts this collection into collection of pairs of neighboring elements.
+   */
+  pairs: member function(): mixing Collection<Pair<E, E>>
+
+  /**
+   * Search for an element within this array. If the element is not found then closest lowest element is returned
+   * @param search
+   *            Element to search for
+   * @param spec
+   *            Determines properties for binary search
+   * @return result of the binary search determining the index & whether the actual element was found
+   */
+  binarySearch: member function(search: !E, spec: BinarySearchSpec): !BinarySearchResult<E>
+}

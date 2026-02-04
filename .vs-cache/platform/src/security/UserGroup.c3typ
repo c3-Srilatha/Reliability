@@ -1,0 +1,159 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to map {@link User}s to {@link Role}s.
+ * UserGroups can have at most one {@link Role}.
+ * It follows an env/app fetch hierarchy: env/app -> env/c3 -> c3/c3, i.e. when fetching UserGroup objects in a given
+ * env/app, objects from env/app + env/c3 + c3/c3 will be returned.
+ */
+// TODO: PLAT-87388 Remove user-admin from type level and put on methods
+@action(group+='user-admin')
+@db(domain='system')
+entity type UserGroup mixes AccessControlEntity, StringSerializable, Cached {
+
+  /**
+   * Users belonging to this UserGroup
+   */
+  users: [User](groups)
+
+  /**
+   * Human readable description of the UserGroup
+   */
+  description: string
+
+  /**
+   * List of string serialized idp groups that correspond to this UserGroup.
+   * Formatted as idpConfig#idpGroup
+   */
+  idpGroups: [string]
+
+  /**
+   * @return true if this group is inactive.
+   * If a usergroup is inactive, users cannot be added or removed from this group.
+   */
+  inactive: boolean
+
+  /**
+   * @return role assigned for this group
+   */
+  @action(inline=true)
+  role: inline member function(failIfNoRole: boolean): Role
+
+  /**
+   * returns true if any role in group has a security level
+   */
+  @action(inline=true)
+  hasSecurityLevel: inline member function(): boolean
+
+  /**
+   * returns the security level of the group
+   */
+  @action(inline=true)
+  securityLevel: inline member function(): int
+
+  /**
+   * Gets all the {@link Role roles} for this userGroup
+   *
+   * @return array of Role.
+   */
+  @action(inline=true)
+  allRoles: inline member function(): [Role]
+
+  /**
+   * Gets all the DataPermissions for this user.
+   *
+   * @return array of DataPermission.
+   */
+  @action(inline=true)
+  allDataPermissions: inline member function(): [DataPermission]
+
+  /**
+   * Gets all the Permissions for this userGroup.
+   *
+   * @return array of Permission.
+   */
+  @action(inline=true)
+  allPermissions: inline member function(): [Permission]
+
+  /**
+   * Adds a entry to the UserGroup's idpGroups
+   * @param idp
+   *            The string serialized IdpConfig
+   * @param idpGroup
+   *            The name of the group that the idp uses
+   */
+  addIdpGroupForIdp: member function(idp: !string serialized IdpConfig, idpGroup: !string)
+
+  /**
+   * Removes the entry in the UserGroup's idpGroups for the given appUrl's idp.
+   * @param idp
+   *            The string serialized IdpConfig of which the Idp is assigned to
+   * @param idpGroup
+   *           The name of the group that the idp uses. If not set, all groups for the given idp will be removed.
+   */
+  removeIdpGroupForIdp: member function(idp: !string serialized IdpConfig, idpGroup: string)
+
+  /**
+   * @param idp
+   *          The string serialized IdpConfig to get idp groups for
+   * @return the idp groups associated with the given IdpConfig
+   */
+  @action(inline=true)
+  idpGroupIdsForIdp: private inline member function(idp: !string serialized IdpConfig): [string]
+
+  /**
+   * Returns the UserGroup that corresponds with the given idp and idpGroup
+   */
+  @action(inline=true)
+  forIdpAssignedGroup: private inline function(idp: !string serialized IdpConfig,
+                                               idpGroup: !string,
+                                               failIfMissing: boolean): UserGroup
+
+  @action(inline=true)
+  forIdpAssignedGroupBatch: private inline function(idpAssignedGroups: ?map<string, [string]>): [UserGroup]
+
+  /**
+   * Checks if the current userGroup is allowed on the provided app
+   * @param appId
+   *         The app id to check if the userGroup is allowed on
+   * @return true if the userGroup is allowed on the app
+   */
+  allowedOnApp: private member function(appId: !string): boolean
+
+  /**
+   * Deactivates the given UserGroup. This prevents users from being added or removed from this group.
+   * If the group is already deactivated, this is a no-op.
+   */
+  deactivate: member function()
+
+  /**
+   * Activates the given UserGroup. This allows users from being added or removed from this group.
+   * If the group is already activated, this is a no-op.
+   */
+  activate: member function()
+
+  /**
+   * Upserts all seeded groups for the current app
+   */
+  @action(inline=true)
+  upsertSeededGroups: inline function()
+
+  /**
+   * Upserts all platform seeded groups for the current app
+   */
+  @action(inline=true)
+  upsertPlatformSeededGroups: inline function()
+
+  @action(inline=true)
+  forId: inline ~
+
+  beforeCreate: ~
+  beforeUpdate: ~
+  beforeRemove: ~
+}

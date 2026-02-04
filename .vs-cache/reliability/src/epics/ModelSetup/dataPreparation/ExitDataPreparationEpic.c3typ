@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to handle user navigating away from asset's data preparation.
+ * The epic handles following things:
+ * 1. Force redirect to asset's data prep page: On 'Reliability.AssetDataPreparationPageTitle.ACTIVE_TAB_SET', the epic
+ *      - Starts listening to any GLOBAL_REDIRECT's happening and force redirects user back to asset's data prep page via {@link NavigationHelper#handleForceBackRedirect}.
+ *      - The epic also stores the page user originally intended to navigate to in application state and opens a warning modal.
+ *      - Stops helper from listening, when GLOBAL_REDIRECT is fired with payload having 'exitAnyway' parameter set to true.
+ *
+ * 2. Exit anyway from asset's data prep page: On 'GLOBAL_REDIRECT' with 'exitAnyway' set to true, the epic
+ *    - Fires 'GLOBAL_REDIRECT' to page user originally intended to navigate to and clear relevant component state.
+ *    - Fires 'Reliability.DataPreparationApplicationState.EXIT_AND_RESET' which is handled in {@link DataPreparationLoadDefaultSettingsEpic}
+ *
+ */
+@typeScript
+type ExitDataPreparationEpic mixes UiSdlEpic {
+
+    epic: ~ ts-client
+}

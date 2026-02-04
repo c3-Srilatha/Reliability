@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A reference to an external image to be rendered in-place.
+ *
+ * Note that C3 AI Suite Markdown supports image sizes using a `@` suffix to the #src (destination):
+ * ```md
+ * ![title](path/file.png@200x150)
+ * ```
+ * If a size suffix is used, the at sign and `x` are required, but either width or height may be omitted; both `@500x`
+ * (width only) and `@x500` (height only) are valid. _There must be no whitespace in the src._
+ *
+ * For example, this is an SVG image with no specific size (and a large view box):
+ * ![tiny](doc/img/logo.svg@8x)
+ * ![small](doc/img/logo.svg@x16)
+ * ![large](doc/img/logo.svg@32x32)
+ *
+ * ```md
+ * ![tiny](doc/img/logo.svg@8x)
+ * ![small](doc/img/logo.svg@x16)
+ * ![large](doc/img/logo.svg@32x32)
+ * ```
+ */
+type DocumentationImage mixes DocumentationSpan {
+
+  /**
+   * The path to the image file.
+   */
+  src: !string
+
+  /**
+   * The title text for the image (if any).
+   */
+  titleText: string
+
+  /**
+   * Image width in "pixels" (if any).
+   */
+  width: int32
+
+  /**
+   * Image height in "pixels" (if any).
+   */
+  height: int32
+}

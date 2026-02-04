@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+type TimedGraph<V, E> mixes Value {
+
+  /**
+   * API to return instance of graph at timestamp 'timestamp'
+   * @param this_
+   *          Current instance of Timed Graph
+   * @param ts
+   *          Graph representation at time instant ts
+   * @return The graph at instant timestamp
+   */
+  at: function(this_: !TimedGraph<V, E>, timestamp: !datetime): Graph<V, E> java | js | py
+
+  /**
+   * API to return Graph states at various instants in time
+   * @param this_
+   *            Instance of TimedGraph
+   * @param timestamps
+   *            Various instants of time
+   * @return Graph states at various instants in time
+   */
+  atBatch: function(this_: !TimedGraph<V, E>, timestamps: !?[datetime]): map<datetime, Graph<V, E>>
+
+  /**
+   * Create an instance of in memory timed graph
+   * @param source
+   *              The source graph from which the timed graph should be created
+   * @param vertexTraversabilityChanges
+   *              The traversability changes for the source graph and their toggle times
+   * @return An instance of in memory timed graph
+   */
+  makeGraph: function(source: Graph<V, E>,
+                      vertexTraversabilityChanges: map<string, [datetime]>): InMemoryTimedGraph<V, E>
+}

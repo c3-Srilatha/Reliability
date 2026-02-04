@@ -1,0 +1,189 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * Application state for a page using a Gen AI feed.
+ */
+@typeScript
+type GenAiUiFeedApplicationState mixes GenAiUiFeedResults, GenAiUiFeedResources, UiSdlApplicationState {
+
+  id: ~
+
+  /**
+   * The id of the {@link Genai.Query.Result.GetForUiResult} that is currently focused in the feed.
+   * When this value changes, the feed will scroll to the focused result.
+   */
+  focusedGenAiResult: string
+
+  /**
+   * Whether the filter bar is expanded or collapsed.
+   */
+  filterBarExpanded: boolean
+
+  /**
+   * The progress bar for the feed.
+   */
+  progressBar: GenAiUiProgressBarBase
+
+  /**
+   * Map of target tool for a query to its corresponding session.
+   */
+  sessionsByTool: map<string, GenaiCore.Session.Kv> = {}
+
+  /**
+   * -------------- UTIL METHODS --------------
+   */
+
+  /**
+   * Action to clear the feed
+   * @param id
+   *           The id of the {@link GenAiUiFeedApplicationState} for the action.
+   */
+  @uiSdlActionCreator(actionType='CLEAR_FEED')
+  clearFeedAction: private function(id: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_FEED` and clears the feed
+   */
+  @uiSdlReducer(actionType='CLEAR_FEED')
+  clearFeedReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to add a {@link Genai.Query.Result.GetForUiResult} to the feed. By default, the result is added to the end of the feed.
+   * If a position is specified, the result is added at that position.
+   */
+  @uiSdlActionCreator(actionType='ADD_RESULT')
+  addGenAiResultAction: private function(id: !string,
+                                         genAiResult: !Genai.Query.Result.GetForUiResult,
+                                         position: int): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `ADD_RESULT` and adds the new {@link Genai.Query.Result.GetForUiResult} to the feed
+   */
+  @uiSdlReducer(actionType='ADD_RESULT')
+  addGenAiResultReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to update a specific {@link Genai.Query.Result.GetForUiResult} in the feed. This action assumes the
+   * result is already in the feed.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_RESULT')
+  updateGenAiResultAction: private function(id: !string,
+                                            genAiResult: !Genai.Query.Result.GetForUiResult): !UiSdlReduxAction ts-client
+
+  /**
+  * Listens for actions of type `UPDATE_RESULT` and updates the feed with the new {@link Genai.Query.Result.GetForUiResult}
+  */
+  @uiSdlReducer(actionType='UPDATE_RESULT')
+  updateGenAiResultReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to remove a {@link Genai.Query.Result.GetForUiResult} from the feed
+   */
+  @uiSdlActionCreator(actionType='REMOVE_RESULT')
+  removeGenAiResultAction: private function(id: !string, resultId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `REMOVE_RESULT` and removes the {@link Genai.Query.Result.GetForUiResult} from the feed
+   */
+  @uiSdlReducer(actionType='REMOVE_RESULT')
+  removeGenAiResultReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to set the focused {@link Genai.Query.Result.GetForUiResult} in the feed
+   */
+  @uiSdlActionCreator(actionType='SET_FOCUSED_RESULT')
+  setFocusedGenAiResultAction: private function(id: !string, resultId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FOCUSED_RESULT` and sets the focused {@link Genai.Query.Result.GetForUiResult} in the feed
+   */
+  @uiSdlReducer(actionType='SET_FOCUSED_RESULT')
+  setFocusedGenAiResultReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Kick off an `ACCEPT_PLAN` action to start executing the plan.
+   */
+  @uiSdlActionCreator(actionType='ACCEPT_PLAN')
+  acceptPlanAction: function(id: !string, resultId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Kick off a `POLL_RESULT` action to poll the query result.
+   */
+  @uiSdlActionCreator(actionType='POLL_RESULT')
+  pollResultAction: function(id: !string, resultId: !string, forcePoll: boolean, stream: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to set the toggle the filter bar shown in the feed
+   */
+  @uiSdlActionCreator(actionType='TOGGLE_FILTER_BAR')
+  filterBarToggleAction: private function(id: !string, resultId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `FILTER_BAR_TOGGLE` and sets the filterBarExpanded value in the feed
+   */
+  @uiSdlReducer(actionType='TOGGLE_FILTER_BAR')
+  filterBarToggleReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Kicks off a `SEARCH_QUERY_SUBMIT` action with the {@link Genai.Query} that the user clicked.
+   */
+  @uiSdlActionCreator(actionType='SEARCH_QUERY_SUBMIT')
+  submitSearchQueryAction: function(id: !string, followUpQuery: !Genai.Query): UiSdlReduxAction ts-client
+
+  /**
+   * Kicks off a, `UPDATE_PROGRESS_BAR` action to update the progress bar.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_PROGRESS_BAR')
+  updateProgressBarAction: function(id: !string, progressBar: GenAiUiProgressBarBase): UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `UPDATE_PROGRESS_BAR` and updates the progress bar in the feed
+   */
+  @uiSdlReducer(actionType='UPDATE_PROGRESS_BAR')
+  updateProgressBarReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+   /**
+   * Kicks off a, `REMOVE_EDITED_QUERY` to keep the consistency on Feed page.
+   */
+  @uiSdlActionCreator(actionType='REMOVE_EDITED_QUERY')
+  removeEditedQueryAction: function(id: !string, queryId: !string): UiSdlReduxAction ts-client
+
+  /**
+   * Creates an `CLEAR_SESSION` action to clear the session for all tools.
+   */
+  @uiSdlActionCreator(actionType='CLEAR_SESSION')
+  clearSessionAction: function(id: !string): UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_SESSION` to clear the session for all tools.
+   */
+  @uiSdlReducer(actionType='CLEAR_SESSION')
+  clearSessionReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Creates an `UPDATE_SESSION` action to update the session id for the provided target tool.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_SESSION')
+  updateSessionAction: function(id: !string, queryResult: Genai.Query.Result): UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `UPDATE_SESSION` to update the session id for the provided target tool.
+   */
+  @uiSdlReducer(actionType='UPDATE_SESSION')
+  updateSessionReducer: private inline function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * Creates an `LOAD_RESULT_RESOURCES` action to load the resources for a set of results' resources.
+   */
+  @uiSdlActionCreator(actionType='LOAD_RESULT_RESOURCES')
+  loadResultResourcesAction: private function(id: !string, resultIds: ![string]): !UiSdlReduxAction ts-client
+}

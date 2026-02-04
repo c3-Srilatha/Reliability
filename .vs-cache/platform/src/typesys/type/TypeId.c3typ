@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Mapping of types to numeric ids for more efficient storage of references to types in other objs.  The value of the
+ * id field will be the typeId for the type with the specified module/type names.
+ */
+@db(systemType=true, compactType=true, unique=['typeName'])
+entity type TypeId schema name 'METADATA_TYPEID' {
+
+  /**
+   * Type name
+   */
+  typeName: string schema name 'TYPE'
+
+  /**
+   * TypeId mappings are never updated so no need for version field.
+   */
+  // TODO:
+  // version: ~ not persistable
+  // meta: ~ not persistable
+
+  /**
+   * Gets the id from a type name.
+   *
+   * @param typeName
+   *           Name of type to get type id for.
+   *
+   * @return requested type id.
+   */
+  idFromTypeName: inline function(typeName: !string): !int
+
+  /**
+   * Gets the name of a type from its id.
+   *
+   * @param id
+   *           Id of the type to get the name for.
+   *
+   * @return the requested type name.
+   */
+  typeNameFromId: inline function(id: !int): !string
+}

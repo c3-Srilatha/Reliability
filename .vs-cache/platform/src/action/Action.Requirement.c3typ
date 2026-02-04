@@ -1,0 +1,162 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An instance of {@link Action.Requirement} represents the minimum requirements set by a user to execute an {@link Action action}. The most important elements of an instance of {@link Action.Requirement}  are
+ * the {@link Action.Requirement#runtime runtime}, the {@link Action.Engine#languageVersion language version}, the {@link Action.Requirement#location location}, and the {@link Action.Requirement#executor executor}.
+ */
+@cache(compile=true)
+inline type Action.Requirement mixes Named {
+
+  /**
+   * Name for this instance of {@link Action.Requirement}. The name of an Action.Requirement consists of the following parts:
+   * {@link Action.Requirement#runtime runtime}, {@link Action.Engine#languageVersion language version}, {@link Action.Requirement#location location}, and {@link Action.Requirement#executor executor}.
+   * All parts except for {@link Action.Requirement#runtime runtime} are optional.
+   * A test action requirement will end with suffix "-test" and {@link Action.Requirement#engine engine} of a test action requirement is always a test action engine, which can run tests.
+   * This method will return null if there is no valid {@link Action.Requirement#engine engine} for this instance of {@link Action.Requirement}.
+   * For example, the Action.Requirement "py-ml-server" has:
+   *  - runtime: py-ml
+   *  - location: SERVER
+   *  - executor: None
+   */
+  name: !~
+
+  /**
+   * @return The {@link ImplLanguage language} of the {@link ImplLanguage.Runtime runtime} for this
+   *         {@link Action.Requirement}.
+   */
+  language: cached property(): !string serialized ImplLanguage
+
+  /**
+   * @return The version of the {@link ImplLanguage language} associated with this {@link Action.Requirement}.
+   * For something like python 3.10, this would be "3.10".
+   */
+  languageVersion: cached property(): string
+
+  /**
+   * @return The logical {@link ImplLanguage.RuntimeLocation location} of this instance of {@link Action.Requirement}.
+   */
+  location: cached property(): string enum ImplLanguage.RuntimeLocation
+
+  /**
+   * @return The {@link ImplLanguage.Runtime runtime} of this instance of {@link Action.Requirement}.
+   */
+  runtime: cached property(): !string serialized ImplLanguage.Runtime
+
+  /**
+   * Private helper to extract {@link ImplLanguage.Runtime} name from given {@link Action.Requirement} name.
+   * No validation is done for the provided Action.Requirement name. It is preferable to use
+   * Action.Requirement.forName(actionRequirementName).runtime() to this method. The only use for this is collecting
+   * TypeMeta dependencies during type system bootstrap, when Action.Requirement.forName may not be available for
+   * runtimes seeded in the pkg metadata folder.
+   */
+  runtimeNameFromActionReqName: private function(actionRequirementName: !string serialized Action.Requirement)
+                                          : !string serialized ImplLanguage.Runtime
+
+  /**
+   * @return The {@link ImplLanguage.Executor executor} of this instance of {@link Action.Requirement}.
+   * If the user does not specify an executor, the executor is null and any valid executor for the
+   * {@link Action.Requirement#language language}, {@link Action.Requirement#location location} and
+   * {@link ImplLanguage.Runtime runtime} is compatible with this {@link Action.Requirement}.
+   */
+  executor: cached property(): string enum ImplLanguage.Executor
+
+  /**
+   * @return The best {@link Action.Engine action engine} for this instance of {@link Action.Requirement}.
+   * Note that this may be dependent upon the state of the C3 Server is called (warm `Action.Engine`s may be re-used if possible).
+   */
+  engine: property(): !Action.Engine
+
+  /**
+   * {@link RegexPattern} to validate names of an action requirement.
+   */
+  regexPattern: private cached function(): !RegexPattern
+
+  /**
+   * @return The returns all fully specified {@link Action.Requirement Action.Requirements} for this instance of Action.Requirement.
+   * When the {@link Action.Requirement} does not include a language version, will pick all available language versions of the {@link ImplLanguage.Runtime}
+   */
+  allFullySpecifiedRequirements: private cached member function(runtime: ImplLanguage.Runtime): [Action.Requirement]
+
+  fullyQualifiedRequirementsWithLangVersion: private cached member function(): [Action.Requirement]
+
+  /**
+   * @return True if the current action requirement meets requirement for the provided action requirement. We say
+   * an action requirement acreq1 meets requirement for another action requirement acreq2 if {@link Action.Requirement#runtime the runtime} of acreq1
+   * {@link ImplLanguage.Runtime#canRun can run} the runtime of acreq2, the {@link Action.Requirement#location location} of acreq1 {@link ImplLanguage.RuntimeLocation#canRun
+   * canRun} the {@link Action.Requirement#location location} of acreq2 and the {@link Action.Requirement#executor executor} of acreq1 {@link ImplLanguage.Executor#canRun
+   * canRun} the {@link Action.Requirement#executor executor} of acreq2.
+   */
+  meetsRequirement: cached member function(actionRequirement: !Action.Requirement): !boolean
+
+  /**
+   * @return True if the weight of the current action requirement is greater than the weight of the provided action requirement.
+   * Weight of an action requirement is sum of the weight of its {@link Action.Requirement#runtime runtime}, @link Action.Requirement#location location}
+   * and @link Action.Requirement#executor executor}. Weight of a runtime is 4 if it is a custom runtime otherwise 0 (i.e. language runtime). Weight of a location is 2 if not null
+   * otherwise 0 and weight of an executor is 1 if not null otherwise 0. This is used to decide the order of compilation of source files for
+   * scripting languages.
+   */
+  isGreaterThan: cached member function(actionRequirement: !Action.Requirement): !boolean
+
+  /**
+   * validates the source code for current action requirement.
+   */
+  validateSource: member function(content: !string, filePath: string serialized Pkg.Path): [Pkg.Issue]
+
+  /**
+   * @return source file extension
+   */
+  srcFileExt: cached member function(includeName: boolean): !string
+
+  /**
+   * @return source file content type
+   */
+  srcContentType: member function(): !string serialized ContentType
+
+  /**
+   * @return Action.Requirement from a file extension.
+   */
+  fileExtToActionRequirement: cached function(fileExt: string): !Action.Requirement
+
+  /**
+   * @return Whether it is a test requirement. The {@link Action.Requirement#engine engine} for a test requirement is always a test
+   * {@link Action.Engine} one which can run tests.
+   */
+  // TODO PLAT-48997 Remove this property
+  isATestRequirement: cached property(): boolean
+
+  fromString: ~
+  forName:    cached ~
+
+  /**
+   * @return Whether this {@link Action.Requirement} has a valid engine. The {@link Action.Requirement#forName} will return null if the action requirement
+   * does not have a valid engine.
+   */
+  hasValidEngine: cached property(): boolean
+
+  /**
+   * @return {@link Action.Requirement} constructed based on parameters.
+   */
+  fromParts: function(runtime: !string serialized ImplLanguage.Runtime,
+                      location: string enum ImplLanguage.RuntimeLocation,
+                      executor: string enum ImplLanguage.Executor,
+                      isTest: boolean = false): !Action.Requirement
+
+  /**
+   * Constructs {@link Action.Requirement} that will satisfy all `requirements`.
+   * @see ImplLanguage.Runtime#minimumCommonDescendent
+   *
+   * @return common {@link Action.Requirement} for given `requirements` or null if no common exists.
+   */
+  common: function(requirements: !string serialized Action.Requirement ...): !?Action.Requirement
+
+  /**
+   * validate this action requirement is valid. e.g. checks has valid engine.
+   */
+  valid: cached member function(): boolean
+}

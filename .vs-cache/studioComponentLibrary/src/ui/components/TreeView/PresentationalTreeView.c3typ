@@ -1,0 +1,375 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Tree view for hierarchical data
+ */
+@typeScript
+type PresentationalTreeView mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Whether the tree should allow search through a text input.
+   */
+  searchable: boolean
+
+  /**
+   * Whether the tree should allow to select a node (ie: for previewing the node's data).
+   * The selected node is stored in `selectedNode` and it will be highlighted with a different background color.
+   * Notice this is different from `checked` which is used to select multiple nodes.
+   */
+  selectable: boolean
+
+  /**
+   * Optional field used for performant rendering, it will trigger a re-render of the tree when its value changes.
+   * If not defined, the tree will re-render when either a search is performed, or the number of roots change.
+   */
+  signature: string
+
+  /**
+   * A map of the nodes that are checked
+   */
+  checked: map<string, boolean>
+
+  /**
+   * A map of the nodes that are expanded
+   */
+  expanded: map<string, boolean>
+
+  /**
+   * The height of the tree view in pixels. If not specified, the tree view will take the full height of its container.
+   */
+  height: number
+
+  /**
+   * Whether the tree is loading. If true, a loading skeleton of the tree will be displayed.
+   */
+  loading: boolean
+
+  /**
+   * The root nodes of the trees to display
+   */
+  roots: [PresentationalTreeNode]
+
+  /**
+   * Helper function to flatten the tree nodes into a dictionary of nodes
+   */
+  flattenNodes: function(nodes: [PresentationalTreeNode]): map<string, PresentationalTreeNode> ts-client
+
+  /**
+   * The dictionary of nodes in the tree. This is used to quickly find a node by its id.
+   */
+  flattenedNodes: map<string, PresentationalTreeNode>
+
+  /**
+   * The id of the node that is selected. Only populated if `selectable` is true and a node is clicked.
+   */
+  selectedNode: string
+
+  /**
+   * The width of the tree view in pixels. If not specified, the tree view will take the full width of its container.
+   */
+  width: number
+
+  /**
+   * Represents emptyState component when there is no tree view present.
+   */
+  emptyState: UiSdlComponentRef<UiSdlComponent>
+
+  /**
+   * Represents whether or not to open directly to the selected path in the tree view.
+   */
+  shouldOpenToSelectedPath: boolean
+
+  /**
+   * An action to set the `loading` state of the tree view
+   *
+   * @param componentId
+   *            Id of the component to clear.
+   * @param loading
+   *            whether the tree view should be loading
+   *
+   * @returns a `SET_TREE_LOADING` action
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_LOADING')
+  setTreeLoadingAction: private function(componentId: string, loading: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Sets `loading`
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_TREE_LOADING')
+  setTreeLoadingReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Retrieves the `loading` state of the tree view
+   */
+  getLoadingState: function(componentId: string, state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * An action to empty/clear the state of the tree view.
+   *
+   * @param componentId
+   *            Id of the component to clear.
+   *
+   * @returns a `CLEAR_TREE_STATE` action
+   */
+  @uiSdlActionCreator(actionType='CLEAR_TREE_STATE')
+  clearTreeStateAction: private function(componentId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Empties the state of the tree view by resetting the necessary values used by the presentation layer.
+   */
+  @uiSdlReducer(actionType='CLEAR_TREE_STATE')
+  clearTreeStateReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when the roots of the tree view are set
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param flattenedNodes
+   *            The flattened nodes of the tree
+   *
+   * @returns a `SET_TREE_FLATTENED_NODES` action
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_FLATTENED_NODES')
+  setTreeFlattenedNodesAction: private function(componentId: string, flattenedNodes: map<string, PresentationalTreeNode>): !UiSdlReduxAction ts-client
+
+  /**
+   * Updates `flattenedNodes`
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_TREE_FLATTENED_NODES')
+  treeFlattenedNodesSetReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when a node in the tree view's action item is clicked
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param nodeId
+   *            The id of the node that whose action was clicked in the tree
+   * @param suffix
+   *            The suffix of the action to dispatch
+   *
+   * @returns a `TREE_NODE_ACTION_GROUP_CLICK` action for this instance
+   */
+  @uiSdlActionCreator(actionType='TREE_NODE_ACTION_GROUP_CLICK')
+  actionGroupClickAction: private function(componentId: string, nodeId: string, suffix: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Triggered when a node in the tree view is clicked
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param nodeId
+   *            The id of the node that was clicked in the tree
+   * @returns a `TREE_NODE_CLICK` action for this instance
+   */
+  @uiSdlActionCreator(actionType='TREE_NODE_CLICK')
+  treeNodeClickAction: private function(componentId: string, nodeId: string, actionData: json): !UiSdlReduxAction ts-client
+
+  /**
+   * Triggered when a node in the tree view's expand or collapse button is clicked
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param nodeId
+   *            The id of the node that was clicked in the tree
+   * @param checked
+   *            Whether to check or uncheck the node
+   *
+   * @returns a `TREE_NODE_ACTION_GROUP_CLICK` action for this instance
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_NODE_CHECKED')
+  setTreeNodeCheckedAction: private function(componentId: string, nodeId: string, checked: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Updates `checked` for an individual node
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_TREE_NODE_CHECKED')
+  treeNodeCheckedSetReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action to trigger when a the tree view's checked state should be updated in bulk
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_VIEW_CHECKED_STATE')
+  setTreeViewCheckedStateAction: private function(componentId: string, checkedState: map<string, boolean>): !UiSdlReduxAction ts-client
+
+  /**
+   * Performs a bulk-update to the `checked` state
+   */
+  @uiSdlReducer(actionType='SET_TREE_VIEW_CHECKED_STATE')
+  setTreeViewCheckedStateReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when a node in the tree view's expand or collapse button is clicked
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param nodeId
+   *            The id of the node that was clicked in the tree
+   * @param expanded
+   *            Whether to expand or collapse the node
+   *
+   * @returns a `SET_TREE_NODE_EXPANDED` action for this instance
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_NODE_EXPANDED')
+  setTreeNodeExpandedAction: private function(componentId: string, nodeId: string, expanded: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Updates `expanded` for an individual node
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_TREE_NODE_EXPANDED')
+  treeNodeExpandedSetReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when several nodes in the tree need to be expanded or collapsed
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param nodeIds
+   *            The id of the nodes that need to be expanded or collapsed
+   * @param expanded
+   *            Whether to expand or collapse the nodes
+   *
+   * @returns a `SET_TREE_NODES_EXPANDED` action for this instance
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_NODES_EXPANDED')
+  setTreeNodesExpandedAction: private function(componentId: string, nodeIds: [string], expanded: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Updates `expanded` for a set of nodes
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_TREE_NODES_EXPANDED')
+  treeNodesExpandedSetReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when a node in the tree is clicked and the tree allows to select a node (#selectable is true)
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param nodeId
+   *            The id of the node that was clicked in the tree
+   *
+   * @returns a `SET_TREE_NODE_SELECTED` action for this instance
+   */
+  @uiSdlActionCreator(actionType='SET_TREE_NODE_SELECTED')
+  setTreeNodeSelectedAction: private function(componentId: string, nodeId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Updates `selectedNode` for the tree
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_TREE_NODE_SELECTED')
+  treeNodeSelectedSetReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns an array containing all the values of a field for the children of a node
+   *
+   * @param node
+   *           The node whose children's are to be evaluated
+   * @param field
+   *           The field to extract from the children
+   * @returns an array containing all the values of a field for the children of a node
+   */
+  getNodeChildrenValuesForField: private function(node: PresentationalTreeNode, field: string): [string] ts-client
+
+  /**
+   * Helper function to infer the resulting checked state of the tree after a node is checked or unchecked
+   *
+   * @param nodeId
+   *            The id of the node that was clicked in the tree
+   * @param doCheck
+   *            Whether to check or uncheck the node
+   * @param flattenedNodes
+   *            The flattened nodes of the tree
+   * @param checked
+   *            The current checked state of the tree
+   *
+   * @returns a new checked state for the tree
+   */
+  propagateCheckedState: private function(nodeId: string,
+                                          doCheck: boolean,
+                                          flattenedNodes: map<string, PresentationalTreeNode>,
+                                          checked: boolean): map<string, boolean> ts-client
+
+  /**
+   * Retrieves the map of checked nodes from state
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param state
+   *           Redux state
+   */
+  getCheckedState: function(componentId: string, state: !UiSdlReduxState): map<string, boolean> ts-client
+
+  /**
+   * Retrieves the list of checked nodes from state
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param state
+   *           Redux state
+   */
+  getCheckedTreeNodes: function(componentId: string, state: !UiSdlReduxState): [string] ts-client
+
+  /**
+   * Retrieves the map of flattened nodes from state
+   * @param componentId
+   *            Id of the component.
+   * @param state
+   *           Redux state
+   */
+  getFlattenedTreeNodes: function(componentId: string, state: !UiSdlReduxState): map<string, PresentationalTreeNode> ts-client
+
+  /**
+   * Returns True if the node is checked
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param state
+   *           Redux state
+   * @param nodeId
+   *            The id of the node in the Tree View
+   */
+  isNodeChecked: function(componentId: string, state: !UiSdlReduxState, nodeId: string): boolean ts-client
+}

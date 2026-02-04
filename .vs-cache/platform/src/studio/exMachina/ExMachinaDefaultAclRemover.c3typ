@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ExMachinaDefaultAclRemover<S> mixes Value {
+
+  /**
+   * Common logic to run after creation of an instance to remove the {@link AclEntry} for the creator.
+   * This can be called within the `afterCreate` of a Persistable type. Due to a platform limitation, this is exposed
+   * as a utility function rather than an `afterCreate` method on a type that can be mixed.
+   *
+   * @param objs
+   *           List of objs that are about to be created.  The objs will be the entire input objs being created.
+   * @param avoidRemovalIfNoCurrentMember
+   *           Whether to avoid removing default ACL if the user does not have a current member. Useful for creating
+   *           records from the static console where an admin may not have an account
+   */
+  removeCreatorAclEntry: private function(objs: !?[S], avoidRemovalIfNoCurrentMember: boolean): [ObjError] js-server
+}

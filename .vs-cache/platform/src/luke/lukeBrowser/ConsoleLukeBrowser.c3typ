@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Console specific helper functions
+ */
+@beta
+type ConsoleLukeBrowser mixes LukeBrowser {
+
+  /**
+   * Wrapper function to create mouse events.
+   * @param node
+   *            Any object that is an EventTarget (can receive events and have listeners).
+   * @param eventType
+   *            The type of event that is triggered.
+   */
+  triggerMouseEvent: inline member function(node: !native, eventType: !string) js-client
+
+  /**
+   * Helper function to click on tab buttons in the console.
+   * @param tab
+   *           The {@link LukeBrowserWebElement} to click on.
+   */
+  selectTab: inline member function(tab: !LukeBrowserWebElement) js-client
+
+  /**
+   * Helper function to select plugin on the left pane in the console.
+   * @param pluginTabName
+   *           The {@link ConsolePlugin#name} to click on.
+   */
+  selectPluginTab: inline member function(pluginTabName: !string) js-client
+
+  /**
+   * Sets text inside of monaco editor. Can be used for editing file content in console.
+   * @param index
+   *             The index of the monaco editor cell.
+   * @param value
+   *             The value to populate the cell.
+   */
+  setEditor: inline member function(index: !int, value: !string) js-client
+
+  /**
+   * Sets the text inside notebook cell with index 'cellIndex' for the selected open notebook.
+   * @param value
+   *             The value to populate the cell.
+   * @param index
+   *             The index of the notebook cell. If empty, the currently selected cell will be used.
+   */
+  setNotebookCell: inline member function(value: string, cellIndex: int) js-client
+
+  /**
+   * CSS selectors for html elements in Console.
+   */
+  selectors: private cached function(): native js-client
+
+  /**
+   * Go to Ui Console index page. Depending on dev/prod mode, the actual path to goto differs.
+   * Before visiting the page, localStorage is cleared.
+   */
+  gotoConsole: inline member function() js-client
+}

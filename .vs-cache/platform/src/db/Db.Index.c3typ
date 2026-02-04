@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a database index.
+ */
+type Db.Index {
+
+  // Name of the index.
+  name: string
+
+  // The index method.
+  method: !string enum Db.Index.Method
+
+  // Fields defined in the index.
+  fields: ![Db.Index.Field]
+
+  /**
+   * True if the index is a unique index.
+   */
+  unique: boolean
+
+  /**
+   * @param meta
+   *        TypeMeta of the type on which index is being created.
+   * @param string
+   *        String from which Db.Index instance needs to be created.
+   * @return instance of Db.Index created.
+   */
+  fromString: function(meta: !TypeMeta, str: !string): Db.Index
+
+  /**
+   * Filter expression for creating partial indexes. Filter expressions must evaluate to a value type of
+   * Boolean.  They support basic comparison operators (e.g. "==", "<", "<=", ">", ">=", "!="), arithmetic operators
+   * (e.g. "+", "-", "*", "/"), "&&", "||" and "most" non-timeseries functions supported by the C3 expression engine.
+   */
+  filter: string serialized Filter
+}

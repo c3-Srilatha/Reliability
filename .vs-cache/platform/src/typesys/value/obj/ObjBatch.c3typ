@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Batch of objects specified as a list of ids or a startFromId and endId.  Used in specs for various refresh operations (e.g. {@link RefreshCalcFieldsSpec}) and
+ * during {@link App#rebuild} operations.
+ */
+type ObjBatch {
+
+  /**
+   * For {@link App#rebuild} operations, used to pass the type associated with a request in a particular batch.
+   */
+  objTypeRef: Type
+
+  /**
+   * Specific list of ids to process/refresh.  If specified, then {@link startFromId} and {@link endId} are ignored.
+   * If not specified (or empty) then all will be refreshed, applying any specified {@link startFromId} and
+   * {@link endId}.
+   */
+  ids: [string]
+
+  /**
+   * Starting id for a range of ids to process.  Ignored if {@link ids} is also specified and not empty.
+   */
+  startFromId: string
+
+  /**
+   * Ending id for a range of ids to process.  Ignored if {@link startFromId} is not specified and not empty.
+   */
+  endId: string
+
+  /**
+   * Filter to identify which objs to process.  Can be specified in addition to {@link ids} or
+   * {@link startFromId}/{@link endId}.  In that case only objs that satisfy both the filter and the id base filter
+   * will be promised.
+   */
+  filter: string
+
+  /**
+   * Number of ids to include in range id search for each invalidation request for for async call.
+   */
+  batchSize: int = 100
+
+  /**
+   * Number of objs to operate on in synchronous call.  When specified in async call, the value is passed in to
+   * subsequent synchronous call. Defaults to {@link batchSize}.
+   */
+  subBatchSize: int
+
+  /**
+   * Number of entries to submit to the invalidation queue at one time for async call.
+   */
+  invalidationsBatchSize: int = 100
+
+  /**
+   * True if the request should be processed synchronously.
+   */
+  sync: boolean
+
+  /**
+   * Initial priority of batch jobs started from async processing.
+   */
+  priority: int
+
+  /**
+   * If the request is part of a larger batch job (e.g. {@link App#rebuild}), this will be set by the framework to the owning batch job for orchestration.
+   */
+  batchJob: Obj
+
+  /**
+   * Numerical batch number set by the framework in {@link BatchJob.scheduleObjBatch}
+   */
+  batchNum: int
+}

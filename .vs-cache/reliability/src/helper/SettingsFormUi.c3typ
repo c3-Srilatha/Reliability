@@ -1,0 +1,102 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to perform actions in the Settings form.
+ */
+type SettingsFormUi {
+
+  /**
+   * Name of the user.
+   */
+  name: string
+
+  /**
+   * Whether the user wants notifications.
+   */
+  enableNotifications: boolean
+
+  /**
+   * Notification preference for mentions.
+   */
+  mentionsPreference: string enum NotificationPreference
+
+  /**
+   * Notification preference for alerts.
+   */
+  alertsPreference: string enum NotificationPreference
+
+  /**
+   * Notification preference for assigned cases.
+   */
+  assignedPreference: string enum NotificationPreference
+
+  /**
+   * Notification preference for ml model training.
+   */
+  trainingPreference: string enum NotificationPreference
+
+  /**
+   * The user's selected timezone.
+   */
+  uiTimezone: string
+
+  /**
+   * Batch period for notifications in number of minutes.
+   */
+  batchPeriod: [int]
+
+  /**
+  * The helper method used in fetch function
+  *
+  * @param notificationRecipient
+  *           The notification recipient
+  * @param notificationPreference
+  *           The notification preference
+  * @return The notification category preference
+  */
+  getPreference: function(notificationRecipient: NotificationRecipient, notificationPreference: NotificationPreference): NotificationCategoryPreference js-rhino
+
+  /**
+  * The helper method used in submit form function
+  *
+  * @param NotificationRecipient
+  *           The notification recipient
+  * @param notificationPreference
+  *           The notification preference
+  * @return The notification preference
+   */
+  getCategory: function(NotificationRecipient: NotificationRecipient, notificationPreference: NotificationPreference): NotificationPreference js-rhino
+
+  /**
+   * The method to be invoked after submitting Save from the UI.
+   * Returns NotificationUserRecipient that is associated with changes.
+   *
+   * @param formObject
+   *           The settings form object to submit
+   * @return The notification user recipient associated with the changes
+   */
+  submitForm: function(formObject: SettingsFormUi): NotificationUserRecipient js-rhino
+
+  /**
+   * Fetch all activities for a case by combining CaseComment, CaseStateHistory
+   * @param spec
+   *         Only filter by parent.id is supported
+   * @return result will be ordered by descending timestamp
+   */
+  fetch: function(spec: FetchSpec): !FetchResult<SettingsFormUi> js-rhino
+
+  /**
+   * Helper method called by {@link fetch} to construct the {@link SettingsFormUi} fetch result.
+   * @param user
+   *        The user who made the {@link fetch} call.
+   * @return result will be ordered by descending timestamp.
+   */
+  getSettingsForm: private function(user: !User): !FetchResult<SettingsFormUi> js-rhino
+}

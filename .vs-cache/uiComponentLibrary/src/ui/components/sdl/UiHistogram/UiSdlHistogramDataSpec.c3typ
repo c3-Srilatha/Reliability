@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to represent the data spec for a {@link UiSdlHistogram}.
+ */
+@typeScript
+type UiSdlHistogramDataSpec mixes UiSdlFieldBasedDataSpec {
+
+  /**
+   * Converts the data spec to an array of partially applied actions.
+   */
+  toPartiallyAppliedActions: ~ ts-client
+
+  /**
+   * Filter to be used in the evaluate call.
+   */
+  filter: string
+
+  /**
+   * The yAxis field for histogram to project.
+   */
+  @constraint(condition='count(yAxisFields)<=2')
+  yAxisFields: [UiSdlHistogramYAxisDataSpecSetting]
+
+  /**
+   * The transform functions to use for this data spec.
+   * Functions that are available are {@link UiSdlTransformEvaluateResultToHistogramChartData}
+   * and {@link UiSdlTransformUiSdlChartDataToEChartConfig}.
+   */
+  dataTransforms: ~ = ['UiSdlTransformEvaluateResultToHistogramChartData', 'UiSdlTransformUiSdlChartDataToEChartConfig']
+
+  /**
+   * Helper function to build projection string.
+   *
+   * @return A string used for projection in the fetch spec.
+   */
+  buildProjectionString: private member function(dataSpec: json): string ts-client
+
+  /**
+   * Helper function to build a filter string for this data spec.
+   *
+   * @param dataSpec
+   *           This data spec.
+   * @param additionalFilter
+   *           An optional filter string to append to any filters generated
+   *           from this data spec's configuration.
+   *
+   * @return A string used for filter in the fetch spec.
+   */
+  buildFilterString: private function(dataSpec: UiSdlHistogramDataSpec, additionalFilter: string): string ts-client
+}

@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a pipe that uses the `PowerTransformer` method to scale and normalize the risk score values.
+ * Power transformation is a technique that applies a mathematical transformation to make data more Gaussian-like
+ * (i.e., closer to a normal distribution), which can improve the performance of machine learning models
+ * and reduce skewness or outliers in the data.
+ *
+ * The `GeneralPowerTransformerPipe` can be used in the context of risk score scaling where the raw risk scores
+ * need to be transformed into a more consistent range or distribution for further analysis or modeling.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.RiskScoreScaling.GeneralPowerTransformerPipe extends ReliabilityRiskMl.RiskScoreScaling.Pipe<{features: Data, riskScore: Data, alertContext: Data}, {riskScoreNormalized: Data}> type key 'GPTP' {
+
+  /**
+   * The power transform method to be applied on the input data.
+   * Available methods are:
+   * - 'yeo-johnson' (works with both positive and negative values)
+   * - 'box-cox' (only works with strictly positive values)
+   *
+   * The method chosen will determine how the transformation is applied,
+   * depending on the distribution and characteristics of the data.
+   */
+  @ML(hyperparameter=true)
+  @typeMetaDoc(isAdditional=true)
+  method: string enum('box-cox', 'yeo-johnson') = 'yeo-johnson'
+
+  /**
+   * Set this parameter to True if you want to apply zero-mean, unit-variance normalization to the transformed output.
+   * This is useful for standardizing the risk score values after applying the power transformation to ensure that
+   * they have a mean of 0 and a standard deviation of 1.
+   */
+  @ML(hyperparameter=true)
+  @typeMetaDoc(isAdditional=true)
+  standardize: boolean = true
+
+  /**
+   * Generates the transformation pipeline using the power transformation method defined in the
+   * `method` parameter and applies any additional preprocessing or scaling as required.
+   * This method uses the `py-sklearn` package to build the pipeline.
+   */
+  generatePipe: ~ py-sklearn
+
+  /**
+   * This method will invoke the `fit()` method on the native model.
+   * The `fit()` method is used to learn the transformation parameters based on the input data,
+   * including the scaling method (either Yeo-Johnson or Box-Cox) and whether standardization is enabled.
+   * The model will fit to the `features`, `riskScore`, and `alertContext` data provided in the pipeline.
+   */
+  doTrain: ~ py-sklearn
+
+  /**
+   * This method will invoke the `transform()` method on the native model.
+   * The `transform()` method will apply the learned transformation to the data,
+   * and return the normalized and scaled risk score values in the `riskScoreNormalized` output.
+   * The transformation can include both the power transformation and optional standardization,
+   * based on the settings provided in the parameters.
+   */
+  doProcess: ~ py-sklearn
+}

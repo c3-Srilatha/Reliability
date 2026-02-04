@@ -1,0 +1,202 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Customizations for {@link MlTrainable#train} and {@link MLProcessable#process} computation.
+ */
+type MlOperationSpec mixes Spec {
+
+  /**
+   *  The key of the map is a string representing the path to a pipe in the pipeline.
+   *  Please refer to {@link MlPipeline} for details on how to specify this path.
+   *
+   *  Case 1: Different {@link HardwareConstraint} per pipe and per operation. Append
+   * `.operationName` to the end of key of the map to specify a separate hardware requirement
+   *  for the particular operation. Options for `operationName` are `train`
+   *  `process`, `score`, or `interpret`. If an operation is specified, then its matching
+   *  hardware requirements will override any hardware requirements upon execution of this
+   *  operation.
+   *  Example usage:
+   *  ```
+   *   { 'path/myPipe.train': train_hardware_requirement},
+   *     'path/myPipe': hardware_requirement}
+   *    }```
+   *  All operations require `hardware_requirement` except training. For training
+   *  of `myPipe` we require `train_hardware_requirement`.
+   *
+   *  Case 2: Same {@link HardwareConstraint} for all pipes of a pipeline but potentially
+   *  different per operation. To specify one requirement for all pipes of a pipeline, the
+   *  key of the map would be set to a special string `/`. Similarly, to Case 1, this path can be
+   *  appended by `.operationName` to specify min requirements per operation.
+   *  Example usage:
+   *  ```
+   *   { '/.train': train_hardware_requirement},
+   *     '/': hardware_requirement}
+   *    }```
+   *  All pipes will need `hardware_requirement` for any operation other than train for which they will require
+   *  `train_hardware_requirement`.
+   */
+  @beta
+  hardwareConstraint: map<string, HardwareConstraint>
+
+  /**
+   * If {@link App.NodePool} is provided, then training and process will happen on nodes in the node pool.
+   */
+  nodePool: private string serialized App.NodePool
+
+  /**
+   * If a map from pipes to {@link App.NodePool} is provided, then training and process will happen on nodes in the
+   * corresponding node pool.
+   */
+  // TODO: PLAT-102060 implement this field
+  nodePoolPerPipe: private map<string, string serialized App.NodePool>
+
+  /**
+   * Map of {@link MlLogger}s for {@link MlPipeline} and {@link MlModel} operations.
+   * Key is a user-defined name for the logger.
+   */
+  // TODO: PLAT-90845 Update loggers field in MlOperationSpec and MlOperationRun to be of type map<string, MlLogger>
+  loggers: map<string, any>
+
+  /**
+   * Providing this {@link Hpo.Spec} in a call to `train` will trigger hyperparameter optimization.
+   */
+  hpoSpec: Hpo.Spec
+
+  /**
+   * Determines the optimization level used in the underlying execution graph for this operation.
+   * "unoptimized" - no optimizations will be attempted
+   * "stable" - a curated list of optimizations, determined to be stable for this release
+   * "experimental*" - extra optimizations not guaranteed to be stable for all ML execution graphs.
+   *                   The higher the suffix number, the less confidence in the stability. There is no guaranteed superset/subset
+   *                   relationship between sets of optimizations in different experimental levels, nor between experimental level and stable level.
+   */
+  optimizationLevel: string enum("unoptimized", "stable", "experimental1", "experimental2", "experimental3") = "stable"
+
+  /**
+   * NOTE: this flag does not belong on `MlOperationSpec`.  Do not use.
+   *
+   * If true, the pipe expects the input to be flattened.
+   */
+  // TODO: PLAT-44403 Remove from MlOperationSpec
+  @deprecated(details="This private field will be removed.  Do not use.")
+  flattenInput: private boolean
+
+  /**
+   * optional snapshot id
+   * see {@link MlModel#train}
+   */
+  // TODO: PLAT-44403 Remove from MlOperationSpec
+  @deprecated(details="Use xSnapshots and ySnapshots")
+  snapshotId: string
+
+  /**
+   * If True, a trained {@link MlModel} is automatically scored during {@link MlModel#train},
+   * and the training scores are set on trained {@link MlModel}.
+   * see {@link MlModel#train} and {@link MlModel#trainScores}.
+   */
+  scoreMlModel: boolean
+
+  /**
+   * If true, this spec overrides any static spec that may exist on the subject of the operation
+   * (e.g. {@link MlModel#operationSpec}).
+   * There is no merge on spec fields, dynamically provided spec has precedence over static spec.
+   */
+  overrideStaticSpec: boolean
+
+  /**
+   * Map of {@link EvalFeatureSpec#projection} for {@link #xFeatures}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#xFeatures}.
+   * The values of this map are comma-separated feature names to evaluate.
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3',
+   * if we want to evaluate only the feature 'f1' and 'f2', we can use either "f1, f2" or "metricFs.f1, metricFs.f2".
+   * Projections get set on the {@link MlModel model} after {@link MlModel#train}.
+   * If the {@link MlModel model} is trained or already has {@link MlModel#xProjections projections} set,
+   * providing this value would raise an error.
+   */
+  xProjections: map<string, string>
+
+  /**
+   * Map of {@link EvalFeatureSpec#projection} for {@link #yFeatures}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#yFeatures}.
+   * The values of this map are comma-separated feature names to evaluate.
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3',
+   * if we want to evaluate only the feature 'f1' and 'f2', we can use either "f1, f2" or "metricFs.f1, metricFs.f2".
+   * Projections get set on the {@link MlModel model} after {@link MlModel#train}.
+   * If the {@link MlModel model} is trained or already has {@link MlModel#yProjections projections} set,
+   * providing this value would raise an error.
+   */
+  yProjections: map<string, string>
+
+  /**
+   * Map of {@link MlModel} `x` inputs names to corresponding snapshot ids for feature sets.
+   * The {@link Feature.Set.Snapshot}s for snapshot ids is expected to be created by users prior to supplying snapshot ids
+   * for {@link MlModel} operations.
+   * The keys of this map must be same or subset of keys of {@link MlModel#xFeatures}.
+   */
+  xSnapshotIds: map<string, string>
+
+  /**
+   * Map of {@link MlModel} `y` inputs names to corresponding snapshot ids for feature sets.
+   * The {@link Feature.Set.Snapshot}s for snapshot ids is expected to be created by users prior to supplying snapshot ids
+   * for {@link MlModel} operations
+   * The keys of this map must be same or subset of keys of {@link MlModel#yFeatures}.
+   */
+  ySnapshotIds: map<string, string>
+
+  /**
+   * If true, then do not use a generator for this operation.
+   */
+  doNotUseGenerator: private boolean
+
+  /**
+   * If true, then disable execution of finally vertex that does clean up of intermediate {@link Data} instances.
+   */
+  doNotCleanUp: private boolean
+
+  /**
+   * Iff true, then inputs should have feature-related columns set as indices, instead of data.
+   * See {@link MlAtomicPipe#setFeatureIndices} for details.
+   * NOTE: intended for developer use with {@link MlAtomicPipe#convertPipeInputsToNative} and related APIs.
+   */
+  setFeatureIndices: private boolean
+
+  /**
+   * Gets a field if it exists in the spec. Otherwise, returns the default value.
+   */
+  getOrDefault: inline function(spec: MlOperationSpec, fieldName: !string, defaultValue: !any): !?any py
+
+  /**
+   * Specifies the executor that will be picked to execute the operations of a pipe.
+   */
+  executorSpec: private WorkflowExecutionSpec
+
+  /**
+   * Specifies the {@link WaitSpec} that will be used for polling the run status of any internal {@link MlOperationRun}.
+   */
+  waitSpec: private WaitSpec
+
+  /**
+   * If specified, the {@link MlPipeline} will skip translation of the pipeline into a {@link Workflow} and will instead
+   * execute the specified workflow. Note that this workflow must already have been upserted.
+   */
+  workflowOverride: private Workflow
+
+  /**
+   * Executor that executes fused vertices as well as trainSync/processSync vertices. Execution will occur
+   * synchronously within a singular process.
+   */
+  innerWorkflowExecutor: private string enum('synchronous', 'synchronous-parallel') = 'synchronous'
+
+  /**
+   * A unique identifier for tracking execution runs. It is generated uniquely for each step of the pipeline before
+   * the execution starts and is different from the {@link WorkflowExecutorRun#id}.
+   * For example, in distributed training, this ID helps track allocated compute resources.
+   */
+  executionRunId: private string
+}

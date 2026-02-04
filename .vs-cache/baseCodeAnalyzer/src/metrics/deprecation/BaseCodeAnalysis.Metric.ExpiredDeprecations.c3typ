@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Code analysis metric that identifies deprecated Types, APIs or fields in the package that are on or past the
+ * final version.
+ */
+type BaseCodeAnalysis.Metric.ExpiredDeprecations mixes BaseCodeAnalysis.Metric {
+
+  /**
+   * Function to generate messages and severities for a deprecated Type, field, or method
+   * based on the following criteria:
+   *
+   *   - If either [details](Ann.Deprecated#details) or [finalVersion](Ann.Deprecated#finalVersion)
+   *     aren't specified, include an [ERROR](BaseCodeAnalysis.Metric.Message.Severity#ERROR).
+   *   - If [finalVersion](Ann.Deprecated#finalVersion) isn't a [valid semantic version](SemanticVersion#isValid),
+   *     include an [ERROR](BaseCodeAnalysis.Metric.Message.Severity#ERROR).
+   *   - If the current version is less than the [finalVersion](Ann.Deprecated#finalVersion),
+   *     include a [WARNING](BaseCodeAnalysis.Metric.Message.Severity#WARNING).
+   *   - If the current version has passed the [final version](Ann.Deprecated#finalVersion),
+   *     include an [ERROR](BaseCodeAnalysis.Metric.Message.Severity#ERROR).
+   *
+   * @param deprecatedAnnotation
+   *           The annotation for the deprecated Type, field, or method.
+   * @param packageName
+   *           The name of the package the Type is in. Used to determine whether the final
+   *           version is outdated.
+   * @param typeName
+   *           The name of the Type.
+   * @param fieldName
+   *           The name of the field or method. If the field isn't defined, only the Type
+   *           name will be considered in the message.
+   * @return The messages for the deprecated Type, field, or method.
+   */
+  generateMetricMessages: private inline function(
+    deprecatedAnnotation: !?json,
+    packageName: !string,
+    typeMeta: string,
+    fieldName: string
+  ): [BaseCodeAnalysis.Metric.Message] js-rhino
+
+  /**
+   * Function to identify deprecated Types, fields, and methods in a provided `fileSpec`.
+   *
+   * @param fileSpec
+   *           The file spec to count deprecated Type, fields, and methods for.
+   * @return Code analysis metric messages pointing out deprecations and issues associated
+   *         with those deprecations.
+   */
+  analyzeDeprecations: private inline function(fileSpec: BaseCodeAnalysis.FileSpec): [BaseCodeAnalysis.Metric.Message] js-rhino
+
+  calculateResults: ~
+}

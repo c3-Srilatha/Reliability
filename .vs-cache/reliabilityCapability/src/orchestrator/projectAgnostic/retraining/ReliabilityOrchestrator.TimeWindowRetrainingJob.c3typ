@@ -1,0 +1,152 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {link @MlModel.Train.Job} that creates a {link @WorkflowExecutorRun} for retraining a list of models in a given Time Window and Ranges
+ * with an associated {@link ModelConfigRun}
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@beta
+type ReliabilityOrchestrator.TimeWindowRetrainingJob mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  /**
+   * The {@link ReliabilityMlModel}s to retrain.
+   *
+   * **NOTE**: All models must belong to the same {@link MlProject}.
+   */
+  models: ![ReliabilityMlModel]
+
+  /**
+   * The start date of the retraining window.
+   */
+  start: !datetime
+
+  /**
+   * The end date of the retraining window.
+   */
+  end: !datetime
+
+  /**
+   * The time ranges for constructing the training mask.
+   */
+  timeRanges: [TimeRange]
+
+  /**
+   * The associated {@link ModelConfigRun}.
+   */
+  modelConfigRun: ModelConfigRun
+
+  /**
+   * Create a {@link MlModel.Train} jobspec.
+   */
+  jobSpec: !MlModel.Train.JobSpec = {
+    'type': 'MlModel.Train.JobSpec',
+    'jobTimeoutMinutes': 60,
+    'operationTimeoutMinutes': 15,
+    'maxConcurrentModelTrain': 1
+  }
+
+  /**
+   * Create a training job for the risk models in the spec, with the given time ranges.
+   * @param models
+   *           Array of reliability risk ML models to train.
+   * @param start
+   *           The start date for training.
+   * @param end
+   *           The end date for training.
+   * @param jobSpec
+   *           The job specification for training.
+   * @param timeRanges
+   *           Array of time ranges for training.
+   * @return A {@link MlModel.Train.Job} object for training the risk models.
+   */
+  createRiskTrainingJob: function(
+    models: ![ReliabilityRiskMlModel],
+    start: !datetime,
+    end: !datetime,
+    jobSpec: !MlModel.Train.JobSpec,
+    timeRanges: [TimeRange]
+  ): MlModel.Train.Job py
+
+  /**
+   * Starts the {@link ReliabilityOrchestrator.TrainingJob} for the given models, with the given time ranges.
+   * @param models
+   *           Array of reliability ML models to train.
+   * @param start
+   *           The start date for training.
+   * @param end
+   *           The end date for training.
+   * @param timeRanges
+   *           Array of time ranges for training.
+   * @param modelConfigRun
+   *           The model configuration run to use for training.
+   * @return An {@link MlOperationRun} for monitoring the training job.
+   */
+  startTrainingJob: private function(
+    models: ![ReliabilityMlModel],
+    start: !datetime,
+    end: !datetime,
+    timeRanges: [TimeRange],
+    modelConfigRun: ModelConfigRun
+  ): MlOperationRun<ReliabilityOrchestrator.TrainingJobRun> py
+
+  /**
+   * Starts the {@link ReliabilityOrchestrator.PostTrainingJob} for the given project and training run.
+   * @param project
+   *           The reliability ML project to run post-training for.
+   * @param trainingRun
+   *           The training job run to process.
+   * @return An {@link MlOperationRun} for monitoring the post-training job.
+   */
+  startPostTrainingJob: private function(
+    project: !ReliabilityMl.Project,
+    trainingRun: ReliabilityOrchestrator.TrainingJobRun
+  ): MlOperationRun<ReliabilityOrchestrator.PostTrainingJobRun> py
+
+  /**
+   * Start the nested model training workflow, which will train and deploy the models in the job,
+   * then run model classification and validation on them.
+   * @param spec
+   *           The model training specification.
+   * @param job
+   *           The training job to execute.
+   * @return A {@link WorkflowExecutorRun} for the nested workflow.
+   */
+  startNestedWorkflow: function(
+    spec: ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining,
+    job: MlModel.Train.Job
+  ): WorkflowExecutorRun py
+
+  /**
+   * Creates a {@link Workflow} for the retraining job for a {@link ReliabilityRiskMlModel}.
+   * @return A {@link Workflow} object for retraining risk models.
+   */
+  createRiskWorkflow: member function(): Workflow
+
+  /**
+   * Uses the {@link ReliabilityOrchestrator.TrainingJob} for non risk models to create a {@link Workflow}
+   * to retrain {@link ReliabilityMlModel}s.
+   * @return A {@link Workflow} object for retraining non-risk models.
+   */
+  createProjectAgnosticWorkflow: member function(): Workflow
+
+  /**
+   * Creates a {@link Workflow} to retrain {@link #models}.
+   *
+   * Uses the {@link #createProjectAgnosticWorkflow} for non risk models and {@link createRiskWorkflow} for risk models.
+   * @return A {@link Workflow} object for retraining the models.
+   */
+  createWorkflow: ~ py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification of which Objs to bring back and which fields to bring back in them for a
+ * {@link Fetchable#fetchArrowStream} call.
+ */
+private type FetchArrowStreamSpec mixes FetchSpec {
+
+  /**
+   * Maximum number of rows to include when fetching data from storage and sending to Spark.
+   * Suppose user is trying to fetch WindTurbine including WindTurbineMeasurementSeries and
+   * WindTurbineMeasurement. Partition size in Spark fetch operation determines how many turbines
+   * will be processed in single partition (unit of work for Spark cluster). If user specifies
+   * partition size of 1000 then first partition will process first 1000 turbines.
+   * Instead of bringing data for all 1000 turbines into
+   * memory batchSize parameter will determine how many turbines with measurements are going to be
+   * fetched into memory from storage layer and sent to Spark for processing.
+   */
+  batchSize: !int32
+}

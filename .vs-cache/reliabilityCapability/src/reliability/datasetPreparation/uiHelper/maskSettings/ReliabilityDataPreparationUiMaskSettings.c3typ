@@ -1,0 +1,126 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Settings to be mixed into {@link ReliabilityDataPreparationUiBaseSettings} which specify how masks should be configured.
+ */
+type ReliabilityDataPreparationUiMaskSettings {
+
+  /**
+   * Array of rules indicating the time period when {@link ReliabilityAsset} was non-operational
+   * {@link Triple} includes {@link Sensor}, operator (e.g. '>'), and value for the rule.
+   */
+  nonOperationalMasks: [ReliabilityDataPreparationRuleMaskSpec]
+
+  /**
+   * A {@link Period} of time before each non operational time period (as defined by {@link #nonOperationalMasks})
+   * to exclude {@link Sensor} data for training.
+   */
+  preNonOperationalMaskPeriod: Period
+
+  /**
+   * A {@link Period} of time after each non operational time period (as defined by {@link #nonOperationalMasks})
+   * to exclude {@link Sensor} data for training. This does not apply to inference.
+   */
+  postNonOperationalTrainingMaskPeriod: Period
+
+  /**
+   * A {@link Period} of time after each non operational time period (as defined by {@link #nonOperationalMasks})
+   * to exclude {@link Sensor} data for training. This does not apply to inference.
+   */
+  postNonOperationalInferenceMaskPeriod: Period
+
+  /**
+   * A {@link Period} of time before each [event](ReliabilityAssetEvent) to exclude {@link Sensor} data for training.
+   */
+  preEventMaskPeriod: !Period
+
+  /**
+   * A {@link Period} of time after each [event](ReliabilityAssetEvent) to exclude {@link Sensor} data for training and inference.
+   */
+  postEventMaskPeriod: !Period
+
+  /**
+   * {@link TimeRange}s to exclude {@Sensor} data from training data.
+   */
+  dateRangeMaskTimeRanges: [TimeRange]
+
+  /**
+   * Array of rules indicating the time periods to exclude {@link Sensor} data from training data.
+   * {@link Triple} includes {@link Sensor}, operator (e.g. '>'), and value for the rule.
+   */
+  trainingRuleMasks: [ReliabilityDataPreparationRuleMaskSpec]
+
+  /**
+   * Array of rules indicating the time periods to exclude {@link Sensor} data from inference data.
+   * {@link Triple} includes {@link Sensor}, operator (e.g. '>'), and value for the rule.
+   */
+  inferenceRuleMasks: [ReliabilityDataPreparationRuleMaskSpec]
+
+  /**
+   * String of rules indicating the time period when {@link ReliabilityAsset} was non-operational
+   */
+  nonOperationalMasksExpression: string
+
+  /**
+   * String of rules indicating the time periods to exclude {@link Sensor} data from training data.
+   */
+  trainingRuleMasksExpression: string
+
+  /**
+   * String of rules indicating the time periods to exclude {@link Sensor} data from inference data.
+   */
+  inferenceRuleMasksExpression: string
+
+  /**
+   * Creates mask overrides based on this {@link ReliabilityDataPreparationUiMaskSettings}.
+   * These are meant to be passed directly into {@link ReliabilityMlMaskPreparationSpec}. Each override is created
+   * as a {@link Feature}, and returned as a map of override feature field to the corresponding {@link Feature}.
+   *
+   * @param interval
+   *           Interval in which the underlying {@link Feature} should evaluate on. Should match the dataset's interval.
+   * @param returnMetricExpressions
+   *           If true, returns the metric expressions of the mask overrides.
+   *           If false, returns the created Features.
+   * @return A map of override feature field to either Feature objects or metric expression strings.
+   */
+  createMaskOverrides: member function(
+    interval: Interval,
+    returnMetricExpressions: boolean
+  ): map<string, Feature> | map<string, string> py-data
+
+  /**
+   * Transform an array of {@link ReliabilityDataPreparationRuleMaskSpec} to a {@link Feature} that is 1 if any of the
+   * rule critera are met, 0 otherwise.
+   *
+   * @param spec
+   *           Represents the masks that will be converted into a Feature
+   * @param returnMetricExpression
+   *           If true, returns the metric expression that represents the given rule masks.
+   *           If false, returns the created Feature.
+   * @return Either a Feature object or a metric expression string.
+   */
+  createRuleMask: inline function(
+    spec: ReliabilityDataPreparationUiCreateRuleMaskSpec,
+    returnMetricExpression: boolean
+  ): Feature | string py-data
+
+  /**
+   * Based on the given {@link ReliabilityDataPreparationRuleMaskSpec}, creates a metric expression that represents
+   * all of the given rule masks. This can be used to create a metric/feature that returns 1 if any rule's criteria
+   * is met. Does not take pre/post mask periods into account.
+   *
+   * @param masks
+   *           Represents the masks that will be converted into a metric expression
+   * @return A metric expression string representing the rule masks.
+   */
+  createBasicRuleMaskMetricExpression: inline function(
+    masks: [ReliabilityDataPreparationRuleMaskSpec]
+  ): string py-data
+}

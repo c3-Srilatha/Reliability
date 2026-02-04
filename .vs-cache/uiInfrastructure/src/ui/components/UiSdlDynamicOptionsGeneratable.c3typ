@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type for dynamically extracting and supplying values for a component, from the {@lilnk UIEnvironment}
+ * Any type that mixes in this type needs to provide its own implementation of the {@link UiSdlDynamicOptionsGeneratable#getDynamicOptionsForField} method.
+ */
+@typeScript
+@uiSdlPluggable(namespace='dynamicOptionsGeneratable')
+abstract type UiSdlDynamicOptionsGeneratable {
+
+  /**
+   * Helper function to dynamically fetch options depending on the components configuration in the redux store.
+   *
+   * @param environment The environment holding the redux store
+   * @param componentId The ID of the component being configured
+   * @param calledFromComponent from which component is this function called
+   * @param state the redux state
+   * @param fields Array of field infos whose dynamic options are to be obtained.
+   *               Example:
+   *               [{name: 'Field1', parent: 'Field', json: {}}, {name: 'Field2', parent: 'Field' json: {}}]
+   * @param stateId state id of the application state
+   * @return Array of string options
+   */
+  getDynamicOptionsForField: abstract function(componentId: string,
+                                               fieldName: string,
+                                               calledFromComponent: string,
+                                               state: UiSdlReduxState,
+                                               fields: [map<string, any>],
+                                               stateId: string): [string] ts-client
+}

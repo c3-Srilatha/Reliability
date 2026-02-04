@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link App.Meter.TimeHistogram} is really a specialized {@link App.Meter.Histogram}.
+ * The histogram groups the data into buckets based on these ranges and counts how many values are in each bucket.
+ * Same as {@link App.Meter.Histogram}, {@link #minimumExpectedDuration} and {@link #maximumExpectedDuration} is used to influence cardinality of buckets and bucket size.
+ * However, the bucket size is calculated internally by the {@link App.Meter.TimeHistogram}, and cannot be configured manually.
+ * More specifically, {@link App.Meter.TimeHistogram} includes buckets that are within the range
+ * set by {@link #minimumExpectedDuration} and {@link #maximumExpectedDuration}, inclusive.
+ * Other than that, we will always have two buckets by default, one is less than {@link #minimumExpectedDuration},
+ * the other one is less than +Inf.
+ * Any observation being recorded by {@link #recordSeconds} or {@link #recordMilliseconds} can fall outside the range of {@link #minimumExpectedDuration} and
+ * {@link #maximumExpectedDuration}.
+ *
+ * Example usage of a {@link App.Meter.TimeHistogram} to record durations between 1 and 10 seconds:
+ * Define a meter metadata, MyProcessDurationHistogram.json
+ *   {
+ *     "name": "MyProcessDurationHistogram",
+ *     "description" : "MyProcessDurationHistogram",
+ *     "tags": {
+ *       "tag1": "value1",
+ *       "tag2": "value2"
+ *     },
+ *     "minimumExpectedDuration": "1sec",
+ *     "maximumExpectedDuration": "10sec",
+ *     "percentiles": [0.5, 0.75, 0.9, 0.95]
+ *   }
+ *
+ * App.Meter.TimeHistogram.forName("MyProcessDurationHistogram").recordSeconds(amount, Map.ofStr("tag1", "new-value"));
+ *
+ * Example usage of a TimeHistogram to record milliseconds.
+ * Define a meter metadata, MilliTimeHistogram.json
+ *   {
+ *     "name" : "MilliTimeHistogram",
+ *     "description" : "MilliTimeHistogram",
+ *     "tags": {
+ *       "tag1": "value1",
+ *       "tag2": "value2"
+ *     },
+ *     "minimumExpectedDuration": "1milliseconds",
+ *     "maximumExpectedDuration": "10milliseconds",
+ *     "percentiles": [0.5, 0.75, 0.9, 0.95]
+ *   }
+ *
+ * App.Meter.TimeHistogram.forName("MilliTimeHistogram").recordMilliseconds(amount, Tags);
+ */
+@beta
+inline private type App.Meter.TimeHistogram mixes App.Meter {
+
+  aggregateKinds: ~
+
+  /**
+   * Updates the statistics kept by the summary with the specified amount.
+   *
+   * @param amount
+   *        Seconds for an event being measured. If the amount is less than 0 the value will be dropped.
+   * @param tags
+   *        custom tag/s for a metric name, tag keys should match tags defined in {@link App.Meter#tags}
+   */
+  recordSeconds: member function(amount: !double, tags: map<string, string>)
+
+  /**
+   * Updates the statistics kept by the summary with the specified amount.
+   *
+   * @param amount
+   *        Milliseconds for an event being measured. If the amount is less than 0 the value will be dropped.
+   * @param tags
+   *        custom tag/s for a metric name, tag keys should match tags defined in {@link App.Meter#tags}
+   */
+  recordMilliseconds: member function(amount: !double, tags: map<string, string>)
+
+  /**
+   * Percentiles to compute and publish, this produces additional time series for each requested percentile.
+   */
+  percentiles: [double] = [0.25, 0.5, 0.75, 0.9, 0.95, 0.99]
+
+  /**
+   * Sets the minimum value that this timer is expected to observe.
+   * Sets a lower bound on histogram buckets that are shipped to monitoring systems that support aggregable percentile approximations, must be greater than 0.
+   * Must be seconds or milliseconds {@link Duration}. If the Duration passed in double seconds, it will be casted into long automatically.
+   */
+  minimumExpectedDuration: !string serialized Duration
+
+  /**
+   * Sets the maximum value that this timer is expected to observe.
+   * Sets an upper bound on histogram buckets that are shipped to monitoring systems that support aggregable percentile approximations.
+   * Must be seconds or milliseconds {@link Duration}. If the Duration passed in double seconds, it will be casted into long automatically.
+   */
+  maximumExpectedDuration: !string serialized Duration
+
+  /**
+   * Creates lambda that consume duration in fractional seconds and efficiently record it using {@link #recordSeconds}.
+   *
+   * @inheritdoc
+   */
+  bind: ~
+}

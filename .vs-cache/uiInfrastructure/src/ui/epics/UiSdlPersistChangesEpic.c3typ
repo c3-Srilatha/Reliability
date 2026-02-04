@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Listens for actions of type `DATA_SAVE` as specified in {@link UiSdlDataRedux}
+ * If changes are successfully persisted it will reset the edit tracker information and reload the data source
+ * For non-persistable type, extend and overwrite {@link persistAddNewData}, {@link persistUpdateData}, {@link persistRemoveData}
+ * and also update the `DATA_SAVE` action in {@link UiSdlDataRedux#effects} to trigger the new effect type.
+ */
+@typeScript
+type UiSdlPersistChangesEpic mixes UiSdlEpic {
+
+  epic: ~ ts-client
+
+  /**
+   * Function to call to persist adding new data
+   * This function calls upsertBatch action to persist addition.
+   * Overwrite this function if the type needs to call a different action to persist addition other than upsertBatch
+   *
+   * @param typeName
+   *           name of the type
+   * @param upObjs
+   *           array of modified objects that need to persist
+   * @param state
+   *           current redux state
+   * @return an AjaxObservable see {@link UiSdlDataRedux#ajax}
+   */
+  persistAddNewData: private function(typeName: string, updObjs: [Obj], state: UiSdlReduxState): any ts-client
+
+  /**
+   * Function to call to persit updating modified data
+   * This function calls upsertBatch action to persist changes.
+   * Overwrite this function if the type needs to call a different action to persist changes other than upsertBatch
+   *
+   * @param typeName
+   *           name of the type
+   * @param upObjs
+   *           array of modified objects that need to persist
+   * @param srcObjs
+   *           array of orignal source objects
+   * @param state
+   *           current redux state
+   * @return an AjaxObservable see {@link UiSdlDataRedux#ajax}
+   */
+  persistUpdateData: private function(typeName: string,
+                                      updObjs: [Obj],
+                                      srcObjs: [Obj],
+                                      state: UiSdlReduxState): any ts-client
+
+  /**
+   * Function to call to persit removal of data
+   * This function calls removeAll action to persist removal.
+   * Overwrite this function if the type needs to call a different action to persist removal other than removeAll
+   *
+   * @param typeName
+   *           name of the type
+   * @param deletions
+   *           array of ids that need to delete
+   * @param state
+   *           current redux state
+   * @return an AjaxObservable see {@link UiSdlDataRedux#ajax}
+   */
+  persistRemoveData: private function(typeName: string, deletions: [string], state: UiSdlReduxState): any ts-client
+}

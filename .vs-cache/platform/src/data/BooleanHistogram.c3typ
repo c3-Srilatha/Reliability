@@ -1,0 +1,20 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Histogram for booleans. Since there are only a finite number of booleans (2), this will actually be an exact mapping
+ * of boolean -> count.
+ */
+type BooleanHistogram mixes Histogram<boolean, BooleanHistogram, HistogramBuilder<BooleanHistogram>> {
+
+  /**
+   * Helper method to generate boolean bins for a BooleanHistogram. Shared code between BooleanHistogram.merge and
+   * HistogramBuilder.buildBoolHistogram
+   */
+  boolBins: function(falseCount: !int, trueCount: !int, total: !int): Array<HistogramBin<boolean>>
+}

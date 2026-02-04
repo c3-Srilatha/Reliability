@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type handles parsing of Markdown and rendering into other formats. In particular, the C3 markdown flavor is
+ * [CommonMark](https://commonmark.org/) with some [GitHub extensions](https://github.github.com/gfm/):
+ *   - heading anchors
+ *   - tables
+ *   - strikethrough
+ *
+ * JavaDoc style links and images using `{@link}` and `{@img}` are supported, which get translated into a normal
+ * Markdown link and image references. Finally, type/field references are supported using a hash mark such as:
+ * `Type#field` (anywhere) or just `#field` (in a .c3typ file where the type provides context).
+ *
+ * Math expressions in LaTeX are supported using double dollar sign (`$$`) delimiters. When used in a block with
+ * other content, it will be inline and when in as a paragraph by itself it will be display style.
+ * Note that due to poor browser support for [MathML](https://www.w3.org/Math/), this requires shimming with
+ * [MathJax](https://www.mathjax.org/).
+ *
+ * Tabbed content is also supported using the alternate (ATX) heading style with equal signs instead of hash marks.
+ *
+ * Diagrams are supported as fenced code blocks with "```mermaid".
+ *
+ * Raw HTML tags are not supported in Markdown and will be rendered as plain text. That means that natural type
+ * names can be used and so "Array<Obj>" will render naturally (the `<` and `>` are treated as plain text).
+ *
+ * @see https://commonmark.org/
+ * @see https://github.github.com/gfm/
+ * @see https://en.wikibooks.org/wiki/LaTeX/Mathematics
+ * @see https://mermaid.js.org/intro/
+ */
+type Markdown mixes StringSerializable {
+
+  /**
+   * A Markdown document is a parsed tree of nodes.
+   */
+  document: !MarkdownDocument
+
+  /**
+   * Parse a string as Markdown. An empty string will return an instance with no document.
+   *
+   * This should not fail for ordinary text and valid Markdown, but will fail if there is illegal syntax, such as
+   * raw HTML.
+   */
+  fromString: ~
+
+  /**
+   * Translate a JavaDoc comment into Markdown. Note that this strips out HTML, replacing some standard tags with
+   * corresponding Markdown. If there is no content in the comment body, null is returned.
+   *
+   * @param body JavaDoc comment body without comment characters
+   */
+  fromJavaDoc: function(body: !?string): Markdown
+
+  /**
+   * Render the document as HTML.
+   */
+  toHtml: member function(spec: MarkdownRenderSpec): string
+
+  /**
+   * Traverse all nodes in the tree, calling the visitor for each one. If the visitor returns false, it does not
+   * continue into child nodes.
+   */
+  visit: member function(visitor: !lambda(node: !MarkdownNode, depth: !int): boolean)
+
+  /**
+   * Parse the string and produce the HTML all in one shot.
+   */
+  fromStringToHtml: function(source: !?string, spec: MarkdownRenderSpec): string
+
+  /**
+   * The original source if parsed from a string.
+   */
+  _source: private string
+}

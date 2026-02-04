@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * How the chips within a single {@link ChipsCell} should be arranged.
+ *
+ * @see ChipsCellGroupingOptions#arrangement
+ */
+@typeScript
+enum type ChipsCellArrangement {
+
+  /**
+   * Do not apply any special arrangement to the chips. Display them in the order
+   * they're stored in the array at {@link UiSdlDataGridDataItem#obj}.
+   *
+   * Example:
+   *
+   * ```
+   * obj[fieldPath] = ['x', 'y', 'x', 'z', 'x', 'y']
+   * collapseThreshold = 4
+   *
+   * x y x z (+2)
+   * ```
+   */
+  NONE
+
+  /**
+   * Chips are sorted by which bin from {@link ChipsCellGroupingOptions#valuesToStyles}
+   * (based on the order specified) they correspond to. If a chip doesn't correspond to
+   * any bin, it will be placed at the end of the list.
+   *
+   * Example:
+   *
+   * ```
+   * obj[fieldPath] = ['x', 'y', 'z', 'z', 'x', 'y']
+   * collapseThreshold = 4
+   *
+   * x x y y (+2)
+   * ```
+   */
+  SORT
+
+  /**
+   * Same as #SORT, except that {@link ChipsCell#collapseThreshold} and
+   * {@link ChipsCell#numChipsToReveal} are applied to the bins individually, so
+   * each bin can be collapsed and expanded independently.
+   *
+   * Example:
+   *
+   * ```
+   * obj[fieldPath] = ['x', 'y', 'z', 'z', 'x', 'y', 'x', 'z', 'y', 'x']
+   * collapseThreshold = 2
+   *
+   * x x (+2)
+   * y y (+1)
+   * z z (+1)
+   * ```
+   */
+  GROUP
+}

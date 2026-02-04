@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='awsalb')
+type AwsAlb mixes AwsLoadBalancer, AwsVpcMember {
+
+  ipAddressType: string enum AwsAlbIpAddressType
+  scheme:        string enum AwsAlbScheme
+
+  /**
+   * get target groups of the application load balancer
+   *
+   * @return
+   *        All the {@link AwsElbTargetGroup} this AwsAlb has.
+   */
+  targetGroups: member function(): [AwsElbTargetGroup]
+
+  /**
+   * Register a {@link AwsEc2Instance} into all the {@link AwsElbTargetGroup} that this AwsAlb has. In order to make this
+   * function works correctly, there must be at least one {@link AwsElbTargetGroup} existing in this {@link AwsAlb}, which
+   * means there must be at least one Aws Listener associated with rules and actions, which is added in this {@link AwsAlb}.
+   *
+   * You can call {@see #targetGroups} to check all {@link TargetGroup} this AwsAlb has.
+   *
+   * @param instance
+   *          The {@link AwsEc2Instance} to be registered.
+   *
+   * @param port
+   *          The listening port of the compute instance. A single {@link AwsEc2Instance} can be registered multiple times
+   *          with different ports since there might be different kind of services running on different port on a sinle
+   *          {@link AwsEc2Instance}.
+   */
+  registerInstance: ~
+
+  deregisterInstance: ~
+  awsServiceName:     ~
+}

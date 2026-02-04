@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Schema upgrade for migrating legacy {@link AlertMutedPeriod}s to the new granular muting structure
+ * introduced in Reliability 21.0.0.
+ *
+ * This upgrade transforms asset-level muted periods into model/sensor-specific muted periods,
+ * enabling granular control over which models and sensors have muted alerts.
+ */
+type AlertMutedPeriodSchemaUpgrade mixes SchemaUpgrade {
+
+  /**
+   * Migrates active {@link AlertMutedPeriod}s from the legacy asset-level structure to the new
+   * granular model/sensor-specific structure.
+   *
+   * ## Migration Process
+   *
+   * For each active muted period:
+   * 1. **Asset Alert Migration**: Creates individual muted periods for each CHAMPION model
+   *    associated with the parent asset
+   * 2. **Sensor Alert Migration**: Creates individual muted periods for each sensor
+   *    associated with the parent asset
+   *
+   * ## Key Features
+   * - Only processes active muted periods
+   * - Preserves original start/end dates for all new periods
+   * - Processes data in configurable batches for performance - use {@link SchemaV8UpgradeConfig#commitSize}
+   * - Does not delete existing periods (safe migration)
+   * **Note**: it does terminate legacy periods by setting their end date to the current time.
+   *
+   * ## Return Value
+   * @return Summary message with migration results and verification query
+   */
+  migrateAlertMutedPeriods_1: function(): string js-rhino
+}

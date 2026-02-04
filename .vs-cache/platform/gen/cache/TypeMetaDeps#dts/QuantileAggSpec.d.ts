@@ -1,0 +1,881 @@
+// TypeScript definitions for the C3 type QuantileAggSpec
+
+/**
+ * Spec for `quantile` for resample function
+ *
+ * @remarks this represents a value passed to a method that expects an instance of QuantileAggSpec
+ */
+declare interface IQuantileAggSpec {
+
+  /**
+   * If `true` then consider all empty values as well. I.e. empty collections and references, `false` values for boolean
+   * etc.
+   *
+   * @see #forIncludeEmpty
+   */
+  includeEmpty?: boolean;
+
+  /**
+   * If `true` then consider all empty collections.
+   *
+   * @see #forIncludeEmptyCollections
+   */
+  includeEmptyCollections?: boolean;
+
+  /**
+   * If `true` then consider all references, i.e. instanced of other referenced types even if no fields of such
+   * references are set.
+   *
+   * @see #forIncludeEmptyRefs
+   */
+  includeEmptyRefs?: boolean;
+
+  /**
+   * If `true` then consider all `false` values as well.
+   *
+   * @see #forIncludeFalses
+   */
+  includeFalses?: boolean;
+
+  /**
+   * If `true`, then skip non key fields. Key fields are `Identifiable.id`, `Nameable.name` and `WithKey.keyFieldType()`.
+   *
+   * @see #forSkipNonKeyFields
+   */
+  skipNonKeyFields?: boolean;
+
+  /**
+   * If `true`, then skip references that are in traversedRefs parameter.
+   *
+   * @see forSkipTraversedRefs
+   */
+  skipTraversedRefs?: boolean;
+
+  /**
+   * If `true`, then skip fields that have a foreign key reference.
+   */
+  skipFkeyRefs?: boolean;
+
+  /**
+   * If provided then this set builder is updated with traversed references including references in collections.
+   *
+   * Note that you don't need to initialize this with an empty set - you would only provide it if you have references
+   * that you want to be skipped.
+   */
+  traversedRefs?: ISetBuilder<Obj | null> | null;
+
+  /**
+   * By default, null argument is ignored i.e result will be value of the other argument. If #keepNulls is set then in
+   * this case result will always be null.
+   */
+  keepNulls?: boolean;
+
+  /**
+   * By default, the last non-null element is not repeated and subsequent elements are null. If
+   * #repeatLast is set then the last non-null element will replace subsequent missing elements.
+   *
+   * Note: This only affects element-wise operations on two Collections of different sizes.
+   */
+  repeatLast?: boolean;
+
+  /**
+   * The quantile value or a list of quantile to use
+   */
+  q?: number | null | C3.Array<any> | Array<any> | null;
+}
+
+/**
+ * Spec for `quantile` for resample function
+ *
+ * @remarks this represents a made instance of QuantileAggSpec
+ */
+declare class QuantileAggSpec extends Obj {
+
+  /**
+   * If `true` then consider all empty values as well. I.e. empty collections and references, `false` values for boolean
+   * etc.
+   *
+   * @see #forIncludeEmpty
+   */
+  readonly includeEmpty?: boolean;
+  withIncludeEmpty(includeEmpty: boolean): QuantileAggSpec;
+
+  /**
+   * If `true` then consider all empty collections.
+   *
+   * @see #forIncludeEmptyCollections
+   */
+  readonly includeEmptyCollections?: boolean;
+  withIncludeEmptyCollections(includeEmptyCollections: boolean): QuantileAggSpec;
+
+  /**
+   * If `true` then consider all references, i.e. instanced of other referenced types even if no fields of such
+   * references are set.
+   *
+   * @see #forIncludeEmptyRefs
+   */
+  readonly includeEmptyRefs?: boolean;
+  withIncludeEmptyRefs(includeEmptyRefs: boolean): QuantileAggSpec;
+
+  /**
+   * If `true` then consider all `false` values as well.
+   *
+   * @see #forIncludeFalses
+   */
+  readonly includeFalses?: boolean;
+  withIncludeFalses(includeFalses: boolean): QuantileAggSpec;
+
+  /**
+   * If `true`, then skip non key fields. Key fields are `Identifiable.id`, `Nameable.name` and `WithKey.keyFieldType()`.
+   *
+   * @see #forSkipNonKeyFields
+   */
+  readonly skipNonKeyFields?: boolean;
+  withSkipNonKeyFields(skipNonKeyFields: boolean): QuantileAggSpec;
+
+  /**
+   * If `true`, then skip references that are in traversedRefs parameter.
+   *
+   * @see forSkipTraversedRefs
+   */
+  readonly skipTraversedRefs?: boolean;
+  withSkipTraversedRefs(skipTraversedRefs: boolean): QuantileAggSpec;
+
+  /**
+   * If `true`, then skip fields that have a foreign key reference.
+   */
+  readonly skipFkeyRefs?: boolean;
+  withSkipFkeyRefs(skipFkeyRefs: boolean): QuantileAggSpec;
+
+  /**
+   * If provided then this set builder is updated with traversed references including references in collections.
+   *
+   * Note that you don't need to initialize this with an empty set - you would only provide it if you have references
+   * that you want to be skipped.
+   */
+  readonly traversedRefs?: SetBuilder<Obj | null> | null;
+  withTraversedRefs(traversedRefs: ISetBuilder<Obj | null> | null): QuantileAggSpec;
+
+  /**
+   * By default, null argument is ignored i.e result will be value of the other argument. If #keepNulls is set then in
+   * this case result will always be null.
+   */
+  readonly keepNulls?: boolean;
+  withKeepNulls(keepNulls: boolean): QuantileAggSpec;
+
+  /**
+   * By default, the last non-null element is not repeated and subsequent elements are null. If
+   * #repeatLast is set then the last non-null element will replace subsequent missing elements.
+   *
+   * Note: This only affects element-wise operations on two Collections of different sizes.
+   */
+  readonly repeatLast?: boolean;
+  withRepeatLast(repeatLast: boolean): QuantileAggSpec;
+
+  /**
+   * The quantile value or a list of quantile to use
+   */
+  readonly q?: number | null | C3.Array<any> | null;
+  withQ(q: number | null | C3.Array<any> | Array<any> | null): QuantileAggSpec;
+
+  /**
+   * Load the JSON-based representation and reconstruct the corresponding object.
+   *
+   * fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+   * called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+   * an instance of the correct type.
+   *
+   * @see #toJson
+   */
+  static fromJson(json: any | null): QuantileAggSpec | null;
+
+  /**
+   * Load the JSON-based representation and reconstruct the corresponding object.
+   *
+   * fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+   * called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+   * an instance of the correct type.
+   *
+   * @see #toJsonString
+   */
+  static fromJsonString(json: string | null): QuantileAggSpec | null;
+
+  /**
+   * Load the XML-based representation and reconstruct the corresponding object.
+   *
+   * fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+   * may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+   * isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+   * will return an instance of the correct type.
+   *
+   * @see #toXmlString
+   */
+  static fromXmlString(xml: string | null): QuantileAggSpec | null;
+
+  /**
+   * Load from contentType representation and reconstruct the corresponding object.
+   *
+   * fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+   * (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+   * will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+   * type and will return an instance of the correct type.
+   */
+  static deserialize(contentStr: string | null, contentType: string): QuantileAggSpec | null;
+
+  /**
+   * Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+   * type does not contain fields from old or field value types are not convertable then drops the field.
+   *
+   * This method is used during live metadata update
+   */
+  replaceType(old: Type, new_: Type): QuantileAggSpec;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValues(mapper: λBiFunction<FieldType, any, any>, convertValue?: boolean): QuantileAggSpec;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValues(spec: ValueSpec, mapper: λBiFunction<FieldType, any, any>, convertValue?: boolean): QuantileAggSpec;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the asynchronous `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that fields
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValuesAsync(mapper: λBiFunction<FieldType, any, C3.Promise<any> | null>, convertValue?: boolean): C3.Promise<QuantileAggSpec | null>;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * asynchronous `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValuesAsync(spec: ValueSpec, mapper: λBiFunction<FieldType | null, any, C3.Promise<any> | null>, convertValue?: boolean): C3.Promise<QuantileAggSpec | null>;
+
+  /**
+   * Result of this function call is a copy of current instance with specified field value replaced based on result of
+   * the `mapper` invocation.
+   * @param field
+   *           field being mapped
+   * @param includeEmpty
+   *           if set, invokes mapper for fields with empty value
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValue(field?: FieldType | null, includeEmpty?: boolean, mapper: λFunction<any, any>, convertValue?: boolean): QuantileAggSpec;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param action
+   *           function to be executed for each pair of field type and Obj instance
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapRefs(mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): QuantileAggSpec;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param includeEmpty
+   *           if `true` will also process references with `null` / "Empty" references
+   * @param mapper
+   *           function to be executed for each pair of field type and Obj instance for producing new reference value
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapRefs(includeEmpty: boolean, mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): QuantileAggSpec;
+
+  /**
+   * Populates all missing default values and throws error if any constraint is violated.
+   */
+  validateObj(): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           name of the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  withField(field: string, value: any, doNotConvert?: boolean): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  withField(field: FieldType, value: any, doNotConvert?: boolean): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+   * defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+   *
+   * @param fields
+   *           map of field names/values
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @return new Obj
+   */
+  withFields(fields: C3.Map<string | null, any> | null, doNotConvert?: boolean): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+   * If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+   *
+   * Immutable objects may return the same instance if the field being set does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path to set value at
+   * @param value
+   *           value to set
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @param doNotCreateIfMissing
+   *           true indicates that any empty reference along the path will not set the value
+   * @return new Obj
+   */
+  withFieldAtPath(path: string, value: any, doNotConvert?: boolean, doNotCreateIfMissing?: boolean): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj without the specified path field.
+   *
+   * Immutable objects may return the same instance if the field being removed does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path for field to remove
+   * @return new Obj
+   *
+   * @see #withFieldAtPath
+   * @see #withoutField
+   */
+  withoutFieldAtPath(path: string): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj, removing the field with the provided name.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  withoutField(field: string | null): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj, removing the field with the provided field type.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  withoutField(field: FieldType | null): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided names.
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           names of the fields to remove
+   * @return new Obj with removed fields
+   */
+  withoutFields(fields: C3.Array<string | null> | null): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+   * exact same type as the type of the obj to respect the "ordinal" of the field type
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           field types to remove
+   * @return new Obj with removed fields
+   */
+  withoutFieldsByType(fields: C3.Array<FieldType | null> | null): QuantileAggSpec;
+
+  /**
+   * @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+   */
+  withoutSecretFields(): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+   * calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+   * {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+   * fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+   * fields that have already been set.
+   *
+   * {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+   * As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+   *
+   * @param includeEmptyRefsWithDefaults
+   *           it `true` then missing / empty child references that have fields with defaults will also be instantiated
+   * @param defaultFields
+   *           If not empty, a list of default field paths to populate.  Any default fields not specified in the
+   *           array will be ignored.
+   * @return new Obj
+   *
+   * @see #defaultField
+   * @see FieldType#defaultValueConst
+   * @see FieldType#defaultValue
+   */
+  withDefaults(includeEmptyRefsWithDefaults?: boolean, defaultFields?: C3.Array<string | null>): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         name of the field to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  defaultField(field: string): QuantileAggSpec;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         field type to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  defaultField(field: FieldType): QuantileAggSpec;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         name of the field to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  unsetField(field: string): QuantileAggSpec;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         field type to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  unsetField(field: FieldType): QuantileAggSpec;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         name of the field to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  removeField(field: string): QuantileAggSpec;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         field type to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  removeField(field: FieldType): QuantileAggSpec;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+   *
+   * @param other
+   *           object
+   * @param fieldPathMergeSpec
+   *           mapping of fields of the object to the respective merge annotations
+   * @return the new merged Obj
+   */
+  mergeObj(other: Obj | null, fieldPathMergeSpec?: C3.Map<string | null, string | null>): QuantileAggSpec;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence.
+   *
+   * @param other
+   *           object
+   * @param otherFieldsFilter
+   *           only fields of otherFieldsFilter type from other are merged into this obj.
+   * @return the new merged Obj
+   */
+  mergeObj(other: Obj | null, otherFieldsFilter: Type): QuantileAggSpec;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+   * @param deep
+   *        if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+   *        the same key or index.
+   */
+  mergeObj(other: Obj | null, deep?: boolean, merger: λQuadFunction<FieldPath | null, any, FieldPath | null, any, any>): QuantileAggSpec;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+   * traverse child reference and collection fields.
+   */
+  mergeObj(other: Obj | null, merger: λQuadFunction<FieldType | null, any, FieldType | null, any, any>): QuantileAggSpec;
+
+  mergeJson(json: any | null): QuantileAggSpec;
+
+  /**
+   * Merge the obj references within the current obj
+   * @param deep
+   *        If set, traverses the reference fields within the obj as well for a deep merge
+   * @param objKey
+   *        lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+   * @param filter
+   *        Field paths that need to be filtered from this merge
+   * @return Obj with child references merged
+   */
+  mergeChildren(deep?: boolean, objKey?: λFunction<Obj | null, any> | null, filter?: λPredicate<string> | null): QuantileAggSpec;
+
+  /**
+   * Adds the numeric Obj fields with the other Objs respective fields.
+   * If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+   * references with same name and collection elements at same index or key.
+   */
+  sumObj(other: Obj | null, deep?: boolean): QuantileAggSpec;
+
+  /**
+   * Build an array of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  singletonArray(): C3.Array<QuantileAggSpec | null>;
+
+  /**
+   * Creates an array of instances of this type.
+   */
+  static array(...elements: any[]): C3.Array<QuantileAggSpec | null>;
+
+  /**
+   * Creates an array of instances of this type.
+   */
+  static arrayBuilder(): ArrayBuilder<QuantileAggSpec | null> | null;
+
+  /**
+   * Build an set of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  singletonSet(): C3.Set<QuantileAggSpec | null>;
+
+  /**
+   * Creates a set of instances of this type.
+   */
+  static setBuilder(): SetBuilder<QuantileAggSpec | null> | null;
+
+  /**
+   * Create a map of string to elements of this type.
+   */
+  static mapBuilder(): MapBuilder<string | null, QuantileAggSpec | null> | null;
+
+  /**
+   * Create a map with the given key type and elements of this type.
+   */
+  static mapBuilderOf(keyType: ValueType): MapBuilder<any, QuantileAggSpec | null> | null;
+
+  /**
+   * @return new ObjBuilder with initial state set to fields of this instance.
+   */
+  toBuilder(): ObjBuilder<QuantileAggSpec | null>;
+
+  /**
+   * @return new ObjBuilder of this instance.
+   */
+  static builder(): ObjBuilder<QuantileAggSpec | null>;
+
+  /**
+   * Construct instance of this type from provided field values and options
+   */
+  static fromFields(fields: C3.Map<FieldType | null, any> | null, spec: Obj.MakeSpec | null): QuantileAggSpec;
+
+  /**
+   * Construct an instance of this type from provided fields
+   * @param fields
+   *            Fields to construct the instance of the obj with
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+   *
+   * @see withDefaults
+   */
+  static fromFields(fields: C3.Map<FieldType | null, any | any | null> | null, withDefaults?: boolean): QuantileAggSpec;
+
+  /**
+   * Construct instance of this type from provided field values and options
+   */
+  static make(fields: C3.Map<string | null, any> | null, spec: Obj.MakeSpec | null): QuantileAggSpec;
+
+  /**
+   * Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+   *            populated
+   *
+   * @see withDefaults
+   */
+  static make(withDefaults?: boolean): QuantileAggSpec;
+
+  /**
+   * Construct an instance from provided fields
+   * @param fields
+   *            Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+   *            field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+   *            to Panda.make()
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+   *            -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+   *            the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+   *
+   *
+   * @see fromFields
+   * @see beforeMake
+   * @see afterMake
+   * @see withDefaults
+   */
+  static make(fields: C3.Map<string | null, any | any | null> | null, withDefaults?: boolean): QuantileAggSpec;
+
+  /**
+   * Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+   *
+   * ```js
+   * User.make({
+   *   email: 'joe@smith.com',
+   *   realName: 'Joe Smith'
+   * })
+   *
+   * Obj.make({
+   *   type: 'User',
+   *   email: 'joe@smith.com',
+   *   realName: 'Joe Smith'
+   * })
+   * ```
+   *
+   * ```py
+   * c3.User.make({
+   *   "email": 'joe@smith.com',
+   *   "realName": 'Joe Smith'
+   * })
+   *
+   * c3.Obj.make({
+   *   "type": 'User',
+   *   "email": 'joe@smith.com',
+   *   "realName": 'Joe Smith'
+   * })
+   *
+   * c3.User(email='joe@smith.com', realName='Joe Smith')
+   *
+   * c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+   * ```
+   *
+   * Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+   * specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+   * such as {@link Ann.Ser} do not apply.
+   * @param fields
+   *            Fields to construct the instance of the obj with
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+   *
+   * @see fromFields
+   * @see beforeMake
+   * @see afterMake
+   * @see withDefaults
+   */
+  static make(fields: any, withDefaults?: boolean): QuantileAggSpec;
+
+  /**
+   * Construct an instance of this type from provided instance of a subtype or a "duck type".
+   */
+  static remake(other: Obj | null, failIfExtraOrInvalidFields?: boolean): QuantileAggSpec;
+
+  /**
+   * Optional override that will be called every time instance of this type is created.
+   *
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  static beforeMake(fields: C3.Map<FieldType | null, any> | null): C3.Map<FieldType | null, any>;
+
+  /**
+   * Optional override that will be called after every instance creation.
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  afterMake(): QuantileAggSpec;
+
+  /**
+   * Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+   * every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+   * Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+   *
+   * @see ValueType#defaultEmptyValue
+   */
+  static cachedEmptyInst(): QuantileAggSpec;
+
+  /**
+   * Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+   * value is read.
+   */
+  static generateObjs(spec?: Obj.GenerateSpec | null): Stream<QuantileAggSpec>;
+
+  /**
+   * Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+   * random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+   * populates fields in a more realistic way.
+   */
+  static generateObj(spec?: Obj.GenerateSpec | null): QuantileAggSpec;
+
+  /**
+   * @return `true` if given enumeration should include empty values for provided ValueType.
+   */
+  includeEmptyFor(valueType: ValueType): boolean;
+
+  /**
+   * @return `true` if given field should be skipped based on current spec.
+   */
+  skipField(field: FieldType): boolean;
+
+  /**
+   * @return spec with #includeEmpty set to `true`.
+   */
+  static forIncludeEmpty(): ValueSpec;
+
+  /**
+   * @return spec with #includeEmptyCollections set to `true`.
+   */
+  static forIncludeEmptyCollections(): ValueSpec;
+
+  /**
+   * @return spec with #includeEmptyRefs set to `true`.
+   */
+  static forIncludeEmptyRefs(): ValueSpec;
+
+  /**
+   * @return spec with #skipNonKeyFields set to `true`.
+   */
+  static forSkipNonKeyFields(): ValueSpec;
+
+  /**
+   * @return spec with #skipTraversedRefs set to `true` and #traversedRefs to an empty set.
+   */
+  static forSkipTraversedRefs(): ValueSpec;
+
+  /**
+   * @return spec with #skipFkeyRefs set to `true`.
+   */
+  static forSkipFkeyRefs(): ValueSpec;
+
+  /**
+   * Make sure that this ValueSpec is setup to skip traversed references by enabling {@link ValueSpec#skipTraversedRefs}
+   * and ensuring {@link ValueSpec#traversedRefs} is populated.
+   */
+  ensureSkipTraversedRefs(): QuantileAggSpec;
+}
+
+
+interface λFunction<T, R> {
+  (t: T): R
+}
+
+interface λBiFunction<T, U, R> {
+  (t: T, u: U): R
+}
+
+interface λQuadFunction<T, U, V, W, R> {
+  (t: T, u: U, v: V, w: W): R
+}
+
+interface λPredicate<T> {
+  (t: T): boolean
+}

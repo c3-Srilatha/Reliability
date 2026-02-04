@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/** Toxic processor is an input processor which detects toxic or malicious inputs that may alter the AI model's intended behavior.
+ * and ensure that only safe and appropriate inputs are processed, protecting the system from exploitation.
+ */
+type Genai.LlmGuardrails.Processor.ToxicSpeech mixes Genai.LlmGuardrails.Processor {
+
+  /**
+   * Threshold for detecting toxicity. LLM Guard use threshold values to evaluate the risk score of the text being scanned.
+   * It's a numeric parameter that sets the sensitivity level for detecting unwanted content, such as toxicity, bias, or other harmful outputs.
+   * Default threshold values provided by LLM Guard or based on industry standards is 0.5.
+   * Please refer https://llm-guard.com/get_started/quickstart/ for more details.
+   */
+  threshold: float = 0.5
+
+  initialize: ~ py-llmguard
+  processInput: ~ py-llmguard
+
+}

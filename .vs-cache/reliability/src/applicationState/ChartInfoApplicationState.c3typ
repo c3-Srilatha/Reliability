@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state that stores all chart data and config related information.
+ */
+@typeScript
+type ChartInfoApplicationState mixes SettableApplicationState, ChartConfigInfo {
+
+  /**
+   * The name of the type implementing ChartHelper that will be used.
+   * This field MUST be set in the JSON configuration of a specific application state for {@link getChartInfo}
+   * to function properly.
+   */
+  chartHelperType: !string
+
+  /**
+   * An action to indicate chart information has been loaded.
+   *
+   * @param stateId
+   *           The ID of the state
+   * @param chartInfo
+   *           The chart information that has been loaded
+   * @return A Redux action of type `LOADED_CHART_INFO`.
+   */
+  @uiSdlActionCreator(actionType='LOADED_CHART_INFO')
+  loadedChartInfoAction: function(stateId: string, chartInfo: ChartInfo): !UiSdlReduxAction ts-client
+
+  /**
+   * An action to indicate chart information retrieval.
+   *
+   * @param spec
+   *            The spec to provide to the underlying {@link ChartHelper} function that may be called after the action.
+   * @param chartHelperName
+   *            The name of type that mixes and implements {@link ChartHelper}.
+   * @return A Redux action of type `GET_CHART_INFO`.
+   */
+  @uiSdlActionCreator(actionType='GET_CHART_INFO')
+  getChartInfoAction: function(
+    stateId: string,
+    spec: json,
+    chartHelperName: string
+  ): !UiSdlReduxAction ts-client
+
+  /**
+   * Gets chart configurations and data using a passed in chartHelperType that implements {@link ChartHelper}.
+   * It also takes a spec for the chartHelperType to use.
+   *
+   * @param actionStream
+   *           The observable stream of UI SDL actions
+   * @param stateStream
+   *           The observable stream of UI SDL states
+   * @return An observable stream of UI SDL actions
+   */
+  @uiSdlEpic(actionType='GET_CHART_INFO')
+  getChartInfo:  function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+}

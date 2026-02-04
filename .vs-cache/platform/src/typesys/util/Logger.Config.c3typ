@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config holding details for loggers
+ */
+@config(doNotDefaultIfMissing=true)
+type Logger.Config mixes Config, Named {
+
+  /**
+   * level of the logger
+   */
+  level: !Logger.Level
+
+  /**
+   * Should log messages be recursively added from parent to child
+   */
+  notAdditive: boolean
+
+  /**
+   * In future [Pair<Logger.AppenderKind, Logger.Level>] and get rid of corresponding appenderLevel
+   *
+   * Type of appenders included on the logger
+   */
+  // TODO :PLAT-41706 CodeGen does not support pair in config child element
+  appenders: [Logger.AppenderKind]
+
+  /**
+   * Corresponding appender level
+   */
+  appendersLevels: [Logger.Level]
+
+  /**
+   * Logger.Config by given loggerId in the current environment
+   *
+   * @param loggerName
+   * @return Logger.Config by given loggerId in the current environment
+   */
+  forName: ~
+}

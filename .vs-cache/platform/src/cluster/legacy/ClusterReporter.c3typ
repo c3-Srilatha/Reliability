@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Update all-env with state of the cluster.
+ */
+// TODO : PLAT-9274 - Use ClusterFacade
+type ClusterReporter mixes REST {
+
+  /**
+   * Send activity status like upgrading, provisioning to all-env.
+   *
+   * @param cluster
+   *           node id of the cluster e.g prod-customer-app-m-01.c3-vpc.internal
+   * @param info
+   *           Information about the operation being performed.
+   */
+  @rest(uri='C3ClusterStatus?action=recordStatus', method='POST')
+  sendStatus: abstract function(cluster: string, info: OperationInfo)
+
+  /**
+   * Report alert to all-env.
+   *
+   * @param info
+   *           Alert information.
+   */
+  @rest(uri='AlertEngine?action=generateAlert', method='POST')
+  generateAlert: abstract function(info: AlertInfo)
+
+  /**
+   * Clear alert on all-env.
+   *
+   * @param info
+   *           Information about the operation being performed.
+   */
+  @rest(uri='AlertEngine?action=removeAlert', method='POST')
+  removeAlert: abstract function(info: AlertInfo)
+
+  /**
+   * Fetch alerts from all-env.
+   *
+   * @param spec
+   *           FetchSpec for Alerts on all-env.
+   */
+  @rest(uri='AlertEngine?action=fetchAlerts', method='POST')
+  fetchAlerts: abstract function(spec: FetchSpec): [AlertInfo]
+}

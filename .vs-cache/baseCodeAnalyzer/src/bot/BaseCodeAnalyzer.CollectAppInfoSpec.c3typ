@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configurations for where to collect {@link TypeMeta} from in {@link BaseCodeAnalyzer#collectAppInfo}.
+ */
+@constraint(
+  condition='(mode == "CUSTOM" && exists(pkgNames)) || empty(pkgNames)',
+  message='pkgNames must be provided when mode is CUSTOM, otherwise it should be empty.')
+type BaseCodeAnalyzer.CollectAppInfoSpec mixes Spec {
+
+  /**
+   * Which packages to collect {@link TypeMeta} for. If mode is [CUSTOM](BaseCodeAnalyzer.CollectAppInfoMode#CUSTOM),
+   * #pkgNames must also be provided.
+   */
+  mode: string enum BaseCodeAnalyzer.CollectAppInfoMode = DEEP
+
+  /**
+   * Whether to include Platform packages in the collection. This is only used when #mode is
+   * [DEEP](BaseCodeAnalyzer.CollectAppInfoMode#DEEP).
+   *
+   * @see includeUiPackages
+   */
+  includePlatformPackages: boolean = false
+
+  /**
+   * Whether to include UI packages in the collection. This is only used when #mode is
+   * [DEEP](BaseCodeAnalyzer.CollectAppInfoMode#DEEP).
+   *
+   * @see includePlatformPackages
+   */
+  includeUiPackages: boolean = false
+
+  /**
+   * Whether to include Base Toolkit packages in the collection. This is only used when #mode is
+   * [DEEP](BaseCodeAnalyzer.CollectAppInfoMode#DEEP).
+   *
+   * @see includePlatformPackages
+   * @see includeUiPackages
+   */
+  includeBaseToolkitPackages: private boolean = false
+
+  /**
+   * The name of the {@link Pkg} to collect {@link TypeMeta} for when #mode is
+   * [DEEP](BaseCodeAnalyzer.CollectAppInfoMode#DEEP). If not provided, the root package of
+   * the application in which {@link BaseCodeAnalyzer#collectAppInfo} is running will be used.
+   */
+  rootPkgName: string
+
+  /**
+   * A list of {@link Pkg}s to collect {@link TypeMeta} for. This should only be provided
+   * when #mode is [CUSTOM](BaseCodeAnalyzer.CollectAppInfoMode#CUSTOM).
+   */
+  pkgNames: set<!string>
+
+  /**
+   * Packages written to the {@link Pkg.Store} instead of read from {@link ArtifactHub}
+   * will only have the `{major}.{minor}.{patch}` version, not the full {@link SemanticVersion}.
+   *
+   * When [collectAppInfo](BaseCodeAnalyzer#collectAppInfo) is being run through a
+   * [Release Management](Jarvis) pipeline, we'll have access to the full semantic
+   * version for all packages written to the {@link Pkg.Store}. A map of {@link Pkg#name}
+   * to their full semantic versions can be provided through this field to ensure that
+   * the most accurate version for each package is collected.
+   */
+  resolvedVersionsMap: map<string, !string serialized SemanticVersion>
+}

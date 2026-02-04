@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An agent that can be used to plan and execute a sequence of steps to answer user query.
+ */
+type Genai.Agent.Dynamic mixes Genai.Agent<Genai.Agent.Dynamic.Config>, Genai.Agent.Tool.Util.GlobalVariableHelper {
+  /**
+   * Initialize the dynamic agent according to the provided spec.
+   *
+   * @param spec
+   *        Initialization spec for the dynamic agent.
+   * @return The native python globals set during initialization.
+   */
+  doInitialize: private inline member function (spec: Genai.Agent.Dynamic.InitializationSpec, forceReload: boolean): native py-query_orchestrator
+
+  initialize: ~ py-query_orchestrator
+
+  /**
+   * A pass-through wrapper around the internal implementation of the run method. This method is called by the public run method but can also be used
+   * directly called during experimentation.
+   */
+  doRun: private member function (inProgressResult: !Genai.Query.Result): !Genai.Query.Result py-query_orchestrator
+
+  /**
+   * A pass-through wrapper around the internal implementation of the run method but with a specified test case.
+   */
+  doRunFromTestCase: private member function (inProgressResult: !Genai.Query.Result, testCaseSpec: !Genai.Agent.Dynamic.InitializationSpec): !Genai.Query.Result py-query_orchestrator
+
+  /**
+   * Helper function to assign the last {@link Genai.Agent.DynamicTrajectory.Step} an error status, fallback content,
+   * and error log so that it can be displayed properly on the UI. Exposed only for testing purposes.
+   * @param inProgressResult
+   *        The {@link Genai.Query.Result} result to be updated.
+   * @param errorMsg
+   *        The error message to be added to the {@link Genai.Agent.Trajectory.Step#logs}
+   * @param agentName
+   *        The name of the agent that is currently running.
+   */
+  ensureLastStepData: private inline function (inProgressResult: !Genai.Query.Result, errorMsg: !string, agentName: !string) py
+
+  run: ~ py-query_orchestrator
+  query: ~ py-query_orchestrator
+  typeGlobals: ~ py-query_orchestrator
+
+  /**
+   * Returns the native dynamic agent.
+   *
+   * @param session
+   *    Key used to retrieve the agent session at a given state.
+   *
+   * @return
+   *    Native instance of the dynamic agent. Used for debugging.
+   */
+  nativeDynamicAgent: member function(session: GenaiCore.Session.Kv): native py-query_orchestrator
+
+  /**
+   * Returns the native dynamic agent trajectory.
+   *
+   * @param session
+   *    Key used to retrieve the agent session at a given state.
+   *
+   * @return
+   *    Native instance of the dynamic agent trajectory. Used for debugging.
+   */
+  nativeTrajectory: member function(session: GenaiCore.Session.Kv): native py-query_orchestrator
+
+  /**
+   * Returns the forced OnStepCallbackSpec of this agent Type. These are the callbacks that are forced to be present in
+   * the agent type and are not user defined. Users are not allowed to override these callbacks nor toggle them off.
+   * Remix this Type to have different forced callbacks.
+   */
+  forcedOnStepCallbackSpec: member function(): native py
+}

@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An alert is a single message intended to communicate something that needs investigation to
+ * users of the system.
+ */
+extendable entity type Alert mixes AclEnabled schema name 'ALERTS_ALERT' {
+
+  /**
+   * analytic category of this alert
+   */
+  analyticCategory: string
+
+  /**
+   * specific analytic result that triggered this alert
+   */
+  analyticResult: Obj
+
+  /**
+   * specific source object for which the alert was triggered
+   */
+  source: Obj
+
+  /**
+   * required importance of the alert
+   */
+  importance: !string enum('CRITICAL', 'HIGH', 'MEDIUM', 'LOW') = 'MEDIUM'
+
+  /**
+   * required alert message
+   */
+  message: !string
+
+  /**
+   * required current status of the alert
+   */
+  status: !string enum('NEW', 'ACCEPTED', 'DISMISSED') = 'NEW'
+
+  /**
+   * user accepting/dismissing the alert
+   */
+  owner: AccessControlEntity
+
+  /**
+   * reason the alert was dismissed
+   */
+  dismissReason: string enum('RESOLVED', 'UNRESOLVED', 'INVALID', 'EXPIRED')
+}

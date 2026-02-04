@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(cloudFunc='k8singr')
+@k8s(nativeKind='ingress', nativeKindPlural='ingresses', apiPrefix='apis')
+type K8sIngress mixes K8sIngressModel, K8sNamespacedResource {
+
+  region: ~
+  isOk:   ~
+
+  /**
+   * @return mapping of ingress rule paths and how they are matched (e.g. prefix, exact)
+   */
+  pathTypes: property(): map<string, string>
+
+  /**
+   * @return mapping of ingress hosts to rule paths
+   */
+  paths: property(): map<string, string>
+
+  /**
+   * Construct a {@link K8sIngressRule} that can be upserted to an ingress resource.
+   *
+   * @param host
+   *         Specifications for the host of the ingress rule (e.g. c3dev.cloud).
+   * @param serviceName
+   *         Specifications for the {@link K8sService#resourceName} that serves as the backend.
+   * @param port
+   *         Specifications for the port on the K8sService to use.
+   * @param path
+   *         Specifications for the path this ingress rule should match on.
+   * @param pathType
+   *         Specifications for how paths are matched (e.g. prefix, exact).
+   * @return ingress rule built by corresponding parameters
+   */
+  makeIngressRule: function(host: !string,
+                            serviceName: !string,
+                            port: !int32,
+                            path: !string,
+                            pathType: string): !K8sIngressRule
+
+  /**
+   * Upsert a new {@link K8sIngressRule} to this ingress resource. If the host already exists on the ingress object,
+   * information will be overwritten.
+   *
+   * @param ingressRule
+   *         Ingress rule to be upserted to this ingress resource.
+   */
+  upsertIngressRule: member function(ingressRule: !K8sIngressRule)
+
+  /**
+   * Destroy an existing {@link K8sIngressRule} on this ingress resource using host as a key.
+   *
+   * @param host
+   *         Ingress rule for the specified host to be destroyed on this ingress resource.
+   */
+  destroyIngressRule: member function(host: !string)
+}

@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used to store cassandra table stats info every day.
+ * the information stored will consume data returned from node tool cfstats api.
+ */
+entity type CassandraTableStats schema name 'CASSTABLE_STATS' {
+
+  /**
+   * Cassandra key space name in which the table lies.
+   * egs: engiegridops_filesystem
+   */
+  keyspace: !string
+
+  /**
+   * Cassandra table name
+   */
+  table: !string
+
+  /**
+   * memtable data size in GB
+   */
+  memtableGbs: !double
+
+  /**
+   * memtable Off heap memory in GB
+   */
+  memtableOffHeapGbs: !double
+
+  /**
+   * Live Space used by the table in GB
+   */
+  liveGbs: !double
+
+  /**
+   * Total space used by the table in GB
+   */
+  totalGbs: !double
+
+  /**
+   * Estimated number of Keys in table
+   * Storing this as string as number of keys can increase maximum value of Integer.
+   */
+  keyCount: !int
+
+  /**
+   * Average tombstone count encountered during recently sampled queries.
+   * The timer is by default using exponentially decaying reservoir sampling.
+   * Roughly accounts for last five minutes of data, exponentially weighting towards newer data.
+   */
+  tombstoneCount: !int
+
+  /**
+   * Average liveCell count encountered during recently sampled queries.
+   * The timer is by default using exponentially decaying reservoir sampling.
+   * Roughly accounts for last five minutes of data, exponentially weighting towards newer data.
+   */
+  liveCellCount: !int
+
+  /**
+   * Fragmentation of the table as a percentage number in the range [0, 100]
+   */
+  fragmentationPct: !int
+}

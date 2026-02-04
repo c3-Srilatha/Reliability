@@ -1,0 +1,128 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * One line in a {@link FailureMode}.
+ *
+ * In rule-based failure mode recommendation, represents one way in which the parent
+ * {@link FailureMode} can be diagnosed by specifying a {@link ExpectedSensor} and a
+ * {@link FailureModeDiagnostic} which together are representative of the parent
+ * {@link FailureMode}.
+ *
+ * In ML-based failure mode, this type is simply a wrapper for an expected sensor which is relevant
+ * to the parent failure mode and can be used as a feature in training models for the failure mode.
+ */
+@db(unique=['expectedSensor, failureMode, diagnostic'], versionHistory=true)
+entity type FailureModeLineItem mixes AssetOnboardingMeta, ExemptFromFacilityFilter schema name 'FLRM' {
+
+  /**
+   * Name of the failure mechanism
+   */
+  name: string
+
+  /**
+   * Description of the failure mode.
+   */
+  description: string
+
+  /**
+   * The failure mode that contains this record
+   */
+  failureMode: FailureMode
+
+  /**
+   * Sensor to which the failure mode applies
+   */
+  expectedSensor: ExpectedSensor
+
+  /**
+   * The diagnostic to apply on the sensor data
+   */
+  diagnostic: FailureModeDiagnostic
+
+  /**
+   * The failure mode will be recommended if the {@link diagnostic} exceeds this threshold
+   */
+  sensorThreshold: double = 0
+
+  /**
+   * Exceptions to the failure mechanism
+   */
+  exceptions: string
+
+  /**
+   * Category of this record
+   */
+  faultCategory: string enum FailureModeFaultCategory
+
+  /**
+   * Priority
+   */
+  priority: FailureModePriority
+
+  /**
+   * The failure mode library that contains this record
+   */
+  failureModeLibrary: FailureModeLibrary stored calc failureMode.failureModeLibrary
+
+  /**
+   * Recommended actions if this failure mode is recommended
+   */
+  failureRecommendation: [FailureModeRecommendation] stored calc (failureMode.recommendations)
+
+  /**
+   * Number of recommended actions
+   */
+  numRecommendations: int stored calc count(failureRecommendation)
+
+  /**
+   * Given line items and expected sensors, returns the line items which have an expectedSensor in expectedSensors.
+   * This function does not fetch additional data and assumes lineItems already have expectedSensor populated.
+   *
+   * @param lineItems - The {@link FailureModeLineItem}s to filter.
+   * @param expectedSensors -  The {@link ExpectedSensor}s to filter by. Only the `lineItems` that use one of these `expectedSensors` will be returned.
+   * @returns {[FailureModeLineItem]} The filtered {@link FailureModeLineItem}s
+   */
+  @action(group='asset-onboarding-read')
+  filterLineItemsByExpectedSensor: inline function(lineItems: [FailureModeLineItem], expectedSensors: [ExpectedSensor]): [FailureModeLineItem] js-rhino
+
+  /**
+   * Adds isActive property to each line item that have an expected sensor matching the given ones.
+   *
+   * @param spec
+   *        The fetch spec to use to fetch the line items.
+   * @param expectedSensors
+   *        The {@link ExpectedSensor}s to use to filter the line items.
+   * @return The {@link FailureModeLineItem}s with the isActive field.
+   *
+   * Do not persist this type. It is only used to return the result of the fetchWithActiveStatus function.
+   */
+  @action(group='asset-onboarding-read')
+  fetchWithActiveStatus: function(spec: FetchSpec, expectedSensors: [ExpectedSensor]): FetchResult<FailureModeLineItemWithActiveStatus> js-rhino
+
+
+  /**
+   * Cleans up all of the associated {@link FailureModeRelation}s
+   * This function is called by the the {@link FailureModeLineItem#removed} function.
+   *
+   * @param failureModeLineItemIds
+   *           A list of {@link FailureModeLineItem}s to be removed.
+   * @return The number {@link FailureModeRelation}s removed.
+   */
+  @action(group='asset-onboarding-write')
+  cleanupFailureModeRelations: function (failureModeLineItemIds: ![FailureModeLineItem]): int js-rhino
+
+  /**
+   * For each {@link FailureModeLineItem} that has been removed, this function asynchronously calls cleanupRelatedRelations.
+   *
+   * @param txn
+   *           The list of {@link FailureModeLineItem}s ids that were removed.
+   */
+  removed: ~ js-rhino
+}

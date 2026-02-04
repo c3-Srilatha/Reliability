@@ -1,0 +1,394 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state for storing TypeMeta related information
+ */
+@typeScript
+type DataFusion.Ui.TypeMetaCacheState mixes UiSdlSingletonApplicationState {
+
+  id: ~
+
+  // -------------- TYPE METAS CACHE --------------
+
+  /**
+   * A map of {@link Type#name} to the associated {@link TypeMeta} for quick lookup in the UI.
+   */
+  typeMetasCache: map<string, TypeMeta>
+
+  /**
+   * Indicates that TypeMetas cache has been fetched and stored
+   */
+  typeMetasCacheFetched: boolean
+
+  /**
+   * A map for the {@link TypeMetaDeps} JSON representation for all nodes, keyed by type name
+   * This is a JS Map<string, Object>, so Map.prototype.get() and Map.prototype.set() would be used instead of the object property accessor
+   */
+  metadataDepsJson: native
+
+  /**
+   * Triggered when {@link #metadataDepsJson} for the graph needs to be set or updated.
+   *
+   * @param metadataDepsJson
+   *           The value to set for {@link #metadataDepsJson}
+   * @returns a `METADATADEPS_JSON_SET` action for this instance
+   */
+  @uiSdlActionCreator(actionType='METADATADEPS_JSON_SET')
+  setMetadataDepsJsonAction: function(metadataDepsJson: !json): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `METADATADEPS_JSON_SET`, and updates the {@link #metadataDepsJson} field value.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='METADATADEPS_JSON_SET')
+  metadataDepsJsonSetReducer: private inline function(state: !UiSdlReduxState,
+                                                      action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to trigger loading/refreshing of the {@link TypeMeta}s cache.
+   * @param followupActions Actions to be triggered after the updated typeMetas are loaded. {@see SelfServiceDIRefreshTypeMetasEpic}.
+   * @param isInitial    True if the action is triggered in 'APPLICATION_STATE_INITIALIZE' flow.
+   *
+   * @returns a `REFRESH_TYPE_METAS_CACHE` action
+   */
+  @uiSdlActionCreator(actionType='REFRESH_TYPE_METAS_CACHE')
+  refreshTypeMetasCacheAction: function(followupActions: [UiSdlReduxAction],
+                                        isInitial: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * An action to update the {@link typeMetasCache}.
+   *
+   * @param typeMetas
+   *           The map of {@link TypeMeta}s to add to the cache where key is the type's name.
+   *
+   * @returns a `SET_TYPE_METAS_CACHE` action
+   */
+  @uiSdlActionCreator(actionType='SET_TYPE_METAS_CACHE')
+  setTypeMetasCacheAction: function(typeMetas: map<string, TypeMeta>): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_TYPE_METAS_CACHE` and updates the {@link typeMetasCache}.
+   */
+  @uiSdlReducer(actionType='SET_TYPE_METAS_CACHE')
+  setTypeMetasCacheReducer: private inline function(state: !UiSdlReduxState,
+                                                    action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action to set the `typeMetasCacheFetched` flag
+   */
+  @uiSdlActionCreator(actionType='SET_TYPE_METAS_CACHE_FETCHED')
+  setTypeMetasCacheFetchedAction: function(fetched: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer to store `typeMetasCacheFetched`
+   */
+  @uiSdlReducer(actionType='SET_TYPE_METAS_CACHE_FETCHED')
+  setTypeMetasCacheFetchedReducer: private inline function(state: !UiSdlReduxState,
+                                                           action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Getter for `typeMetasCacheFetched`
+   */
+  getTypeMetasCacheFetched: function(state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * Get the metadata json for node stored in state with path `metadataDepsJson`.
+   * @param nodeId
+   *           The id of the metadata to get
+   * @param state
+   *            The redux state
+   * @returns the JSON representation in state
+   */
+  getMetadataDepsJsonForNodeId: function(nodeId: !string, state: !UiSdlReduxState): json ts-client
+
+  /**
+   * Get all the metadataDeps json stored in state with path `metadataDepsJson`.
+   * @param state
+   *            The redux state
+   * @returns all metadataDeps json in state as an ES6 JS Map<string, json> (for performance reasons)
+   */
+  getMetadataDepsJson: function(state: !UiSdlReduxState): native ts-client
+
+  /**
+   * Retrieve the {@link TypeMeta} from the `typeMetasCache` for a specific type.
+   *
+   * @param state
+   *          The state object containing typeMetasCache.
+   * @param typeName
+   *          Name of the {@link Type}.
+   */
+  getTypeMeta: function(state: !UiSdlReduxState, typeName: !string): TypeMeta
+
+  /**
+   * Gets raw TypeMeta from typeMetaCache for a given schema name/typeId.
+   * This helper function fetches typeMeta using getTypeMeta and applies rawTypeMeta transformation.
+   *
+   * @param state
+   *        The Redux state
+   * @param typeId
+   *        The schema name or typeId to fetch
+   * @returns The raw TypeMeta, or undefined if typeMeta cannot be fetched
+   */
+  getRawTypeMetaFromTypeMetaCache: function(state: json, typeId: string): TypeMeta ts-client
+
+  /**
+   * Returns a map of {@link TypeMeta} keyed by name
+   *
+   * @param state
+   *          The state object containing `typeMetasCache`.
+   */
+  getTypeMetasCache: function(state: !UiSdlReduxState): map<string, TypeMeta>
+
+  /**
+   * Returns list of {@link TypeMeta} filtered for only 'Persistable' types
+   * Special handling required for Persistable
+   *
+   * @param state
+   *          The state object containing `typeMetasCache`.
+   */
+  persistableTypeMetas: function(typeMetasCache: !map<string, TypeMeta>): ![TypeMeta] ts-client
+
+  /**
+   * Returns a set of all the typeNames that mixins the mixinName.
+   *
+   *                            TypeA      TypeF
+   *                           /   / \        \
+   *                      TypeD   /   \        \
+   *                             /     \        \
+   *                         TypeB    TypeC    TypeH
+   *         TypeM           / \       \
+   *             \          /   \       \
+   *             TypeN  TypeI    |     TypeL
+   *                 \      \    /      /
+   *                  \      \  /      /
+   *               <<<<<Canonical>>>>>>>  TypeE
+   *                              \       /
+   *                               \     /
+   *                                TypeG
+   *
+   *
+   * For the mixin Canonical, returns the list of {@link TypeMeta} objects for <TypeA, TypeB, TypeC, TypeI, TypeL, TypeM, TypeN>.
+   *
+   * @param state
+   *          The state object containing `typeMetasCache`.
+   * @param mixinName
+   *          The name of the mixin.
+   */
+  fetchBackwardTypeMetasForMixin: function(typeMetasCache: map<string, TypeMeta>,
+                                           mixinName: !string,
+                                           includeMixin: boolean = false): ![TypeMeta] ts-client
+
+  /*
+   * For given persistable name, checks if the typeMetasCache has exisiting
+   * `Identity Canonical` (mixes Canonical and Target Entity)
+   *
+   * @param: targetName
+   *         Persistable Type Name
+   * @param: typeMetasCache
+   *
+   * returns result object with 'canonicalName' and optionally 'upsertCanonical'
+   *                                                (if we don't have existing Identity Canonical)
+   */
+  getOrCreateIdentityCanonicalForTarget: function(targetName: string,
+                                                  typeMetasCache: map<string, TypeMeta>): !TypeMeta ts-client
+
+  /**
+   * Fetch the {@link TypeMeta} with list of mixin values from server.
+   * For types available in TypeMetasCache (Package not included in exclusion list), please check: fetchBackwardTypeMetasForMixin
+   *
+   * @param state: ImmutableReduxState
+   *           State value.
+   * @param mixinNames: [string]
+   *           List of names of the {@link TypeMeta} to be fetched.
+   *
+   * @returns a Observable for `map<string, TypeMeta>` which are list of typeMetas
+   */
+  fetchTypeMetasWithMixinFromServerObservable: function(state: !UiSdlReduxState,
+                                                        mixinNames: ![string]): !map<string, TypeMeta> ts-client
+
+  /*
+   * Fetch packageName from PkgPath string for typeMeta
+   *
+   * @param pkgPath
+   */
+  getTypeMetaPkgNameFromPkgPath: function(pkgPath: !string): string ts-client
+
+  /**
+   * An action to remove the {@link TypeMeta} from {@link #typeMetasCache}.
+   *
+   * @param typeName
+   *           Name of the {@link TypeMeta} to be removed.
+   *
+   * @returns a `REMOVE_TYPE_META_CACHE_ITEM` action
+   */
+  @uiSdlActionCreator(actionType='REMOVE_TYPE_META_CACHE_ITEM')
+  removeTypeMetaCacheItemAction: function(typeName: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `REMOVE_TYPE_META_CACHE_ITEM` and removes the {@link TypeMeta}
+   * from {@link #typeMetasCache}.
+   */
+  @uiSdlReducer(actionType='REMOVE_TYPE_META_CACHE_ITEM')
+  removeTypeMetaCacheItemReducer: function(state: !UiSdlReduxState,
+                                           action: !UiSdlReduxAction): !UiSdlReduxAction ts-client
+
+  /**
+   * -------------- EDIT TYPEMETA CACHE --------------
+   */
+
+  /**
+   * Map only for storing {@link DataFusionUiTypeMeta} in edit mode, mapping from {@link SourceCollection} name to edited DataFusionUiTypeMeta
+   * the map only stores DataFusionUiTypeMeta in intermediate edit state.
+   */
+  editTypeMetaCache: map<string, TypeMeta | DataFusionUiTypeMeta>
+
+  /**
+   * Retrieves the edited TypeMeta of a SourceCollection
+   */
+  getEditTypeMetaFromCache: function(state: !UiSdlReduxState, sourceCollection: string): DataFusionUiTypeMeta
+
+  /**
+   * An action to set a {@link DataFusionUiTypeMeta} in `editTypeMetaCache`
+   *
+   * @param sourceCollection
+   *           The source collection name as the key
+   * @param typeMeta
+   *           The typeMeta to be edited
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_EDIT_TYPE_META')
+  setEditTypeMetaCacheAction: private function(sourceCollection: string,
+                                               typeMeta: DataFusionUiTypeMeta): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_EDIT_TYPE_META` and set a new key value pair in
+   * `editTypeMetaCache` in state.
+   */
+  @uiSdlReducer(actionType='SET_EDIT_TYPE_META')
+  setEditTypeMetaCacheReducer: private function(state: !UiSdlReduxState,
+                                                action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to remove a {@link DataFusionUiTypeMeta} in `editTypeMetaCache`
+   *
+   * @param sourceCollection
+   *           The source collection name as the key to be removed
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='REMOVE_EDIT_TYPE_META')
+  removeEditTypeMetaFromCacheAction: private function(sourceCollection: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `REMOVE_EDIT_TYPE_META` and remove a key value pair in
+   * `editTypeMetaCache` in state.
+   */
+  @uiSdlReducer(actionType='REMOVE_EDIT_TYPE_META')
+  removeEditTypeMetaFromCacheReducer: private function(state: !UiSdlReduxState,
+                                                       action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Clear the entire app state
+   */
+  @uiSdlActionCreator(actionType='CLEAR_APP_STATE')
+  clearAppStateAction: private function(): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_APP_STATE` and clears the state.
+   */
+  @uiSdlReducer(actionType='CLEAR_APP_STATE')
+  clearAppStateReducer: private function(state: !UiSdlReduxState,
+                                         action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  // -------------- POPULATE PACKAGE EXCLUSION LIST --------------
+
+  /**
+   * A set of package names that have exclusion config set to true
+   * Set used to filter out cache data for excluded packages
+   */
+  pkgExclusionSet: set<string>
+
+  /**
+   * Action to set the `pkgExclusionSet`
+   */
+  @uiSdlActionCreator(actionType='SET_PKG_EXCLUSIONS_SET')
+  setPackageExclusionSetAction: function(pkgExclusionSet: set<string>): UiSdlReduxAction ts-client
+
+  /**
+   * Action to call the epic GetPkgExclusionSetEpic to fetch the value of pkgExclusionSet
+   */
+  @uiSdlActionCreator(actionType='FETCH_PKG_EXCLUSIONS_SET')
+  fetchPackageExclusionSetAction: function(): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_PKG_EXCLUSIONS_SET`
+   */
+  @uiSdlReducer(actionType='SET_PKG_EXCLUSIONS_SET')
+  setPackageExclusionSetReducer: private inline function(state: !UiSdlReduxState,
+                                                         action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  // ----------- Action and Reducer TO STORE NODE LOADED FOR EDIT IN CODE EDITOR -----------
+  @uiSdlActionCreator(actionType='UPDATE_DATA_INTEGRATION_NODES_DATA_ACTION')
+  setNodeIdLoadedInCodeEditorAction: function(nodeIdLoadedInCodeEditor: !string): !UiSdlReduxAction ts-client
+
+  @uiSdlReducer(actionType='UPDATE_DATA_INTEGRATION_NODES_DATA_ACTION')
+  setNodeIdLoadedInCodeEditorReducer: function(state: !UiSdlReduxState,
+                                               action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  getNodeIdLoadedInCodeEditor: function(state: !UiSdlReduxState): string ts-client
+
+  // ---------------- ACTION TO DISPATCH EPIC FOR UPDATING NODES -----------
+  @uiSdlActionCreator(actionType='UPDATE_SOURCE_TARGET_NODES_IN_DATA_INTEGRATION')
+  updateSourceTargetNodesInDataIntegrationAction: private function(): !UiSdlReduxAction ts-client
+
+  // -------------- WHITELISTED MIXINS --------------
+
+  /**
+   * White listed mixins to add in {@link ErdNode#mixins}. This is set through {@link Erd.Config#whiteListedMixins}
+   * This is stored in a JS Set<string>.
+   * Note: This is only used for apps with serverVersion less than or equal to 8.8. 8.9 or newer apps will derived their first-level mixins from typeMetaJson#declaredMixins
+   */
+  @deprecated(finalVersion='8.11')
+  whiteListedMixins: native
+
+  /**
+   * Triggered when {@link #whiteListedMixins} for the graph needs to be set or updated.
+   *
+   * @param mixinList
+   *           The value to set for {@link #whiteListedMixins}
+   * @returns a `MIXINWHITELIST_SET` action for this instance
+   */
+  @uiSdlActionCreator(actionType='MIXINWHITELIST_SET')
+  setMixinWhiteListAction: function(mixinList: ![string]): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `MIXINWHITELIST_SET`, and updates the graph state
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='MIXINWHITELIST_SET')
+  mixinWhiteListSetReducer: private inline function(state: !UiSdlReduxState,
+                                                    action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Get mixin white list stored in state.
+   * @param state
+   *            The redux state
+   * @returns the white listed mixins in state as a JS Set<string>
+   */
+  getMixinWhiteList: function(state: !UiSdlReduxState): native ts-client
+}

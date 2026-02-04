@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+entity type ExportImportChunk schema name 'EXPIMP_EXPIMPCHK' {
+
+  /**
+   * Url of the file exported/imported
+   */
+  url: string
+
+  /**
+   * Id of the parent batch process
+   */
+  parentId: string
+
+  targetType: !Type
+
+  /**
+   * Obj ids of targetType instances that the chunk processes
+   * It will be populated if
+   */
+  ids: [string] schema suffix 'I'
+
+  /**
+   * obj id of targetType instance that marks the start of chunk (inclusive)
+   */
+  startId: string
+
+  /**
+   * obj id of targetType instance that marks the end of chunk (exclusive)
+   */
+  endId: string
+
+  exportStats: ActionStats
+  importStats: ActionStats
+
+  /**
+   * Set to hash of the path of the file prefixed with the job type name
+   */
+  id: ~
+}

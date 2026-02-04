@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Describes the config for setting up the question rewriter.
+ */
+type Genai.UnstructuredQuery.Engine.REA.QuestionRewritingConfig mixes Named, Config, Genai.ParentConfig.WithModelConfig {
+  /**
+   * Name of the {@link Genai.UnstructuredQuery.Engine.ModelConfig} for the Llm.
+   */
+   modelInferenceConfigName: !string
+
+   /**
+    * The number of conversation QA pairs to store  and consider for rewriting. Default is 16 QA pairs.
+    * When the conversation limit is exceeded, QA pairs are removed in a FIFO manner.
+   */
+   conversationLimit: int = 16
+
+  /**
+   * The lambda to use for combining the latest question with the existing chat history.
+   * This is an Optional parameter used to provide more conversational context to question answering model.
+   * For example, the lambda can be used to combine the chat history with the latest question in a specific
+   * format best suited to a given question answering model.
+   *
+   * The expected format for `histories` is alternating Q/A in conversation order.
+   * - Example: `['Q1', 'A1', 'Q2', 'A2']`.
+   * originalQuestion is the latest question asked in chat.
+   * rewrittenQuestion is the rewritten question created by question rewriter.
+   * It returns the combined question and chat history. 
+   * - Example: `"Q1: ..., A1: ..., Q2: ..., A2: ..., Latest Question: ..."`
+   */
+  chatHistoryCombinationLambda: lambda(histories: ![string], originalQuestion: !string, rewrittenQuestion: !string): !string
+
+  /**
+   * The {@link Genai.Query} query field to use when combining chat history in question answering.
+   * This is used within question answering and question rewriting in chat.
+   */
+  searchQueryFieldForHistory: string enum('rawQuery', 'baseQuery', 'standaloneQuery')
+}

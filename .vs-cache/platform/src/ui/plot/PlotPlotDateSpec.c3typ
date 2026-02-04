@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Plot data that contains dates.
+ *
+ * # Example: Hourly Samples
+ * ```JavaScript
+ * var N = 12,
+ *     d0 = DateTime.now().plusIntervals(Interval.HOUR, -N).toDateMidnight(),
+ *     x = C3.Array.pattern(PrimitiveType.ofDateTime(), N, n => d0.plusIntervals(Interval.HOUR, n)),
+ *     y = C3.Array.patternOfDbl(N, n => 10 + Math.random() * 10);
+ * PlotAxes.make().plotDate({ x: x, y: y }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.plot_date.html
+ */
+type PlotPlotDateSpec mixes PlotElementSpec {
+
+  /**
+   * The coordinates of the data points. If xdate or ydate is True, the respective values x or y are interpreted as Matplotlib dates.
+   *
+   * Python: array-like
+   */
+  x: [any]
+
+  /**
+   * The coordinates of the data points. If xdate or ydate is True, the respective values x or y are interpreted as Matplotlib dates.
+   *
+   * Python: array-like
+   */
+  y: [any]
+
+  /**
+   * The plot format string. For details, see the corresponding parameter in plot.
+   */
+  fmt: string = 'o'
+
+  /**
+   * The time zone to use in labeling dates. If None, defaults to rcParam timezone.
+   *
+   * Python: [ None | timezone string | tzinfo instance]
+   */
+  tz: any
+
+  /**
+   * If True, the x-axis will be interpreted as Matplotlib dates.
+   * (matplotlib xdate)
+   */
+  xDate: boolean = true
+
+  /**
+   * If True, the y-axis will be interpreted as Matplotlib dates.
+   * (matplotlib ydate)
+   */
+  yDate: boolean = false
+
+  data: any
+}

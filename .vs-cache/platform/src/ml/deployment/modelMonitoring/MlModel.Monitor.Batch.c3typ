@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link MlModel.Monitor.Batch} represents a batch of metric calculations for a {@link #model} for
+ * a given aggregation slice {@link #groupByValue} of data. For the given {@link #predictions}, {@link #labels},
+ * and {@link #contexts} data, all metrics in {@link MlModel.Monitor.Group#metrics} are calculated.
+ * This is primarily used to describe the calculations that a {@link MlModel.Monitor.BatchResult} is responsible for.
+ * See {@link MlModel.Monitor.BatchResult#batches}.
+ */
+type MlModel.Monitor.Batch {
+
+  /**
+   * {@link MlModel} associated with this monitoring result.
+   */
+  model: MlModel
+
+  /**
+   * The grouped column/attribute values, if {@link MlModel.Monitor.Group#groupBy} is present.
+   */
+  groupByValue: [any]
+
+  /**
+   * Predictions used for producing this result.
+   */
+  predictions: private Data | map<string, Data>
+
+  /**
+   * Labels used for producing this result.
+   */
+  labels: private Data | map<string, Data>
+
+  /**
+   * Contexts used for producing this result
+   */
+  contexts: private map<string, Data>
+}

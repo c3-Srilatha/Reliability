@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link Feature.Overview} and {@link Feature.Set.Overview}, which
+ * combines data from {@link Feature}, {@link Feature.Set}, and {@link MlModel}
+ */
+type FeatureOverviewBase mixes WithId, WithName {
+
+  /**
+   * The kind of Feature / Feature Set
+   */
+  kind: !string
+
+  /**
+   * {@link FeatureBase#subjectType}
+   */
+  subjectType: !string
+
+  /**
+   * {@link FeatureBase#summary}
+   */
+  summary: string
+
+  /**
+   * How many {@link MlModel} are utilizing this feature
+   */
+  modelCount: int = 0
+
+  /**
+   * Determines whether the Feature or Feature Set is timeseries or not.
+   */
+  isTimeseries: ?boolean
+
+  /**
+   * The interval for the {@FeatureBase}
+   */
+  interval: string enum Interval
+
+  /**
+   * {@FeatureBase#meta}
+   */
+  meta: Meta
+
+  /**
+   * {@FeatureBase#_columns}
+   */
+  columns: map<string, ValueType>
+}

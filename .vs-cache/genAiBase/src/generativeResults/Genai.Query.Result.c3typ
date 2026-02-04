@@ -1,0 +1,405 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * The Generative AI model result
+ */
+extendable entity type Genai.Query.Result mixes FeatureEvaluatable schema name "GENAIR" {
+
+  beforeRemove: ~ js-rhino
+
+  /**
+   * The chat memory (if it was generated)
+   */
+  chatMemory: Genai.ChatMemoryOutput
+
+  /**
+   * A {@link Genai.Query} object representing a user's search query.
+   * Contains information about the query string and any filters applied to the query.
+   */
+  searchQuery: Genai.Query
+
+  /**
+   * The engine's answer to the query
+   */
+  answer: string
+
+  /**
+   * The reasoning behind the answer
+   */
+  rationale: string
+
+  /**
+   * The log of the {@link Genai.UnstructuredQuery.Engine} chain
+   */
+  engineLog: string
+
+  /**
+   * Whether the result was a failure. If so, the reason for the failure is stored
+   * in the #rationale and the Ui message in the #answer.
+   */
+  failed: boolean
+
+  /**
+   * If the result was streamed, tracks the state of the streaming.
+   */
+  streamingState: string enum Genai.Streaming.State
+
+  /**
+   * Whether the answer or some of its passages potentially used a translation service
+   */
+  usedTranslation: boolean
+
+  /**
+   * The service used to translate answer if translation is enabled
+   */
+  translatorTypeName: string
+
+  /**
+   * The {@link Genai.Project} that will be used to execute the query.
+   */
+  project: Genai.Project
+
+  /**
+   * Information about the user that generated the query
+   */
+  userEmail: string calc getUserEmail(meta.createdBy)
+
+  /**
+   * The (up to) 100 passages most relevant to the query according to {@link Genai.RetrieverActions#similaritySearch}
+   */
+  @db(order='descending(score)')
+  passages: [Genai.Query.ResultToPassageRelation](from)
+
+  /**
+   * The files were used as part of the #rationale to generate the #answer.
+   */
+  // TODO: GEN-9667 this should point to a passage, no?
+  @db(filter="passageUiDisplayIndex != -1")
+  rationaleSources: [Genai.Query.ResultToSourceFileRelation](from)
+
+  /**
+   * All unstructured sources that were presented to the llm to generate the #answer.
+   * This includes the #rationaleSources and other sources that were given to the llm but not used.
+   */
+  potentialRationaleSources: [Genai.Query.ResultToSourceFileRelation](from)
+
+  /**
+   * The plan used to generate the result - {@link Genai.Agent.Dynamic}.
+   */
+  plan: Genai.Agent.DynamicTrajectory
+
+  /**
+   * Returns an array of all #rationaleSources used to generate the current result. If the result has
+   * #childResults, this will also recursively retrieve all rationale sources across all children and append
+   * them to the returned array.
+   */
+  allRationaleSources: member function(): [Genai.Query.ResultToSourceFileRelation] js-rhino
+
+  /**
+   * Returns an array of all #potentialRationaleSources used to generate the current result. If the result has
+   * #childResults, this will also recursively retrieve all rationale sources across all children and append
+   * them to the returned array.
+   */
+  allPotentialSources: member function(): [Genai.Query.ResultToSourceFileRelation] js-rhino
+
+  /**
+   * Relation records that link this result to the sources that were used to generate it. There is a many-to-many
+   * relationship, allowing sources to be used in multiple results and results to be generated from multiple sources.
+   */
+  sourceRelations: [Genai.Query.ResultToSourceRelation](from)
+
+  /**
+   * Returns an array of all #sourceRelations used to generate the current result. If the result has
+   * #childResults, this will also recursively retrieve all sources across all children and append them to the
+   * returned array.
+   */
+  allSources: member function(): [Genai.Query.ResultToSourceRelation] js-rhino
+
+  /**
+   * Returns an array of all #sourceRelations which are of type {@link Genai.Query.ResultToStructuredDataSourceRelation} which are used to generate the current result. If the result has
+   * #childResults, this will also recursively retrieve all sources across all children and append them to the
+   * returned array.
+   */
+  allStructuredDataSources: member function(): [Genai.Query.ResultToStructuredDataSourceRelation] js-rhino
+
+  /**
+   * Returns an array of all #sourceRelations which are of type {@link Genai.Query.ResultToStructuredDataSourceRelation} which are cited the answer generated by llm.
+   */
+  allCitedStructuredDataSources: member function(): [Genai.Query.ResultToStructuredDataSourceRelation] js-rhino
+
+  /**
+   * The chat that the user had with the chat bot related to this original {@link Genai.Query.Result}.
+   */
+  @db(order='ascending(meta.created)')
+  chatHistory: [Genai.Query.ChatMessage](parentAiResult)
+
+  //TODO: GEN-9667 should we mark this as not to be persisted
+  /**
+   * A field to store intermediate (i.e. while processing) portions of the overall result.
+   */
+  intermediateResults: map<string, any>
+
+  /**
+   * The history of interim statuses for the generation on the result
+   */
+  @db(order='sortIndex')
+  statusHistory: [Genai.Query.Result.InterimStatusHistory](parent)
+
+  /**
+   * Updates the interim status of the {@link Genai.Query.Result}.
+   * Adds a new interim status if there was none with the given step.
+   *
+   * @param status
+   *           The new status
+   * @param statusParent
+   *           The parent of the new status. If empty, the status will be considered a top-level status.
+   *           This is used for grouping and nesting statuses.
+   * @param inPlace
+   *           If set to true, the update will overwrite a previous status of the same kind, or add a new one if there was none.
+   *           Otherwise, the update will always add a new status, allowing multiple status entries of the same kind.
+   * @return the {@link Genai.Query.Result.UpdateStatusResponse} with the {@link Genai.Query.Result}
+   *           and the updated {@link Genai.Query.Result.InterimStatusHistory}
+   */
+  updateStatus: member function(status: !Genai.Query.Result.InterimStatusEnum,
+                                statusParent: Genai.Query.Result.InterimStatusHistory,
+                                inPlace: boolean): !Genai.Query.Result.UpdateStatusResponse js-rhino
+
+  /**
+   * The visualization that best suits the structured data answer
+   */
+  visualization: GenAiVisualizationBase
+
+  /**
+   * Returns an array of any #visualization generated for the current result. If the result has
+   * #childResults, this will also recursively retrieve all visualizations across all children and append them
+   * to the returned array.
+   */
+  allVisualizations: member function(): [GenAiVisualizationBase] js-rhino
+
+  /**
+   * The steps performed to get to this result
+   */
+  steps: [Genai.Agent.Step]
+
+  /**
+   * The hash of the configs that were being used in the application when this result was processed.
+   * Generated using {@link Genai.ConfigUtil#generateConfigKey}
+   */
+  configKey: string
+
+  /**
+   * The unstructured query handler used to initiate the query. Used primarily to handle streaming.
+   */
+  handlerUsed: Type
+
+  /**
+   * Whether structured data was used to answer the query
+   */
+  usedStructuredData: boolean
+
+  /**
+   * The type of tool used to generate the result
+   */
+  toolType: Type
+
+  /**
+   * The {@link GenaiCore.Session.Kv} associated with this query
+   */
+  session: GenaiCore.Session.Kv
+
+  /**
+   * All the feedback given to the generative model result.
+   */
+  feedback: [Genai.Query.Result.Feedback](generativeAiResult)
+
+  /**
+   * Generates visual debugging graph images for each of the calls.
+   * @param mediaType
+   *        MediaType to produce the image for. It must be one of SVG, PNG, JPEG. By default PNG will be generated.
+   * @param removeFinalSpecFromGraph
+   *        Boolean flag indicating if we want to remove the final spec from the generated graph.
+   */
+  generateVisualDebuggingGraphs: member function(mediaType: string enum MediaType = PNG,
+                                                 removeFinalSpecFromGraph: boolean): [Image] py-query_orchestrator-server-py4j
+
+  /**
+   * Adds an entry to the engine log. Assumes that the current engineLog is a json string dump.
+   * @param entryKey
+   *        The string to use as a key for the entry in the engine log
+   * @param logs
+   *        The logs we want to add to the engine log.
+   * @param getInstance
+   *        Whether the instance should be retrieved from the database. If so, logs from the in-memory instance will
+   *        be combined.
+   */
+  addLogsToJsonDumpsEngineLog: inline member function(entryKey: !string, logs: !json, getInstance: boolean): !Genai.Query.Result py
+
+  /**
+   * Adds new entries to the engine log. Assumes that the current engineLog is a json string dump.
+   * @param logsDict
+   *        The new logs to be added to the engineLog. This should be in the form of `{TOP_LEVEL_KEY: {SUB_KEY: VALUE}}`
+   * @param getInstance
+   *        Whether the instance should be retrieved from the database. If so, logs from the in-memory instance will
+   *        be combined.
+   * @param persist
+   *        Whether the result should be persisted
+   * @param returnInclude
+   *        If `persist` is `true`, this value will be passed as {@link MergeSpec#returnInclude}
+   */
+  addLogsDictToJsonDumpsEngineLog: inline member function(logsDict: !json, getInstance: boolean, persist: boolean, returnInclude: string): !Genai.Query.Result py
+
+  /**
+   * All child results (if any) for this result. See #parent
+   */
+  childResults: [Genai.Query.Result](parent)
+
+  /**
+   * When a result is generated as only a step/part of generating another result, the inner/child results
+   * will have this field populated with the result as part of which this one was generated.
+   */
+  parent: Genai.Query.Result
+
+  /**
+   * If this result was generated by a single tool as part of generating a #parent, this field will be
+   * populated with the id of the tool.
+   */
+  toolId: string
+
+  /**
+   * The tools available to use when the result was generated
+   */
+  allToolNames: [string]
+
+  /**
+   * Indicates whether the result has been edited by the user
+   */
+  edited: boolean
+
+  /**
+   * Creates, persists, a new child result for this result. #parent will be set to the result on which the method is called
+   * and #toolId will be set according to the parameter.
+   * #searchQuery and #configKey will be copied from the current result, while all other fields will be left unset.
+   * @param toolId
+   *        The id of the tool that generated the child result
+   * @param isStructuredTool
+   *        True if the tool that generated the child result is a structured tool otherwise false
+   * @param queryString
+   *        If the child result should have a different search query than the parent, this parameter can be used to set it.
+   * @return the newly created child result
+   */
+  createChildResult: member function(toolId: !string, isStructuredTool: boolean, queryString: string): !Genai.Query.Result py
+
+  /**
+   * The {@link Genai.Conversation} that this result is a part of.
+   */
+  conversation: Genai.Conversation
+
+  /**
+   * Returns a {@link Genai.Conversation} for this result.
+   */
+  getConversation: member function(): !Genai.Conversation js-rhino
+
+  /**
+   * Leave feedback for a {@link Genai.Query.Result}.
+   */
+  leaveFeedback: member function(feedback: !Genai.Query.Result.BaseFeedback): !Genai.Query.Result.Feedback js-rhino
+
+  /**
+   * Returns the generative AI result with the interim statuses and other fields used to populate the UI (rationale, answer, etc)
+   */
+  getForUi: member function(): !Genai.Query.Result.GetForUiResult js-rhino
+
+  /**
+   * Calculated field for the UI result for this query
+   */
+  getForUiResult: Genai.Query.Result.GetForUiResult calc retrieveGetForUiResult(id)
+
+  /**
+   * Returns a collection of {@link Genai.Query.Result.BaseResultForUi} for the direct children of the provided
+   * {@link Genai.Query.Result}.
+   */
+  getChildResultsForUi: function(genAiQueryResult: !Genai.Query.Result): [Genai.Query.Result.BaseResultForUi] js-rhino
+
+  /**
+   * Returns the time taken to generate the result in milliseconds.
+   */
+  latency: double calc getQueryLatency(id)
+
+  /**
+   * The parsed, JSON version of the #engineLog.
+   */
+  parsedEngineLog: json calc getParsedEngineLog(id)
+
+  /**
+   * Parses the string {@link Genai.Query.Result#engineLog} into JSON format.
+   *
+   * @return JSON object that contains:
+   *        {boolean} parsed - whether the parsing was successful
+   *        {json} parseEngineLog - the parsed engine log
+   *        {string} engineLog - the original engine log
+   */
+  parseEngineLog: member function(): !json js-rhino
+
+  /**
+   * Used to mark a {@link Genai.Query.Result} completed if it has not already been marked as such.
+   * @return The updated {@link Genai.Query.Result}
+   */
+  markQueryCompleted: inline member function(): !Genai.Query.Result py
+
+  /**
+   * Returns an object with the latency in milliseconds for each {@link Genai.Query.Result.InterimStatusEnum}
+   * when generating a {@link Genai.Query.Result}.
+   * The result is a JSON object with the {@link Genai.Query.Result.InterimStatusEnum} as the key and the latency in milliseconds as the value.
+   * example: {'QueryDatabase': 1000, 'QueryDatabase': 3000, 'QueryDatabase': 1000, 'GenerateAnswer': 4000, 'Completed': 1000}
+   */
+  getLatencies: member function(): !json js-rhino
+
+  /**
+   * Saves the toolNames from each tool in the toolkit to this result's {@link Genai.Query}
+   * @param toolkitName
+   *       The name of the toolkit to get the toolNames from
+   * @return The updated {@link Genai.Query.Result}
+   */
+  addToolNamesFromToolkit: member function(toolkitName: !string): !Genai.Query.Result js-rhino
+
+  /**
+   * Returns the sorted {@link Genai.Query.Result.InterimStatusHistory} items associated with the
+   * {@link Genai.Query.Result}.
+   * @return a sorted array of {@link Genai.Query.Result.InterimStatusHistory} items
+   */
+  getSortedStatuses: member function(): ![Genai.Query.Result.InterimStatusHistory] js-rhino
+
+
+  /**
+   * Helper function to set {@link Genai.Query.Result#edited} to true for a given {@link Genai.Query.Result}.
+   * @return the updated {@link Genai.Query.Result}
+   */
+  markAsEdited: member function(): !Genai.Query.Result js-rhino
+
+  /**
+   * Queries that can be a follow-up of the result, used for chatbot suggestions.
+   */
+  suggestedFollowUpQueries: [Genai.Query]
+
+  /**
+   * The {@link Genai.Query.Result} that this result was generated from.
+   */
+   @action(group='read')
+   fetchFilteredQueriesCount: function(spec: FetchSpec, user: User): !int js-rhino
+
+   /**
+   * The {@link Genai.Query.Result} that this result was generated from.
+   */
+   @action(group='read')
+   fetchFilteredQueries: function(spec: FetchSpec, user: User): FetchResult js-rhino
+
+}

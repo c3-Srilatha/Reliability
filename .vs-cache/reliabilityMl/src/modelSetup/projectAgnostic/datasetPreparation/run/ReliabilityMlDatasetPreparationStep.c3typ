@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type defines the structure of a dataset preparation step within the `ReliabilityMl` module.
+ * It is used to track the status of a dataset preparation process, including whether it succeeded,
+ * a detailed message explaining the status, and a stack trace in case of failure.
+ *
+ * The `ReliabilityMlDatasetPreparationStep` type is typically used in the context of machine learning
+ * pipelines or model training steps where the data needs to be prepared or pre-processed before further
+ * use in training or inference. This type helps in tracking the progress and diagnosing any issues
+ * that arise during the data preparation phase.
+ */
+
+@beta
+type ReliabilityMlDatasetPreparationStep {
+
+  /**
+   * A succinct status representing the completion status of the dataset preparation step.
+   * The possible values are:
+   * - 'COMPLETE': Indicates that the dataset preparation was successfully completed.
+   * - 'FAILED': Indicates that the dataset preparation step encountered an error or was unsuccessful.
+   */
+  status: !string enum('COMPLETE', 'FAILED')
+
+  /**
+   * A more detailed message that explains the {@link status}.
+   * When the {@link status} is `COMPLETE`, this message provides confirmation of successful completion.
+   * When the {@link status} is `FAILED`, this message will provide details of the failure, including
+   * any potential prescriptive measures or actions to take to resolve the issue.
+   *
+   * For example: "Dataset preparation completed successfully."
+   * For example: "Failed to prepare dataset due to missing values in the input data. Please ensure all required fields are present."
+   */
+  message: string
+
+  /**
+   * A stacktrace of the error that caused the {@link status} to be `FAILED`.
+   * This field provides technical details on the underlying issue that resulted in the failure.
+   * It is especially useful for debugging and identifying the exact line of code or operation that caused the failure.
+   * The stack trace will be included only if the status is `FAILED`.
+   *
+   * For example: "Error: Dataset has missing values in the feature 'age'. Stack trace: at prepareData (path/to/code:line)"
+   */
+  stackTrace: string
+}

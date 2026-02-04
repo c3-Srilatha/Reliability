@@ -1,0 +1,226 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link BaseCodeAnalyzer} to interact with a source control system repository through REST.
+ */
+type BaseCodeAnalyzer.SourceControlGadget<R, P, S> {
+
+  /**
+   * The string to be displayed on the commit status corresponding to the code analysis run.
+   */
+  CODE_ANALYZER_COMMIT_STATUS_NAME: private const string = 'C3 AI Code Analyzer'
+
+  /**
+   * The description to be displayed on a pending code analysis run commit status.
+   */
+  CODE_ANALYZER_PENDING_COMMIT_STATUS_MSG: private const string = 'Analyzing code...'
+
+  /**
+   * The description to be displayed on a successful code analysis run commit status.
+   */
+  CODE_ANALYZER_SUCCESS_COMMIT_STATUS_MSG: private const string = 'Great work! Your PR passes all code quality checks.'
+
+  /**
+   * The description to be displayed on a failure code analysis run commit status.
+   */
+  CODE_ANALYZER_FAILURE_COMMIT_STATUS_MSG: private const string = 'Your PR does not meet all code quality standards.'
+
+  /**
+   * The description to be displayed on a error code analysis run commit status.
+   */
+  CODE_ANALYZER_ERROR_COMMIT_STATUS_MSG: private const string = 'There was an error in reporting your code analysis results.'
+
+  /**
+   * The description to be displayed on an incomplete code analysis run commit status.
+   */
+  CODE_ANALYZER_INCOMPLETE_COMMIT_STATUS_MSG: private const string = 'Could not complete code analysis. Please see details of the noCodeAnalysisAlert step for more information.'
+
+  /**
+   * The description to be displayed on an completed code analysis run commit status for non-PR commits.
+   */
+  CODE_ANALYZER_COMPLETION_COMMIT_STATUS_MSG: private const string = 'Completed code analysis'
+
+  /**
+   * An instance of the REST type created in the `baseCodeAnalyzer` package to add additional source control APIs
+   * on top of what's provided in {@link platformRestInst}.
+   */
+  restInst: !R
+
+  /**
+   * An instance of the C3 AI Platform REST type used to interact with the source control host.
+   * Example: {@link GitHub}.
+   */
+  platformRestInst: !P
+
+  /**
+   * The spec from which this source control gadget was created.
+   */
+  spec: !S
+
+  /**
+   * Helper function to get the path of a file in the source control repo based on it's file package path URL.
+   *
+   * @param filePkgPathUrl
+   *           The file's package path URL.
+   * @returns the file's path in the source control repo.
+   */
+  getFilePathInSourceControlRepo: private member function(filePkgPathUrl: string): !string js-rhino
+
+  /**
+   * Helper function to get a {@link BaseCodeAnalyzer.SourceControlGadget} instances based on the provided
+   * {@link BaseCodeAnalyzer.SourceControlGadget.Spec}.
+   *
+   * @param spec
+   *          The spec to create the source control gadget from.
+   * @returns an instance of a source control gadget.
+   */
+  getGadgetFromSpec: abstract function(spec: BaseCodeAnalyzer.SourceControlGadget.Spec): !BaseCodeAnalyzer.SourceControlGadget js-rhino
+
+  /**
+   * Helper function to get the base branch name for a function.
+   *
+   * @returns the base branch name for the commitSha for which this gadget was built.
+   */
+  getBaseBranchName: abstract member function(): string js-rhino
+
+  /**
+   * Function to post a 'pending' code analysis status on the commit on which code analysis
+   * is being performed.
+   */
+  postPendingCommitStatus: abstract member function() js-rhino
+
+  /**
+   * Function to post a 'success' code analysis status on the commit on which code analysis
+   * is being performed.
+   */
+  postSuccessCommitStatus: abstract member function() js-rhino
+
+  /**
+   * Function to post a 'success' code analysis status on the commit on which code analysis
+   * is being performed.
+   */
+  postFailureCommitStatus: abstract member function() js-rhino
+
+  /**
+   * Function to post a 'error' code analysis status on the commit on which code analysis
+   * couldn't be completed because there was at least one package that didn't have a dependency
+   * on `baseToolkit`.
+   */
+  postIncompleteCommitStatus: abstract member function() js-rhino
+
+  /**
+   * Function to post a 'success' code analysis status on non-PR commits for which code analysis was completed.
+   */
+  postCompletionCommitStatus: abstract member function() js-rhino
+
+  /**
+   * Helper function to get the pull request's title. Used to check if the title matches c3 guidelines,
+   * i.e., starts with the ticket number.
+   *
+   * @returns the title of the current pull request.
+   */
+  getPullRequestTitle: abstract member function(): string js-rhino
+
+  /**
+   * Helper function to get an array of {@link BaseCodeAnalysis.FileSpec}s of the files
+   * that were changed between the commitSha and baseSha.
+   *
+   * @param packagesPath
+   *          The packages path where application packages are stored within the repository.
+   * @returns an map from the file paths of the modified files in the server's filesystem to their
+   *         respective {@link BaseCodeAnalyzer.SourceControlGadget.FileDiff}s.
+   */
+  getModifiedFileDiffs: abstract member function(packagesPath: !string): map<string, BaseCodeAnalyzer.SourceControlGadget.FileDiff> js-rhino
+
+  /**
+   * Helper function to parse the diff patch of a file and get the deleted and added lines.
+   *
+   * @param filePkgPathUrl
+   *          The path of the file (in the server's filesystem) for which the git diff is being parsed.
+   * @param filePathInSourceControlRepo
+   *          The path of the file (in the source control repository) for which the git diff is being parsed.
+   * @param diff
+   *          The git diff patch string to parse.
+   *
+   * @returns a {@link BaseCodeAnalyzer.SourceControlGadget.FileDiff} containing two maps corresponding to
+   *         the added and deleted lines, their line numbers and content.
+   */
+  parseDiff: abstract private inline function(filePkgPathUrl: !string,
+                                              filePathInSourceControlRepo: !string,
+                                              diff: string): BaseCodeAnalyzer.SourceControlGadget.FileDiff js-rhino
+
+  /**
+   * Helper function to get the lne-level anchor for a commit.
+   *
+   * @param filePkgPathUrl
+   *          The file path of the file in the server.
+   * @param line
+   *          The line number to get the encoded anchor for.
+   *
+   * @returns the hyperlink to the encoded anchor on a commit.
+   */
+  getCommitEncodedAnchor: abstract member function(filePkgPathUrl: string, line: int): string js-rhino
+
+  /**
+   * Helper function to get the file- and line-level anchors for a pull request.
+   *
+   * @param prUrl
+   *          The pull request URL.
+   * @param messages
+   *          The list of messages for which to get anchors.
+   *
+   * @returns the {@link BaseCodeAnalyzer.SourceControlGadget.Anchors} containing the file- and line-level
+   *          anchors.
+   */
+  getPrEncodedAnchors: abstract function(prUrl: string, messages: [BaseCodeAnalysis.Metric.Message.Processed]): BaseCodeAnalyzer.SourceControlGadget.Anchors js-rhino
+
+  /**
+   * Helper function to post a code review based on the metric messages raised by the code analysis function.
+   *
+   * The C3 AI Code Analyzer only posts a maximum of {@link BaseCodeAnalyzer.NotifyPullRequestSpec#maxCodeAnalyzerCommentCount}
+   * error messages as inline comments and posts the rest of the messages in the review comment.
+   * This function determines how many of the error messages were already posted
+   * and returned the number of previous posted messages, the number of new messages (including warnings) and also
+   * provides the list of comments to post on the PR (ensuring the total comments posted is at a maximum of `x`).
+   *
+   * @param processedResults
+   *          The processed code analysis results from which to post review comments.
+   * @param maxCodeAnalyzerCommentCount
+   *          The maximum number of code analyzer comments to post as inline comments.
+   */
+  updateOrPostCodeReviewComments: abstract member function(processedResults: [BaseCodeAnalysis.Result.Processed],
+                                                           maxCodeAnalyzerCommentCount: int) js-rhino
+
+  /**
+   * Helper function to post a code analysis summary based on the metric results calculated by the
+   * code analysis function.
+   *
+   * @param summaryMessage
+   *          The summary message to be updated/posted.
+   */
+  updateOrPostCodeReviewSummary: abstract member function(summaryMessage: string) js-rhino
+
+  /**
+   * Helper function to commit the processed results to a centralized repository for analysis.
+   *
+   * @param spec
+   *           The spec containing information to push the code analysis results to a centralized repository.
+   */
+  commitProcessedResults: abstract member function(spec: BaseCodeAnalyzer.SourceControlGadget.CommitResultsSpec) js-rhino
+
+  /**
+   * Helper function to get the file contents of the files in the provided list of file paths.
+   *
+   * @param filePaths
+   *           The list of file paths for which to get the file contents.
+   * @returns a map from the file paths to their respective file contents.
+   */
+  getFileContents: abstract member function(filePaths: [string]): map<string, string> js-rhino
+}

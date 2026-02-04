@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link MlModel} routing mechanism based on compiled {@link MlModel.Route#subjectFilter subject filter} expressions.
+ * Supports routing of in-memory (not persisted) subjects and does not require explicit on-boarding of new subjects.
+ *
+ * This router is designed for event-based use cases, where incoming subjects may not be persisted and/or need to be
+ * routed on the fly, e.g. transactions.
+ *
+ * **NOTE**: For best performance, user must ensure all fields that are being used in
+ * {@link MlModel.Route#subjectFilter subject filter} expressions are present on the subject instance being passed to
+ * {@link #models}.
+ */
+// TODO: PLAT-44900 Implement MlModel.RuleRoute caching mechanism
+@beta
+@dependency(include="this, project")
+entity type MlModel.RuleRouter extends MlModel.Router type key 'RUL'

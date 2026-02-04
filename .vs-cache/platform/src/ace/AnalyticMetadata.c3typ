@@ -1,0 +1,74 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Meta-data for a single Analytic type.  These instances are produced by the analytics
+ * container in response to query actions such as allAnalytics.
+ */
+type AnalyticMetadata {
+
+  /**
+   * qualified type name
+   */
+  name: string
+
+  /**
+   * category name
+   */
+  category: string
+
+  /**
+   * input DFE type
+   */
+  inputType: string
+
+  /**
+   * output type (may not be a DFE)
+   */
+  outputType: string
+
+  /**
+   * whether this is a transform
+   */
+  transform: boolean
+
+  /**
+   * whether this produces an alert
+   */
+  alert: boolean
+
+  /**
+   * whether this produces an entity object
+   */
+  persistent: boolean
+
+  /**
+   * DFEs required for input construction
+   */
+  requiredDFEs: [string]
+
+  /**
+   * other analytics this one immediately depends on
+   */
+  dependencies: [string]
+
+  /**
+   * deepest dependency tree depth
+   */
+  dependencyDepth: int
+
+  /**
+   * whether this analytic is orphaned by impossible dependencies
+   */
+  unreachable: boolean
+
+  /**
+   * other analytics immediately dependent on this one
+   */
+  dependents: [string]
+}

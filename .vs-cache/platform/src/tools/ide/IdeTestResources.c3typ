@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A restful endpoint for generating test resources for Ide tests.
+ * Example: http://localhost:8888/c3/c3/test-resources/vsce-test.zip
+ */
+@restful(endpoint='test-resources')
+type IdeTestResources {
+
+  /**
+   * Creates and returns a zip with test packages and test code.
+   */
+  @restful(subPath='vsce-test.zip')
+  vsceTestResources: function(): !ContentValue
+
+  /**
+   * Creates and returns a zip with test packages.
+   */
+  @restful(subPath='vsce-workspace.zip')
+  vsceWorkspacePkgs: function(): !ContentValue
+
+  /**
+   * Returns compatible vsix file
+   * Example: Go to <env url>/test-resources/c3-vsce.vsix in browser, and vsix will be downloaded.
+   */
+  @restful(subPath='c3-vsce.vsix')
+  vsceVsix: function(): !ContentValue
+
+  /**
+   * Serves the customized `vscode-extension-tester` library. Current hash: 308bf5a
+   * To update the version of `vscode-extension-tester` follow these steps:
+   * 1. Clone `c3vscode-extension-tester` and checkout the branch you want to update
+   * 2. Make code changes and run `npm pack` to build the tgz
+   * 3. copy tgz into `platform/platform/src/main/resources/c3/platform/tools/ide`
+   * 4. Update the path in this function in IdeTestResources_Methods.java
+   */
+  @restful(subPath='npm-modules/vscode-extension-tester.tgz')
+  vscodeExtensionTester: function(): !ContentValue
+}

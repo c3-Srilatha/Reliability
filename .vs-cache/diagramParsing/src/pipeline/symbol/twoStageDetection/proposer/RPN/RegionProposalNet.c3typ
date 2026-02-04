@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+
+/**
+ * Region proposal network from Faster-RCNN
+ */
+type RegionProposalNet extends RegionProposer type key "RPN" {
+
+  /**
+   * Anchor boxes that are rough estimate of the target object sizes, the closer
+   * the number is, the easier the task for the model to learn.
+   */
+  anchorBoxShapes: ![Pair<int, int>] schema name "AKRSHP"
+
+  /**
+   * Trained tensorflow model file
+   */
+  h5: !File schema name "MDLFLE"
+
+  train: ~ py-diagramparsing-cv
+
+  propose: ~ py-diagramparsing-cv
+
+  /**
+   * Compute the anchor boxes "grid" over the entire image
+   *
+   */
+  generateAnchorBoxes: inline function(
+    rpnShape : ![int],
+    imgShape : ![int],
+    boxShapes: ![Pair<int, int>]
+  ): !native py
+}

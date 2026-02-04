@@ -1,0 +1,102 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for what statistics are calculated on a {@see Digest} data structure. These statistics are expensive by
+ * nature and can be opt-out if the end user does not care to compute them.
+ */
+type DigestSpec mixes Spec {
+
+  /**
+   * disable the creation of a {@link CountMinSketch} data structure for computing the most frequent elements
+   */
+  disableApproxMostFrequent: boolean
+
+  /**
+   * disable the creation of a {@link HyperLogLog} data structure for computing the approximate unique count
+   */
+  disableApproxUniqueCount: boolean
+
+  /**
+   * disable the creation of a Histogram data structure. An approximate histogram is computed for Numeric and String
+   * types when concatenating Digests to conserve memory.
+   */
+  disableHistogram: boolean
+
+  /**
+   * enable the creation of a MinHash structure. A MinHash is required to perform approximate inclusion tests or
+   * estimate the Jaccard index (a similarity measurement) with another digest. Both digests must have MinHash enabled
+   * to perform these operations. A MinHash stores the minimum values for multiple hash functions and performs its
+   * operations by comparing these values between digests. Enabling this may be expensive.
+   * @see MinHash
+   */
+  enableMinHash: boolean
+
+  /**
+   * If enabled, fields of this Digest will be built as AnyDigests.
+   * @see DigestBuilder
+   * @see AnyDigest
+   */
+  buildAny: boolean
+
+  /**
+   * If enabled, fields of this Digest will be created using a ParsingDigestBuilder. Otherwise, they will be created
+   * using a standard DigestBuilder.
+   * @see DigestBuilder
+   * @see ParsingDigestBuilder
+   */
+  parseFields: boolean
+
+  /**
+   * Specifies which fields of the Obj instances to run digests on
+   */
+  // TODO PLAT-25996 Include should mix StringSerializable
+  // include: string serialized Include
+  include: string
+
+  /**
+   * Array of percentiles to compute.
+   * If no percentiles are specified, default percentiles computed will be 25.0, 50.0, and 75.0
+   */
+  // TODO: PLAT-28881 Add percentiles and quantiles to Digest
+  percentiles: [double]
+
+  /**
+   * Array of quantiles (in decimal point notation) to compute.
+   * If no quantiles are specified, default quantiles computed will be 0.25, 0.50, and 0.75
+   */
+  // TODO: PLAT-28881 Add percentiles and quantiles to Digest
+  quantiles: [double]
+
+  /**
+   * Filter expression for which Obj instances to collect digests on.
+   */
+  filter: string serialized Expr
+
+  /**
+   * If set to value greater than 0, will stop guessing ValueType after the limit has surpassed and all the elements are of the same ValueType
+   * The guessed value type will be used for the remainder of the elements for Digest computation.
+   * Note: this may affect the accuracy of the digest since the remainder elements will be assumed to be of the guessed ValueType
+   * This is useful for performance reasons. Only applicable for {@link ParsingDigestBuilder}
+   *
+   * @see ParsingDigestBuilder
+   */
+  guessValueTypeLimit: int = -1
+
+  /**
+   * When an {@link Obj} is digested we pass this spec into {@link Obj#eachFieldValue}
+   *
+   * @see ValueSpec
+   */
+  valueSpec: ValueSpec
+
+  /**
+   * @see CountMinSketchSpec
+   */
+  countMinSketchSpec: CountMinSketchSpec
+}

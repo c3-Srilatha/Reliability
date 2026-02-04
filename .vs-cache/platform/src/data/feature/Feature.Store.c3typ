@@ -1,0 +1,287 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * One of the core functionalities of the Feature Store is to evaluate features with "raw data" being present in variety of sources.
+ * These features are descriptive attributes of entities called subjects, e.g., a subject can be a wind turbine while a feature can be its rotation
+ * speed. **Materialization** is the process of storing/caching the feature values. Specifically, if we materialize a collection of {@link Feature}(s) known as a {@link Feature.Set}, then the materialized data will be stored within the storage of
+ * the Feature Store. {@link FeatureEvaluatable#evalFeatureSetBatch}) or {@link FeatureEvaluatable#evalFeaturesBatch} should be used evaluate data from Feature.Set and Feature(s) respectively.
+ */
+private type Feature.Store mixes Singleton, Configurable<Feature.Store.Config> {
+
+  /**
+   * Creates a lazy Data for a given feature and subject from a materialized store
+   */
+  lazyEvalFeature: member function(subject: !FeatureEvaluatable, feature: !Feature, spec: EvalFeatureSpec): Data
+
+  /**
+   * Creates a lazy Data for features and subject from a materialized store
+   */
+  lazyEvalFeatures: member function(subject: !FeatureEvaluatable, features: ![Feature], spec: EvalFeaturesSpec): Data
+
+  /**
+   * Creates a lazy Data for features and subjects from a materialized store
+   */
+  lazyEvalFeatures: member function(subjects: ![FeatureEvaluatable],
+                                    features: ![Feature],
+                                    spec: EvalFeaturesSpec): Data
+
+  /**
+   * Creates a lazy Data for given features and subject filter from a materialized store
+   */
+  lazyEvalFeatures: member function(subjectFilter: !string serialized Feature,
+                                    features: ![Feature],
+                                    spec: EvalFeaturesSpec): Data
+
+  /**
+   * Creates a lazy Data for a feature set and subjects from a materialized store
+   */
+  lazyEvalFeatureSet: member function(subjects: ![FeatureEvaluatable],
+                                      features: !Feature.Set,
+                                      spec: EvalFeatureSpec): Data
+
+  /**
+   * Creates a lazy Data for a feature set with a filter on associated subjects from a materialized store
+   */
+  lazyEvalFeatureSet: member function(subjectFilter: !string serialized Feature,
+                                      features: !Feature.Set,
+                                      spec: EvalFeatureSpec): Data
+
+  /**
+   * Reads data for a given feature and subject from a materialized store or computes it in runtime
+   */
+  readFeature: member function(subject: !FeatureEvaluatable, feature: !Feature, spec: EvalFeatureSpec): Data
+
+  /**
+   * Reads data for given features and subject from a materialized store or computes it in runtime
+   */
+  readFeatures: member function(subject: !FeatureEvaluatable, features: ![Feature], spec: EvalFeaturesSpec): Data
+
+  /**
+   * Reads data for given features and subjects from a materialized store or computes it in runtime
+   */
+  readFeatures: member function(subjects: ![FeatureEvaluatable], features: ![Feature], spec: EvalFeaturesSpec): Data
+
+  /**
+   * Reads data for given features and a subjectFilter from a materialized store or computes it in runtime. Note that if the subjectFilter doesn't point
+   * to any subject in the Db, the returned Data will be empty.
+   */
+  readFeatures: member function(subjectFilter: !string serialized Feature,
+                                features: ![Feature],
+                                spec: EvalFeaturesSpec): Data
+
+  /**
+   * Reads data for given a feature set and subjects from a materialized store or computes it in runtime
+   */
+  readFeatureSet: member function(subjects: ![FeatureEvaluatable],
+                                  features: !Feature.Set,
+                                  spec: EvalFeatureSpec): Data
+
+  /**
+   * Reads data for given a feature set and a subjectFilter from a materialized store or computes it in runtime. Note that if the subjectFilter doesn't
+   * point to any subject in the Db, the returned Data will be empty.
+   */
+  readFeatureSet: member function(subjectFilter: !string serialized Feature,
+                                  features: !Feature.Set,
+                                  spec: EvalFeatureSpec): Data
+
+  /**
+   * Reads individual columns for the given subject / Feature and slices data by time-range in the provided spec
+   */
+  readFeatureColumns: member function(subject: !FeatureEvaluatable,
+                                      feature: !Feature,
+                                      spec: EvalFeatureSpec): [Data.Column]
+
+  /**
+   * Reads individual columns for the given subject / Features and slices data for each feature by time-range in the
+   * provided spec at the same index
+   */
+  // FIXME
+  // readFeaturesColumns: member function(subject: !FeatureEvaluatable, features: ![Feature], specs: [EvalFeatureSpec]): [[Data.Column]]
+  readFeaturesColumns: member function(subject: !FeatureEvaluatable,
+                                       features: ![Feature],
+                                       spec: EvalFeaturesSpec): [Data.Column]
+
+  /**
+   * Reads all columns for the given subjects / Feature.Set and slices data by time-range in the provided spec
+   */
+  readFeatureSetColumns: member function(subjects: ![FeatureEvaluatable],
+                                         featureSet: !Feature.Set,
+                                         spec: EvalFeatureSpec): map<string, [Data.Column]>
+
+  /**
+   * Reads all columns for the subjects specified by partition spec and returns result as stream of Arrow batches
+   */
+  readFeatureSetArrow: member function(spec: Data.Spark.ReadFeatureSetPartition): Stream<Arrow>
+
+  /**
+   * @return statistics for a given feature and subjects described by filter
+   */
+  featureStats: member function(feature: !Feature, subjectFilter: string serialized Filter): Data
+
+  /**
+   * @return table name of the feature in the materialized store
+   */
+  materializedTableName: member function(feature: !FeatureBase, snapshotId: string): !string
+
+  /**
+   * @return table name of the featureSet in the materialized store for a provided snapshotId
+   */
+  materializedSnapshotTableName: member function(featureSet: !Feature.Set, snapshotId: !string): !string
+
+  /**
+   * Align the input timeRange from user with the maximum materialization timeRange based on the given interval.
+   * @param inputTimeRange
+   *        the timeRange passed by the user, which means user wants to materialize or evaluate the features or featureSet between this timeRange.
+   * @param interval
+   *        the interval that the final timeRange will be aligned by.
+   * @param maxTimeRange
+   *        the maximum timeRange of the entire data set.
+   * @param doNotFailIfInvalid
+   *        If set, the inputTimeRange can be out of bound from the maxTimeRange and only the overlapping timeRange is returned.
+   *        If not set, it fails if the inputTimeRange is out bound of the maxTimeRange.
+   * @return
+   *        the correct timeRange to get the evalMetrics result
+   */
+  alignTimeRange: function(inputTimeRange: !TimeRange,
+                           interval: !string enum Interval,
+                           maxTimeRange: TimeRange,
+                           doNotFailIfInvalid: boolean): !TimeRange
+
+  /**
+   * Writes all data for given [Feature] and subjects to the materialized store.
+   * Alternatively write aggregate Feature.Set directly in a KvRow for optimized io
+   * @param features
+   *          Features that need to be materialized
+   * @param subjects
+   *          Subjects for which features need to be materialized
+   * @param timeRange
+   *          TimeRange which will be used to determine what range of data should be materialized
+   */
+  materializeFeatures: member function(features: ![Feature],
+                                       subjects: !Collection<FeatureEvaluatable>,
+                                       timeRange: TimeRange)
+
+  // Write data to feature store for the feature set. If a timeRange is not specified, then {@link Feature.Set#evaluatedMaterializeTimeRange} is used.
+  materializeFeatureSet: member function(featureSet: !Feature.Set,
+                                         subjects: !Collection<FeatureEvaluatable>,
+                                         timeRange: TimeRange)
+
+  // Write data to feature store for the feature set. Note that, subjectFilter has to correspond to at least one subject in Db, otherwise the call will fail. If a timeRange is not specified, then {@link Feature.Set#evaluatedMaterializeTimeRange} is used.
+  materializeFeatureSet: member function(featureSet: !Feature.Set,
+                                         subjectFilter: string serialized Filter,
+                                         timeRange: TimeRange)
+
+  /*
+   * materialize feature set that is only for metric-backed features, as a fast path without merging.
+   * Only support features of same time range, and masking capability.
+   * If a timeRange is not specified, then {@link Feature.Set#evaluatedMaterializeTimeRange} is used.
+   */
+  materializeLegacyFeatureSet: member function(featureSet: !Feature.Set,
+                                               subjects: !Collection<FeatureEvaluatable>,
+                                               timeRange: TimeRange)
+
+  /**
+   * Writes all data for given feature and subjects to materialized store
+   */
+  materializeFeature: member function(feature: !Feature, subjects: !Collection<FeatureEvaluatable>)
+
+  /**
+   * Writes all data for given feature and subjects described by filter to materialized store. Note that, subjectFilter
+   * has to correspond to at least one subject in Db, otherwise the call will fail.
+   */
+  materializeFeature: member function(feature: !Feature, subjectFilter: string serialized Filter)
+
+  /**
+   * @return instance of KvStore holding materialized features
+   */
+  store: member function(): !KvStore
+
+  /**
+   * @return Whether this particular feature row represents timeseries data
+   */
+  isTimeseriesFeature: member function(row: !KvRow): boolean
+
+  /**
+   * Helper method to write {@link Data} to a {@link KvStore}.
+   *
+   * @param tableName
+   *           name of the table for which the data should be stored at.
+   * @param id
+   *           id in the table for which the data should be stored at.
+   * @param data
+   *           data to store.
+   * @param spec
+   *           spec controlling write behavior.
+   * @return {@link Data.Persisted}
+   */
+  writeData: member function(tableName: !string, id: !string, data: !Data, spec: Feature.Store.WriteSpec): !Data
+
+  /**
+   * Helper for {@link #writeData} - same API, except implementation is in python to serialize through Data.Pandas.
+   */
+  /*
+   * TODO: PLAT-50526, currently the serialization of `writeData` goes through `Data.Pandas` serialization - ideally we
+   * can serialize directly from any `Data` type
+   */
+  writeDataToStore: member function(tableName: !string,
+                                    id: !string,
+                                    data: !Data,
+                                    spec: Feature.Store.WriteSpec): !Data py-data_312 | py-data
+
+  /**
+   * Helper method to read {@link Data} from a {@link KvStore}.
+   *
+   * @param tableName
+   *          name of the table for which the data is stored at.
+   * @param id
+   *          id in the table for which the data is stored at.
+   * @return the {@link Data} at the given tableName and id. If nothing is found at the specified location, then
+   *          an error will be thrown.
+   */
+  readData: member function(tableName: !string, id: !string): !Data
+
+  /**
+   * Helper method to read {@link Data} from a {@link KvStore}.
+   *
+   * @param tableName
+   *          name of the table for which the data is stored at.
+   * @param id
+   *          id in the table for which the data is stored at.
+   * @return the {@link Data} at the given tableName and id. If nothing is found at the specified location, then
+   *          an error will be thrown.
+   */
+  readDataFromArrow: member function(tableName: !string, id: !string): !Data
+
+  /**
+   * Helper method to remove {@link Data} from a {@link KvStore}.
+   *
+   * @param tableName
+   *          name of the table for which the data is stored at.
+   * @param id
+   *          id in the table for which the data is stored at.
+   */
+  removeData: member function(tableName: !string, id: !string)
+
+  /**
+   * Duplicate the block from a single materialized subject to multiple blocks for all the subjects. This function only
+   * works after the the source subject is materialized. Note that this function uses a MapReduce job to do the duplication
+   * and this job is synchronous.
+   * ```python
+   * feature_set.materialize(filter=f"id == 'TURBINE-1'", start="2020-01-01", end="2021-01-01", sync=True)
+   * c3.Feature.Store.duplicateForAllSubjects(fs=feature_set, src_id='TURBINE-1')
+   * ```
+   * ONLY FOR TESTING - DO NOT USE
+   */
+  duplicateForAllSubjects: member function(fs: !Feature.Set, srcId: !string, spec: BatchFetchSpec) py
+
+  /**
+   * Rollback the schema migration changes made by {@link FeatureEvaluatable.Bin.Strategy.SchemaUpgrade}.
+   */
+  rollbackSchemaMigration: function()
+}

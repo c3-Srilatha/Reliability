@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Component to render a process flow diagram (PFD) with color-coded indicators and tooltips
+ * showing the risk score of each component asset in the diagram, as well as the highest-risk
+ * subcomponents assets for each component asset. Also includes links to redirect to the details page
+ * of each of the components.
+ */
+@typeScript
+type UiSdlProcessFlowDiagram extends UiSdlComponent<UiSdlProcessFlowDiagramDataSpec> {
+  @uiSdlDataSpec(dataDestinationField='data')
+  dataSpec: ~
+
+  /**
+   * Field for holding data returned by the data spec.
+   */
+  data: private any
+
+  /**
+   * The title of the component to display
+   */
+  title: string
+
+  /**
+   * The URL to go to when clicking on one of the components of the diagram.
+   * The ID of the system clicked will be appended to the end.
+   * For example, if redirectUrl is `/reliability/system-detail`, when clicking
+   * on system `SYS-1` the user will be redirected to `/reliability/system-detail/SYS-1`.
+   */
+  redirectUrl: string
+
+  /**
+   * Threshold above which the risk score is classified as high.
+   */
+  riskScoreThresholdHigh: double = 75
+
+  /**
+   * Threshold above which the risk score is classified as medium.
+   */
+  riskScoreThresholdMedium: double = 50
+
+  /**
+   * The minimum possible risk score.
+   */
+  riskScoreMinimum: double = 0
+
+  /**
+   * The maximum possible risk score.
+   */
+  riskScoreMaximum: double = 100
+
+  /**
+   * Multiplier to use for the risk score returned from {@link #dataSpec}.
+   */
+  riskScoreMultiplier: double = 1
+
+  /**
+   * The number of decimals to include in the displayed risk score.
+   */
+  riskScoreDecimalPoints: int = 0
+
+  /**
+   * Whether to display the risk score inside the risk score circle.
+   */
+  displayRiskScoreInsideCircle: boolean = true
+
+  /**
+   * Whether to display the risk score beneath the tooltip header.
+   */
+  displayRiskScoreUnderTooltipHeader: boolean = false
+
+  /**
+   * Boolean to specify whether the dots should have a "pulsing" animation.
+   * NOTE: This will also cause the dot tooltip to have a pulsing animation.
+   */
+  pulsingDots: boolean = false
+}

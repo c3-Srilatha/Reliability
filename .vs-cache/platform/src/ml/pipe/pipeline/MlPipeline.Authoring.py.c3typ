@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This native remix allows users to create an {@link MlCustomPipe} directly from a native Python class or function.
+ */
+native py remix type MlPipeline.Authoring {
+
+  /**
+   * Creates a custom pipe from a native Python function or class. If the `py_native` argument is a native class whose
+   * implementation is defined in a Jupyter notebook, {@link MlCustomPipe} requires that all the necessary source code
+   * be defined in a single notebook cell, rather than spanning multiple cells. For example, do not split the `import`s
+   * and class definition between two different cells. Instead, put the necessary `import` statements before or within
+   * the class definition in the same cell. Additionally, ensure that there is no subsequent code after the class
+   * definition, e.g. calling {@link MlCustomPipe#from_py} in the same cell as the `py_native` class definition.
+   *
+   * Incorrect usage:
+   * ```
+   * [1]: class CustomInferencePipe():
+   *        def __init__(self, threshold=0.4):
+   *            self.threshold = threshold
+   *
+   *        def do_process(self, model, x, spec):
+   *            import pandas as pd
+   *            ...
+   *
+   *      mla = c3.MlPipeline.Authoring
+   *      pipe = mla.convert_src(py_native=CustomInferencePipe, ...)
+   * ```
+   *
+   * Correct usage:
+   * ```
+   * [1]: class CustomInferencePipe():
+   *        def __init__(self, threshold=0.4):
+   *            self.threshold = threshold
+   *
+   *        def do_process(self, model, x, spec):
+   *            import pandas as pd
+   *            ...
+   *
+   * [2]: mla = c3.MlPipeline.Authoring
+   *      pipe = mla.convert_src(py_native=CustomInferencePipe, ...)
+   * ```
+   *
+   * @param py_native
+   *           A native Python class or function containing the implementation of a pipe
+   * @param model
+   *           A native model. Please see {@link MlPipe#convert} for requirements on custom native models defined in a
+   *           Jupyter notebook.
+   * @param class_args
+   *           __init__ arguments to create a new {@link MlDynamicPipe#nativeInstance}. This argument is ignored if
+   *           py_native is a function.
+   * @param class_kwargs
+   *           _init__ keyword arguments to create a new {@link MlDynamicPipe#nativeInstance}. This argument is ignored
+   *           if py_native is a function.
+   * @param infer_requirement
+   *           Whether to infer the requirement based on the engine in which `convert_src` is being called.
+   *           Only one of `infer_requirement` and `action_requirement` can specified.
+   * @param action_requirement
+   *           The {@link Action.Requirement minimal action requirement} the user-defined functions need to be executed
+   *           in. Only one of `infer_requirement` and `action_requirement` can be specified. If neither is specified,
+   *           the action_requirement will be set to `py`, which means the functions should be executable in any python
+   *           engine.
+   * @param spec
+   *           Customizations for creating the pipe
+   */
+  convert_src: function(py_native: !native,
+                        model: native,
+                        class_args: [any],
+                        class_kwargs: map<string, any>,
+                        infer_requirement: boolean,
+                        action_requirement: string serialized Action.Requirement,
+                        spec: MlConvertSpec): !MlAtomicPipe py
+}

@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Live details of all available NVIDIA GPUs
+ */
+type GpuStats.Nvidia mixes GpuStats<GpuStat.Nvidia> {
+
+  vendor: ~ = GpuVendor.NVIDIA
+
+  /**
+   * Available CUDA version
+   */
+  cudaVersion: string
+
+  /**
+   * Runtime specific function to return nvidia-smi results in an XML string
+   * See https://developer.download.nvidia.com/compute/DCGM/docs/nvidia-smi-367.38.pdf for more details
+   */
+  fetchNvidiaSmiStats: function(): string java | py-client
+
+  /**
+   * Converts xmlString output from nvidia-smi to json
+   */
+  buildFromXml: function(xmlString: string): GpuStats.Nvidia
+}

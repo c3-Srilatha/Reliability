@@ -1,0 +1,189 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Special annotations for methods (functions).
+ *
+ * Three modifiers of a method declaration are exclusive.
+ *  - `abstract` means types that mixin this type are assumed to implement it
+ *  - `optional` means types that mixin this type only implement it if they declare it
+ *  - `final` means types that mixin this type may not override it
+ *
+ * The difference between abstract and final is that abstract indicates that an implementation is necessary, but not
+ * supplied by the originally declaring type. Any type that mixes in the type is presumed to implement all abstract
+ * methods (unless it re-declares them as abstract). Optional methods are also not implemented by the originally
+ * declaring type, but they represent optional operations that need not be implemented by child types that mixin
+ * if not appropriate. If a type intends to implement an optional method, it must declare it.
+ *
+ * In the case of both abstract and optional, if the method is called but not implemented on the type it is being
+ * called on, an error occurs.
+ */
+@annotation(appliesTo=['function'])
+type Ann.Call mixes Annotation {
+
+  /**
+   * An annotation indicating whether this function should be executed in the same engine from which it was called
+   * if possible. For languages besides Java, the default is `true` for client-side engines and `false` for server-side
+   * for performance reasons (i.e. executing in Java server-side will usually be more performant), though for functions
+   * that take or return `native` values, the implementing SDK may choose to stay in engine by default server-side.
+   *
+   * The value of the `stayInEngine` is either a boolean or a map of {@link Action.Requirements}s to booleans.
+   * To set the value `true` for **all** engines (besides js-server), simply set the value of the annotation to `true`.
+   * To set the value for all engines for a given language,
+   * use {@link ImplLanguage#dslName} as the key.
+   *
+   * In the following example,
+   *     * `needsToStayInEngine` will always stay in its engine (except for js-server)
+   *     * `needsToStayInPy` will always stay in a Python engine, but will use the Java implementation when called
+   *        from server-side JavaScript
+   *     * `needsToStayInPyFoo` will only override the default behavior for engines which {@link Action.Engine#canRun}
+   *        `py-foo` requirement
+   * ```type
+   * @call(stayInEngine=true)
+   * needsToStayInEngine: function() java | js | py
+   *
+   * @call(stayInEngine={'py': true})
+   * needsToStayInPy: function() java | js | py
+   *
+   * @call(stayInEngine={'py-foo': true})
+   * needsToStayInPyFoo: function() java | js | py
+   * ```
+   *
+   * @see MethodType#inline
+   */
+  // TODO: PLAT-40396 Add a way to force a method to stay in engine for js-server
+  stayInEngine: boolean | map<string serialized Action.Requirement, boolean>
+
+  /**
+   * If true then this method or all methods in a given type will only get executes in the same Java Thread in a given
+   * C3 Server node
+   */
+  @deprecated(finalVersion="8.4", details="Use #threadPool instead")
+  javaThreadAffinity: boolean
+
+  /**
+   * An expression that can calculate target App id where this action should execute.
+   *
+   * Scope for the expression is arguments of the C3 action call. I.e. expression can refer to args of the action. E.g.
+   * `@call(app='this.id+"-c3"')` on `Env.c3typ` ensures that actions are dispatched to `c3` App of that Env. Note
+   * that `this` is an implicit argument to all member functions.
+   *
+   * Also note that this annotation can be declared on a function or on a type; however if it is declared on the type
+   * then it will only apply to methods explicitly declared on that type.
+   *
+   * If this annotation is declared on the type then expression scope needs to be valid for both static and member
+   * methods; i.e. `this` can be either parent type or instance depending if method is static or member respectively.
+   *
+   * @see #nodeRole
+   * @see #nodePool
+   * @see #node
+   * @see #threadPool
+   */
+  app: string serialized Expr
+
+  /**
+   * An expression that can calculate target server role or possible roles where this action should execute.
+   *
+   * Scope for the expression is arguments of the C3 action call. I.e. expression can refer to args of the action. E.g.
+   * `@call(node='[ "task", "leader" ]')` on `Cron.c3typ` ensures that cron job will run on one of the `task` node
+   * but if none available then will run on one of the `leader` node. Note that `this` is an implicit argument to all
+   * member functions.
+   *
+   * Result of the expression can be an array OR a single string value.  E.g. `Dataset.c3typ` can have
+   * `@call(nodeRole='"data"')` in which case only data nodes will be used for stateful datasets and if there is no
+   * node pool with role `data` then corresponding action will fail.
+   *
+   * Also note that this annotation can be declared on a function or on a type; however if it is declared on the type
+   * then it will only apply to methods explicitly declared on that type.
+   *
+   * If this annotation is declared on the type then expression scope needs to be valid for both static and member
+   * methods; i.e. `this` can be either parent type or instance depending if method is static or member respectively.
+   *
+   * @see #app
+   * @see #nodePool
+   * @see #node
+   * @see #threadPool
+   */
+  nodeRole: string serialized Expr
+
+  /**
+   * An expression that can calculate target server node pool where this action should execute.
+   *
+   * Scope for the expression is arguments of the C3 action call. I.e. expression can refer to args of the action. E.g.
+   * `@call(node='this.nodePool()')` on `Job.c3typ` ensures that actions are dispatched to specific node pool where
+   * we expect this job to run. Note that `this` is an implicit argument to all member functions.
+   *
+   * Result of the expression can be an array OR a single string value. E.g. `MyMlTrainingJob.c3typ` can have
+   * `@call(nodePool='[ "ml-train", "task" ]')` so that instances of such jobs can run on node-pool named `ml-train`,
+   * but if there is no such node-pool then will fall back to default `task` node-pool.
+   *
+   * Also note that this annotation can be declared on a function or on a type; however if it is declared on the type
+   * then it will only apply to methods explicitly declared on that type.
+   *
+   * If this annotation is declared on the type then expression scope needs to be valid for both static and member
+   * methods; i.e. `this` can be either parent type or instance depending if method is static or member respectively.
+   *
+   * @see #app
+   * @see #nodeRole
+   * @see #node
+   * @see #threadPool
+   */
+  nodePool: string serialized Expr
+
+  /**
+   * An expression that can calculate target server node id where this action should execute.
+   *
+   * Scope for the expression is arguments of the C3 action call. I.e. expression can refer to args of the action. E.g.
+   * `@call(node='this.nodeId()')` on `Stateful.c3typ` ensures that actions are dispatched to the correct parent node
+   * of `Stateful` instance regardless of source location of the call. Note that `this` is an implicit argument to all
+   * member functions.
+   *
+   * Also note that this annotation can be declared on a function or on a type; however if it is declared on the type
+   * then it will only apply to methods explicitly declared on that type.
+   *
+   * If this annotation is declared on the type then expression scope needs to be valid for both static and member
+   * methods; i.e. `this` can be either parent type or instance depending if method is static or member respectively.
+   *
+   * @see #app
+   * @see #nodeRole
+   * @see #nodePool
+   * @see #threadPool
+   */
+  node: string serialized Expr
+
+  /**
+   * An expression that can calculate target thread pool where this action should execute.
+   *
+   * Scope for the expression is arguments of the C3 action call. I.e. expression can refer to args of the action. E.g.
+   * `@call(threadPool='this.threadPool()')` on `Job.c3typ` ensures that actions are dispatched to specific thread pool
+   * where we expect this job to run. Note that `this` is an implicit argument to all member functions.
+   *
+   * Also note that this annotation can be declared on a function or on a type.
+   *
+   * If this annotation is declared on the type then expression scope needs to be valid for both static and member
+   * methods; i.e. `this` can be either parent type or instance depending if method is static or member respectively.
+   *
+   * @see #app
+   * @see #nodeRole
+   * @see #node
+   * @see #nodePool
+   */
+  threadPool: string serialized Expr
+
+  /**
+   * If `true` then this method is considered as part of a dispatching logic so has special semantics, e.g. not having
+   * it's own context such as authz, client version, etc
+   */
+  dispatcher: boolean
+
+  /**
+   * If true then this static method can only be invoked from the type it is declared on. This annotation can only be
+   * used on static methods and such methods can not be overridden.
+   */
+  declaredTypeOnly: boolean
+}

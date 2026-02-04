@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+private type K8sVolume {
+
+  name: string
+
+  // TODO PLAT-25603
+  hostPath: K8sHostPathVolumeSource
+
+  configMap:             K8sConfigMapVolumeSpec
+  nfs:                   K8sNfsVolumeSpec
+  emptyDir:              K8sEmptyDirVolumeSource
+  secret:                K8sSecretVolumeSpec
+  downwardAPI:           K8sDownwardApiVolumeSpec
+  persistentVolumeClaim: K8sPersistentVolumeClaimVolumeSpec
+  projected:             K8sProjectedVolumeSpec
+
+  /**
+   * @return whether the volume is a ephemeral volume or not.
+   */
+  isEphemeral: member function(): boolean
+
+  /**
+   * @return whether the volume is a pvc volume or not.
+   */
+  isPvc: member function(): boolean
+}

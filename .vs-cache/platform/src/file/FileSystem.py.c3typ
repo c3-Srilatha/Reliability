@@ -1,0 +1,146 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Python-specific remix of {@link FileSystem}. Adds helper methods for file operations in python.
+ */
+native py remix type FileSystem {
+
+  /**
+   * Function to download one file from a remote source such as s3 to a local python file-like object (potentially in-memory).
+   *
+   * @param destFile
+   *           python file-like object to download to. This method will completely overwrite the given file.
+   *           Callers are responsible for handling the lifecycle of the file object.
+   *           (e.g. making sure the directory exists on disk, closing them).
+   * @param srcPath
+   *           string representing url or encoded path of remote files to download.
+   * @param spec
+   *           customizations for the file operation.
+   */
+  @call(stayInEngine=true)
+  downloadFile: inline function(destFile: !native, srcPath: !string, spec: FileOperationSpec) py
+
+  /**
+   * Same as {@link #downloadFile}, except for multiple files. The arguments `destFiles` and `srcPaths` are expected
+   * to be the same length. The file download parallelization can be controlled through the `maxConcurrency` argument.
+   * @param maxConcurrency
+   *           Maximum number of concurrent threads to execute. If not specified, it will be set to the number of CPUs.
+   *           If this is called from Jep executor we ignore the maxConcurrency and use the default value of 1.
+   */
+  @call(stayInEngine=true)
+  downloadFiles: inline function(destFiles: ![native], srcPaths: ![string], maxConcurrency: int) py
+
+  /**
+   * Function to upload one file to a remote source such as s3 from a local python file-like object (potentially in-memory).
+   *
+   * @param srcFile
+   *           python file-like object to upload. NOTE: the file object will be closed as a result of this function.
+   * @param dstPath
+   *           string representing url or encoded path of remote file to upload to.
+   * @param spec
+   *           customizations for the file operation.
+   */
+  @call(stayInEngine=true)
+  uploadFile: inline function(srcFile: !native, dstPath: !string) py
+
+  /**
+   * Same as {@link #uploadFile}, except for multiple files. The arguments `srcFiles` and `dstPaths` are expected to
+   * be the same length. The file upload parallelization can be controlled through the `maxConcurrency` argument.
+   * @param maxConcurrency
+   *           Maximum number of concurrent threads to execute. If not specified, it will be set to the number of CPUs.
+   *           If this is called from Jep executor we ignore the maxConcurrency and use the default value of 1.
+   */
+  @call(stayInEngine=true)
+  uploadFiles: inline function(srcFiles: ![native], dstPaths: ![string], maxConcurrency: int) py
+
+  /**
+   * Function to upload a file in chunks to a remote source.
+   *
+   * @param srcPath
+   *           string representing local file path to read from.
+   *           string representing remote directory to upload to.
+   * @param dstDir
+   *          string representing url or encoded path of remote directory to upload to.
+   * @param chunkSize
+   *           integer specifying the maximum byte size of each chunk. By default, this is set to 1GB (1024 * 1024 * 1024).
+   *           chunkSize should be greater than 0.
+   * @param maxConcurrency
+   *           Maximum number of concurrent threads to execute. If not specified, it will be set to the number of CPUs.
+   * @return
+   *           integer representing the number of parts uploaded.
+   */
+  @call(stayInEngine=true)
+  chunkAndUploadFile: function(srcPath: !string,
+                               dstDir: !string,
+                               chunkSize: int = 1073741824,
+                               maxConcurrency: int): int py
+
+  /**
+   * Function to upload a directory to a remote source.
+   * If `chunk` is true, the uploaded files will be split into chunks using {@link #chunkAndUploadFile} else the files
+   * will be uploaded as is.
+   * Empty directories will not be uploaded.
+   *
+   * @param srcDir
+   *           string representing local directory to upload.
+   * @param dstDir
+   *           string representing url or encoded path of remote directory to upload to.
+   * @param chunkSize
+   *           integer specifying the maximum byte size of each chunk for files within the directory.
+   *           Setting it to non positive number will disable chunking. This can be speed up the upload process.
+   * @param maxConcurrency
+   *           Maximum number of concurrent threads to execute. If not specified, it will be set to the number of CPUs.
+   * @return
+   *           integer representing the number of files uploaded.
+   *
+   * @see #downloadDirectory
+   * @see #downloadAndStitchFile
+   */
+  @call(stayInEngine=true)
+  uploadDirectory: function(srcDir: !string, dstDir: !string, chunkSize: int = -1, maxConcurrency: int): int py
+
+  /**
+   * Function to download file chunks from a remote source and stitch them into a single file.
+   * The file should be uploaded using {@link #chunkAndUploadFile}.
+   *
+   * @param srcDir
+   *           string representing remote directory containing file chunks.
+   * @param dstPath
+   *           string representing local file path to save the stitched file.
+   * @param maxConcurrency
+   *           Maximum number of concurrent threads to execute. If not specified, it will be set to the number of CPUs.
+   * @return
+   *           integer representing the number of parts downloaded.
+   *
+   * @see #uploadDirectory
+   * @see #downloadDirectory
+   */
+  @call(stayInEngine=true)
+  downloadAndStitchFile: function(srcDir: !string, dstPath: !string, maxConcurrency: int): int py
+
+  /**
+   * Function to download a directory from a remote source.
+   * If **all** the files were chunked during upload, using {@link #uploadDirectory} `chunkSize` parameter,
+   *  they will be stitched together using {@link #downloadAndStitchFile}.
+   *
+   * @param srcDir
+   *           string representing remote directory to download.
+   * @param dstDir
+   *           string representing local directory to save the downloaded files.
+   * @param maxConcurrency
+   *           Maximum number of concurrent threads to execute. If not specified, it will be set to the number of CPUs.
+   * @return
+   *           integer representing the number of files downloaded.
+   *
+   * @see #uploadDirectory
+   * @see #downloadAndStitchFile
+   */
+  @call(stayInEngine=true)
+  downloadDirectory: function(srcDir: !string, dstDir: !string, maxConcurrency: int): int py
+}

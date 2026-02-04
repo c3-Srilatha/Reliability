@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The base template for querying a list of epics, sprints, boards, and comments.
+ * Updated for Jira API v3 with support for nextPageToken pagination.
+ */
+type JiraQueryBase<T> {
+
+  /**
+   * Maximum number of T to return per page. default 50.
+   */
+  maxResults: int = 50
+
+  /**
+   * Starting index of the returned T. base index 0.
+   */
+  startAt: int = 0
+
+  /**
+   * Token for pagination (v3 API alternative to startAt)
+   */
+  nextPageToken: string
+
+  /**
+   * Total number of items shown
+   */
+  total: int
+
+  /**
+   * Arry of T
+   */
+  values: [T]
+}

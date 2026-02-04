@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility functions related to diagram parsing file handling.
+ * This type provides methods to manage file system operations such as copying files,
+ * saving numpy arrays as images, and downloading and uploading files.
+ */
+@beta
+type DiagramParsingFileUtils {
+
+  /**
+   * Copy a file from the server to a local directory. The file name of the local copy will remain the same, and it
+   * will be placed inside `localDir`, which needs to be the path to a directory, such as `"."` and `"/tmp/folder/"`
+   */
+  copyFileToLocalClient: inline function(
+    file: !File,
+    localDir: !string
+  ): !string py
+
+  /**
+   * Create a temporary local folder
+   */
+  createTempDirectory: inline function(): !string py
+
+  /**
+   * Save a numpy array to a image (png, jpeg...etc) in the server's file system at
+   * user-specified `destUrl`, such as `"gcs://c3--dev4/user/diagramparsing/fs/test.png"` or
+   * `"c3fs:///DiagramParsing/images/test.jpeg"`
+   */
+  saveArrayToImage: inline function(
+    array: !native,
+    destUrl: !string
+  ): !string py-diagramparsing-cv
+
+  /**
+   * Download an image file from the remote file system and load it into a numpy array
+   */
+  imageFileToArray: inline function(
+    file: !File
+  ): !native py-diagramparsing-cv
+
+  /**
+   * Save a native tensorflow/keras model to a h5 file in the server's file system at
+   * user-specified `destUrl`, such as `"gcs://c3--dev4/user/diagramparsing/fs/backbone.h5"` or
+   * `"c3fs:///DiagramParsing/models/model.h5"`
+   */
+  saveTFModelToFile: inline function(
+    model: !native,
+    destUrl: !string
+  ): !File py-diagramparsing-cv
+}

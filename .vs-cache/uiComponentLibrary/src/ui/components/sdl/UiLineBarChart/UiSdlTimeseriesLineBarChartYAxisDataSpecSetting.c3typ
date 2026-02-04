@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specification that describes how to use each field of the {@link dataType} for display in the {@link UiSdlTimeseriesLineBarChart}.
+ * A single field can be mapped to only Y axis, so an instance of this type specifies how to display the Y axis
+ * in a time series line bar chart.
+ */
+@typeScript
+type UiSdlTimeseriesLineBarChartYAxisDataSpecSetting mixes UiSdlLineBarChartYAxisDataSpecSetting, UiSdlMetricBasedDataSpecSetting {
+
+  /**
+   * Keeps track of the evalute action triggered in the datasource. Possible values
+   * are evalMetric or rollupMetrics. Defaults to 'EVAL'.
+   */
+  evaluateAction: string enum('EVAL', 'ROLLUP') = 'EVAL'
+
+  /**
+   * When we use an array of bindings to generate multiple series from one metric
+   * every element in this array is the legend label for the corresponding binding.
+   */
+  bindingsLegendLabels: [UiSdlDynamicValueSpec]
+
+  /**
+   * Every element in this array is the legend description for the corresponding binding on legend hover
+   * note that if bindingsLegendDescriptions don't match bindingsLegendLabels length, descriptions will not render
+   */
+  // TODO: support UiSdlDynamicValueSpec https://c3energy.atlassian.net/browse/UI-11851
+  bindingsLegendDescriptions: [string]
+
+  /**
+   * When we use an array of bindings to generate multiple series from one metric
+   * every element in this array is the legend icon for the corresponding binding
+   * note that if bindingsLegendIcons don't match bindingsLegendLabels length, icon will not render
+   */
+  bindingsLegendIcons: [string]
+
+  /**
+   * When in synchronized mode, and we use an array of bindings to generate multiple series from one metric,
+   * each element in this array is the grid height for its corresponding binding. Must match length of bindingsLegendLabels.
+   */
+  bindingsSynchronizedGridHeights: [int]
+
+  // TODO: PLAT-111978 - Synchronize chart | Explicitly assign multiple series to grids, based on yAxisField configuration
+
+  /**
+   * The type of visualization. It could be either 'UiSdlLineBarChartBarVisualization', 'UiSdlLineBarChartPointVisualization' or 'UiSdlTimeseriesLineBarChartLineVisualization'.
+   * To config it at json file, put visualization type value at "type" field alongside with other fields from the reference type.
+   * For example:
+   *     "visualizationType": {
+   *       "type": "UiSdlTimeseriesLineBarChartLineVisualization",
+   *       "lineStyle": "Dotted"
+   *     }
+   */
+  visualizationType: UiSdlLineBarChartBarVisualization | UiSdlLineBarChartPointVisualization | UiSdlTimeseriesLineBarChartLineVisualization | UiSdlLineBarChartYAxisMarkerLineVisualization | UiSdlLineBarChartYAxisMarkerRangeShadingVisualization | UiSdlTimeseriesLineBarChartXAxisAreaShadingVisualization | UiSdlLineBarChartXAxisMarkerRangeShadingVisualization
+
+  /**
+   * The related markers to this series. Used to associate a series to 0 or more markers.
+   */
+  relatedMarkers: [string]
+
+  /**
+   * Upper bound shade above timeseries data
+   * ** Must have a unique entityId **
+   */
+  upperBound: UiSdlMetricBasedDataSpecSetting
+
+  /**
+   * Lower bound shade below timeseries data
+   * ** Must have a unique entityId **
+   */
+  lowerBound: UiSdlMetricBasedDataSpecSetting
+
+  /**
+   * When in synchronized mode, a spec to allow further control over how separate chart grids are rendered.
+   */
+  synchronizationSpec: UiSdlSynchronizedChartDataSpecSetting
+
+  /**
+   * Rollup function options for collection fields.
+   */
+  @restriction(filter="evaluateAction=='ROLLUP'")
+  aggregation: string enum('OR', 'AND', 'SUM', 'AVG', 'MEAN', 'MIN', 'MAX', 'MEDIAN', 'VARIANCE', 'STDDEV', 'PERCENTILE') = 'AVG'
+
+  dataRecordMapping: ~ = {
+    "metricName": {
+      "dependingField": "metricType",
+      "dependingValues": {
+        "SimpleMetric": "name",
+        "CompoundMetric": "id"
+      }
+    },
+    "legendLabel": "name",
+    "fieldName": {
+      "dependingField": "metricType",
+      "dependingValues": {
+        "SimpleMetric": "name",
+        "CompoundMetric": "id"
+      }
+    }
+  }
+}

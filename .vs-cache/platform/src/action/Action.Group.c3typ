@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Details of an Action Group from Security and Access Control standpoint.
+ */
+type Action.Group mixes MetadataIdentified, StringSerializable {
+
+  forId: ~
+
+  /**
+   * The security level of this Action Group.
+   */
+  securityLevel: int enum SecurityLevel = MAX
+
+  /**
+   * The role id that corresponds to this Action Group.
+   */
+  @ser(name='role')
+  roleId: string serialized Role
+
+  /**
+   * The role that corresponds to this Action Group.
+   */
+  role: cached property(): Role
+
+  /**
+   * Compares the minimum security levels of two lists of Action.Groups.
+   *
+   * @return negative if first < (more restrictive than) second, zero if equal, positive if first > (less restrictive
+   *         than) second
+   */
+  compareActionGroups: private function(first: Array<string serialized Action.Group>,
+                                        second: Array<string serialized Action.Group>): !int
+}

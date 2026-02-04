@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@azure(client='eventHub',
+       child='authorizationRules',
+       childOnImpls=true,
+       cloudFunc='azevhbar',
+       hasResourceArn=false,
+       hasResourceId=true,
+       hasResourceName=true,
+       hasTags=false,
+       identityRoleOptions=OPTIONAL)
+type AzureEventHubAuthorizationRule mixes AzureSharedAccessAuthorizationRuleResource<AzureEventHub, AzureEventHubAuthorizationKeysFields>, AzureEventHubAuthorizationRuleFields {
+
+  /**
+   * List the Azure event hub authorization rule.
+   *
+   * @param resourceGroupName
+   *           Name of the Azure resource group that the Azure event hub is in
+   * @param eventHubNamespace
+   *           Namespace of the Azure event hub
+   * @param eventHubName
+   *           Name of the Azure event hub
+   * @param spec
+   *           spec to list resources.
+   * @return the list of Azure event hubs
+   */
+  listByEventHub: function(resourceGroupName: !string,
+                           eventHubNamespace: !string,
+                           eventHubName: !string,
+                           spec: CloudListResourcesSpec): !CloudListResourcesResult<AzureEventHubAuthorizationRule>
+
+  parentResourceName: ~
+  toImpl:             ~
+  fromImpl:           ~
+  getResource:        ~
+  destroyResource:    ~
+}

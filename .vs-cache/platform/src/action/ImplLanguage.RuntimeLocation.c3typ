@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The logical location of {@link Action} execution.
+ */
+enum type ImplLanguage.RuntimeLocation {
+
+  /**
+   * Execute from the server address space. This is the only option for action engines implemented directly in Java or
+   * using processes run from the Java server.
+   */
+  SERVER = 'server'
+
+  /**
+   * Execute from the client (caller) address space. This is the only option for actions which need to interact with
+   * the local environment directly, such as user interface.
+   */
+  CLIENT = 'client'
+
+  /**
+   * @return the matching runtime value for the specified name or null
+   */
+  forName: cached function(name: !?string, failIfNone: boolean): !string serialized ImplLanguage.RuntimeLocation
+
+  /**
+   * @return if @firstLocation can run @secondLocation. A location with null value can only run a location with null value.
+   * A non-null location can run itself and a location with null value.
+   */
+  canRun: function(firstLocation: string enum ImplLanguage.RuntimeLocation,
+                   secondLocation: string enum ImplLanguage.RuntimeLocation): !boolean
+
+  /**
+   * Regular expression that matches all valid locations.
+   */
+  regexPattern: private cached function(): !string
+
+  /**
+   * @return If the location is null return an array with empty string else return an array with empty string and the location.
+   */
+  superset: private cached function(location: string enum ImplLanguage.RuntimeLocation): [string]
+}

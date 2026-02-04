@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base wrapper Type for {@link TypeMeta} containing extra information not stored directly
+ * on the {@link TypeMeta} instance such as backward dependencies and upstream/downstream
+ * remix packages.
+ *
+ * @see BaseCodeAnalyzer#collectAppInfo
+ */
+type BaseCodeAnalysis.TypeInfoBase {
+
+  /**
+   * The declared {@link TypeMeta} instance.
+   */
+  typeMeta: !TypeMeta
+
+  /**
+   * Forward dependencies are Types or fields that this Type relies on for a portion of
+   * its behavior. Any forward dependencies for this #typeMeta instance are stored here.
+   *
+   * **NOTE**: For {@link BaseCodeAnalysis.TypeInfoBase}, these will only contain _new_
+   *           dependencies introduced by the remix.
+   */
+  metaDeps: !BaseCodeAnalysis.TypeMetaDeps
+
+  /**
+   * Backward dependencies, as opposed to [regular ones](metaDeps), are Types or fields that
+   * rely on this Type for a portion of their behavior. Any backward dependencies for this
+   * #typeMeta instance are stored here.
+   */
+  // TODO: ENGR-21399: Implement this field.
+  @beta
+  backwardMetaDeps: BaseCodeAnalysis.TypeMetaDeps
+
+  /**
+   * For any fields that are declared as [inherited](InheritedValueType), the fully resolved
+   * {@link DeclaredFieldType} is stored here. We can't overwrite the existing {@link DeclaredFieldType}s
+   * because we need to know what information has been inherited and what has been explicitly
+   * declared on a Type to figure out whether to report a change.
+   *
+   * The key is the field name and the value is an array of resolved {@link DeclaredFieldType}s.
+   * An array is used because a {@link Method} can have multiple [overloads](Method#overloads).
+   * For most fields, this will only contain 1 element.
+   */
+  resolvedInheritedFields: map<!string, ![DeclaredFieldType]>
+
+  /**
+   * Helper function to map a given field to the correct entry in #resolvedInheritedFields.
+   *
+   * @param fieldMeta
+   *           The field to resolve.
+   * @return The resolved field meta, or `fieldMeta` if it's not inherited.
+   */
+  resolvedFieldMeta: inline member function(fieldMeta: !DeclaredFieldType): !DeclaredFieldType js-rhino
+
+  /**
+   * Helper function to detect if a Type, field, or method is in beta. A Type is
+   * in beta if it has a [@beta annotation](Ann.Beta). A field or method is in beta
+   * if either it or its parent Type has a [@beta annotation](Ann.Beta).
+   *
+   * @param fieldMeta
+   *           If provided, checks if the field or method is in beta. Otherwise,
+   *           checks if the Type is in beta.
+   * @return Whether the Type, field, or method is in beta.
+   */
+  isBeta: inline member function(fieldMeta: DeclaredFieldType): !boolean js-rhino
+
+  /**
+   * Helper function to detect if a Type, field, or method is private. A Type is
+   * private if it's marked with the [private keyword](TypeMeta#declaredPrivate).
+   * A field or method is private if either it or its parent Type is marked with
+   * the [private keyword](DeclaredFieldType#private).
+   *
+   * @param fieldMeta
+   *           If provided, checks if the field or method is private. Otherwise,
+   *           checks if the Type is private.
+   * @return Whether the Type, field, or method is private.
+   */
+  isPrivate: inline member function(fieldMeta: DeclaredFieldType): !boolean js-rhino
+}

@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=false,
+       hasResourceId=true,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='hzhck')
+type AwsHostedZoneHealthCheck mixes CloudResource {
+
+  /**
+   * The Id of the C3 cluster on which Route53 performs health check. If null, the Route53 is not performing health
+   * check on the cluster.
+   */
+  targetClusterId: string
+
+  /**
+   * The protocol that you want Route 53 to use to communicate with the end point.
+   */
+  protocol: !string enum AwsHostedZoneHealthCheckProtocol
+
+  /**
+   * The IP address of the end point on which you want Route 53 to perform health check. You must set either ipAddress
+   * or domainName.
+   */
+  ipAddress: string
+
+  /**
+   * The domain on which you want Route53 to perform health check. You must set either ipAddress or domainName.
+   */
+  domainName: string
+
+  /**
+   * The port of the end point on which you want Route 53 to perform health check.
+   */
+  port: !int
+
+  /**
+   * The path that you want Route 53 to request when perform health check.
+   */
+  path: string
+
+  /**
+   * The number of consecutive health checks that an endpoint must pass or fail for Route53 to change the current status
+   * of the endpoint from healthy to unhealthy or vice versa.
+   */
+  failureThreshold: int
+
+  /**
+   * If specified, Route53 will search the response body for the string. Route53 considers the endpoint health only if
+   * the specified value appears entirely within the first 5120 bytes of the response body.
+   */
+  searchString: string
+
+  /**
+   * Route53 will check the health of the endpoint from the following regions. By default, the checkerRegions includes
+   * all regions listed in AwsHostedZoneHealthCheckRegion.
+   */
+  checkerRegions: [string]
+
+  /**
+   * Report the health check results observed from each checker region
+   */
+  healthStatus: member function(): [AwsHostedZoneHealthCheckObservation]
+
+  /**
+   * Report the health check result of the endpoint. The endpoint is considered as healthy, when at least one of the
+   * AwsHostedZoneHealthCheckObservation is healthy.
+   */
+  isHealthy: member function(): boolean
+
+  hasRegion: ~
+  isEnabled: ~
+}

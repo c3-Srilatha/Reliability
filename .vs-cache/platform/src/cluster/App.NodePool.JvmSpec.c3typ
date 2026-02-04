@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration options for JVM related configurations for {@link App.NodePool}.
+ */
+@beta
+type App.NodePool.JvmSpec mixes Spec, App.NodePool.JvmSpec.AdminFields {
+
+  /**
+   * Refers to the the maximum fraction (0-1) of a node's memory to be reserved for C3 server's JVM. This corresponds to
+   * the computation for the max Java heap size to be allocated.
+   */
+  jvmMaxMemoryPct: double = 0.7
+
+  /**
+   * A flag to enable JVM heap dump on out of memory error.
+   */
+  enableHeapDumpOnOomError: boolean
+
+  /**
+   * Refers to the path where the heap dump file will be generated in case of an out of memory error.
+   */
+  heapDumpPath: string
+
+  /**
+   * Refers to the number of vertx workers to be used for this {@link App.NodePool}.
+   */
+  numVertxWorkers: int32 = 100
+
+  isValid: inline member function(validatePartial: boolean): map<string, [string]>
+}

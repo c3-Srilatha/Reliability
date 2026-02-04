@@ -1,0 +1,223 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AWS Relational Database
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='rds')
+type AwsRds mixes AwsResource, AwsSecurityGroupsMember, CloudInstance {
+
+  /**
+   * Auto-generated the connection endpoint.
+   */
+  endPoint: string
+
+  /**
+   * Specifies the current state of this database
+   */
+  state: string enum CloudResourceState
+
+  /**
+   * The name of the database engine to be used for this instance. Not modifiable.
+   */
+  dbEngine: !string enum AwsRdsDbEngineType
+
+  /**
+   * The version number of the database engine to use.
+   */
+  dbEngineVersion: !string
+
+  /**
+   * The pending modification of the dbEngineVersion
+   */
+  pendingDbEngineVersion: string
+
+  /**
+   * License model information for this DB instance.
+   */
+  dbLicenseModel: !string enum AwsRdsDbLicenseModel
+
+  /**
+   * The pending modification of dbLicenseModel
+   */
+  pendingDbLicenseModel: string enum AwsRdsDbLicenseModel
+
+  /**
+   * The compute and memory capacity of the DB instance.
+   */
+  dbInstanceClass: !string
+
+  /**
+   * The pending modification of dbInstanceClass
+   */
+  pendingDbInstanceClass: string
+
+  /**
+   * Specifies if the DB instance is a Multi-AZ deployment.
+   */
+  isMultiAz: ?boolean
+
+  /**
+   * The pending modification of isMultiAz.
+   */
+  pendingIsMultiAz: ?boolean
+
+  /**
+   * The EC2 Availability Zone that the database instance will be created in. Not modifiable.
+   */
+  availabilityZone: string
+
+  /**
+   * Specifies the type of storage devices to be associated with the DB instance.
+   */
+  storageType: string enum AwsRdsDbStorageType = STANDARD
+
+  /**
+   * The pending modification of pendingStorageType.
+   */
+  pendingStorageType: string
+
+  /**
+   * The amount of storage (in GB) to be allocated for the database instance.
+   */
+  allocatedStorage: int = 100
+
+  /**
+   * The pending modification of allocatedStorage.
+   */
+  pendingAllocatedStorage: int
+
+  /**
+   * The amount of Provisioned IOPS (input/output operations per second) to be initially allocated for the DB instance.
+   * It must be a multiple between 3 and 10 of the storage amount for the DB instance, and also be an integer multiple
+   * of 1000.
+   */
+  iops: int
+
+  /**
+   * The pending modification of iops.
+   */
+  pendingIops: int
+
+  /**
+   * The name of a master user that will connect to the DB instance. Not modifiable.
+   */
+  masterUserName: !string
+
+  /**
+   * The password of the master user and it can be any printable ASCII character except "/", """, or "@".
+   * If no set here, a random password will be auto-generated and used.
+   */
+  masterUserPassword: string
+
+  /**
+   * Indicate whether the masterUserPassword is being updated
+   */
+  updatingMasterUserPassword: boolean
+
+  /**
+   * A DB subnet group to associate with this DB instance.
+   */
+  dbSubnetGroupName: string = 'default'
+
+  /**
+   * The pending modification of dbSubnetGroupName.
+   */
+  pendingDbSubnetGroupName: string
+
+  /**
+   * Specifies the accessibility options for the DB instance. The default is False.
+   * False specifies an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address.
+   * True specifies an internal instance with a DNS name that resolves to a private IP address.
+   */
+  isNotPubliclyAccessible: ?boolean
+
+  /**
+   * The meaning of this parameter differs according to the database engine you use. Not modifiable.
+   * For MySql,
+   *     The name of the database to create when the DB instance is created.
+   *     If this parameter is not specified, no database is created in the DB instance.
+   * For MariaDB,
+   *     The name of the database to create when the DB instance is created.
+   *     If this parameter is not specified, no database is created in the DB instance.
+   * For PostgreSQL,
+   *     The name of the database to create when the DB instance is created.
+   *     If this parameter is not specified, the default "postgres" database is created in the DB instance.
+   * For Oracle,
+   *     The Oracle System ID (SID) of the created DB instance.
+   * For SQL Server,
+   *     Not applicable.
+   */
+  dbName: !string
+
+  /**
+   * The port number on which the database accepts connections.
+   */
+  dbPort: int = 1234
+
+  /**
+   * The pending modification of dbPort.
+   */
+  pendingDbPort: int
+
+  /**
+   * The number of days for which automated backups are retained.
+   * Setting this parameter to between 1 and 35 enables backups.
+   * Setting this parameter to 0 disables automated backups.
+   */
+  backupRetentionPeriod: int = 1
+
+  /**
+   * The pending modification of backupRetentionPeriod.
+   */
+  pendingBackupRetentionPeriod: int
+
+  /**
+   * The daily time range during which automated backups are created if automated backups are enabled.
+   * Must be in the format hh24:mi-hh24:mi. Times should be in Universal Coordinated Time (UTC).
+   * Must not conflict with the preferred maintenance window.
+   * Must be at least 30 minutes.
+   */
+  preferredBackupWindow: string = '02:00-02:30'
+
+  /**
+   * The interval, in seconds, between points when Enhanced Monitoring metrics are collected for the DB instance.
+   * Valid Values: 0, 1, 5, 10, 15, 30, 60. The default is 0, which disables collecting Enhanced Monitoring metrics.
+   */
+  monitoringInterval: int = 0
+
+  /**
+   * The ARN for the IAM role that permits RDS to send enhanced monitoring metrics to CloudWatch Logs
+   */
+  monitoringRoleArn: string
+
+  /**
+   * Indicates that minor engine upgrades will be applied automatically to the DB instance. The default is false.
+   */
+  notAutoMinorUpgrade: ?boolean
+
+  /**
+   * Copy all tags from the DB instance to snapshots of the DB instance. The default is false.
+   */
+  copyTagsToSnapshot: ?boolean
+
+  /**
+   * The weekly time range during which system maintenance can occur, in Universal Coordinated Time (UTC).
+   * Must be in the format ddd:hh24:mi-ddd:hh24:mi. Times should be in Universal Coordinated Time (UTC).
+   * Valid Days: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+   * Must be at least 30 minutes window
+   */
+  preferredMaintenanceWindow: string = 'sun:04:00-sun:05:00'
+
+  awsServiceName: ~
+}

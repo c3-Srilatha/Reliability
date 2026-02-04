@@ -1,0 +1,118 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the specs for layout parser
+ */
+type Genai.SourceFile.Chunker.MultimodalPdf.LayoutParserSpec mixes Spec {
+  /**
+   * TThe device to which VGT model will be processed on, e.g. "cuda", "cpu".
+   */
+  device: string = "cuda"
+
+  /**
+   * The external URL of the configuration zip file for the layout parser.
+   */
+  modelDefinitionZip: string
+
+  /**
+   * Enable the document hierarchy parser
+   * Define the document hierarchy parser spec. If not provided, the default spec will be used.
+   * If set to null, the document hierarchy parser will be disabled.
+   */
+  documentHierarchyParserSpec: Genai.SourceFile.Chunker.MultimodalPdf.DocumentHierarchyParserSpec
+
+  /**
+   * The full list of bounding box classes of the document layout analysis model.
+   * This needs to match the output class space of the model.
+   */
+  boundingBoxClassList: [string]
+
+  /**
+   * Dictionary to filter bounding boxes with low predicted scores. The values
+   * should be between 0 to 1. This dictionary should have all the values from
+   * bounding_box_class_list.
+   */
+  boundingBoxFilterDict: map<string, double>
+
+  /**
+   * Do not generate grid for VGT. Note: VGT will have slightly worse performance
+   * in the absence of the grid.
+   */
+  doNotGenerateGrid: boolean
+
+  /**
+   * Keyword arguments to be used when calling pdfplumber.to_image().
+   */
+  pdfplumberToImageKwargs: map<string, any>
+
+  /**
+   * A dictionary to merge homogeneous bounding box classes. The keys are the final
+   * classes to be stored, and the values are lists of VGT output classes. Can merge
+   * certain homogeneous VGT output classes into one. Note: if a VGT output class is
+   * not in any of the dictionary's value lists, the bounding boxes of that class will be ignored.
+   */
+  intraclassConsolidationDict: map<string, [string]>
+
+  /**
+   * A dictionary to merge heterogeneous bounding box classes. The keys are the target classes,
+   * and the values are lists of source classes to be merged.
+   */
+  interclassConsolidationDict: map<string, [string]>
+
+  /**
+   * Whether to find page separators to support multi-column documents.
+   */
+  findPageSeparators: boolean
+
+  /**
+   * The step (in pixels) to which the process of fingind page separators creates grids for bounding box "hits".
+   */
+  gridStep: int
+
+  /**
+   * The ratio of horizontal boundaries to skip. This skips from both left and right.
+   */
+  boundarySkipRatioHorizontal: double
+
+  /**
+   * The ratio of vertical boundaries to skip. This skips from both top and bottom.
+   */
+  boundarySkipRatioVertical: double
+
+  /**
+   * The low pass threshold to determine whether a position is a separator. This needs
+   * to work with grid_step and may need to change if grid_step is changed.
+   */
+  lowPassFilter: double
+
+  /**
+   * The maximum number of separators allowed on one page. If more separators than this are
+   * detected, we see them as unreliable and do not return any separators.
+   */
+  maxSeparatorsAllowed: int
+
+  /**
+   * Number of threads to run grid generation. Multi-thread will run pages in parallel.
+   * Default to 1. Must check the number of current threads available in nodes.
+   */
+  gridGenerationThreadCount: int
+
+  /**
+   * Timeout limit of grid generation step to be spent per page. Default to 2.
+   * If timeout, return empty grid for the page.
+   */
+  gridGenerationProcessTimeoutPerPageSeconds: int
+
+  /**
+   * The batch size of data when calling VGT inference. Note: setting this to 1 is recommended
+   * as higher value does not lead to significant latency improvement.
+   */
+  vgtInferenceBatchSize: int
+}

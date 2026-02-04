@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@deprecated(finalVersion="8.9",
+            details="All the pandas subtypes apis are deprecated on Data types and will be removed in a future release")
+abstract type Pandas.IntervalIndex mixes Value, Pandas.Index<Data.IntervalIndex> {
+
+  closed:                       abstract property(): ?any
+  closed_left:                  abstract property(): ?boolean
+  closed_right:                 abstract property(): ?boolean
+  inferred_type:                abstract property(): ?string
+  is_empty:                     abstract property(): ?[boolean]
+  is_non_overlapping_monotonic: abstract property(): ?any
+  is_overlapping:               abstract property(): ?boolean
+  is_unique:                    abstract property(): ?any
+
+  @pandas(canReturnData=true)
+  left: abstract property(): ?any
+
+  @pandas(canReturnData=true)
+  length: abstract property(): ?any
+
+  @pandas(canReturnData=true)
+  mid: abstract property(): ?any
+
+  open_left:  abstract property(): ?boolean
+  open_right: abstract property(): ?boolean
+
+  @pandas(canReturnData=true)
+  right: abstract property(): ?any
+
+  contains: private abstract member function(): ?[any]
+
+  from_arrays: abstract function(left: ?any,
+                                 right: ?any,
+                                 closed: ?string,
+                                 name: ?any,
+                                 copy: ?any,
+                                 dtype: ?any): ?Data.IntervalIndex
+
+  from_breaks: abstract function(breaks: ?any,
+                                 closed: ?string,
+                                 name: ?any,
+                                 copy: ?any,
+                                 dtype: ?any): ?Data.IntervalIndex
+
+  from_tuples: abstract function(data: ?any,
+                                 closed: ?string,
+                                 name: ?any,
+                                 copy: ?any,
+                                 dtype: ?any): ?Data.IntervalIndex
+
+  get_loc:      abstract member function(key: ?any, method: ?string, tolerance: ?any): ?(int | AnySlice | [boolean])
+  memory_usage: abstract member function(deep: ?any): ?int
+  overlaps:     private abstract member function(): ?[any]
+  set_closed:   private abstract member function(): ?[any]
+
+  @pandas(canReturnData=true)
+  to_tuples: abstract member function(na_tuple: any): ?any
+}

@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the relationship between a {@link ReliabilityAsset} and a child {@link ReliabilityAsset} or {@link Sensor}. Acts as the edge in the hierarchy denorm graph.
+ */
+entity type ReliabilityAssetHierarchicalRelation extends PhysicalAssetHierarchyRelation mixes FilterableByFacility type key 'RAHR' {
+
+  /**
+   * The {@link ReliabilityAsset} this relation comes from.
+   */
+  from: !ReliabilityAsset
+
+  /**
+   * The {@link PhysicalAsset} this relation connects to. Could be a {@link ReliabilityAsset} or a {@link Sensor}.
+   */
+  to: !ReliabilityAsset
+
+  /**
+   * Creates a new {@link ReliabilityAsset} which is the direct child of a {@link Facility} (i.e. a root node of the asset hierarchy).
+   *
+   * @param formObject
+   *        The specification object containing the data for creating the parent asset.
+   */
+  createParentAsset: function(formObject: !CreateParentAssetSpec) js-rhino
+
+  /**
+   * Creates a new {@link ReliabilityAsset} which is the child of an existing {@link ReliabilityAsset}.
+   *
+   * @param formObject
+   *        The specification object containing the data for creating the child asset.
+   */
+  createChildAsset: function(formObject: !CreateChildAssetSpec) js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["from.facility", "to.facility"]
+}

@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generates test data for strict hierarchies
+ */
+type TestDataGenerator mixes HierarchyDenormOption {
+
+  /**
+   * prefix to be used for the nodes that are created
+   */
+  prefix: string = 'testNode'
+
+  /**
+   * total depth of the tree. Root is at depth 1
+   */
+  depth: int = 8
+
+  /**
+   * no of children that each node has
+   */
+  branchingFactor: int = 6
+
+  /**
+   * write batch size
+   */
+  dbOpBatchSize: int = 1000
+
+  /**
+   * fromRole Type - for non strict hierarchy (eg. Department)
+   */
+  fromRoleType: Type
+
+  /**
+   * toRole Type - for non strict hierarchy (eg. Department)
+   */
+  toRoleType: Type
+
+  /**
+   * type of hierarchy
+   */
+  isStrict: boolean = true
+
+  /**
+   * creates a test tree with each node having childPerNode and depth as specified in the config
+   */
+  createTestData: function(config: TestDataGenerator)
+
+  /**
+   * delete all the nodes in the test tree for strict hierarchies identified by the config
+   *
+   * While calling purge specify isStrict variable to false for non strict
+   */
+  purgeTestData: function(config: TestDataGenerator)
+
+  /**
+   * create test data for non strict hierarchy type. Supported only for OrganizationRollup currently
+   */
+  createNonStrictTestData: function(config: TestDataGenerator)
+}

@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A spec to control the creation of a {@link GenaiCore.Unstructured.ProcessorComponent.DynamicPy}
+ */
+type GenaiCore.Unstructured.ProcessorComponent.DynamicPy.Spec mixes Spec {
+  /**
+   * If specified, this will be the name of the component entity created.
+   */
+  componentName: string
+
+  /**
+   * If specified, the id of the component entity created.
+   */
+  componentId: string
+
+  /**
+   * The action requirement for the component
+   */
+  actionRequirement: string serialized Action.Requirement = "py"
+
+  /**
+   * If this is set to true, then the component will allow cross-runtime calls.
+   * By default, cross-runtime calls will not be attempted, and instead a
+   * runtime error will be raised.
+   * If this is set to true, then the component creator should ensure that the
+   * inputs/outputs of the component are serializable/non-native values.
+   */
+  allowCrossRuntimeCalls: boolean
+}

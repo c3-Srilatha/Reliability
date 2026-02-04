@@ -1,0 +1,222 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A reference is a value that can hold an Obj (an instance of a Type).
+ * Normally, the reference type names a specific type, in which case the reference can only hold an Obj of that type or
+ * a type that mixes it.
+ *
+ * References can also be variable references, in which case they don't refer to a specific type, but instead to an
+ * unbound generic variable (see {@link VarReferenceType}).
+ *
+ * References can also be "mixing", in which case they refer to the leaf type into which the declaring type is
+ * ultimately mixed in (see {@link #mixing}).
+ *
+ * A bound, valid reference can be turned into a type using the #dereference method, which return the corresponding
+ * {@link Type}.
+ *
+ * @see VarReferenceType
+ * @see DeclaredReferenceType
+ */
+type ReferenceType mixes ValueType {
+
+  /**
+   * The name of the referenced type. If a generic type was resolved using bindings specified in the name, the name
+   * may include those bindings (see #prototypeName).
+   */
+  name: !string
+
+  /**
+   * If true, this reference type represents the leaf type (last type that mixes in the type on which the declaration
+   * exists).  This is set using the "mixing" syntax:
+   * ```type
+   * type X {
+   *   convert: abstract function(from: any): mixing X
+   * }
+   * ```
+   *
+   * What this means is that the convert function will return an instance of whatever type mixes in X (not the base X).
+   * Thus sub types of X do not need to redeclare "convert":
+   *
+   * ```type
+   * type Y mixes X
+   * ```
+   *
+   * Without "mixing", Y.convert would be expected to return an X, while with it Y.convert would be expected to
+   * return a Y.
+   *
+   * In other words the "mixing" declaration means: "the same type as the method was called on (or a sub-type)".
+   */
+  mixing: boolean
+
+  /**
+   * If true, then this referenceType had "declared" refVarBindings in the "raw" c3Typ files (DSL).
+   * e.g
+   * ```
+   *  Pair              -> false
+   *  Pair<int, string> -> true
+   *  Pair<K,E>         -> true
+   * ```
+   */
+  @dsl(suppress=true)
+  hadDeclaredVarBindings: boolean
+
+  /**
+   * Get the name of the type without embedded generic bindings (if any). For example, a dynamic binding of
+   * the {@link Pair} type might be: `Pair<string, double>`, in which case the #name would include the bindings
+   * but the prototype name would be just "Pair".
+   */
+  prototypeName: cached member function(): string java | js
+
+  /**
+   * @return `true` if this reference type represents the leaf type (last type that mixes in the type on which the
+   * declaration exists)
+   *
+   * @see #mixing
+   */
+  isMixing: member function(): boolean
+
+  /**
+   * @return true if value is null
+   */
+  isEmptyValue: ~ java | js | py
+
+  /**
+   * Whether or not this is a direct reference to {@link Obj}.
+   */
+  isGenericObjRef: member function(): boolean
+
+  /**
+   * Whether or not this is a reference to a non-persistable type.
+   *
+   * @see TypeMeta#isNotPersistable
+   */
+  isIncluded: cached member function(): boolean
+
+  /**
+   * Returns value type that this type boxes or null.
+   */
+  unboxValueType: member function(failIfNot: boolean): ValueType
+
+  /**
+   * Returns primitive type that this type boxes or null.
+   */
+  unboxPrimitiveType: member function(failIfNot: boolean): PrimitiveType
+
+  /**
+   * Returns array type that this type boxes or null.
+   */
+  unboxArrayType: member function(failIfNot: boolean): ArrayType
+
+  /**
+   * Returns map type that this type boxes or null.
+   */
+  unboxMapType: member function(failIfNot: boolean): MapType
+
+  /**
+   * @return builder of array of Objs of referenced type.
+   */
+  makeBuilder: member function<O: Obj>(initial: O): !ObjBuilder<O> java | py
+
+  hasReference:    ~ java | js
+  dereference:     cached ~ java | js | py
+  dereferenceMeta: ~ java | js | py
+  convertObj:      member function(obj: !?Obj, failIfInvalid: boolean): Obj
+
+  /**
+   * Whether this reference is to a type that isA the specified type instance.
+   * For unbound variables or invalid type references, false is returned.
+   *
+   * @param type instance to check
+   *
+   * @see dereference
+   * @see TypeMeta#isA
+   */
+  isA: member function(type: !Type): boolean java | js | py
+
+  /**
+   * Whether this reference is to a type that isA the specified type meta.
+   * For unbound variables or invalid type references, false is returned.
+   *
+   * @param meta type to check
+   *
+   * @see dereference
+   * @see TypeMeta#isA
+   */
+  isA: member function(meta: !TypeMeta): boolean java | js | py
+
+  /**
+   * @return built variable or reference type based on scope of provided parent C3 type.
+   */
+  build: ~
+
+  /**
+   * @return built reference type based on scope of provided parent C3 type.
+   */
+  buildReferenceType: private member function(scope: !TypesysScope,
+                                              nonEmpty: !boolean,
+                                              bindAll: !boolean,
+                                              context: !lambda(): !string): ReferenceType
+
+  /**
+   * @return built variable reference type based on scope of provided parent C3 type.
+   */
+  buildVarReferenceType: private member function(scope: !TypesysScope,
+                                                 nonEmpty: !boolean,
+                                                 context: !lambda(): !string): VarReferenceType
+
+  fromTypeMeta:         function(referencedType: !TypeMeta): !mixing ReferenceType
+  toDeclared:           private member function(): !DeclaredReferenceType
+  javaJType:            ~: @java(class='c3.platform.java.model.JavaClass') native
+  initialValue:         ~
+  fromString:           ~
+  guessType:            ~: ReferenceType java | js | py
+  guessConvertibleType: ~: ReferenceType
+
+  /**
+   * Guess the corresponding ReferenceType from Java class.
+   */
+  guessTypeFromJavaClass: ~: ReferenceType
+
+  bindAllGenericVars:   ~
+  boxType:              ~
+  isA:                  ~ java | js | py
+  isAssignableFrom:     ~ java | js
+  isAssignableValue:    ~ java | js
+  isSameValue:          ~ java | js
+  valueToJson:          ~ java | py | js
+  valueToTypedJson:     ~ java | py | js
+  valueFromHttpRequest: ~
+  valueToHttpResponse:  ~
+
+  /**
+   * @inheritdoc ValueType
+   *
+   * Supported `native` types for the `from` parameter are
+   *
+   *  - `js`: object, string (for `ReferenceType`s that are `StringSerializable`)
+   *  - `py`: dict, string (for `ReferenceType`s that are `StringSerializable`)
+   *  - `java`: java.util.Map, Map (C3), JsonNode, String (for `ReferenceType`s that are `StringSerializable`)
+   */
+  makeValue: ~ java | py | js
+
+  valueFromJson:        ~ java | py | js
+  valueConverter:       ~
+  instanceType:         ~
+  isInstanceType:       ~
+  isPersistSerialized:  ~
+  isStreamable:         ~
+  serializedValueType:  ~
+  convertToJavaRuntime: ~
+  hasEnum:              ~
+  enumValues:           ~
+  hasEventStream:       ~ java | py | js
+  isSame:               ~ java | js
+  dataFieldTypeNames:   ~
+  toString:             ~ java | js | py
+}

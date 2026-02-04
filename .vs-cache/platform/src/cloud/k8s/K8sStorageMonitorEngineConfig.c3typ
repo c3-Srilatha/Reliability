@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config for {@link K8sStorageMonitorEngine} that specifies the behaviour of the engine.
+ */
+@config(authz=ConfigAuthz.CLUSTER_ADMIN, minOverride=CLUSTER, maxOverride=CLUSTER)
+private type K8sStorageMonitorEngineConfig mixes Config, Singleton {
+
+  /**
+   * Controls whether to enable the K8sStorageMonitorEngine or not.
+   */
+  disable: boolean
+
+  /**
+   * timeoutSecs that specifies the timeout period for each {@link Server#computeDirUsages} operation in {@link K8sStorageMonitorEngine#updateDirUsages}.
+   */
+  timeoutSecs: double
+
+  /**
+   * Specifies the refresh interval for the K8sStorageMonitorEngine in seconds.
+   */
+  refreshIntervalSecs: double
+}

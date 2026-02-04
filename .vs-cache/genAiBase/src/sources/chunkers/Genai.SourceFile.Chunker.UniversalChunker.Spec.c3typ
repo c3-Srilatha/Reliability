@@ -1,0 +1,21 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Genai.SourceFile.Chunker.UniversalChunker.Spec mixes {@link Genai.SourceFile.ChunkerSpec} to add new field
+ * which enables overridding mapping of file extensions to chunker specs.
+ */
+type Genai.SourceFile.Chunker.UniversalChunker.Spec mixes Genai.SourceFile.ChunkerSpec {
+  /**
+  * Mapping of file extensions to chunker specs. If a file extension is not found in this map, the default chunker spec is used.
+  * Default chunker spec {@link Genai.SourceFile.Chunker.UniversalChunker.DefaultConfig} extracts and chunks the content of the document based on the configuration of each
+  * document type.
+  */
+  fileExtToChunkerSpecMap: map<string, Spec>
+}

@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Any entity type mixing WeatherAware will have its "beforeCreate" and "beforeUpdate" claimed
+ * by this type. To create "weatherStation" and persist it in the entity that mixes WeatherAware
+ * has to pass in the annotation "weather". If the "weather" annotation does not exist, the
+ * "beforeCreate" and "beforeUpdate" will return the same object back without creating the
+ * weatherStation on it.
+ */
+abstract type WeatherAware mixes MetricEvaluatable, PersistableWritable {
+
+  weatherStation: WeatherStation
+
+  /**
+   * Create weatherStations on the type invoked, if the type mixes in WeatherAware.
+   *
+   * @return WeatherStationCreator mapr job information.
+   */
+  refreshWeatherStations: function(): WeatherStationCreator
+
+  /**
+   * Check the status for running refreshWeatherStations mapr job.
+   *
+   * @return The MapReduce job information.
+   */
+  refreshWeatherStationsStatus: function(): MapReduceStatus
+
+  beforeCreate: ~
+  beforeUpdate: ~
+}

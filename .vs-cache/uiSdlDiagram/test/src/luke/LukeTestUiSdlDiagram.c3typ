@@ -1,0 +1,120 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * LukeTestUiSdlDiagram is a test component for {@link UiSdlDiagram}
+ */
+type LukeTestUiSdlDiagram mixes LukeTestComponent {
+  
+  afterMake: ~ js-client
+
+  /**
+   * Selectors to determine if the page rendered properly
+   */
+  renderingSelectors: ~ = ['.c3-sdl-diagram', '.c3-sdl-diagram-container']
+
+  /**
+   * The Diagram Legend
+   */
+  diagramLegend: LukeTestUiSdlDiagramLegend
+
+  /**
+   * The Diagram Toolbar
+   */
+  diagramToolbar: LukeTestUiSdlDiagramToolbar
+
+  /**
+   * The CSS selector for the diagram container
+   */
+  diagramContainerSelector: string = '.c3-sdl-diagram-container'
+
+  /**
+   * Map from node type to Luke test handler.
+   */
+  nodesByType: private map<string, Type<<LukeTestUiSdlDiagramNode>>>
+
+  /**
+   * The CSS selector for showing all nodes on the graph
+   */
+  showAllNodesButtonSelector: string = '.show-all-nodes-button button'
+
+  /**
+   * Returns the {@link LukeBrowserWebElement} for the node containing the given text
+   * Consider using {@link #nodeForTitle} to call helper functions on the node.
+   */
+  getNodeByText: private inline member function(text: !string, timeout: int): LukeBrowserWebElement js-client
+
+  /**
+   * Consider using {@link #nodeForShapeId} to call helper functions on the node.
+   * @param shapeId
+   *           The id of the node/shape to retrieve
+   * @param timeout
+   *           The timeout period
+   * @return the node LukeBrowserWebElement
+   */
+  getNodeByShapeId: private inline member function(shapeId: !string, timeout: int): LukeBrowserWebElement js-client
+
+  /**
+   * Returns the shapeId of a {@link UiSdlDiagram#shapeMap} shape with the given name.
+   *
+   * @param nodeName
+   *           The name of the node to extract the shapeId from
+   * @return The shapeId of the relevant node
+   */
+  getShapeIdByNodeText: inline member function(nodeName: !string): LukeAsyncQueueNode js-client
+
+  /**
+   * Calls {@link #getNodeByText} to find graph node and clicks on it
+   *
+   * @param text
+   *           Text to find node via {@link #getNodeByText}
+   * @param timeout
+   *           Timeout in seconds for the chain
+   * @param elementSearchSource
+   *           Optional parameter to specify a browser element as the search source instead of the LukeBrowser instance
+   */
+  @deprecated(finalVersion='8.4', details= 'use nodeForTitle')
+  clickNodeByText: inline member function(text: !string,
+                                          timeout: int,
+                                          elementSearchSource: LukeBrowserWebElement) js-client
+
+  /**
+   * @param shapeId
+   *           The shape id to click
+   * @param timeout
+   *           The timeout to wait for
+   * @return async node
+   */
+  @deprecated(finalVersion='8.4', details= 'use nodeForShapeId')
+  clickNodeByShapeId: inline member function(shapeId: !string, timeout: int): LukeAsyncQueueNode js-client
+
+  /**
+   * Returns the number of visible HTML path elements
+   */
+  getVisiblePathElCount: inline member function(): int js-client
+
+  /**
+   * Makes the correct instance of the LukeTestUiSdlDiagramNode based on the given nodeType.
+   */
+  makeLukeTestUiSdlDiagramNode: private inline member function(node: LukeBrowserWebElement, nodeType: string): LukeTestUiSdlDiagramNode js-client
+
+  /**
+   * Retrieve an instance of a {@link LukeTestUiSdlDiagramNode} by name of the node. In the case that node names are not unique,
+   * utilize {@link nodeForShapeId}. 
+   * Do not continually reuse this instance as the UI changes, it contains a reference to a LukeAsyncQueueNode which will need
+   * to be regenerated as the UI changes.
+   */
+  nodeForTitle: inline member function(nodeName: !string, nodeType: string, timeout: int): LukeTestUiSdlDiagramNode js-client
+
+  /**
+   * Retrieve an instance of a {@link LukeTestUiSdlDiagramNode} by id of the node.
+   * Do not continually reuse this instance as the UI changes, it contains a reference to a LukeAsyncQueueNode which will need
+   * to be regenerated as the UI changes.
+   */
+  nodeForShapeId: inline member function(shapeId: !string, nodeType: string, timeout: int): LukeTestUiSdlDiagramNode js-client
+}

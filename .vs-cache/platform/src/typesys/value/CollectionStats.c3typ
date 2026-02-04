@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Integrates statistical APIs on {@link Collection} type.
+ *
+ * Approximate statistics are based off of O(1) space data structures. This is useful when analyzing data from streams.
+ * The type of statistics provided depends on the {@link Collection#elementType}. See {@link NumericDigest}, {@link
+ * BooleanDigest}, and {@link StringDigest} for details on approximate statistics.
+ */
+abstract type CollectionStats mixes Value {
+
+  /**
+   * An estimate for the number of unique elements backed by {@link HyperLogLog}
+   */
+  approxUniqueCount: member function(): int
+
+  /**
+   * An estimate for the median backed by {@link TDigest}
+   */
+  approxMedian: member function(spec: TDigestSpec): double
+
+  /**
+   * An approximate histogram backed by {@link TDigest}
+   */
+  approxHistogram: member function(spec: TDigestSpec): Histogram
+
+  /**
+   * (# of true booleans) / (size of collection)
+   */
+  truePercent: member function(): double
+
+  /**
+   * The number of null values
+   */
+  nullCount: member function(): int
+}

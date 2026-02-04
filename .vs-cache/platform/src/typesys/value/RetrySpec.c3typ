@@ -1,0 +1,74 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Controls various aspects of the retry logic.
+ */
+type RetrySpec mixes Spec {
+
+  /**
+   * Maximum number of times the operation will be retried (not including the initial try).
+   */
+  maxRetries: !int = 2
+
+  /**
+   * Sleep time for first retry (plus randomization). If <= 0 the default will be used.
+   */
+  initialSleepMillis: !int = 20
+
+  /**
+   * The exponent to multiply the prior wait time in generating the next. This should be > 1.0 and probably less than
+   * 3.0. Note that 2.0 will double the maximum possible wait each time. If <= 1 the default will be used.
+   */
+  exponent: !double = 2
+
+  /**
+   * Maximum wait time allowed for each retry. If <= 0 the default will be used.
+   */
+  maxSleepMillis: int
+
+  /**
+   * Maximum wait time allowed for all retry waits
+   */
+  maxTotalMillis: int
+
+  /**
+   * The minimum sleep time guaranteed each iteration.
+   */
+  minSleepMillis: int
+
+  /**
+   * If set to true, it will retry when result is empty.
+   */
+  retryOnEmptyResult: boolean
+
+  /**
+   * Determines the algorithm used to calculate jitter. See {@link ExponentialBackoff.Jitter}.
+   */
+  // TODO PLAT-79490: Investigate using code-gen to modify RetrySpec
+  // Set field type to ExponentialBackoff.Jitter when code-gen issue is resolved
+  jitter: string = "FULL"
+
+  /**
+   * If true, all errors will be retried. If false, only retryable errors {@link Retry#shouldRetryLogic}
+   * will be retried.
+   */
+  retryAllErrors: boolean
+
+  /**
+   * If true, the retry logic will report each retry attempt in root `C3.action()`'s `#customContext` with key as
+   * `retry-trace`.
+   */
+  trace: boolean
+
+  /**
+   * DO NOT USE - IGNORED!
+   */
+  @deprecated
+  forUpsert: private boolean
+}

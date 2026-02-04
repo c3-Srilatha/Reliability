@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * See {@link FaultySensor} for details about the overall faulty sensor process.
+ *
+ * Trains a new model without the faulty sensors, and performs relevant post-processing.
+ *
+ * See {@link FaultySensor.Orchestrator#createRetrainSpecFromValidationResult} for how this is created.
+ * See #createWorkflow to understand how this process executes.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type FaultySensor.Orchestrator.Spec.Process mixes ReliabilityOrchestrator.WorkflowConvertable {
+  /**
+   * The name of the created workflow
+   */
+  jobName: string = "FaultySensor_TrainAndProcess"
+
+  /**
+   * The model to be retrained. Note that this is not expected to be the
+   * [source of truth model](FaultySensor.RiskModelSourceOfTruthRelation)
+   */
+  model: ReliabilityRiskMlModel
+
+  /**
+   * The relation between the model and the asset, if applicable. This is the relation to the asset for which it's
+   * {@link Sensor} was faulty.
+   *
+   * This process currently does not support multiple assets for a single model.
+   */
+  relation: ReliabilityAssetToRiskModelRelation
+
+  /**
+   * The validation result from the [faulty sensor map reduce job](FaultySensor.ModelImpactMapReduceJob).
+   */
+  validationResult: FaultySensor.ModelRetrainValidationResult
+
+  /**
+   * If new models were created, update their sources of truth by
+   * calling {@link ReliabilityRiskMlModel#updateSourceOfTruthForFaultySensors}
+   * Returns true if any relations were created, false otherwise
+   */
+  updateSourceOfTruthIfApplicable: function(
+    originalModel: ReliabilityRiskMlModel,
+    sourceOfTruthModel: ReliabilityRiskMlModel,
+    newModels: [ReliabilityRiskMlModel]
+  ): boolean py
+
+  /**
+   * @inheritdoc
+   *
+   * Creates a workflow that will do the following:
+   * - Retrain the model without the faulty sensors.
+   *   - Details at {@link FaultySensor.Orchestrator.Spec.Retrain}
+   * - Update the {MlModel.Route#status} of the #model and the retrained model.
+   *   - Calls {@link ReliabilityRiskMlModel#updateModelStatusesForFaultySensors}.
+   * - Update the [source of truth](FaultySensor.RiskModelSourceOfTruthRelation) of the retrained model.
+   *   - Calls #updateSourceOfTruthIfApplicable.
+   * - Generate [notifications](FaultySensor.Notification) for the process that took place.
+   *   - Calls {@link FaultySensor.Notification#createNotificationsFromModelRetraining}.
+   *
+   * Assumed outputs/updates of {@link FaultySensor.Orchestrator.Spec.Retrain}:
+   * - An `out` port with the list of new, retrained models.
+   * - It will be passed a {@link FaultySensor.Orchestrator.Spec.Retrain#modelConfigRun} that needs to be updated.
+   *
+   * The reason that this workflow exists is to encapsulate the required steps that must be done after retraining
+   * the model. If there are custom models, the {@link FaultySensor.Orchestrator.Spec.Retrain} steps can be modified
+   * and as long as it has the required output ports, the remaining steps can continue to function.
+   */
+  createWorkflow: ~ py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

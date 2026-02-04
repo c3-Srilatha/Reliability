@@ -1,0 +1,255 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type to represent a timeseries which may be partitioned across multiple timeseries headers.
+ * Evaluating a timeseries should be done with the provided Quantity compound metric, which will
+ * perform inter-partition interpolation to ensure correctness and simulate evaluation as if all
+ * measurements were under the same header.
+ *
+ * Partitioning across multiple timeseries headers is recommended for timeseries of very high volume,
+ * e.g. minute-level data for more than six months, or hour-level data for several years.
+ */
+@db(versionHistory='true')
+extendable entity type Sensor extends PhysicalAsset mixes FeatureEvaluatable type key 'SENSOR' {
+
+  /**
+   * Additional display name for the sensor. This is the secondary name used to display this sensor in the UI.
+   */
+  name: ~
+
+  /**
+   * The type of data series that describes a measurement value on an asset.
+   * In a typical deployment, the types of sensors include, but are not limited to,
+   * TAGs, LMIs, VSLs, etc.
+   */
+  sensorType: string
+
+  /**
+   * Reference to a data series describing a measurement value on an asset
+   * (e.g., pressure, temperature, flow rate, setpoint, process value);
+   * usually an alphanumeric identifier "61PI0207"
+   * This is the primary name field used to display this sensor in the UI. Ideally matches the id.
+   */
+  tag: string
+
+  /**
+   * Description of the sensor.
+   */
+  description: string
+
+  /**
+   * Tag creation datetime.
+   */
+  creationDate: datetime
+
+  /**
+   * Sampling rate for measurements (in seconds).
+   */
+  samplingRate: decimal
+
+  /**
+   * Expected compression deviation (value between 0 to 1).
+   */
+  compressionDeviation: decimal
+
+  /**
+   * Maximum compression for Pi data (in number of seconds).
+   */
+  compressionMax: decimal
+
+  /**
+   * Name of the reference diagram.
+   */
+  referenceDiagram: string
+
+  /**
+   * Name of the instrument.
+   */
+  instrumentName: string
+
+  /**
+   * The transmitting status of the sensor.
+   */
+  status: string enum('Transmitting', 'NotTransmitting')
+
+  /**
+   * A Sensor will usually have lower and upper limits of
+   * measurement data in its time series. Below the lower bound,
+   * the data is considered invalid. Beyond the upper bound,
+   * the data is considered invalid. Invalidity may be due to wrong
+   * calibration of the Sensor, incorrect storage of the measurement
+   * value in the database, human error while extracting the data, etc.
+   * To account for these errors, there is a provision to set the lower
+   * and upper operational measurement bounds for the time series data
+   * of the Sensor.
+   * For more information on how to set these bounds and manipulate them,
+   * refer to {@link getMeasurementBounds}, {@link setMeasurementBounds},
+   * and {@link resetMeasurementBounds}.
+   */
+  measurementBounds: SensorMeasurementBounds(sensor)
+
+  /**
+   * All measurement series, including {@link PointPhysicalMeasurementSeries} and {@link PhysicalMeasurementSeries}
+   */
+  series: [BasePhysicalMeasurementSeries](asset)
+
+  /**
+   * The last time the {@link Sensor} has had maintenance.
+   */
+  @db(order='descending(timestamp)')
+  maintenanceHistory: [PhysicalAssetEvent](parent)
+
+  /**
+   * {@link PointPhysicalMeasurementSeries} for this tag
+   */
+  @db(order='descending(latest)')
+  pointSeries: [PointPhysicalMeasurementSeries](asset)
+
+  /**
+   * {@link PhysicalMeasurementSeries} for this tag
+   */
+  @db(order='descending(latest)')
+  physicalSeries: [PhysicalMeasurementSeries](asset)
+
+  /**
+   * Unit for the series
+   */
+  unitConstraint: Unit calc series[0].unitConstraint
+
+  /**
+   * The {@link SensorDataSummary} objects for this sensor which hold aggregated statistics
+   * about the quality of the sensor's data.
+   */
+  dataSummaries: [SensorDataSummary] (parent)
+
+  /**
+   * Non-persisted field populated by {@link fetchForDataThresholds} which represents the
+   * percentage of data which is flatlined across the queried time range.
+   */
+  flatlinePercentage: int not persistable
+
+  /**
+   * Non-persisted field populated by {@link fetchForDataThresholds} which represents the
+   * percentage of data which is missing across the queried time range.
+   */
+  missingPercentage: int not persistable
+
+  /**
+   * For a Sensor, returns the {@link SensorMeasurementBounds} if
+   * it exists. If the bounds have not been set previously, then
+   * this function returns a `null`/`None` object.
+   */
+  @dependency(include='measurementBounds.sensor, measurementBounds.lowerBound, measurementBounds.upperBound')
+  getMeasurementBounds: member function(): SensorMeasurementBounds js-rhino
+
+  /**
+   * Users may use this function to set the lower and upper operational
+   * measurement bounds on the time series of Sensor values.
+   * The two arguments to this function are optional. If neither of them
+   * are provided, this function will raise an error. If only one of them is
+   * provided, then only its value will be updated in the database.
+   */
+  @dependency(include='measurementBounds.sensor, measurementBounds.lowerBound, measurementBounds.upperBound')
+  setMeasurementBounds: member function(lowerBound: double, upperBound: double): !SensorMeasurementBounds js-rhino
+
+  /**
+   * Users may use this function to reset one or both bounds on the Sensor.
+   * Reseting implies that the corresponding value in the database will be
+   * deleted and will remain empty until it is set again using the
+   * {@link setMeasurementBounds} function.
+   */
+  @dependency(include='measurementBounds.sensor, measurementBounds.lowerBound, measurementBounds.upperBound')
+  resetMeasurementBounds: member function(boundsType: !string enum('lowerBound', 'upperBound', 'both')): !SensorMeasurementBounds js-rhino
+
+  /**
+   * Fetches sensors which stay below all thresholds for flatline and missing data. Populates {@link flatlinePercentage}
+   * and {@link missingPercentage} in returned objects.
+   *
+   * Uses all {@link SensorDataSummary} entities which overlap with the queried {@link SensorDataSummarySpec#timeRange} to compute
+   * a quick estimate of the percentage of data which is flatlined and missing. As such, the returned {@link flatlinePercentage}
+   * and {@link missingPercentage} are actually across a time range which may be larger than the queried time range by up to a week
+   * on either end.
+   *
+   * @param spec
+   *     {@link SensorDataSummarySpec} which specifies which sensors are in scope, as well as the relevant interval and time range.
+   * @param flatlinePercentage
+   *     The threshold for how much data is flatlined. By default, "flatline" means that the sensor value has been the same for the last 6 hours.
+   * @param missingPercentage
+   *     The threshold for how much data is missing.
+   * @param fetchSpec
+   *     Additional optional {@link FetchSpec} used to control pagination. Only the `offset` and `limit` arguments are respected.
+   * @param returnSensorsBelowAllThresholds
+   *     If `true`, returns sensors which stay below all thresholds. If `false`, returns the sensors which break at least one threshold.
+   * @param createMissingDataSummaries
+   *     If `true`, creates {@link SensorDataSummary} entities for sensors and time ranges which do not have any.
+   *     If `false`, does not create any new entities. Should only be set to `false` if the caller is certain that all relevant data summaries are
+   *     already present.
+   * @return
+   *     All sensors in scope which meet all thresholds if returnSensorsBelowAllThresholds is true, or vice versa if false.
+   */
+  fetchForDataThresholds: function(spec: !SensorDataSummarySpec,
+                                   flatlinePercentage: !int,
+                                   missingPercentage: !int,
+                                   fetchSpec: FetchSpec,
+                                   returnSensorsBelowAllThresholds: boolean = true,
+                                   createMissingDataSummaries: boolean = true): FetchResult<Sensor> py-jep
+
+  /**
+   * Helper function to plot normalized measurements (evaluated through {@link Sensor#evalMetrics}) vs. raw measurements (fetched on `Sensor.pointSeries.data`)
+   * by plotting their values and Pearson correlation.
+   * Args:
+   * - start: see {@link EvalMetricsSpec#start}
+   * - end: see {@link EvalMetricsSpec#end}
+   * - interval: see {@link EvalMetricsSpec#interval}
+   * - correlation: correlation method supported by the `pandas.DataFrame.corrwith` API, with the exception of callables (cf. https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.corrwith.html)
+   * Return:
+   *  A Python matplotlib figure object with three plots (normalized data, raw data, absolute difference)& the correlation statistic's value between the two timeseries.
+   */
+  // TODO REL-4197: Migrate python runtime and python tests
+  // plotRawVsNormalizedData: inline member function(start: datetime,
+  //                                                 end: datetime,
+  //                                                 interval: string enum Interval,
+  //                                                 correlation: string enum('pearson', 'kendall', 'spearman') = 'pearson')
+  //                                          : native py-mlutils_plot_2_0_0
+
+  /**
+   * Private helper method that evaluates the `QuantityRawPointSeries` metric between `start` and `end` at the `interval` period to obtain normalized measurements
+   * and fetches, resamples & aggregates the "raw" measurements on `Sensor.pointSeries.data`.
+   * Args:
+   * - start: see {@link EvalMetricsSpec#start}
+   * - end: see {@link EvalMetricsSpec#end}
+   * - interval: see {@link EvalMetricsSpec#interval}
+   * - correlation: correlation method supported by the `pandas.DataFrame.corrwith` API, with the exception of callables (cf. https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.corrwith.html)
+   * Return: a map with three keys:
+   * - normalizedDataset: the normalized data, obtained with `Sensor.evalMetrics`
+   * - rawDataset: the raw data, obtained by fetching on `Sensor.pointSeries`
+   * - correlation: the correlation between both datasets
+   */
+  // TODO: MS-11
+  // computeRawVsNormalizedData: member function(start: datetime,
+  //                                             end: datetime,
+  //                                             interval: string enum Interval,
+  //                                             correlation: string enum('pearson', 'kendall', 'spearman') = 'pearson')
+  //                                      : map<string, Dataset | double> py-mlutils_plot_2_0_0
+
+  /**
+   * Users may use this function to compute regime shifts
+   * on the time series of Sensor values.
+   * The arguments for the function are start, end and interval
+   * on the Sensor values.
+   * persistValues: persist values to FileSysten if True. NOTE: path before encoding will be
+   * Sensor/RegimeShift/hash(sensorId)/hash(regimeShiftSpec_parameters).json
+   * regimeShiftSpec: Spec to configure parameters of regime shift calculation
+   * NOTE: The function checks if the regime shift has already been computed and
+   * if it has, then the results will simply be returned from cache.
+   */
+  // TODO: MS-11
+  // computeRegimeShift: member function(regimeShiftSpec: RegimeShiftSpec, doNotPersist: boolean): json py-sklearn_3_0_0
+}

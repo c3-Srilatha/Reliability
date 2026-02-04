@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type stores all the data that will be shown in the Spare Parts Forecast Chart Per Part Chart in the UI.
+ */
+type SparePartsForecastChartData {
+
+  /**
+   * The minimum and maximum value of of all data points in {#seriesData}.
+   * Used in the {@link SparePartsForecastChart}, for plotting now line adjusted to scale on the chart.
+   *
+   * This is an array of size 2. With minimum value at index 0 and maximum value at index 1.
+   */
+  yValueRange: [double]
+
+  /**
+   * Map of series names to array of data points. Each data point is represented by a number. The data array
+   * is aligned with the timestamps array.
+   *
+   * For example:
+   * ```json
+   * {
+   *   'actualInventory': [2,3,4,NaN,NaN,NaN],
+   *   'forecastedInventory': [NaN,NaN,NaN,5,6,7],
+   *   'demandedInventory':  [NaN,NaN,NaN,6,8,9],
+   * }
+   * ```
+   */
+  seriesData: map<string, [double]>
+
+  /**
+   * An array of stringified timestamps based on the interval and duration
+   * of the spare parts forecast chart.
+   */
+  timestamps: [string]
+
+  /**
+   * Map of {@link WorkOrder}s and {@link PurchaseOrder}. The key is 'workOrders' or 'purchaseOrders'.
+   */
+  eventData: map<string, FetchResult<any>>
+
+  /**
+   * Map of {@link InventorySeries#reorderLevel} and {@link InventorySeries#reorderQty}.
+   * The keys are `reorderLevel` and `reorderQty`.
+   */
+  thresholds: map<string, double>
+
+  /**
+   * Unit of measurement used to display on the Y-Axis of {@link SparePartsForecastChart}
+   */
+  uom: Unit
+}

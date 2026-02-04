@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * MapReduce job on Location to update geocoding.
+ */
+entity type LocationGeocodingJob extends MapReduce<Location, string, int, int> type key 'LOCGC' {
+
+  /**
+   * Indicates whether address components and formatted address fields should also be updated
+   * during the geocoding job. If true, both `address.components` and `address.formatted` will
+   * be updated in addition to `address.geometry`. If false, only `address.geometry` will be updated.
+   */
+  includeComponents: boolean
+
+  /**
+   * Update geocoding on filtered Locations using {@link InlineAddress#raw Location#address#raw} and update
+   * {@link InlineAddress#geometry Location#address#geometry} optionally {@link InlineAddress#components Location#address#components} and
+   * {@link InlineAddress#formatted Location#address#formatted}. By default, only locations with empty address.geometry will be updated.
+   *
+   * This action starts a MapReduce job on selected Locations based on filter (all) that have
+   * {@link InlineAddress#raw Location#address#raw} and do not have {@link LatLong#latitude Location#address#geometry#latitude} or optionally force update {@link InlineAddress#geometry Location#address#geometry}.
+   *
+   * @param filter
+   *           Location expression to select location. Null will choose all. Check default expression.
+   * @param includeComponents
+   *           When true, address.components and address.formatted will also be updated.
+   * @param forceUpdate
+   *           When true, address.geometry will be updated even when the value exists.
+   * @return job that was started.
+   *
+   * {@link LocationGeocodingJob}
+   */
+  startJob: function(filter: string, includeComponents: boolean, forceUpdate: boolean): LocationGeocodingJob js-server
+
+  filter:    ~ = 'exists(address.raw) && !exists(address.geometry.latitude)'
+  include:   ~ = 'id,address.raw'
+  batchSize: ~ = 100
+  map:       ~ js-server
+}

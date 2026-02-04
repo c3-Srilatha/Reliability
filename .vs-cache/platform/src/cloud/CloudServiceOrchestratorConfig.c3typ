@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Default configurations for CloudServiceOrchestrator
+ */
+@action(group='cluster-admin')
+type CloudServiceOrchestratorConfig mixes Config {
+
+  /**
+   * System-wide default orchestrator to launch cloud services with.
+   */
+  defaultOrchestrator: Type
+
+  /**
+   * Default cluster to use for K8s-type orchestrator.
+   */
+  defaultK8sOrchestrator: Type
+
+  /**
+   * Set to specific namespace if using something other than "default" as the default namespace
+   * for Kubernetes.
+   */
+  k8sDefaultNamespace: K8sNamespace
+
+  /**
+   * The resource id of the reference ec2 instance to use during CloudResourceFieldsMethods.hack
+   */
+  // TODO: PLAT-16777 remove workaround and create network resources from scratch
+  referenceLocalEc2ResourceId: string
+
+  referenceJenkinsEc2ResourceId: string
+}

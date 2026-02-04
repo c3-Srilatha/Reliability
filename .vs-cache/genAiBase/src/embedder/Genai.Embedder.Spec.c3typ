@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for {@link Genai.Embedder#getEmbedder} to create a {@link GenaiCore.Embedder} for embedding text such as
+ * queries or passages.
+ */
+type Genai.Embedder.Spec {
+  /**
+   * The name of the embedder model, for example "mixedbread-ai/mxbai-embed-large-v1" for HuggingFace
+   * an MXBAI Sentence Transformer model using {@link GenaiCore.Embedder.Hf} or "text-embedding-3-large"
+   * for an Azure OpenAI hosted embedder using {@link GenaiCore.Embedder.Llm}.
+   */
+  embedderModelName: !string = 'intfloat/multilingual-e5-large-instruct'
+
+  /**
+   * The specific type of embedder to, for example {@link GenaiCore.Embedder.Hf} or {@link GenaiCore.Embedder.Llm}.
+   */
+  embedderType: !Type = 'GenaiCore.Embedder.Hf'
+
+  /**
+   * For cases where the embedder should use a different GenaiCore auth than the default (that is
+   * a different {@link GenaiCore.Llm.AzureOpenAi.Auth}, {@link GenaiCore.Llm.Bedrock.Auth},
+   * or {@link GenaiCore.Llm.VertexAi.Auth}), this is the name of the auth to use.
+   */
+  authName: string
+
+  /**
+   * Optional {@link Engine.DeploySpec} to pass to {@link GenaiCore.Embedder.Engine#createFromEmbedder} when deploying
+   * a {@link GenaiCore.Embedder.Hf}. If the engine is already running, this will be ignored.
+   *
+   * By default, embedderModelName will be used for the engine name, when creating a {@link GenaiCore.Embedder.Engine}.
+   * This means that all functionality needing that model will share the same embedder engine, but for cases where
+   * functionality requires a separate purpose-specific embedder engine, the name can be specified in the deploySpec.
+   */
+  embedderEngineDeploySpec: Engine.DeploySpec
+
+  /**
+   * When using {@link GenaiCore.Embedder.Llm}, the provider type to use for the embedder, for example
+   * {@link GenaiCore.Llm.AzureOpenAi} or {@link GenaiCore.Llm.VertexAi}
+   */
+  providerType: Type
+
+  /**
+   * The default fields to use when #embedderType is {@link GenaiCore.Embedder.Hf}.
+   */
+  hfEmbedder: json = {"initKwargs": {"prompts": {"query": "query: ", "passage": "passage: "}}}
+}

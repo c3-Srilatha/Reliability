@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A trackable deployment of {@link Microservice.Service}.
+ */
+@db(unique=['appId, displayName'])
+entity type Microservice.DeployedService type key 'MDS' {
+
+  /**
+   * The {@link AppId} where the service is deployed.
+   */
+  appId: !string serialized AppId
+
+  /**
+   * The {@link Microservice.PkgConfiguration} used to start this service.
+   */
+  pkgConfiguration: !Microservice.PkgConfiguration
+
+  /**
+   * The name that is displayed for this service.
+   */
+  displayName: !string
+
+  /**
+   * List all started {@link Microservice.Service}.
+   */
+  list: function(serviceType: Type<<Microservice.Service>>): ![Microservice.DeployedService]
+
+  /**
+   * List all {@link App}s that have {@link Microservice.Service}s deployed.
+   */
+  listServiceApps: function(serviceType: Type<<Microservice.Service>>): ![!string serialized AppId]
+
+  /**
+   * Start a new service.
+   */
+  // TODO: PLAT-110798 change from json to Microservice.PkgConfiguration
+  start: function(deploymentPkg: !json): !map<string, Microservice.DeployedService>
+
+  /**
+   * Terminate the service.
+   */
+  terminate: member function(): boolean
+}

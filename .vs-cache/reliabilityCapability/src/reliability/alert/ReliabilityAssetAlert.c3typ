@@ -1,0 +1,188 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * @inheritdoc
+ */
+remix type ReliabilityAssetAlert mixes ReliabilityReportHelper, StateMachine<ReliabilityAssetAlertStateHistory, ReliabilityAssetAlertState, ReliabilityAssetAlertStateTransition> {
+
+  /**
+   * Name of this alert.
+   */
+  name: ~ stored calc concat(parent.name, " Alert: ", substring(id, 0, 6))
+
+  /**
+   * Type of the alert. Eg: Reliability Risk.
+   */
+  displayedMlProject: string stored calc exists(triggeringModel.project.name) ? triggeringModel.project.name : '--'
+
+  /**
+   * Date displayed in the UI for when the alert was triggered.
+   */
+  displayedTriggerDate: string calc substring(timestamp, 0, 10) + " at " + substring(timestamp, 11, 16)
+
+  /**
+   * {@link ReliabilityAssetAlertFeedback} associated with this alert.
+   */
+  @db(order='descending(meta.created)')
+  feedback: [ReliabilityAssetAlertFeedback](alert)
+
+  /**
+   * The {@link ReliabilityAssetAlertToCaseRelation}s on this alert.
+   */
+  @db(order='descending(meta.created)')
+  caseRelations: [ReliabilityAssetAlertToCaseRelation](from)
+
+  /**
+   * The {@link ReliabilityAssetCase}s on this alert.
+   */
+  cases: [ReliabilityAssetCase] stored calc caseRelations.to schema name 'CSS'
+
+  /**
+   * Case to be used for related cases and alerts.
+   */
+  relatedCase: ReliabilityAssetCase stored calc cases[0]
+
+  /**
+   * The comments associated with the current Alert
+   */
+  @db(order='descending(meta.updated)')
+  comments: [AlertComment](parent)
+
+  /**
+   * The {@link ReliabilityAssetAlertToCaseRelation}s with a not `Closed` {@link ReliabilityAssetCase}s in this alert.
+   */
+  @db(filter='to.currentState.id != "Closed"')
+  notClosedCaseRelations:[ReliabilityAssetAlertToCaseRelation](from)
+
+  // notClosedCases: [ReliabilityAssetCase] stored calc notClosedCaseRelations.to
+  // TODO REL-22556: [REL 20.0.0] - Remove workaround in ReliabilityAssetAlert#notClosedCases to avoid state machine transition issues when upgrading to 8.8
+  /**
+   * The currently `Open` {@link ReliabilityAssetCase}s in this alert.
+   */
+  notClosedCases: [ReliabilityAssetCase] stored calc notClosedCaseRelations.(to.currentState.id != "Closed").to
+
+  /**
+   * If the alert is or should be muted, it is transitioned to the `Muted` state, and no notification is sent.
+   * If the alert is not muted, it sends a notification using {@link NotificationUserRecipient#scheduleNotificationToUsers}.
+  */
+  sendAlertNotification: member function() js-rhino
+
+  /**
+   * Reopen alert and handle the linked cases on it based on {@link ReliabilityAssetAlertReopenSpec} passed.
+   * @param reopenSpec
+   *      This is the spec which determines whether or not cases on the alert need to be reopened
+   *      and also contains which of the cases need to be reopened.
+   */
+  reopenAlertAndLinkedCases: member function(reopenSpec: ReliabilityAssetAlertReopenSpec) js-rhino
+
+  /**
+   * Reopen Alert and transition it to `Open` or `Case` state depending on its previous state
+   */
+  reopenAndTransitionAlert: member function() js-rhino
+
+  /**
+   * {@link ReliabilityAssetAlertFeedback}'s' recent category associated with this alert.
+   */
+  mostRecentFeedbackCategory: string enum ReliabilityAssetAlertFeedbackCategory stored calc !exists(feedback[0]) ? null : feedback[0].category
+
+  /**
+  * This field is used by the UI to show the translated value of {@link mostRecentFeedbackCategory}.
+  */
+  displayMostRecentFeedbackCategory: string calc exists(mostRecentFeedbackCategory) ? concat('Reliability.AlertFeedbackCategory.', mostRecentFeedbackCategory) : null
+
+  /**
+   * @inheritdoc
+   */
+  generateReportEntity: abstract ~
+
+  /**
+   * Retrieves similar {@link ReliabilityAssetAlert}s for this alert.
+   * Retrieves the alerts from {@link ReliabilityAssetAlertSimilarityLarge} or {@link ReliabilityAssetAlertSimilaritySmall}
+   * based on the {@link ReliabilityAlertTriagingConfiguration#similarityTypeName}.
+   * @param spec
+   *      The {@link FetchSpec} to be used to fetch the returned instances.
+   */
+  fetchSimilarAlerts: member function(spec: FetchSpec): FetchResult<ReliabilityAssetAlertSimilarityLarge> | FetchResult<ReliabilityAssetAlertSimilaritySmall> js-rhino
+
+  /**
+  * Retrieves the count of similar {@link ReliabilityAssetAlert}s for this alert.
+  * Retrieves the count of alerts from {@link ReliabilityAssetAlertSimilarityLarge} or {@link ReliabilityAssetAlertSimilaritySmall}
+  * based on the {@link ReliabilityAlertTriagingConfiguration#similarityTypeName}
+  * @param spec
+  *      The {@link FetchSpec} to be used to fetch the count.
+  */
+  fetchCountSimilarAlerts: member function(spec: FetchSpec): !int js-rhino
+
+  /**
+   * This method calculates the cosine similarity between two alerts based on the feature contributions.
+   * Cosine similarity values range from 0 to 1 inclusive. A cosine similarity value of 0 indicates maximum dissimilarity while
+   * a value of 1 indicates perfect similarity.
+   * If either of the alerts do not have a {@link #featureContributionMap}, a similarity value of zero will be returned.
+   */
+  computeCosineSimilarity: inline member function(secondAlert: !ReliabilityAssetAlert): double py
+
+  /**
+   * This method is used to calculate similarity scores for related {@link ReliabilityAssetAlert}s and persist the results
+   * to the respective type configured to store the similarity scores.
+   * @param fetchSpec
+   *      The {@link FetchSpec} to be used to fetch the alerts for which the similarity scores need to be calculated with this alert.
+   */
+  processAlertSimilarity: member function(fetchSpec: !FetchSpec): [ReliabilityAssetAlertSimilaritySmall | ReliabilityAssetAlertSimilarityLarge] py
+
+  /**
+   * This method uses the {@link ReliabilityMl.Project.ModelValidationUiOptions#processAlertSimilarityLambda} to
+   * calculate and store the {@link ReliabilityAssetAlert}s to this alert. When the
+   * {@link ReliabilityAlertTriagingConfiguration#automaticallyAddToCase} is configured to `true`, this alert is associate
+   * to the {@link ReliabilityAssetCase}s of the similar alerts.
+   */
+  calculateAndStoreSimilarAlerts: member function(): [ReliabilityAssetAlertSimilaritySmall | ReliabilityAssetAlertSimilarityLarge] js-rhino
+
+  /**
+   * This method takes the similarities created by the {@link processAlertSimilarity} function and adds the similar {@link ReliabilityAssetAlert}s to
+   * the existing {@link ReliabilityAssetCase}s.
+   */
+  addSimilarAlertsToCases: private member function(similarities: [ReliabilityAssetAlertSimilaritySmall | ReliabilityAssetAlertSimilarityLarge]) js-rhino
+
+  /**
+   * This method creates a {@link Workflow} for triggering the {@link ReliabilityAssetAlertSimilarityCreationBatchJob} for the
+   * provided list of {@link ReliabilityAssetAlert}s. It is used by the {@link startAlertSimilarityWorkflow}.
+   */
+  createAlertSimilarityWorkflow: private function(alerts: [ReliabilityAssetAlert]): Workflow py
+
+  /**
+   * This method starts a {@link Workflow} that triggers the {@link ReliabilityAssetAlertSimilarityCreationBatchJob} for the
+   * provided list of {@link ReliabilityAssetAlert}s.
+   */
+  startAlertSimilarityWorkflow: function(alerts: [ReliabilityAssetAlert]): Workflow.Run py
+
+  /**
+   * Function to detect which {@link FailureModeLineItem}s and {@link FailureMode}s are triggered for this
+   * {@link ReliabilityAssetAlert}. Creates {@link ReliabilityAssetAlertFailureModeRelation}s and {@link ReliabilityAssetAlertFailureRecommendationRelation}
+   * for each of the triggered {@link FailureModeLineItem}s and {@link FailureModeRecommendation}s. These relations associate the failure mode entities
+   * to the alert at the time of triaging. Used for alerts triggered by {@link ReliabilityMlModel}s associated with the `reliabilityRiskWithResidualDiagnostics`
+   * {@link ReliabilityMl.Project}.
+   *
+   * The potential failure modes are retrieved from the {@link AssetClass} associated with the {@link ReliabilityAsset} the alert
+   * was triggered on. For each of the associated line items to the potential failure modes, the sign of the residual model output of the feature associated
+   * with the {@link ExpectedSensor} of the line item is compared against the diagnostic of that line item. If it's a match, the failure mode line item is
+   * considered triggered along with the failure mode.
+   */
+  linkFailureModesAndRecommendations: inline member function() py-data
+
+
+  /**
+  * Fetches featureContributionMap data for an alert and returns a EvaluateResult of tuples.
+  * This function is being used to populate the featureContribution charts.
+  * @param spec
+  *      The limit param of {@link EvaluateSpec} is used to limit the number of contributions returned.
+  *      The offset param of {@link EvaluateSpec} can also be used to offset the contributions fetched.
+  */
+  fetchFeatureContributionMapData: member function(spec: !EvaluateSpec): EvaluateResult js-rhino
+}

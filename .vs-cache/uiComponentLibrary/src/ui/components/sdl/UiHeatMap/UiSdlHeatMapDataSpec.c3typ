@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The specification of data retrieval for instances of the {@link UiSdlHeatMap} component type.
+ */
+@typeScript
+type UiSdlHeatMapDataSpec mixes UiSdlMetricBasedDataSpec {
+
+  /**
+   * Specs that describe how to use the field of the {@link dataType} in the {@link UiSdlHeatMap}.
+   */
+  dataSettings: UiSdlHeatMapDataSpecSetting
+
+  toPartiallyAppliedActions: ~ ts-client
+  dataSpecDependence:        ~ = [{configField: 'xAxis.interval', argumentSpecField: 'interval'}, {configField: 'xAxis.period', argumentSpecField: 'start', transformFunction: 'getStartDate'}]
+
+  /**
+   * The transform functions to use for this data spec.
+   * Functions that are available are {@link UiSdlTransformUiSdlChartDataToUiSdlHeatMapEChartConfig}
+   * and {@link UiSdlTransformEvalMetricsResultToUiSdlChartData}.
+   */
+  dataTransforms: ~ = ['UiSdlTransformEvalMetricsResultToUiSdlChartData', 'UiSdlTransformUiSdlChartDataToUiSdlHeatMapEChartConfig']
+
+  /**
+   * Convert date into start date that can be used at {@link EvalMetricSpec}.
+   *
+   * @param date
+   *          Number of days prior to current day for which to display values {@link UiSdlHeatMapXAxisConfig#period}.
+   * @param interval
+   *          We pass in the interval to see if the initial heat map will have more than  365*24 buckets.
+   *          If the interval is 'HOUR' and the range is more than 'LAST_YEAR' we default to the latest year.
+   *
+   * @return {@link DateTime} in string format.
+   */
+  getStartDate: function(date: string, interval: string): string ts-client
+}

@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the security settings for UI applications.
+ */
+type UiSdlInfrastructureConfig mixes ConfigChild<UiSdlConfig> {
+
+  /**
+   * The mode to use for Webpack. It should fall back to App.mode if not set. If App mode is 'dev' or 'trial',
+   * webpack will use 'development' mode; if App mode is 'prod' or 'test', webpack will use 'production' mode.
+   *
+   * Webpack mode changes preset configurations that alter generated files.
+   *
+   *  - "development" Generates source maps and unobfuscated code.
+   *  - "production" Generates minimized and obfuscated code. Optimizes for size and runtime performance.
+   */
+  webpackMode: string enum('development', 'production')
+
+  /**
+   * The maximum amount of memory to allocate to the Webpack bundler.
+   * This will limit the child process that runs Webpack to this amount of memory.
+   * Note that if multiple child processes are spawned, each process will be allocated this amount of memory.
+   * The maximum amount of memory for the parent process is determined by the NodeJs {@link ImplLanguage#Runtime}.
+   */
+  bundlerMaxMem: int = 8192
+
+  /**
+   * Enabled by default. DISABLING IT WILL IMPACT BUNDLING PERFORMANCE.
+   *
+   * When true, {@link UiSdlExtraFilesInvalidatingCacheLoader} will be disabled and importing files in `ui/c3/src`
+   * must be done from `@c3/app/ui/src/`.
+   *
+   * When set to false, files in ui/c3/src will be copied into @c3/ui and exposed as federated modules,
+   * making modules larger and slower to build.
+   */
+  disableExtraFilesLoader: boolean = true
+
+  /**
+   * Whether to cache and reuse code generated files.
+   */
+  cacheGenFiles: boolean = true
+}

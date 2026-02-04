@@ -1,0 +1,122 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies behaviors for nodes in an {@link App.NodePool} that may vary per cloud provider or technologies. This type
+ * should act as an interface for behaviors that can be customized.
+ */
+@beta
+abstract private type App.NodePool.Membership mixes Mutable {
+
+  /**
+   * Returns the  {@link CloudResource} object for the node represented by the given nodeId in this node pool.
+   */
+  @action(group+='cluster-admin')
+  cloudResourceForNodeId: abstract member function(nodeId: !string serialized App.Node.Id): !CloudResource
+
+  /**
+   * {@link App.NodePool} this membership is for.
+   */
+  nodePool: !App.NodePool
+
+  /**
+   * Timestamp of the previous time nodesById cache was updated.
+   */
+  lastRefreshTime: datetime
+
+  /**
+   * Cached state of nodes by application
+   */
+  nodesById: @sorted(keys=true) MapBuilder<string, Server> = {}
+
+  /**
+   * Represents all nodes for this {@link App.NodePool}. Note that the way servers are started and portrayed differs
+   * per cloud provider.
+   *
+   * @param refresh
+   *         Refreshes the cache holding all nodes of this {@link App.NodePool}.
+   * @return all nodes for this {@link App.NodePool}
+   */
+  nodes: member function(refresh: boolean): [Server]
+
+  /**
+   * Represents the state of all individual nodes for this node pool. Note that logic for how {@link Server#lastMessage}s
+   * are displayed changes per membership logic.
+   *
+   * @param refresh
+   *         If `refresh` parameter is true, ensure the state of all nodes are up to date.
+   * @return mapping of all nodes to their corresponding state
+   */
+  nodeStates: member function(refresh: boolean): map<string, { state: !string, lastMessage: string }>
+
+  /**
+   * Start nodes for this {@link App.NodePool} group. This will render the node pool to an active state.
+   *
+   * @return server nodes that were started.
+   */
+  start: final member function(): [Server]
+
+  /**
+   * Update nodes in this {@link App.NodePool} group.
+   */
+  update: final member function()
+
+  /**
+   * Stop nodes in this {@link App.NodePool} group.
+   */
+  stop: final member function()
+
+  /**
+   * Terminate nodes in this {@link App.NodePool} group.
+   */
+  terminate: final member function()
+
+  /**
+   * Check if this node pool is ready
+   *
+   * @return true if all nodes for this node pool are ready
+   */
+  isReady: final member function(): boolean
+
+  /**
+   * Start nodes for this {@link App.NodePool} group based on proper membership logic.
+   *
+   * @return server nodes that were started.
+   */
+  doStartNodes: abstract member function(): [Server]
+
+  /**
+   * Update nodes for this {@link App.NodePool} group based on proper membership logic.
+   */
+  doUpdateNodes: abstract member function()
+
+  /**
+   * Stop nodes in this {@link App.NodePool} group based on proper membership logic.
+   */
+  doStopNodes: abstract member function()
+
+  /**
+   * Terminate nodes in this {@link App.NodePool} group based on proper membership logic.
+   */
+  doTerminateNodes: abstract member function()
+
+  /**
+   * check the readiness of this {@link App.NodePool} group based on proper membership logic.
+   *
+   * @return true if all nodes for this node pool are ready
+   */
+  doFetchReadiness: abstract optional member function(): boolean
+
+  /**
+   * Returns the {@link Server} objects representing the currently running nodes of the nodepool
+   * by querying the state of the cloud infra.
+   *
+   * @return list of {@link Server} objects
+   */
+  doFetchNodes: abstract member function(): stream<Server>
+}

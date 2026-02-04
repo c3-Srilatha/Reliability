@@ -1,0 +1,196 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Gives applications an opportunity to store/mutate state about a application/page/component without
+ * altering the interface of the states of SDL components.
+ * Application developers should utilize this type when there is application specific logic that needs to
+ * maintain state that SDL components do not maintain.
+ */
+@typeScript
+@uiComponentCategorizer(name='Application state', category='Patterns', hide=true)
+type UiSdlApplicationState mixes UiSdlComponent<UiSdlNoData>, UiSdlEffectableState, Identifiable {
+
+  /**
+   * The Redux namespace for the application state to indicate where the application data is stored in the Redux state.
+   */
+  REDUX_NAMESPACE: private const string = 'applications'
+
+  getStateNamespace:         final ~
+  getInitialStateNamespace:  final ~
+  isLimitEffectOnState:      final ~
+  getConfigStatePath:        final ~
+  getInitialConfigStatePath: final ~
+  getConfigFromState:        final ~
+  setConfigInState:          final ~
+  getInitialConfigFromState: final ~
+  setInitialConfigInState:   final ~
+
+  /**
+   * Collection of extra async {@link UiSdlEffectTrigger}.
+   */
+  effectTriggers: [UiSdlEffectTrigger]
+
+  /**
+   * Retrieves config value from application state.
+   *
+   * @param stateId
+   *           Id of the state.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   * @returns Redux state.
+   */
+  getConfigFromApplicationState: function(stateId: !string,
+                                          state: !UiSdlReduxState,
+                                          dataPath: [string]): !UiSdlReduxState ts-client
+
+  /**
+   * Sets config value in application state.
+   *
+   * @param stateId
+   *           Id of the state.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   * @param value
+   *           The config value to set.
+   * @returns Redux state.
+   */
+  setConfigInApplicationState: function(stateId: !string,
+                                        state: !UiSdlReduxState,
+                                        dataPath: [string],
+                                        value: !any): !UiSdlReduxState ts-client
+
+  /**
+   * Remove config value in the state.
+   *
+   * @param stateId
+   *           Id of the state.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   * @returns Redux state.
+   */
+  removeConfigInApplicationState: function(stateId: !string,
+                                           state: !UiSdlReduxState,
+                                           dataPath: [string]): !UiSdlReduxState ts-client
+
+  /**
+   * Triggers when the `UiSdlApplicationState` is initialized.
+   *
+   * @param stateId
+   *            Id of the state.
+   * @return a 'APPLICATION_STATE_INITIALIZE' action.
+   */
+  @uiSdlActionCreator(actionType='APPLICATION_STATE_INITIALIZE')
+  initializeApplicationStateAction: private final function(stateId: !string): !UiSdlApplicationStateInitializeAction ts-client
+
+  /**
+   * Action to delete data in a certain slice of the application state
+   *
+   * @param stateId
+   *            Id of the state.
+   * @param ids
+   *            Ids of the objects to be deleted
+   * @param dataPath
+   *            slice of the application state to put the new object in
+   * @return a 'APPLICATION_STATE_DATA_DELETE' action.
+   */
+  @uiSdlActionCreator(actionType='APPLICATION_STATE_DATA_DELETE')
+  applicationStateDeleteDataAction: private final function(stateId: !string,
+                                                           ids: [string],
+                                                           dataPath: string): !UiSdlApplicationStateDataDeleteAction ts-client
+
+  /**
+   * Action to add data to a certain slice in the application state
+   *
+   * @param stateId
+   *            Id of the state.
+   * @param id
+   *            Id of the newly added object
+   * @param dataPath
+   *            slice of the application state to put the new object in
+   * @return a 'APPLICATION_STATE_DATA_ADD' action.
+   */
+  @uiSdlActionCreator(actionType='APPLICATION_STATE_DATA_ADD')
+  applicationStateAddDataAction: private final function(stateId: !string,
+                                                        id: string,
+                                                        dataPath: string): !UiSdlApplicationStateDataAddAction ts-client
+
+  /**
+   * Action to modify data to a certain slice in the application state
+   *
+   * @param stateId
+   *            Id of the state.
+   * @param id
+   *            Id of the newly added object
+   * @param dataPath
+   *            slice of the application state to put the new object in
+   * @return a 'APPLICATION_STATE_MODIFY_ADD' action.
+   */
+  @uiSdlActionCreator(actionType='APPLICATION_STATE_DATA_MODIFY')
+  applicationStateModifyDataAction: private final function(stateId: !string,
+                                                           id: string,
+                                                           dataPath: string,
+                                                           field: string,
+                                                           newValue: any): !UiSdlApplicationStateDataModifyAction ts-client
+
+  /**
+   * Listens to actions of 'APPLICATION_STATE_DATA_DELETE' and delete objects in the application state.
+   *
+   * @param state
+   *            Redux state.
+   * @param action
+   *            Redux action.
+   * @return the new Redux state.
+   */
+  @uiSdlReducer(actionType='APPLICATION_STATE_DATA_DELETE')
+  applicationStateDataDeleteEffect: private final function(state: !UiSdlReduxState,
+                                                           action: !UiSdlApplicationStateDataDeleteAction)
+                                                    : !UiSdlReduxState ts-client
+
+  /**
+   * Listens to actions of 'APPLICATION_STATE_DATA_ADD' and add new data to the specified data path in the payload.
+   *
+   * @param state
+   *            Redux state.
+   * @param action
+   *            Redux action.
+   * @return the new Redux state.
+   */
+  @uiSdlReducer(actionType='APPLICATION_STATE_DATA_ADD')
+  applicationStateDataAddEffect: private final function(state: !UiSdlReduxState,
+                                                        action: !UiSdlApplicationStateDataAddAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens to actions of 'APPLICATION_STATE_DATA_MODIFY' and add new data to the specified data path in the payload.
+   *
+   * @param state
+   *            Redux state.
+   * @param action
+   *            Redux action.
+   * @return the new Redux state.
+   */
+  @uiSdlReducer(actionType='APPLICATION_STATE_DATA_MODIFY')
+  applicationStateDataModifyEffect: private final function(state: !UiSdlReduxState,
+                                                           action: !UiSdlApplicationStateDataModifyAction)
+                                                    : !UiSdlReduxState ts-client
+
+  /**
+   * Generates a function that is able to return the application metadata from the redux state.
+   * @param applicationId
+   *            The application ID to generate a selector for
+   * @return a function that can return the metadata for the applicationID when given the redux state
+   */
+  generateSelector: function(applicationId: string): lambda(state: UiSdlReduxState)
+                                                       : UiSdlImmutableJS<UiSdlApplicationState> ts-client
+}

@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+native py remix type Data.Spark.IndexImpl {
+
+  /**
+   * Converts this Data.Spark.SeriesImpl  to native `pandas.Series`
+   * Internally, it will call `to_spark` and then convert to `pandas.Series`
+   * This method should only be used if the resulting pandas.Series is expected to fit in memory,
+   * as all the data is loaded into the driver’s memory.
+   */
+  to_pandas: member function(): native py
+
+  to_numpy: member function(): native py
+  values:   property(): native py
+  _iter_:   ~ py
+}

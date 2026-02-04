@@ -1,0 +1,115 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Provides data encryption/decryption functionality using symmetric key cryptography
+ */
+type SymmetricCipher mixes Configurable<SymmetricCipherConfig> {
+
+  /**
+   * Encrypts user supplied data using the configured key and the symmetric encryption algorithm
+   *
+   * @param data
+   *           Data object
+   *
+   * @param vt
+   *           value type
+   *
+   * @return the encrypted data.
+   */
+  encrypt: inline function(data: !?any,
+                           vt: !ValueType,
+                           algorithm: string enum CryptoCipherTransformation = AES_GCM_NO_PADDING): !EncryptedValue
+
+  /**
+   * Decrypts the data using configured key and the symmetric encryption algorithm
+   *
+   * @param data
+   *           Encrypted data.
+   *
+   * @param vt
+   *            value type
+   * @param algorithm
+   *             Algorithm used to decrypt the data
+   *
+   * @return the decrypted data.
+   */
+  decrypt: inline function(data: !EncryptedValue,
+                           vt: ValueType,
+                           algorithm: string enum CryptoCipherTransformation = AES_GCM_NO_PADDING): any
+
+  /**
+   * Hashes the supplied data using HKDF(hashKey, data) ({@link SymmetricCipherConfig}).
+   *
+   * @param data
+   *          Data object
+   *
+   * @param vt
+   *          Value type
+   *
+   * @return hashed data
+   */
+  hash: inline function(data: !?any, vt: !ValueType): string
+
+  /**
+   * Sets the secret key used for hashing. Fails if already set.
+   * This key is used to compute hash using an hkdf function
+   *
+   * @param key
+   *         secret key used to hash values
+   */
+  @action(group+='app-admin')
+  setKeyForHash: function(key: !SecretKey, confirm: boolean)
+
+  /**
+   * Returns active key if exists; error otherwise.
+   */
+  @action(group+='app-admin')
+  activeKey: function(): SecretKey
+
+  /**
+   * Returns the key for hashing the values
+   */
+  @action(group+='app-admin')
+  hashKey: function(): SecretKey
+
+  /**
+   * returns inactive key if exists; error otherwise.
+   */
+  @action(group+='app-admin')
+  inactiveKey: function(): SecretKey
+
+  /**
+   * Activates the key only if there's no active key present; Returns error if there's already an active key exist.
+   *
+   * @param key
+   *         SecretKey to be activated
+   */
+  @action(group+='app-admin')
+  activate: function(key: !SecretKey)
+
+  /**
+   * Inactivates the current active key and activates the newly supplied secret key.
+   *
+   * @param newKey
+   *          New secret key to be activated
+   */
+  @action(group+='app-admin')
+  deactivateCurrentAndActivateNewKey: function(newKey: !SecretKey)
+
+  /**
+   * Deletes the current inactive key
+   *
+   * @param hard
+   *          if false, soft deletes the current inactive key. Otherwise, deletes the current inactive key permanently.
+   * @param confirm
+   *          Soft/hard deletes if confirm is true; otherwise return error.
+   */
+  @action(group+='app-admin')
+  deleteInactiveKey: function(hard: boolean, confirm: boolean)
+}

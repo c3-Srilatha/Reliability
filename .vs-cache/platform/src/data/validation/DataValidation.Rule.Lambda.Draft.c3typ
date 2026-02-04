@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * **DataValidation.Rule.Lambda.Draft** allows a Lambda "Draft" rule to be created for development.
+ * @see DataValidation.Rule.Lambda
+ */
+entity type DataValidation.Rule.Lambda.Draft extends DataValidation.Rule.Draft mixes DataValidation.Rule.WithLambda type key 'LMAPR' {
+
+  /**
+   * Templates available for the lambda rule to help start the development process from a better state than a blank canvas.
+   */
+  templates: function(): ![string]
+
+  /**
+   * @return a template for the provided name. This will populate the "userCode" in the Draft Lambda.
+   */
+  template: function(name: !string): !string
+
+  /**
+   * An explicit save API to:
+   * 1. Take the userCode and extract into the appropriate fields.
+   * 2. Merge (along with the remaining fields). All the fields extracted from user code will be included in the merge.
+   *    Note that if the extracted fields from user code are nulls, then the merged draft rule will also set those fields to nulls.
+   * 3. If the id doesn't exist, then it will be assumed to be create().
+   * 4. An **upsertSpec** is provided to influence any of the upsert related nuances.
+   * @param rule
+   *        The Draft rule to be saved
+   * @param spec
+   *        This spec is used to control the operation of persisting the Draft rule and what fields to return in the persisted rule
+   * @return
+   *        The {@link DataValidation.Rule.WithLambda.SaveResult} containing the saved Draft rule and issues that are produced
+   *        when parsing the user code.
+   */
+  save: function(rule: !DataValidation.Rule.Lambda.Draft, spec: UpsertSpec): DataValidation.Rule.WithLambda.SaveResult
+
+  /**
+   * Validate the provided Draft rule's userCode WITHOUT persisting any changes or advancing version.
+   * This parses the user code and returns the issues only.
+   *
+   * @param rule
+   *        The Draft rule to be validated
+   * @return
+   *        The list of issues detected when parsing the user code.
+   */
+  issues: function(rule: !DataValidation.Rule.Lambda.Draft): [DataValidation.Rule.Lambda.Issue]
+
+  /**
+   * Get the type names that are supported by this lambda rule.
+   * @return the type names that are supported by this lambda rule.
+   *         Maintains insertion order to preserve the sort order of the types.
+   */
+  typeNames: function(): @indexed !set<string>
+}

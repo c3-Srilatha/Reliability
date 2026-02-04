@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * File metadata cache and ACL. If ACL is enabled on a {@link FileSystem} mount via {@link FileSystemConfig} then
+ * access control is enforced for every file and folder in that file-system mount.
+ *
+ * For a given file ACLs of itself AND all of it's parent directories will be "anded" - e.g. If folder `/foo` is read
+ * only for current user then `/foo/bar.txt` file will always be read only even write permission is explicitly granted
+ * of the file itself; #pathMeta method can be used to list all FileMeta instances
+ */
+@db(enforceAcl=true)
+entity type FileMeta mixes ContentMeta, AclEnabled schema name 'FILE_META' {
+
+  /**
+   * URL for this file or folder.
+   */
+  url: !string
+
+  /**
+   * `true` if file is deleted in the file system.
+   */
+  deleted: boolean
+
+  /**
+   * `true` if file metadata is cached.
+   *
+   * @see File#fileMeta
+   */
+  isCached: inline member function(): boolean
+
+  /**
+   * Retrieves file-system for this meta.
+   */
+  @action(group+='read')
+  fs: inline member function(): !FileSystem
+
+  /**
+   * Retrieves file for this meta.
+   */
+  @action(group+='read')
+  file: inline member function(): !File
+
+  /**
+   * Retrieves all FileMeta instances including a;; parent directories starting from root.
+   */
+  pathMeta: inline member function(): ![mixing FileMeta]
+
+  /**
+   * `true` if current user can read this instance. Note that it requires `acl` field to be populated. If unsure
+   * set `getIfAclIsMissing` parameter.
+   */
+  myUserCanUpsert: inline member function(getIfAclIsMissing: boolean): boolean
+
+  /**
+   * Refreshed metadata of this file from file-system. Note if will set `deleted` flag if file no longer exists.
+   */
+  refresh: member function(): !mixing FileMeta
+
+  /**
+   * Synchronizes metadata for files and directories under provided encoded path or URL.
+   */
+  sync: function(urlOrEncodedPath: !string, dirsOnly: boolean): !int
+
+  /**
+   * Retrieves FileMeta for a provided File. Returns `null` of FileMeta is not cached for a file or if current user is
+   * not authorized to read it.
+   */
+  forFile: inline function(file: !File, failIfMissingOrNotAuthorized: boolean): mixing FileMeta
+
+  /**
+   * Retrieves FileMeta for a provided File url or encoded path. Returns `null` if FileMeta is not cached for a given
+   * url or if current user is not authorized to read it.
+   */
+  forUrlOrEncodedPath: inline function(urlOrEncodedPath: !?string,
+                                       failIfMissingOrNotAuthorized: boolean): mixing FileMeta
+
+  /**
+   * FileMeta constructor.
+   */
+  fromFile: private inline function(file: !File): !mixing FileMeta
+
+  /**
+   * FileMeta constructor.
+   */
+  fromUrl: private inline function(url: !?string): !mixing FileMeta
+
+  /**
+   * FileMeta constructor.
+   */
+  fromUrlOrEncodedPath: private inline function(urlOrEncodedPath: !?string): !mixing FileMeta
+
+  generateIdFromUrlOrEncodedPath: private inline function(urlOrEncodedPath: !string): !string
+  generateIdFromUrl:              private inline function(url: !string): !string
+}

@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A container to be used in {@link UiSdlGridLayout} that contains multiple children.
+ */
+
+@uiComponentCategorizer(name='Grid container', category='Layout', hide=true)
+type UiSdlGridContainer mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * The number of columns (1-12) that the container should take up.
+   * 12 will take up the entire content area of the page.
+   */
+  column: int
+
+  /**
+   * The direction children components should be displayed in.
+   */
+  display: string enum("VERTICAL", "HORIZONTAL") = "VERTICAL"
+
+  /**
+   * Padding to squeeze the whole content inside
+   */
+  padding: int enum UiSdlGridGutterAndPadding = GP0
+
+  /**
+   * Padding to separate children components
+   */
+  gutter: int enum UiSdlGridGutterAndPadding = GP8
+
+  /**
+   * The background color of the container.
+   * By default will `INHERIT` the background of the parent container. If there is no parent container,
+   * will not have a background and behave like OFF configuration.
+   * If background is set to `AUTO`, container will render a background with the correct nested styles
+   * If set to `OFF`, no background will be rendered.
+   */
+  background: string enum("AUTO", "OFF", "INHERIT") = "INHERIT"
+
+  /**
+   * Border true will render a border around the container.
+   */
+  border: boolean = false
+
+  /**
+   * Specifies the distribution of the children components along the main axis. Note that for this setting to be
+   * effective, you must set the `stretch` value of your child UiSdlComponentComponentContainer to `false`.
+   * This is because when `stretch` is set to `true`, the component container child element will take up the whole
+   * space of its parent, so justifying content will have no effect.
+   */
+  justifyContent: string enum("START", "END", "CENTER", "SPACE_BETWEEN", "SPACE_AROUND", "SPACE_EVENLY") = "START"
+
+  /**
+   * Specifies the overflow behavior of the container.
+   * By default overflow.x and overflow.y are set to UNSET.
+   */
+  overflow: UiSdlGridOverflow = {
+    x: UNSET,
+    y: UNSET
+  }
+
+  /**
+   * Since the {@link UiSdlGridContainer} only defines the grid structure,
+   * the children further define that and only {@link UiSdlComponentContainer}
+   * can actually reference other components.
+   *
+   * Adding the columns of all of the children should equal this container's number of columns.
+   */
+  children: [UiSdlGridContainer | string serialized UiSdlComponentContainer | UiSdlComponentContainer | UiSdlConditionalComponentContainer | UiSdlSwitchComponentContainer]
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a Csrf Token.
+ * This token protects against Cross-Site Request Forgery (CSRF) attacks.
+ * @see https://datatracker.ietf.org/doc/html/rfc6749#section-10.12
+ *
+ * The token must be sent as part of a Http Request to the c3 server with  prefix {@link HttpCookieName.C3_CSRF}
+ */
+@cache(maxSize=1000)
+private type CsrfToken mixes StringSerializable, Cached {
+
+  /**
+   * Identifies the user in the C3 server
+   */
+  userId: !string
+
+  /**
+   * Application identifier where the user has been authenticated
+   */
+  appId: !string serialized AppId
+
+  /**
+   * Randomly generated number used as a nonce to generate and validate token.
+   */
+  sessionSequence: !int
+
+  /**
+   * expiration of the token, in milliseconds since epoch
+   */
+  expiration: !int
+
+  /**
+   * Signed and serialized token
+   */
+  signedToken: !string
+
+  /**
+   * Generates a CsrfToken for the given {@link SessionToken}
+   *
+   * @param sessionToken
+   *        SessionToken of the user. see {@link SessionToken}
+   *
+   * @returns CsrfToken
+   */
+  generate: function(sessionToken: SessionToken): !CsrfToken
+
+  /**
+   * Given the serialized token, it deserializes and validates it
+   * @param signedToken - Signed and serialized token
+   * @returns CsrfToken if valid or null.
+   */
+  validate: function(signedToken: !string, failIfInvalid: boolean): CsrfToken
+
+  toString:   ~
+  fromString: inline ~
+  produce:    inline ~
+}

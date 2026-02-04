@@ -1,0 +1,91 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Probabilistic data structure to approximate cardinality of set (number of unique elements)
+ * For more information, @see [https://odino.org/my-favorite-data-structure-hyperloglog/]
+ * and, @see [http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf]
+ */
+type HyperLogLog mixes Mutable, Serializable, Mergeable<HyperLogLog> {
+
+  /**
+   * Number of elements added to this HyperLogLog
+   */
+  count: !int
+
+  /**
+   * Structure that counts number of leading zeros after the first value of the hashed inputs,
+   * Entry i corresponds to leading value of i
+   * Entries are processed to give estimate of unique count
+   */
+  registers: private @java(class='c3.platform.typesys.util.Matrix1DInteger') native schema suffix 'RGS'
+
+  /**
+   * Length of registers array is 2^registerCount. Can be set during create method call.
+   * Standard error is typically about 1.04 / sqrt(2^registerCount)
+   * from @see [http://algo.inria.fr/flajolet/Publications/FlFuGaMe07.pdf]
+   */
+  registerCount: private !int32 = 15
+
+  /**
+   * Member variables that are used in the {@link HyperLogLog#add} operation based off of registerCount
+   */
+  mask: private !int32
+
+  /**
+   * Since estimates for small cardinalities are inaccurate, we use a threshold to determine whether to switch from
+   * using a bloom filter to a HyperLogLog estimate. This field represents that threshold.
+   */
+  smallCardinalityThreshold: private !int32 = 1024
+
+  /**
+   * Creates new instance of HyperLogLog
+   * @param registerCount
+   *        Controls how many registers are stored, 2^param registers are stored. Higher count means more accuracy.
+   *        Using registerCount=5 gives reasonable accuracy at 100 million elements.
+   *        Default value is set is 15, and it is not recommended to go below 4.
+   */
+  create: inline function(value: Stream<any>, registerCount: int32): HyperLogLog
+
+  /**
+   * Creates PushStream that feeds into HyperLogLog
+   * @param registerCount
+   *        Controls how many registers are stored, 2^param registers are stored. Higher count means more accuracy.
+   *        Using registerCount=5 gives reasonable accuracy at 100 million elements.
+   *        Default value is set is 15, and it is not recommended to go below 4.
+   * @return pair of HyperLogLog and PushStream, values added to stream will go into HyperLogLog
+   */
+  createPushStream: inline function(registerCount: int32): Pair<HyperLogLog, PushStream<any>>
+
+  /**
+   * Adds single value to structure of HyperLogLog
+   */
+  add: private inline member function(value: any): HyperLogLog
+
+  /**
+   * Adds stream of values to structure of HyperLogLog
+   */
+  addStream: private inline member function(value: Stream<any>): HyperLogLog
+
+  /**
+   * Estimates the number of unique values that have added to the HyperLogLog structure.
+   * Also does some smart structure resizing and threshold logic to yield a more accurate estimate.
+   */
+  estimate: member function(): !int
+
+  /**
+   * To make this serializable as JSON
+   */
+  toJson: ~ java
+
+  toTypedJson:       ~ java
+  toJsonString:      ~
+  toTypedJsonString: ~
+  fromJson:          ~ java
+  fromJsonString:    ~ java
+}

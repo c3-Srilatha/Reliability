@@ -1,0 +1,169 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This version diff metric searches for and highlights any changes in database (DB)
+ * table/column naming. If any of the following change, it's highlighted:
+ *
+ *   - {@link TypeMeta#declaredSchemaName}
+ *   - {@link TypeMeta#declaredTypeKey}
+ *   - {@link DeclaredFieldType#schemaName}
+ *   - {@link DeclaredFieldType#schemaSuffix}
+ */
+final type BaseCodeAnalysis.VersionDiff.Metric.SchemaChange mixes BaseCodeAnalysis.VersionDiff.Metric, Value js-rhino {
+
+  /**
+   * The code for this version diff metric
+   */
+  METRIC_CODE: const string = 'c3-version-diff-schema-change'
+
+  /**
+   * The sub-category code for when a Type's schema was explicitly changed.
+   *
+   * @see searchForDeclaredTypeSchemaChanges
+   */
+  EXPLICIT_TABLE_RENAME_CODE: const string = 'explicit-table-rename'
+
+  /**
+   * The sub-category code for when a Type's schema was implicitly changed.
+   *
+   * @see searchForImplicitTypeSchemaChanges
+   */
+  IMPLICIT_TABLE_RENAME_CODE: const string = 'implicit-table-rename'
+
+  /**
+   * The sub-category code for when a Type was removed.
+   *
+   * @see searchForImplicitTypeSchemaChanges
+   */
+  TABLE_REMOVAL_CODE: const string = 'table-removal'
+
+  /**
+   * The sub-category code for when a [field](DeclaredFieldType)'s schema was explicitly changed.
+   *
+   * @see searchForDeclaredFieldSchemaChanges
+   */
+  EXPLICIT_COLUMN_RENAME_CODE: const string = 'explicit-column-rename'
+
+  /**
+   * The sub-category code for when a [field](DeclaredFieldType)'s schema was implicitly changed.
+   *
+   * @see searchForImplicitFieldSchemaChanges
+   */
+  IMPLICIT_COLUMN_RENAME_CODE: const string = 'implicit-column-rename'
+
+  /**
+   * The sub-category code for when a [field](DeclaredFieldType) was removed.
+   *
+   * @see searchForImplicitFieldSchemaChanges
+   */
+  COLUMN_REMOVAL_CODE: const string = 'column-removal'
+
+  /**
+   * **This function should not be run directly. Use** #searchForTypeSchemaChanges **instead.**
+   *
+   * Helper function to identify any backwards-incompatible schema changes that have been
+   * explicitly declared through any of the following:
+   *
+   *   - {@link TypeMeta#declaredSchemaName}
+   *   - {@link TypeMeta#declaredTypeKey}
+   *
+   * @param spec
+   *           The spec containing the previous and current versions of a Type which represent
+   *           the previous and current DB schemas.
+   * @return An array of messages reporting any declared backwards-incompatible Type schema changes.
+   */
+  searchForDeclaredTypeSchemaChanges: private inline function(spec: !BaseCodeAnalysis.VersionDiff.CompareTypesSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * **This function should not be run directly. Use** #searchForTypeSchemaChanges **instead.**
+   *
+   * Helper function to identify any _implicit_ schema changes that result from things other
+   * than declared schema names/type keys. For example:
+   *
+   *   - A Type didn't explicitly declare a schema name, but the Type was renamed. Since the
+   *     schema name is derived from the Type name in lieu of an explicit declaration, this
+   *     constitutes a schema change.
+   *   - A [persistable](TypeMeta#isPersistable) Type was removed.
+   *
+   * @param spec
+   *           The spec containing the previous and current versions of a Type which represent
+   *           the previous and current DB schemas. If the current version is null, it's assumed
+   *           that the Type was removed.
+   * @return An array of messages reporting any implicit backwards-incompatible Type schema changes.
+   */
+  searchForImplicitTypeSchemaChanges: private inline function(spec: !BaseCodeAnalysis.VersionDiff.CompareTypesSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * Function to identify any backwards-incompatible schema changes between two versions of a
+   * given [persistable Type](TypeMeta#isPersistable). This function is called by #calculateResults.
+   *
+   * @param calculateResultsSpec
+   *           The spec provided to #calculateResults.
+   * @param compareSpec
+   *           The spec containing the previous and current versions of a Type.
+   * @return An array of messages reporting any backwards-incompatible Type schema changes.
+   */
+  searchForTypeSchemaChanges: function(
+    calculateResultsSpec: !BaseCodeAnalysis.VersionDiff.Metric.CalculateResultsSpec,
+    compareSpec: !BaseCodeAnalysis.VersionDiff.CompareTypesSpec
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * **This function should not be run directly. Use** #searchForFieldSchemaChanges **instead.**
+   *
+   * Helper function to identify any _implicit_ schema changes that result from things other
+   * than declared schema names/schema suffixes. For example:
+   *
+   *   - A field didn't explicitly declare a schema name, but the field was renamed. Since the
+   *     schema name is derived from the field name in lieu of an explicit declaration, this
+   *     constitutes a schema change.
+   *   - A persistable field was removed.
+   *
+   * @param spec
+   *           The spec containing the previous and current versions of a field.
+   * @return An array of messages reporting any explicit backwards-incompatible field schema changes.
+   */
+  searchForDeclaredFieldSchemaChanges: private inline function(spec: !BaseCodeAnalysis.VersionDiff.CompareFieldsSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * **This function should not be run directly. Use** #searchForFieldSchemaChanges **instead.**
+   *
+   * Helper function to identify any backwards-incompatible schema changes that have been
+   * explicitly declared through any of the following:
+   *
+   *   - {@link DeclaredFieldType#schemaName}
+   *   - {@link DeclaredFieldType#schemaSuffix}
+   *
+   * @param spec
+   *           The spec containing the previous and current versions of a field. If the current
+   *           version is null, it's assumed that the field was removed.
+   * @return An array of messages reporting any implicit backwards-incompatible field schema changes.
+   */
+  searchForImplicitFieldSchemaChanges: private inline function(spec: !BaseCodeAnalysis.VersionDiff.CompareFieldsSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * Function to identify any backwards-incompatible schema changes between two versions
+   * of a given [persistable Type](TypeMeta#isPersistable)'s field. This function is called
+   * by #calculateResults.
+   *
+   * @param calculateResultsSpec
+   *           The spec provided to #calculateResults.
+   * @param compareSpec
+   *           The spec containing the previous and current versions of a field.
+   * @return An array of messages reporting any backwards-incompatible field schema changes.
+   */
+  searchForFieldSchemaChanges: function(
+    calculateResultsSpec: !BaseCodeAnalysis.VersionDiff.Metric.CalculateResultsSpec,
+    compareSpec: !BaseCodeAnalysis.VersionDiff.CompareFieldsSpec
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  // TODO: ENGR-21399 Investigate Storing Backward Deps and Using in Rules
+  calculateResults: ~
+}

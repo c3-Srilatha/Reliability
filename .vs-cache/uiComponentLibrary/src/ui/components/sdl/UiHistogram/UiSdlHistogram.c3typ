@@ -1,0 +1,120 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that displays data in a histogram.
+ */
+@uiSdlDesignerComponent(designable=true,
+                        category='UiSdlHistogram.CategoryName',
+                        name='UiSdlHistogram.ComponentName',
+                        icon='chart-bar')
+@typeScript
+@uiComponentCategorizer(name='Histogram', category='Data Visualization')
+type UiSdlHistogram mixes UiSdlComponent<UiSdlHistogramDataSpec>, UiSdlChartColorConfig, UiSdlChartActions, UiSdlFilterable, UiSdlHideChartSeries {
+
+  /**
+   * The specification used for retrieving data displayed by the histogram.
+   */
+  @uiSdlDataSpec(dataDestinationField='data')
+  dataSpec: ~
+
+  /**
+   * Holds the data to display in the histogram.
+   */
+  data: UiSdlChartEChartConfig
+
+  /**
+   * Histogram header.
+   */
+  header: UiSdlComponentHeader
+
+  /**
+   * X-axis config type.
+   */
+  xAxis: UiSdlHistogramXAxisConfig = {}
+
+  /**
+   * Y-axis config type.
+   */
+  yAxis: UiSdlHistogramYAxisConfig = {}
+
+  /**
+   * The histogram legend - information for each series.
+   */
+  legend: UiSdlChartLegend
+
+  /**
+   * The background style for the histogram.
+   */
+  backgroundStyle: string enum('FULL_GRID', 'FREE_FORM', 'HORIZONTAL_LINES', 'VERTICAL_LINES') = 'FULL_GRID'
+
+  /**
+   * Histogram data layout. If 'HORIZONTAL' is chosen, the x- and y-axis positions
+   * will reverse and data will render horizontally.
+   */
+  histogramLayout: string enum('VERTICAL', 'HORIZONTAL') = 'VERTICAL'
+
+  /**
+   * Whether to allow users to zoom the histogram data via a scrubber tool
+   * displayed directly below the histogram.
+   */
+  zoomDisabled: boolean
+
+  /**
+   * Whether to allow users to zoom he histogram data via a YAxis slider.
+   */
+  yAxisDataZoomDisabled: boolean
+
+  /**
+   * Whether or not to enable tooltips.
+   */
+  tooltipDisabled: boolean
+
+  /**
+   * The decimal precision to show on tooltip values.
+   */
+  tooltipValuesDecimalPrecision: int
+
+  /**
+   * The component that handles the empty state.
+   * It will appear if the grid has no data.
+   */
+  emptyState: UiSdlComponentRef<UiSdlEmptyState>
+
+  /**
+   * Maps to the echart config grid property.
+   * Includes left, right, top, bottom padding for the chart
+   */
+  grid: UiSdlChartEChartsGrid
+
+  /**
+   * Triggered when a point on the histogram is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @param point
+   *           An object which represents data for the point that was clicked
+   *           with the following shape:
+   *     {
+   *         data: an array with x and y values
+   *         dataIndex: the index in the series of the point clicked
+   *         name: the point label (what appears on the x axis)
+   *         seriesIndex: the index of the series that was clicked (among all series on the chart)
+   *         seriesName: the series label
+   *         type: the type of event, e.g. "click", "hover" etc.
+   *         value: an array of x and y values
+   *     }
+   *
+   * @return A `HISTOGRAM_CLICK` action with the passed in series array as the payload.
+   */
+  @uiSdlActionCreator(actionType='HISTOGRAM_CLICK')
+  clickHistogramAction: function(id: string, point: Obj): UiSdlHistogramClickAction ts-client
+
+  filterSubmitEpic:         ~ ts-client
+  advancedFilterSubmitEpic: ~ ts-client
+}

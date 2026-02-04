@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='REQUIRED',
+       cloudFunc='iotRule')
+type AwsIotTopicRule mixes AwsResource {
+
+  /**
+   * Query is a simplified SQL syntax to filter messages received on an topic and push the data to the actions.
+   * When using a query with multiple lines, be sure to escape the newline characters.
+   */
+  query: string
+
+  /**
+   * Specify whether the rule is disabled.
+   */
+  ruleDisabled: boolean
+
+  /**
+   * Actions that will be triggered by the messages passing the query filter.
+   */
+  actions: [AwsLambdaFunc]
+
+  hasTags: ~
+}

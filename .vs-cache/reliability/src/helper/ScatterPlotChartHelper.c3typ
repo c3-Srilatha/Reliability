@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to fetch chart configs for scatter plot.
+ */
+type ScatterPlotChartHelper mixes Value {
+
+  /**
+   * Retrieves chart config for the global and asset detail scatter plot.
+   *
+   * @param spec
+   *           The scatter plot chart data specification
+   * @param isGlobal
+   *           Whether this is a global scatter plot
+   * @return The chart configuration as JSON
+   */
+  getChartConfig: function(spec: ScatterPlotChartDataSpec, isGlobal: boolean): json js-rhino
+
+  /**
+   * Retrieves a configuration specifying how to group, label, and color data points.
+   *
+   * @param spec
+   *           The scatter plot chart data specification
+   * @return The color grouping configuration specification
+   */
+  getColorGroupingConfig: function(spec: !ScatterPlotChartDataSpec): ScatterPlotChartColorGroupingSpec js-rhino
+
+  /**
+   * Returns whether or not the {@link ScatterPlotChartDataSpec} does not contain all of the fields.
+   *
+   * @param spec
+   *           The scatter plot chart data specification
+   * @param fields
+   *           The fields to check for
+   * @return True if fields are missing, false otherwise
+   */
+  isMissingFields: private inline function(spec: !?ScatterPlotChartDataSpec, fields: !?[string]): boolean js-rhino
+}

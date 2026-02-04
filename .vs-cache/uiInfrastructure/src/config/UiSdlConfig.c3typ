@@ -1,0 +1,92 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The UiSdlConfig type defines app-level UI configuration settings.
+ */
+type UiSdlConfig mixes Config, DefaultInstance {
+
+  inst: ~ js-server
+
+  /**
+   * UI configurations related to internationalization.
+   */
+  i18n: UiSdlI18nConfig = {}
+
+  /**
+   * Infrastructure level configurations.
+   *
+   * These configurations determine bundler or metadata processing settings.
+   */
+  infrastructure: UiSdlInfrastructureConfig = {}
+
+  /**
+   * UI configurations related to security.
+   */
+  security: UiSdlSecurityConfig = {}
+
+  /**
+   * UI configurations related to application style.
+   */
+  style: UiSdlStyleConfig = {}
+
+  /**
+   * UI configuration related to performance measurement.
+   */
+  performanceMeasurement: UiSdlPerformanceMeasureConfig = {}
+
+  /**
+   * Configuration to set whether or not components of a certain {@link UiSdlRoute#targetModuleName} should
+   * send requests while having `undefined` values for contextVars.
+   *
+   * Example:
+   * { SDLDemo: true, SDL: false }
+   *
+   * In this case, every component whose IDs start with `SDLDemo` (for example SDLDemo.ExampleComponent) will
+   * only allow network requests due to contextVar resolution when the resolved value is not `undefined`.
+   * On the other hand, components that start with `SDL` will make the network requests every time that contextVars
+   * re-resolve, regardless of the values.
+   */
+  @merge(MERGE)
+  ignoreRequestsWithFalsyContextVars: map<string, boolean>
+
+  /**
+   * Application specific configurations.
+   *
+   * Application developers can add extra configurations by remixing {@link UiSdlApplicationConfig}
+   */
+  app: UiSdlApplicationConfig = {}
+
+  /**
+   * Returns flattened config values and field types.
+   */
+  getFlattenedConfigValuesAndFieldTypes: member function(includePrivateFields: boolean = true): any js-server
+
+  /**
+   * Sets the config using the provided spec.
+   *
+   * Saves the provided config values to a {@link Config} metadata file under the path 'UiSdlConfig/UiSdlConfig.json'.
+   */
+  setConfigFromSpec: function(spec: json) js-server
+
+  /**
+   * Gets the infrastructure webpack mode. If not set, fall back based on the App mode:
+   * return 'development' for 'dev' and 'trial' App mode, or 'production' for 'prod' and 'test' mode.
+   */
+  getWebpackMode: function(): string js-server
+
+  /**
+  * Returns the bundler max memory by finding the infrastructure.bundlerMaxMem config value.
+  */
+  getBundlerMaxMem: function(): string js-server
+
+  /**
+   * Helper function that returns the infrastructure webpack mode based on {@link UiSdlConfig} value and app mode.
+   */
+  webpackModeorFallbackMode: private function(webpackMode: string, appMode: string): string js-server
+}

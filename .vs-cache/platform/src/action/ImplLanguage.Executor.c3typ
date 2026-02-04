@@ -1,0 +1,95 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The executor to execute source code of an {@link ImplLanguage}.
+ */
+enum type ImplLanguage.Executor {
+
+  /**
+   * Execute from the Node.js (caller) address space. This is the only option for actions that need to use native
+   * methods of the V8 engine and/or custom Node.js modules or interact with the local environment.
+   *
+   * This is an executor for the server and the client.
+   */
+  NODE = 'node'
+
+  /**
+   * Execute from the server address space. This may be used for actions that need to execute javascript source code
+   * from the Java server.
+   *
+   * This is an executor for the server.
+   */
+  RHINO = "rhino"
+
+  /**
+   * This may be used for actions that need that need to be executed using a JS browser.
+   *
+   * This is an executor for the client.
+   */
+  BROWSER = "browser"
+
+  /**
+   * Execute from the IPython (caller) address space. This is the only option for actions that need to use native
+   * methods of the [IPython module](https://ipython.org/).
+   * This is an executor for the client.
+   */
+  IPYTHON = "ipython"
+
+  /**
+   * Execute from the server address space. This is the only option for actions that need to dynamically access Java
+   * objects from the Java server while running in an external Python process.
+   *
+   * This is an executor for the server.
+   */
+  PY4J = "py4j"
+
+  /**
+   * Execute from the server address space. This is the only option for actions that need to execute Python source code
+   * in a JEP interpreter from within the Java server.
+   *
+   * This is an executor for the server. The only runtimes which JEP executor can run are py-data and its ancestors.
+   */
+  JEP = "jep"
+
+  /**
+   * The executor for java actions.
+   *
+   * This is an executor for the server.
+   */
+  JAVA = "java"
+
+  /**
+   * @return if @firstExecutor can run @secondExecutor. An executor with null value can only run an executor with null value.
+   * A non-null executor can run itself or an executor with null value.
+   */
+  canRun: private function(firstExecutor: string enum ImplLanguage.Executor,
+                           secondExecutor: string enum ImplLanguage.Executor): !boolean
+
+  /**
+   * @return All valid locations for the executor. If the executor is null we return all valid locations.
+   */
+  locations: private function(executor: string enum ImplLanguage.Executor): [string enum ImplLanguage.RuntimeLocation]
+
+  /**
+   * Regular expression that matches all supported executors.
+   */
+  regexPattern: private cached function(): !string
+
+  /**
+   * @return If the executor is null return an array with empty string else return an array with empty string and the executor.
+   */
+  superset: private cached function(executor: string enum ImplLanguage.Executor): [string]
+
+  /**
+   * @return Array of runtime names that this executor can run.
+   * Returns null for executors that support all runtimes dynamically (computed at runtime).
+   */
+  supportedRuntimes: private cached function(executor: string enum ImplLanguage.Executor)
+                                      : !?[string serialized ImplLanguage.Runtime]
+}

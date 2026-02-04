@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base Type for a side panel in a Gen AI application. It handles the expanded and fully expanded states of the side panel.
+ */
+type GenAiUiSidePanelBase mixes UiSdlComponent<UiSdlNoData> {
+  /**
+   * Whether the side panel is initially expanded or collapsed.
+   */
+  initiallyExpanded: boolean
+
+  /**
+   * Whether the side panel is collapsed
+   */
+  isExpanded: boolean
+
+  /**
+   * Whether the side panel is fully expanded to its max width
+   */
+  isFullyExpanded: boolean
+
+  /**
+   * Triggered when the side panel is expanded or collapsed.
+   *
+   * @param id
+   *          Id of the component.
+   * @param newExpandedState
+   *          If true the side panel was expanded.  If false the side panel was collapsed.
+   *
+   * @returns A `IS_EXPANDED_CHANGE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='IS_EXPANDED_CHANGE')
+  sidePanelIsExpandedChangeAction: function(id: !string, newExpandedState: boolean): !UiSdlModalOpenCloseAction ts-client
+
+  /**
+   * Reducer for the side panel collapse state change action.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='IS_EXPANDED_CHANGE')
+  sidePanelIsExpandedChangeReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when the side panel fully expanded state changes.
+   *
+   * @param id
+   *          Id of the component.
+   * @param newFullyExpandedState
+   *          If true the side panel is fully expanded to its max width. If false the side panel is not fully expanded.
+   *
+   * @returns A `IS_FULLY_EXPANDED_CHANGE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='IS_FULLY_EXPANDED_CHANGE')
+  sidePanelIsFullyExpandedChangeAction: function(id: !string, newFullyExpandedState: boolean): !UiSdlModalOpenCloseAction ts-client
+
+  /**
+   * Reducer for the side panel fully expanded state change action.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='IS_FULLY_EXPANDED_CHANGE')
+  sidePanelIsFullyExpandedChangeReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

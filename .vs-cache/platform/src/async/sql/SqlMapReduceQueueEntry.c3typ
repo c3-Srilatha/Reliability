@@ -1,0 +1,21 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue entry for implementing C3 MapReduce framework.
+ *
+ * targetTypeId and targetObjId will be set based on MapReduce job instance. context will be set to one of
+ * run:<runId>:updateStatus:<n>, run:<runId>:map:<n> or run:<runId>:reduce:<n> where n is a sub-task id that is
+ * used for coordination.
+ */
+@db(unique=['targetTypeId, targetObjId, context'],
+    index+=['targetTypeId, targetObjId, status, priority', 'targetTypeId, targetObjId, priority'])
+entity type SqlMapReduceQueueEntry mixes MapReduceQueueEntry, SqlInvalidationQueueEntry<string>, SqlHiAuthzQueueEntry schema name 'ASYNQ_MAPR' {
+
+  version: ~ not persistable
+}

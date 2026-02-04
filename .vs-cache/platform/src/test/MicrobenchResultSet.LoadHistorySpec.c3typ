@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for fetching historical data for a set of tests.
+ */
+type MicrobenchResultSet.LoadHistorySpec mixes Spec {
+
+  /**
+   * Optional filter string added to implicit query.
+   *
+   * @see FetchFilterSpec#filter
+   */
+  filter: string
+
+  /**
+   * By default, hardware filter gets append to the {@link #filter}
+   * false = 'instanceType.name == [machine name]'
+   * true = '' no filter at all.
+   * Use this flag to disable the hardware filter from being applied
+   */
+  doNotAppendHardwareFilter: boolean
+
+  /**
+   * By default, branch filter gets append to the {@link #filter}
+   * true = 'gitBranch == [current branch]'
+   * false = 'gitBranch == "v8only"' Only if the environment is JENKINS_AGENT_NAME is set, otherwise same as above
+   * Use this flag to disable the branch filter from being applied
+   */
+  doNotAppendBranchFilter: boolean
+
+  /**
+   * Maximum number of records to fetch. Note that results are always the most recent ones.
+   */
+  limit: !int = 100
+
+  /**
+   * Options for outlier filtering. By default, a spec that filters by ±2σ is used.
+   */
+  outliersSpec: OutliersSpec
+}

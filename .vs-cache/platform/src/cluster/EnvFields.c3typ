@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Fields describing C3 Environment
+ */
+type EnvFields mixes Nameable, Taggable {
+
+  /**
+   * Name of C3 Environment unique in the parent Cluster
+   */
+  name: !~
+
+  // Display label for Env
+  label: string
+
+  /**
+   * If true then this environment will only have a single node that will serve requests and execute jobs for every
+   * App in this Env
+   */
+  singleNode: boolean
+
+  /**
+   * Start Env with a minimal infrastructure
+   */
+  minimalInfra: boolean
+
+  /**
+   * Environment is only accessible from internal endpoint (no ingress) if set to true.
+   * Therefore, when starting an internalOnly Env or Apps in an internalOnly singleNode Env,
+   * use {@link Cluster.StartEnvSpec#waitForReadyInternal} and {@link Env.StartAppSpec#waitForReadyInternal}
+   */
+  internalOnly: boolean
+
+  /**
+   * Default app mode to optionally define {@link App#mode}.
+   */
+  defaultAppMode: string enum AppMode
+
+  /**
+   * Allow Apps in this env to change mode from Test to Prod, as an exception.
+   */
+  allowTestToProd: boolean
+
+  /**
+   * Only applicable for cases where Env is a singleNode Env. This flag controls whether the env will use shared instances for {@link JdbcStore} and {@link KvStore} or use a H2 disk-backed datastore for both.
+   */
+  sharedDb: boolean
+}

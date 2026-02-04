@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@annotation(appliesTo=['type'])
+type Ann.Cloud mixes Annotation {
+
+  /**
+   * The name abbreviation of this cloud resource
+   */
+  cloudFunc: !string
+
+  /**
+   * Whether this Cloud resource has resource Secondary ID
+   */
+  hasResourceArn: boolean
+
+  /**
+   * Whether this Cloud resource has resource ID
+   */
+  hasResourceId: boolean
+
+  /**
+   * Whether this Cloud resource has resource name
+   */
+  hasResourceName: boolean
+
+  /**
+   * Whether this {@link CloudResource} has resource group name
+   */
+  hasResourceGroupName: boolean
+
+  /**
+   * Whether it is required for this {@link CloudResource} to have a {@link CloudId#role}
+   */
+  hasRole: boolean
+
+  /**
+   * Whether it is required for this {@link CloudResource} to have a {@link CloudId#subseq}.
+   * This could specify for each {@link CloudId#role} whether it should have a subsequence.
+   */
+  hasSubseq: boolean | map<string, boolean>
+
+  /**
+   * Specify exact length of {@link CloudId#seq}
+   */
+  seqLength: int32 = 3
+
+  /**
+   * Specify exact length of {@link CloudId#subseq}
+   */
+  subseqLength: int32 = 3
+
+  /**
+   * Whether this Cloud resource has tags
+   */
+  hasTags: boolean
+
+  /**
+   * Whether this Cloud resource needs role field in its C3 cloud identity
+   */
+  identityRoleOptions: !string enum CloudResourceRoleOptions
+
+  /**
+   * A list of non modifiable fields on the resource. Must specify the full path for nested fields, separated by dot.
+   * e.g., osProfile.computerName on AzureVirtualMachineFields type.
+   */
+  nonModifiableFields: [string]
+
+  /**
+   * If set, the fields set in nonModifiableFields will be removed for resource update.
+   */
+  stripNonModifiable: boolean
+
+  /**
+   * Whether this Cloud resource is associated with a namespace
+   */
+  hasNamespace: boolean
+}

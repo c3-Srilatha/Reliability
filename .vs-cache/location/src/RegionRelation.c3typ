@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the hierarchical relationship between two regions.
+ * 
+ * Defines the parent-child relationship between two regions within a hierarchy.
+ * 
+ * entity
+ * key 'RREL'
+ */
+@seed(userUpdatable=true)
+entity extendable type RegionRelation mixes Relation<Region>, SeedData type key 'RREL' schema name 'STRUCT_RGNREL' {
+
+  /**
+   * The parent region in the hierarchy.
+   * 
+   * This field references the parent region.
+   */
+  parent: !Region
+  
+  /**
+   * The child region in the hierarchy.
+   * 
+   * This field references the child region.
+   */
+  child: !Region
+  
+  /**
+   * The relationship name, formatted as "parent region -> child region".
+   */
+  name: ~ = parent.name + ' -> ' + child.name
+
+  /**
+   * Denormalized fields for easy access to parent and child regions.
+   */
+  from: ~ stored calc parent
+  /**
+   * Denormalized field for the child region.
+   * 
+   * This field stores the reference to the child region for easier access in queries and relationships.
+   */
+  to: ~ stored calc child
+  
+  /**
+   * Relationship type, default value is 'RREL'.
+   */
+  relationship: ~ = 'RREL'
+  
+  /**
+   * Denormalized geographical name of the parent region.
+   */
+  fromInfo: ~ stored calc from.geography.name
+  
+  /**
+   * Denormalized geographical name of the child region.
+   */
+  toInfo: ~ stored calc to.geography.name
+}

@@ -1,0 +1,109 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for interfacing with the customization analysis functions from Jarvis and storing utility functions
+ * to push data to a centralized repository for analysis.
+ */
+private final type BaseCustomizationAnalyzer {
+
+  /**
+   * Function to perform customization analysis on the provided customer package.
+   * Any results stored about types, methods, fields or other implementations identified from these packages will only
+   * include non-descriptive, statistical information. Any overrides or remixes from types not first defined in
+   * these packages will include descriptive customization information.
+   *
+   * @param customerPackages
+   *           The list of customer packages to analyze customizations in.
+   * @returns an object containing the customization results and the execution time of the function for performance
+   *          regression observability.
+   */
+  analyzeCodeWithExecutionTime: function(customerPackages: ![string]): json js-rhino
+
+  /**
+   * Function to push customization results to a centralized repository for analysis.
+   * Should take in the response from {@link BaseCodeAnalyzer#getTrimmedAuditResults} for codeAnalysisResults.
+   * To protect customer data analytics, the results are encrypted using {@link #encryptResults} before being
+   * pushed to c3codeanalytics.
+   *
+   * @param spec
+   *           The spec that contains the information to be pushed to the centralized repository.
+   */
+  storeCustomizationResultsWithSpec: function(spec: !BaseCustomizationAnalyzer.StoreCustomizationResultsSpec) js-rhino
+
+  /**
+   * Function to encrypt the binary content passed in. This method is intended to encrypt the results of customization
+   * analysis before posting them to the `c3codeanalytics` repository. The function operates on the
+   * following constraints:
+   * - There is no prior knowledge of which customer repositories will attempt to send data back to the
+   *   c3codeanalytics repo.
+   * - The content being send back to be in the order of 1-10MB
+   *
+   * Given the constraints above, we need to use asymmetric encryption with a public-private key pair where the public
+   * key is distributed to all repositories and the private key is used by c3codeanalytics to decrypt the data.
+   *
+   * Since the data could be large, asymmetric encryption is not possible. Symmetric encryption, on the other hand,
+   * would defeat the purpose since the key would be available for everyone to see. To workaround this issue, we use
+   * the following paradigm:
+   * - Generate a random key and initatization key for symmetric encryption
+   * - Encrypt the content using the AES algorithm with these inputs
+   * - Encrypt the key used for symmetric encryption using the asymmetric encryption
+   * - Pass the encrypted content, the encrypted symmetric key and the initialization vector (which can be public)
+   *   in the result
+   *
+   * Using this method, only the c3codeanalytics has the key that can decrypt the symmetric encryption key that can be
+   * used to decrypt the content.
+   *
+   * @param content
+   *           The binary content to encrypt.
+   * @returns a json object containing the following fields:
+   *          - data: the encrypted content
+   *          - aesKey: the random AES key used for symmetric encryption of the content
+   *          - initializationVector: the vector used initialize the initialize CBC mode
+   */
+  encryptResults: private final function(content: binary): json py-customizationanalysis
+
+  /**
+   * Function to decrypt the binary content passed in. Performs the following operations:
+   * - Uses the {@param #privateKeyPem} to decrypt the encrypted {@param #aesKey}
+   * - Uses the decrypted {@param #aesKey} and {@param #initializationVector} to decrypt {@param #encryptedContent}
+   * - Removes block padding, if applicable.
+   *
+   * See documentation on {@link #encryptResults} for more information on how the data is encypted.
+   *
+   * @param encryptedContent
+   *           The encrypted content to decrypt.
+   * @param privateKeyPem
+   *           The private key in the PEM format to decrypt {@param #aesKey}.
+   * @param passphrase
+   *           The passphrase to use for using the private key.
+   * @param aesKey
+   *           The encrypted symmetric AES key used to encrypt {@param #encryptedContent}.
+   * @param initializationVector
+   *           The initialization vector used for the symmetric encryption cipher.
+   * @returns the decrypted string contents of {@param #encryptedContent}.
+   */
+  decryptResults: function(
+    encryptedContent: !binary,
+    privateKeyPem: !binary,
+    passphrase: !binary,
+    aesKey: !binary,
+    initializationVector: !binary
+  ): string py-customizationanalysis
+
+  /**
+   * Function to get a new public-private key pair using RSA.
+   *
+   * @param passphrase
+   *           The passphrase to use for the private key. The private key can only be used to decrypt content
+   *           encrypted by the public key with this passprhase.
+   * @returns an object containing a newly generated private key and corresponding private key.
+   */
+  generatePublicPrivateKey: private function(passphrase: string): native py-customizationanalysis
+}

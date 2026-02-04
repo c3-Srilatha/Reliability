@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A batch job for generating responses from a GCP LLM.
+ * See {@link https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/batch-prediction-api#request_a_batch_response}
+ * and {@link https://platform.openai.com/docs/guides/batch/overview}
+ */
+entity type Genai.Llm.Gcp.BatchRequestJob extends Genai.Llm.BatchRequestJob type key "GCP" {
+  /**
+   * The JSONL file containing the prompts passed to the LLM.
+   */
+  inputFile: !File
+
+  /**
+   * The directory containing the JSONL file containing the responses from the LLM.
+   * Note that GCP takes in the directory into which the response files will be written,
+   * but since {@link GcsFileSystem} does not have a type to represent a directory directly,
+   * this uses {@link File} to represent the directory.
+   */
+  outputDir: !File
+
+  state: ~
+  completed: ~
+  cancel: ~
+  delete: ~
+  readResponses: ~
+  details: ~
+
+  @dependency(include="this")
+  beforeRemove: ~ py-query_orchestrator
+}

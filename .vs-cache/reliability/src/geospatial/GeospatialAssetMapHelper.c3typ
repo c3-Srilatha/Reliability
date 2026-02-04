@@ -1,0 +1,124 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * UI Helper to extract data for the Geospatial Assets Map Page.
+ */
+type GeospatialAssetMapHelper {
+
+  /**
+   * Constant that represents the `featureType` property value that is used to represent a marker.
+   *
+   * @see UiGeospatialAssetsMap
+   */
+  MARKER_FEATURE_PROP: const string = 'marker'
+
+  /**
+   * Constant that represents the `featureType` property value that is used to represent a asset relation.
+   *
+   * @see UiGeospatialAssetsMap
+   */
+  RELATION_FEATURE_PROP: const string = 'relation'
+
+  /**
+   * Constant that represents which fake [asset class](AssetClass) will be shown for the asset relations.
+   *
+   * Since these relations are not assets, and are only used to be displayed on the map legends, we need to provide
+   * an `assetClass` to be used for them.
+   */
+  RELATION_ASSET_CLASS_NAME: const string = 'Transmission Line'
+
+  /**
+   * Constant that represents which `icon` will be shown in the legends info for the asset relations.
+   */
+  RELATION_ASSET_CLASS_ICON: const string = 'horizontal-rule'
+
+  /**
+   * Retrieves all the `CZML` data to be displayed on a `Cesium` map ({@link UiGeospatialAssetsMap}).
+   *
+   * Calls #getEntityToFeatureMap to get the configuration on how to convert the entities into `CZML` format and the
+   * {@link FetchStreamSpec} to fetch them.
+   *
+   * Once the data is fetched, it will be transformed into `CZML` format using the configuration set for it.
+   *
+   * Finally all the data is returned as a single `json` object.
+   *
+   * - See more about CZML: {@link https://github.com/AnalyticalGraphicsInc/czml-writer/wiki/CZML-Guide Cesium CZML Guide}
+   *
+   * @param spec
+   *        The helper spec to be used to retrieve the data.
+   * @returns The data to be displayed on the map in `CZML`(`json`) format.
+   */
+  getData: function(spec: GeospatialAssetMapHelper.GetDataSpec): json js-rhino
+
+  /**
+   * Returns a map of c3 entity types ({@link ReliabilityAsset}, {@link ReliabilityMapAssetRelation}) to the
+   * configuration on how to convert them into CZML format.
+   *
+   * Each configuration has the following properties:
+   * ```json
+   * {
+   *   getSpec: '<methodNameToGetFetchStreamSpec>',
+   *   transformToCZML: '<methodToTransformEntitiesToCZML>',
+   * }
+   * ```
+   *
+   * **NOTE**: The methods referenced by the configuration must exists in this type.
+   *
+   * @returns A map of entity types to their configuration.
+   */
+  getEntityToFeatureMap: inline function(): map<string, map<string, string>> js-rhino
+
+  /**
+   * Helper method that receives the [helper spec](GeospatialAssetMapHelper.GetDataSpec) and generates the
+   * {@link FetchStreamSpec} to retrieve the assets to be displayed on the map.
+   *
+   * **NOTE**: By default this method appends the filter for `exists(geoLocation)` and uses
+   *           {@link GeospatialAssetMapHelper.GetDataSpec#selectedFacilities} to filter the assets.
+   *
+   * @param spec
+   *        The helper spec.
+   * @returns The [fetch stream](FetchStreamSpec) spec.
+   */
+  convertSpecToAssetFetchSpec: private inline function(spec: GeospatialAssetMapHelper.GetDataSpec): FetchStreamSpec js-rhino
+
+  /**
+   * Helper method that receives a {@link ReliabilityAsset} and converts it into a `CZML` object. (`json`)
+   *
+   * **NOTE**: This method expects the asset to already have any required fields for the `CZML` conversion.
+   *
+   * @param asset
+   *        The asset to convert.
+   * @returns The asset in `CZML` format.
+   */
+  convertAssetToCZML: private inline function(asset: !ReliabilityAsset): json js-rhino
+
+  /**
+   * Helper method that receives the [helper spec](GeospatialAssetMapHelper.GetDataSpec) and generates the
+   * {@link FetchStreamSpec} to retrieve the [relations](ReliabilityMapAssetRelation) to be displayed on the map.
+   *
+   * **NOTE**: {@link GeospatialAssetMapHelper.GetDataSpec#selectedFacilities} is used to filter the relations.
+   *
+   * @param spec
+   *        The helper spec.
+   * @returns The [fetch stream](FetchStreamSpec) spec.
+   */
+  convertSpecToRelationFetchSpec: private inline function(spec: GeospatialAssetMapHelper.GetDataSpec): FetchStreamSpec js-rhino
+
+  /**
+   * Helper method that receives a {@link ReliabilityMapAssetRelation} and converts it into a `CZML` object. (`json`)
+   *
+   * **NOTE**: This method expects the relation to already have any required fields for the `CZML` conversion.
+   *
+   * @param relation
+   *        The relation to convert.
+   * @returns The relation in `CZML` format.
+   */
+  convertAssetGeoRelationToCZML: private inline function(relation: !ReliabilityMapAssetRelation): json js-rhino
+}

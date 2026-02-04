@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The line-level code analysis metric message to be posted by Conan.
+ */
+type BaseCodeAnalysis.Metric.Message {
+
+  /**
+   * The severity of this message
+   */
+  severity: string enum BaseCodeAnalysis.Metric.Message.Severity
+
+  /**
+   * Additional information associated with the metric message
+   */
+  info: json
+
+  /**
+   * The message for the error
+   */
+  message: string
+
+  /**
+   * Which side of a file diff the #line and #column correspond to. This is only relevant
+   * for diff-based code analysis.
+   */
+  side: string enum BaseCodeAnalysis.Metric.Message.Side = RIGHT
+
+  /**
+   * The 1-based line number of the reported location
+   */
+  line: int
+
+  /**
+   * The 1-based column number of the reported location
+   */
+  column: int
+
+  /**
+   * _Specific to_ {@link BaseCodeAnalysis.VersionDiff.Metric}s
+   *
+   * The message that should appear in the changelog for a code analysis run.
+   *
+   * @see typeChangelogMessage
+   * @see fieldChangelogMessage
+   * @see paramChangelogMessage
+   */
+  changelogMessage: string
+
+  /**
+   * _Specific to_ {@link BaseCodeAnalysis.VersionDiff.Metric}s
+   *
+   * If there are multiple messages associated with a particular Type, this message
+   * should be used to describe the change at the Type level to avoid redundant messaging.
+   *
+   * @see changelogMessage
+   * @see fieldChangelogMessage
+   * @see paramChangelogMessage
+   */
+  typeChangelogMessage: string
+
+  /**
+   * _Specific to_ {@link BaseCodeAnalysis.VersionDiff.Metric}s
+   *
+   * If there are multiple messages associated with a particular field or method, this
+   * message should be used to describe the change at the field or method level to avoid
+   * redundant messaging.
+   *
+   * @see changelogMessage
+   * @see typeChangelogMessage
+   * @see paramChangelogMessage
+   */
+  fieldChangelogMessage: string
+
+  /**
+   * _Specific to_ {@link BaseCodeAnalysis.VersionDiff.Metric}s
+   *
+   * If there are multiple messages associated with a particular method parameter, this
+   * message should be used to describe the change at the method parameter level to avoid
+   * redundant messaging.
+   *
+   * @see changelogMessage
+   * @see typeChangelogMessage
+   * @see fieldChangelogMessage
+   */
+  paramChangelogMessage: string
+}

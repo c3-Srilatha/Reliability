@@ -1,0 +1,114 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Use to specify format of NUMBER.
+ * Type representation of [Intl.NumberFormat](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NumberFormat) options.
+ */
+@typeScript
+type UiSdlNumberParamKindFormatSpec mixes UiSdlDynamicValueSpecParamFormatSpec {
+
+  /**
+   * The formatting style to use.
+   */
+  style: string enum('decimal', 'currency', 'percent', 'unit') = 'decimal'
+
+  /**
+   * The unit to use in unit formatting.
+   * Valid units:
+   * https://tc39.es/proposal-unified-intl-numberformat/section6/locales-currencies-tz_proposed_out.html#sec-issanctionedsimpleunitidentifier
+   */
+  unit: string
+
+  /**
+   * The unit formatting style to use in unit formatting.
+   */
+  unitDisplay: string enum('long', 'short', 'narrow') = 'short'
+
+  /**
+   * The currency to use in currency formatting. Possible values are the ISO 4217 currency codes.
+   * If {@link style} is "currency", the currency field must be provided.
+   */
+  currency: string
+
+  /**
+   * How to display the currency in currency formatting.
+   *   - "symbol" to use a localized currency symbol such as €,
+   *   - "code" to use the ISO currency code
+   *   - "name" to use a localized currency name such as "dollar"
+   */
+  currencyDisplay: string enum('symbol', 'code', 'name') = 'symbol'
+
+  /**
+   * The minimum number of integer digits to use. Possible values are from 1 to 21.
+   *
+   * @example
+   *   1) minimumIntegerDigits = 0
+   *        123 => 123
+   *   2) minimumIntegerDigits = 5
+   *        123 => 00123
+   */
+  @constraint(condition='minimumIntegerDigits >= 1 && minimumIntegerDigits <= 21')
+  minimumIntegerDigits: int
+
+  /**
+   * The minimum number of fraction digits to use. Possible values are from 0 to 20.
+   *
+   * - The default for plain number and percent formatting is 0;
+   * - The default for currency formatting is the number of minor unit digits provided by
+   *   the ISO 4217 currency code list (2 if the list doesn't provide that information);
+   *
+   * @example
+   *   1) minimumFractionDigits = 0
+   *        123.456 => 123
+   *   2) minimumFractionDigits = 5
+   *        123.456 => 123.45600
+   */
+  @constraint(condition='minimumFractionDigits >= 0 && minimumFractionDigits <= 20')
+  minimumFractionDigits: int
+
+  /**
+   * The maximum number of fraction digits to use. Possible values are from 0 to 20.
+   *
+   *  - The default for plain number formatting is the larger of {@link minimumFractionDigits} and 3;
+   *  - The default for currency formatting is the larger of {@link minimumFractionDigits} and the
+   *    number of minor unit digits provided by the ISO 4217 currency code list (2 if the list doesn't
+   *    provide that information);
+   *  - The default for percent formatting is the larger of {@link minimumFractionDigits} and 0;
+   *
+   * @example
+   *   1) maximumFractionDigits = 0
+   *        123.456 => 123
+   *   2) maximumFractionDigits = 3
+   *        123.456789 => 123.456
+   */
+  @constraint(condition='maximumFractionDigits >= 0 && maximumFractionDigits <= 20')
+  maximumFractionDigits: int
+
+  /**
+   * The minimum number of significant digits to use. Possible values are from 1 to 21.
+   */
+  @constraint(condition='minimumSignificantDigits >= 1 && minimumSignificantDigits <= 21')
+  minimumSignificantDigits: int
+
+  /**
+   * The maximum number of significant digits to use. Possible values are from 1 to 21.
+   */
+  @constraint(condition='maximumSignificantDigits >= 1 && maximumSignificantDigits <= 21')
+  maximumSignificantDigits: int
+
+  /**
+   * The formatting that should be displayed for the number.
+   */
+  notation: string enum('standard', 'scientific', 'engineering', 'compact')
+
+  /**
+   * The compact formatting style to use when {@link notation} is `compact`.
+   */
+  compactDisplay: string enum('short', 'long')
+}

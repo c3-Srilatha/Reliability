@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ExMachinaMetadata mixes Value {
+
+  /**
+   * Returns the type of the caller of the root action. Often useful when defining helper functions on types that are
+   * mixed in by other types, where the specific type is useful for calling downstream methods.
+   *
+   * Note: the use of `inline` here allows the function to return the caller type rather than the `ExMachinaMetadata`
+   * type
+   */
+  getCurrentType: private inline function(): Type js-server
+
+  /**
+   * Returns the name of the type of the caller. See {@link getCurrentType} for more details.
+   *
+   * Note: the use of `inline` here allows the function to return the caller type name rather than `"ExMachinaMetadata"`
+   */
+  getCurrentTypeName: private inline function(): string js-server
+
+  /**
+   * Return types with optional filters applied to the persistable types
+   */
+  getTypes: function(filterPersistables: boolean): ExMachinaTypeResult js-server
+
+  /**
+   * Return types that mix the given type
+   */
+  getMixinTypes: function(typeName: string): ExMachinaTypeResult js-server
+
+  /**
+   * Returns the list of type names that mix the given type. The given typeName will not be included in the list.
+   */
+  getMixinTypeNames: function(typeName: string, filterByAccess: boolean): [string] js-server
+
+  /**
+   * Return fields of given type in the specified tag
+   */
+  getFields: function(typeName: string, filterByAccess: boolean): [ExMachinaTypeField] js-server
+
+  /**
+   * Return true if given type name is stored in cassandra
+   */
+  isKeyValueStoreType: function(typeName: !string): boolean js-server
+
+  /**
+   * Return name of partition key filed if type with given name is in key value store, empty string will be
+   * returned otherwise
+   */
+  getPartitionKeyFieldForKeyValueStoreType: function(typeName: !string): string js-server
+
+  /**
+   * Return parent type name if type with given name is in key value store, empty string will be returned otherwise
+   */
+  getParentTypeForKeyValueStoreType: function(typeName: !string): string js-server
+
+  /**
+   * Return true if given type name mixes in External or NoSystemCols
+   */
+  isExternalType: function(typeName: !string): boolean js-server
+
+  /**
+   * Returns the documentation/description for the specified type
+   */
+  getTypeDescription: function(typeName: !string): @db(clob=true) string js-server
+
+  /**
+   * Returns the documentation/descriptions of the specified types
+   */
+  getTypeDescriptions: function(typeNames: !?[string]): [ExMachinaTypeDescription] js-server
+
+  /**
+   * Returns whether a type is facaded
+   */
+  isTypeFacaded: function(typeName: !string): boolean js-server
+}

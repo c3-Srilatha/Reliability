@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Projection spec inheriting projection field and capabilities
+ */
+abstract inline type ProjectionSpecBase {
+
+  /**
+   * Comma separated list of expressions to be evaluated on each processed obj.  If projections can be handled
+   * directly in SQL (by the db engine), they will be, otherwise they will be handled by the expression with certain
+   * reduced functionality (e.g. grouping and ordering is not supported on projections handled by the expression
+   * engine).
+   */
+  projection: string
+
+  /**
+   * Parsed projection for the given type for #projection
+   */
+  projectionParsed: member function(evalTypeMeta: !TypeMeta): [Expr]
+
+  /**
+   * Individual projection expressions in #projection
+   */
+  projectionParts: cached member function(): [string]
+}

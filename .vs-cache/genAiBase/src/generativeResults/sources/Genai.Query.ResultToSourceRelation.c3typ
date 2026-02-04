@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a relation between a query result and a source that was used to generate that result. This relation type
+ * allows for a many-to-many relationship between query results and sources and offers a many (source relations)
+ * -to-one (query result) solution for source information that's specific to a single query. Information specific to the
+ * current query should be added to this record, while common source information should be added to the source record
+ * linked in #to.
+ */
+extendable entity type Genai.Query.ResultToSourceRelation extends Genai.Query.Result.Relation type key "RSLTSRCREL" {
+
+  /**
+   * The source that was used to generate the query result.
+   */
+  to: !Genai.Query.Result.Source.AbstractSourceType
+
+  /**
+   * Stores the order in which cited sources appear in the UI.
+   *
+   * NOTE: this is 1-indexed
+   */
+  // TODO: GEN-6165 update to uiDisplayIndex
+  passageUiDisplayIndex: private int
+
+  /**
+   * Returns the ID of this relation that was given to the llm to use for citation.
+   */
+  // TODO: GEN-9667 Update logic to always use the relation id instead of the passage id for unstructured sources
+  llmCitationId: inline property(): !string py
+
+  /**
+   * An optional display name for the source. Useful for providing quick context for a default presentation of the
+   * source in the UI.
+   */
+  displayName: string
+
+  /**
+   * Optional details about the source. This field may be used to provide additional context about the source that can
+   * be displayed in a popover/tooltip when the user hovers over the source in the UI. The returned string can be
+   * formatted with HTML tags or Markdown to provide additional structure/style to the details presented in the popover.
+   */
+  displayDetails: property(): string js
+}

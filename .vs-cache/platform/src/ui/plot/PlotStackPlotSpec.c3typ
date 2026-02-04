@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Draws a stacked area plot.
+ *
+ * # Example: Three Series
+ * ```JavaScript
+ * var N = 20;
+ * PlotAxes.make({
+ *   title: 'Stuff',
+ *   legend: {
+ *     loc: 'upper left',
+ *     fontSize: 'small'
+ *   }
+ * }).stackPlot({
+ *   x: C3.Array.patternOfInt(N, n => n + 1),
+ *   y: [
+ *     C3.Array.patternOfDbl(N, n => 20 + Math.random() * 25),
+ *     C3.Array.patternOfDbl(N, n => 10 + Math.random() * 15),
+ *     C3.Array.patternOfDbl(N, n => 30 + Math.random() * 40),
+ *   ],
+ *   labels: [ 'Stuff', 'Nonsense', 'Other' ]
+ * }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.stackplot.html
+ */
+type PlotStackPlotSpec mixes PlotFillBetweenSpec {
+
+  /**
+   * Python: 1d array of dimension N
+   */
+  x: [any]
+
+  /**
+   * All series to be plotted.
+   *
+   * Python: 2d array (dimension MxN)
+   */
+  y: [any]
+
+  /**
+   * One series to be plotted.
+   *
+   * Python: 1d array (each dimension 1xN)
+   */
+  y1: [any]
+
+  /**
+   * One series to be plotted.
+   *
+   * Python: 1d array (each dimension 1xN)
+   */
+  y2: [any]
+
+  /**
+   * One series to be plotted.
+   *
+   * Python: 1d array (each dimension 1xN)
+   */
+  y3: [any]
+
+  /**
+   * One series to be plotted.
+   *
+   * Python: 1d array (each dimension 1xN)
+   */
+  y4: [any]
+
+  data: any
+
+  /**
+   * Method used to calculate the baseline:
+   * (matplotlib baseline)
+   *
+   * Python: ['zero' | 'sym' | 'wiggle' | 'weighted_wiggle']
+   */
+  baseLine: string enum('zero', 'sym', 'wiggle', 'weighted_wiggle')
+
+  /**
+   * Labels to assign to each data series.
+   *
+   * Python: Length N sequence of strings
+   */
+  labels: [string]
+
+  /**
+   * A list or tuple of colors. These will be cycled through and used to colour the stacked areas.
+   *
+   * Python: Length N sequence of colors
+   */
+  colors: [string]
+}

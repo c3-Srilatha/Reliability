@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link MapReduce} job to distribute and scale the dataset preparation process for {@link MlModel}s under any {@link MlProject}s.
+ * Essentially, this job distributes the call to {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets} across
+ * the `filter` of {@link ReliabilityAsset}s provided to this job.
+ */
+@beta
+extendable entity type ReliabilityMlDatasetPreparationJob extends MapReduce<ReliabilityAsset, void, void, void> mixes FilterableByFacility type key 'RADPJ' {
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["datasetRuns.parent.facility"]
+
+  /**
+   * The same Spec used in {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets}.
+   * However, as part of the job, the same Spec will be applied to all {@link ReliabilityAsset}s
+   * provided in {@link MapReduceOptions#filter}.
+   */
+  spec: ReliabilityMlDatasetPreparationSpec
+
+  /**
+   * Error message that will be populated with its corresponding error in the worfklow in the case of failure.
+   */
+  errorMessage: string stored calc exists(run.status.errors[0].id) ? parseJobErrorMessage(run.status.errors[0].id) : ""
+
+  /**
+   * The {@link ReliabilityMlDatasetPreparationRun}s this map-reduce job is responsible for generating results for.
+   */
+  datasetRuns: [ReliabilityMlDatasetPreparationRun](job)
+
+  map: ~ py-data-server-py4j
+}

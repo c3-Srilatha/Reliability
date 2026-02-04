@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options that may be specified to {@link Remote.connect} and {@link Remote.connectAsync connectAsync}.
+ */
+type RemoteConnectSpec mixes Spec {
+
+  /**
+   * What tier to load initially. By default, the initial connection only loads the lightest tier (REST).
+   *
+   * @see Remote.TypeLoaderSpec#tier
+   */
+  tier: string enum Remote.Tier
+
+  /**
+   * If the #tier is `THIN` or `FULL`, whether to load an async version of the type system.
+   *
+   * @see Remote.TypeLoaderSpec#async
+   */
+  async: boolean
+
+  /**
+   * Initially load more types up front to speed up later operations. This results in a larger bootstrap, but also
+   * means key types are already available. This is only effective when the #tier is `FULL`.
+   *
+   * @see Remote.TypeLoaderSpec#preload
+   */
+  preload: boolean
+
+  /**
+   * Handle login redirect response and return an authorization token if successful.
+   *
+   * @param res native HTTP response instance
+   */
+  redirectLoginHandler: lambda(res: !native): string
+
+  /**
+   * Handle ETIMEDOUT error when sending a {@link HttpRequest}
+   *
+   * @param err caught error object
+   */
+  requestTimeoutHandler: lambda(err: any)
+
+  /**
+   * Maximum number of times to retry a connect request by calling the #redirectLoginHandler.
+   */
+  numRetries: int = 3
+
+  /**
+   * Handle unauthorized responses for a previously successful connection and return an authorization token if
+   * successful.
+   *
+   * @param res native HTTP response instance
+   * @param redirectLoginHandler handle login redirect response and return an authorization token if successful
+   */
+  tokenExpirationHandler: lambda(res: !native, redirectLoginHandler: lambda(res: !native): string): string
+
+  /**
+   * Types marked to have all methods local using forceLocal (if full type system).
+   * Used in @see Remote.TypeLoaderSpec#forceLocalTypes
+   */
+  forceLocalTypes: set<string>
+
+  /**
+   * If true, do not append sourceMappingURL in source files of all types.
+   * Used in from @see Remote.TypeLoaderSpec#noSourceMapPointer
+   */
+  noSourceMapPointer: boolean
+
+  /**
+   * Mapping of package name to package local root on client side.
+   * Used to locate implementation file paths in source map files for Node users.
+   * Used in @see Remote.TypeLoaderSpec#pkgRoots
+   */
+  pkgRoots: map<string, string>
+
+  /**
+   * If true, the connection is intended to be used in an interactive session and extra setup is performed to better
+   * support browser developer tools, the Node.js CLI, or the Jupyter notebook.
+   */
+  interactive: boolean
+}

@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for individual C3 File System sub-configurations.
+ */
+type FileSystemConfigChild mixes ConfigChild<FileSystemConfig>, RetrySpec {
+
+  /**
+   * @return `true` if this file system is enabled.
+   */
+  enabled: boolean
+
+  /**
+   * @return a map of C3 File System mount to actual content location URLs. Key in this map can be one of
+   *         {@link FileSystemMount} values or any arbitrary name that will be exposed as
+   *         `<file system scheme>://<mount>/`. Value in this map can be an actual content location URL or template
+   *         whose variables will be substituted at runtime. E.g.
+   *         ```
+   *         { "/":      "s3://c3--${cluster}-${env}/fs/${app}/" }
+   *         { "public": "s3://c3--${cluster}-public/" }
+   *         ```
+   */
+  @merge(MERGE)
+  mounts: map<string, string>
+
+  /**
+   * List of mounts that are read only.
+   */
+  @merge(MERGE)
+  readOnlyMounts: set<string>
+
+  /**
+   * List of mounts that are ACL enabled. For mounts that are ACL enabled access control is performed by
+   * {@link FileMeta}.
+   */
+  @merge(MERGE)
+  aclEnabledMounts: set<string>
+
+  /**
+   * @return parent file system scheme
+   */
+  scheme: cached inline property(): string enum FileSystemScheme
+
+  /**
+   * Sets mount. Function argument can be one of {@link FileSystemMount} values.
+   */
+  @action(authz='always', group='app-admin')
+  setMount: member function(mount: !string,
+                            mountUrl: !string,
+                            override: string enum ConfigOverride): map<string, string>
+
+  /**
+   * Removes specified mount. Function argument can be one of {@link FileSystemMount} values.
+   */
+  removeMount: member function(mount: !string, override: string enum ConfigOverride): map<string, string>
+
+  /**
+   * Enable ACL on a mount. Function argument can be one of {@link FileSystemMount} values.
+   * Example usage:
+   * ```
+   * FileSystem.fileSystemConfig()
+   *           .childConfig(FileSystem.inst().scheme())
+   *           .enableAcl(FileSystemMount.DEFAULT)
+   * ```
+   */
+  enableAcl: member function(mount: !string, override: string enum ConfigOverride): [string]
+
+  /**
+   * Disable ACL on a mount. Function argument can be one of {@link FileSystemMount} values.
+   * Usage is similar as for #enableAcl
+   */
+  disableAcl: member function(mount: !string, override: string enum ConfigOverride): [string]
+
+  /**
+   * Sets read-only for provided mount and returns all read-only mounts in this file-system.
+   */
+  setReadOnly: member function(mount: !string, override: string enum ConfigOverride): set<string>
+
+  /**
+   * Removes read-only mode for provided mount and returns all read-only mounts in this file-system.
+   */
+  unsetReadOnly: member function(mount: !string, override: string enum ConfigOverride): set<string>
+
+  /**
+   * @return a boolean on whether the specified mountUrl is valid or not.
+   */
+  isValidMountUrl: inline member function(mountUrl: !string): boolean
+}

@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link MlSymmetricMeanAbsolutePercentageErrorMetric Symmetric Mean Absolute Percentage Error (sMAPE)} metric
+ * computes the average absolute percentage error between the predicted value and target value relative to the sum of
+ * absolute values of predicted and target values. It is defined as follows:
+ *
+ * $\text{SMAPE} = \frac{1}{n}\sum_{t=1}^n \frac{\left\vert y_t - \hat{y}_t \right\vert}{\left\vert y_t \right\vert + \left\vert \hat{y}_t \right\vert}$
+ *
+ * This metric is primarily used in regression, specifically for forecasting problems, where under-forecasting and
+ * over-forecasting are equally damaging. In such cases {@link MlMeanAbsolutePercentageErrorMetric MAPE} does not
+ * provide an accurate assessment of the error. This reformulation caps both under-forecasting and over-forecasting
+ * to 100% and adjusts the metric to be symmetric.
+ *
+ * The `modelOutput` and `targetOutput` are expected to have the same shape.
+ * This metric supports `sampleWeights` as `context`. `sampleWeights` is single-dimensional with same number of samples
+ * as the `modelOutput`. It represents a per-sample weighting when aggregating for sMAPE calculation.
+ */
+type MlSymmetricMeanAbsolutePercentageErrorMetric mixes MlScoringMetricSupportingPd<Data, Data, { sampleWeights: Data }> {
+
+  doScore:        ~ py
+  noTarget:       ~ py
+  contextNames:   ~ py
+  higherIsBetter: ~ py
+  scoreFunction:  ~ py
+}

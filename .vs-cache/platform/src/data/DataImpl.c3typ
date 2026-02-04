@@ -1,0 +1,279 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract super type for all Data types that need a lazy interface ({@link Data} and {@link Data.Series}) today.
+ */
+@beta
+abstract private type DataImpl mixes DataVisitable, WithToString, ReClaim {
+
+  /**
+   * Generically handles all static lazy methods.
+   */
+  _exec: private ~
+
+  /**
+   * returns parent dataset if subtype is a {@link Data.Stateful}. Otherwise, throws an error.
+   */
+  @reClaim(inherit=true)
+  dataset: property(): !Dataset
+
+  /**
+   * @return name of the {@link Source} type from which the data originates
+   */
+  sourceName: private cached abstract property(): !string
+
+  /**
+   * @return name used to reference concrete DataImpl for execution
+   */
+  concreteId: private abstract member function(): !string
+
+  /**
+   * Converts this DataImpl to a {@link PyAst.Module} that can be executed by {@link DataImpl#fromPySrc).
+   */
+  @reClaim(inherit=true)
+  toPyAst: private member function(spec: ToPySrcSpec): !PyAst.Module
+
+  /**
+   * Converts this DataImpl to Python source code that can be executed by {@link DataImpl#fromPySrc).
+   */
+  @reClaim(inherit=true)
+  toPySrc: member function(spec: ToPySrcSpec): !string
+
+  /**
+   * Converts this DataImpl to {@link DataToPyAstVisitorCtx} that can be converted to a python AST.
+   * Calls the implementation specific to the running execution mode.
+   */
+  @reClaim(inherit=true)
+  toDataToPyAstVisitorCtx: private member function(spec: ToPySrcSpec): !DataToPyAstVisitorCtx
+
+  /**
+   * @return the `Data` instance referenced by this {@link DataImpl}.
+   */
+  @reClaim(inherit=true)
+  dereference: private member function(): DataImpl
+
+  /**
+   * Creates {@link Workflow} representation of this DataImpl. {@link DataImpl.Lazy} instances are represented as
+   * {@link Workflow.Action} vertices with arguments represented as {@link Workflow.Const} vertices. Concrete Data
+   * subtypes (e.g. {@link Data.Pandas}) are represented as Workflow.Const vertices.
+   */
+  @reClaim(inherit=true)
+  toWorkflow: private member function(spec: DataToWorkflowSpec): Workflow
+
+  /**
+   * Creates Data.Flow representation of this Data. See {@link Data#toWorkflow}
+   */
+  // TODO: PLAT-42290 rename PkgInference to Data.Flow
+  @reClaim(inherit=true)
+  toDataFlow: private member function(spec: DataToWorkflowSpec): PkgInference
+
+  @reClaim(inherit=true)
+  toRealDataFlow: private member function(spec: DataToFlowSpec): Data.Flow
+
+  /**
+   * Cache and return a concrete {@link DataImpl} according to this Data's execution mode.
+   * If a dataset is provided, the resulting {@link DataImpl} will be stateful and belong to that dataset,
+   * otherwise it will be stateless.
+   * if `cache` is invoked on a {@link Data.Lazy}, the corresponding concrete {@link DataImpl} will be cached on
+   * this instance with the dataset id as cache key, or {@link DataImpl.Lazy#STATELESS_CACHE} if
+   * no dataset is provided. see for example {@link Data.Lazy#_toPandas}.
+   */
+  @reClaim(inherit=true)
+  cache: private member function(ds: Dataset): DataImpl
+
+  /**
+   * Creates a DataRef in the provided Dataset which points to ths. Overloaded to add Dataset parameter for stateless
+   * DataImpl. If not provided, dataset will default to Dataset.inst(). If a Dataset is provided to stateful Data, an
+   * exception will be thrown
+   */
+  toDataRef: private abstract member function(ds: Dataset): !DataImpl.Ref
+
+  /**
+   * @return true if the DataImpl is mutable, false otherwise. Currently, only {@link DataImpl.Ref} and its subtypes are
+   * mutable, others including {@DataImpl.Pandas}, {@DataImpl.Lazy} are immutable.
+   */
+  @reClaim(inherit=true)
+  isMutable: private member function(): !boolean
+
+  /**
+   * @return true if the DataImpl is cached, false otherwise. Always true for concrete subtypes of DataImpl. For
+   * {@link DataImpl.Lazy}, checks if the lazy chain has been cached in memory as a concrete subtype.
+   * Cache is keyed by {@link Dataset#id} if a dataset is provided and otherwise by key meaning the concrete type
+   * that is in the cache does not belong to a dataset.
+   * {@link DataImpl.Lazy#STATELESS_CACHE}
+   */
+  @reClaim(inherit=true)
+  isCached: private member function(ds: Dataset): !boolean
+
+  /**
+   * @return true iff this instance can be transferred across nodes.
+   */
+  @reClaim(inherit=true)
+  supportsMultiNode: private member function(): !boolean
+
+  // TODO: PLAT-30130 Remove toJsonString and fromJsonString from here when resolved
+  @reClaim(inherit=true)
+  toJsonString: ~ java
+
+  // TODO: PLAT-30130 Remove toJsonString and fromJsonString from here when resolved
+  @reClaim(inherit=true)
+  toTypedJsonString: ~ java
+
+  // TODO: PLAT-30130 Remove toJsonString and fromJsonString from here when resolved
+  @reClaim(inherit=true)
+  fromJsonString: ~ java
+
+  @reClaim(inherit=true)
+  isEmptyObj: private ~ java
+
+  /**
+   * Creates a new DataImpl by executing the string PySrc provided.
+   * Following are reserved keywords in the provided source:
+   *  * `pd`: will refer to `import pandas as pd`
+   *  * The sourceName of each Data in the `dfs` set
+   */
+  @reClaim(inherit=true)
+  fromPySrc: private function(pySrc: !string,
+                              dfs: set<DataImpl>,
+                              vars: map<string, any>,
+                              dataset: Dataset): mixing DataImpl
+
+  /**
+   * Execute pySrc code on this DataImpl and return the result without storing it
+   * Following are reserved keywords in the provided source:
+   *  * `pd`: will refer to `import pandas as pd`
+   *  * The sourceName of each DataImpl in the `dfs` set
+   *  * The result is stored in 'ret'. Ex. 'ret=XXX' in pySrc
+   *
+   * @param pySrc
+   *        The python source code that is executed in python
+   * @param dfs
+   *        The set of DataImpls that are used in the executed python source code
+   * @param doNotConvert
+   *        Whether to keep as Data/Data.Series or flatten the returned data into a c3 serializable type
+   */
+  @reClaim(inherit=true)
+  executePySrc: private function(pySrc: !string, dfs: set<DataImpl>, doNotConvert: boolean): any
+
+  /**
+   * Execute pySrc code on this DataImpl and return the result without storing it
+   * Following are reserved keywords in the provided source:
+   *  * `pd`: will refer to `import pandas as pd`
+   *  * The sourceName of each DataImpl in the `dfs` map
+   *  * The result is stored in 'ret'. Ex. 'ret=XXX' in pySrc
+   *
+   * @param pySrc
+   *        The python source code that is executed in python
+   * @param dfs
+   *        The Map of ConcreteId and corresponding DataImpls that are used in the executed python source code
+   * @param doNotConvert
+   *        Whether to keep as Data/Data.Series or flatten the returned data into a c3 serializable type
+   */
+  @reClaim(inherit=true)
+  executePySrc: private function(pySrc: !string, dfs: Map<string, DataImpl>, doNotConvert: boolean): any
+
+  /**
+   * Releases all resources being used by this {@link DataImpl}.
+   * For example, for {@link Data.Stateful}, this removes the {@link Data} from its Dataset, thereby freeing up
+   * the memory.
+   * For {@link Data.Persisted}, this removes the persisted data.
+   */
+  @reClaim(inherit=true)
+  close: member function()
+
+  /**
+   * @return if given method name is mutable on DataImpl
+   * @see DataImpl.Ref#mutableOperators
+   */
+  @reClaim(inherit=true)
+  isMutableOperator: private function(action: !Action): boolean
+
+  /**
+   * Build a JavaScript **Proxy** that supports the various Data protocols, notably {@Link LengthProtocol} and
+   * {@link MutableItemProtocol} according to the Pandas model of item access.
+   */
+  @reClaim(inherit=true)
+  _jsDataProxy: private inline function(inst: !native): !mixing DataImpl js-client
+
+  /**
+   * Convenience helper to functionally cast this DataImpl to a {@link DataImpl.Lazy}. Throws an error if this is not
+   * a {@link DataImpl.Lazy}
+   */
+  @reClaim(inherit=true)
+  asLazy: private member function(): !DataImpl.Lazy
+
+  /**
+   * The function is intended to compare two DataImpl objects for use in unit tests. Parameters allow varying the
+   * strictness of the equality checks performed. This function is a mirror for pandas.testing.assert_frame_equal and:
+   * pandas.testing.assert_series_equal
+   *
+   * @param first
+   *           the first DataImpl to compare
+   * @param second
+   *           the second DataImpl to compare
+   * @param spec
+   *           the spec to pass in the arguments for the function
+   * @return whether the two DataImpls are equal
+   */
+  checkEquals: private function(first: !DataImpl, second: !DataImpl, spec: Data.CheckEqualsSpec): boolean
+
+  /**
+   * Helper method to create py code using PyAst.Call.fromValues
+   *
+   * @param methodName
+   *        The name of the method to be called
+   * @param args
+   *        The list of DataImpls being passed as arguments to the method
+   * @param keywords
+   *        The mapping of keyword names to their values. This can be spec.fieldValuesByFieldName().
+   */
+  getPySrcFromValues: private function(methodName: !string, args: set<DataImpl>, keywords: map<string, any>): string
+
+  /**
+   * Helper method to create js code used for poly test generation
+   *
+   * @param dataType
+   *        The DataImpl C3 Type, i.e. "Data" or "Data.Series"
+   * @param callerName
+   *        The name of the object calling the function
+   * @param methodName
+   *        The name of the method to be called
+   * @param keywords
+   *        The mapping of keyword names to their values. This can be spec.fieldValuesByFieldName().
+   */
+  getJsSrcFromValues: private function(dataType: !string,
+                                       callerName: !string,
+                                       methodName: !string,
+                                       keywords: map<string, any>,
+                                       dataInputNames: set<string>): string
+
+  /**
+   * Re-creates and returns a copy of the {@link DataImpl} used to create the provided {@link Data.Flow}. The returned
+   * DataImpl instance will represent the only sink of the provided Data.Flow.
+   */
+  @reClaim(inherit=true)
+  fromRealDataFlow: private function(dataFlow: !Data.Flow): !DataImpl
+
+  /**
+   * Converts the {@link DataImpl} to an array where each entry represents a row
+   * - If called on a {@link Data.Series}, returns an array of values
+   * - If called on a {@link Data}, returns an array of tuples where each tuple represents a row and values inside the
+   *   tuple correspond to columns
+   * - If called on any other Data subtype, throws not implemented error
+   *
+   * @param limit
+   *        The number of rows to return
+   */
+  collect: abstract member function(limit: int): [any]
+
+  /**
+   * Return content of the Data either as a single value or as a Collection of converted values
+   */
+  value: private abstract member function(): any
+}

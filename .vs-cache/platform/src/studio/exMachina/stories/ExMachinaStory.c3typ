@@ -1,0 +1,105 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents one story for the "Stories" pages. A story is made up of chapters ({@link ExMachinaStoryChapter}) and
+ * chapters are made up of elements ({@link ExMachinaStoryChapterElement}). Stories, chapters, and elements are not
+ * explicitly versioned, but act as a series of pointers that eventually link an {@link ExMachinaStoryChapterElement}
+ * to versioned metadata that represents an action result, such as the resulting metadata from running a Visualization.
+ */
+entity type ExMachinaStory mixes AclEnabled,ExMachinaUserGroupShareable<ExMachinaStory, ExMachinaStoryOwnership, ExMachinaStoryShareHistory> schema name 'EXM_STORY' {
+
+  /**
+   * A user-defined name for the story
+   */
+  name: !~
+
+  /**
+   * A user-defined description for the story
+   */
+  description: string
+
+  /**
+   * When the user last modified the chapter by creating/editing a {@link ExMachinaStoryChapter}
+   */
+  lastUpdated: datetime calc max(chapters[0].lastUpdated, meta.updated)
+
+  /**
+   * All chapters (named "Story Topics" in the UI) for the story.
+   */
+  @db(order='descending(meta.updated)')
+  chapters: [ExMachinaStoryChapter](parent)
+
+  /**
+   * An ordered array of chapter ids in the story. By including this as a separate array (as opposed to using
+   * {@link chapters} directly with a field to mark the sort order), we don't need to maintain and persist an `order`
+   * field on each chapter, which could get messy if a user frequently reorders chapters because we'd need to batch
+   * update the `order` for several chapters at a time.
+   */
+  chapterIds: [string] schema suffix 'CHPTR_IDS'
+
+  /**
+   * The preview image for the story, which is represented by the first chapter's first chapter element's preview image.
+   */
+  previewImage: string calc chapters.(id == chapterIds[0]).previewImage
+
+  /**
+   * Creates a new {@link ExMachinaStory} with the user-defined name
+   * No name-collisions are checked for the story name
+   *
+   * @param storyName
+   *          The story name
+   * @param storyDescription
+   *          Optional The story description
+   */
+  @action(group+='write')
+  createStory: function(storyName: !string, storyDescription: string): ExMachinaStory js-server
+
+  /**
+   * Renames {@link ExMachinaStory} with the user-defined name
+   * No name-collisions are checked for the story name
+   *
+   * @param storyName
+   *          The story name
+   * @param storyDescription
+   *          Optional The story description
+   */
+   renameStory: member function(storyName: !string, storyDescription: string): ExMachinaStory js-server
+
+   /**
+    * Deletes the user {@link ExMachinaStory} if the user owns the story
+    * Deleting the {@link ExMachinaStory} will also delete all {@link ExMachinaStoryChapter}s and {@link ExMachinaStoryChapterElement}s which belong to the story.
+    */
+   deleteStory: member function(): boolean js-server
+
+    /**
+     * Clones the {@link ExMachinaStory} by copying the metadata from the passed in ExMachinaStory and creates a new ExMachinaStory as the current user.
+     * Existing {@link ExMachinaStoryChapter}s and {@link ExMachinaStoryChapterElement}s are also created for the new user
+     */
+    cloneStory: member function(): ExMachinaStory js-server
+
+    /**
+     * Deletes the {@link ExMachinaStoryChapter}, which will also delete all {@link ExMachinaStoryChapterElement}s
+     * that belong to the chapter.
+     * @param chapter
+     *          ExMachinaStoryChapter to be deleted
+     */
+    deleteStoryChapter: member function(chapter: !ExMachinaStoryChapter): ExMachinaStory js-server
+
+    /**
+     * Email viewers when a Story has been shared with their user group(s)
+     */
+    shouldSendShareableEntityAvailableEmailToViewers: ~ js-server
+
+    /**
+     * TODO: VAD-16871 - Add a common afterCreate for all shareable types after PLAT-51996 fix
+     * Common logic to run after creation of any types that mixin {@link ExMachinaUserGroupShareable}
+     */
+    @dependency(include='isPubliclyAccessible, meta.createdBy, acl.member.id')
+    afterCreate: ~ js-server
+}

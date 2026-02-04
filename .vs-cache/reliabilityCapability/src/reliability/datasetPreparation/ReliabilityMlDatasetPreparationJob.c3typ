@@ -1,0 +1,81 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * @inheritdoc
+ */
+remix type ReliabilityMlDatasetPreparationJob {
+
+  /**
+  * A list of job specifications for dataset preparation.
+  * Each specification defines the parameters for a dataset preparation job.
+  */
+  jobSpecs: [ReliabilityOrchestrator.DatasetPreparationJobSpec]
+
+  /**
+   * {@link ReliabilityDataPreparationUiBaseSettings} to run dataset preparation.
+   */
+  preparationSettings: ReliabilityDataPreparationUiBaseSettings
+
+  /**
+   * If populated, this entity is a tracking entity for a project agnostic dataset preparation job.
+   * The field links to the project agnostic orchestrator run that this job is tracking.
+   */
+  dataPrepJobRun: ReliabilityOrchestrator.DatasetPreparationJobRun
+
+  /**
+   * Initialize the tracking information before a project agnostic dataset preparation job is started.
+   * Returns the agnostic job run with a modified datasetRunMap.
+   * Used by {@link ReliabilityOrchestrator.DatasetPreparationJob}
+   */
+  initializeBeforeWorkflow: member function(): ReliabilityOrchestrator.DatasetPreparationJobRun js-rhino
+
+  /**
+   * Update the tracking information after a project agnostic dataset preparation job has completed.
+   * Used by {@link ReliabilityOrchestrator.DatasetPreparationJob}
+   */
+  updateAfterWorkflow: member function() js-rhino
+
+  /**
+   * This function contains the logic to create and attach #preparationSettings to a
+   * {@link ReliabilityMlDatasetPreparationJob dataset preparation job}.
+   * The purpose of this method is to populate the #preparationSettings field on all jobs triggered from the UI,
+   * static console, or Jupyter, to keep consistency when displaying the created datasets in the UI.
+   *
+   * It is meant to be executed when the first dataset is successfully prepared, and the job does not have
+   * the #preparationSettings field populated. This happens in
+   * {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets}.
+   *
+   * The overall process consist on the following steps:
+   *    1. Retrieve the {@link ReliabilityMlDatasetPreparationSpec} from the job instance.
+   *    2. Cast the given {@link ReliabilityMlDatasetPreparationRun} to {@link ReliabilityMlDatasetPreparationRunCommon}
+   *       to retrieve the following fields: start, end, interval, parent, project, trainFeatureTimeRanges, xFeatures.
+   *    3. Extract the `non_operational`, `training_rule`, and `inference_rule` mask expressions from the
+   *       {@link ReliabilityMlDatasetPreparationRunCommon#xFeatures}.
+   *    3. Retrieve the {@link ReliabilityMlMaskPreparationSpec#preAssetEventsWindow preAssetEventsWindow} and
+   *       {@link ReliabilityMlMaskPreparationSpec#postAssetEventsWindow postAssetEventsWindow} from the
+   *       {@link ReliabilityMlDatasetPreparationSpec#maskPreparationSpec maskPreparationSpec},
+   *       to generate the event mask periods:
+   *       - {@link ReliabilityDataPreparationUiBaseSettings#preEventMaskPeriod}, and
+   *       - {@link ReliabilityDataPreparationUiBaseSettings#postEventMaskPeriod}.
+   *    4. Combine job fields with additional fields from the {@link ReliabilityMlDatasetPreparationSpec spec} and
+   *       the given {@link ReliabilityMlDatasetPreparationRun dataset preparation run} to populate the
+   *       #preparationSettings field.
+   *
+   * @param run
+   *        The {@link ReliabilityMlDatasetPreparationRun dataset preparation run}.
+   * @returns The {@link ReliabilityMlDatasetPreparationJob job} with the #preparationSettings field populated.
+   *
+   * @see ReliabilityMlDatasetPreparationHelper
+   * @see ReliabilityMlDatasetPreparationMaskCategory
+   */
+  populatePreparationSettings: member function(
+    run: !ReliabilityMlDatasetPreparationRun
+  ): !ReliabilityMlDatasetPreparationJob py
+}

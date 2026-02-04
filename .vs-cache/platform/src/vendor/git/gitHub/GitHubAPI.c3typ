@@ -1,0 +1,333 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is the wrapper API for the (REST) GitHub API
+ */
+type GitHubAPI mixes SourceControlApi, Value {
+
+  /**
+   * Utility function to check common git errors:
+   * - Checks GitHub.config() to make sure REST type is configured correctly
+   * - Checks that the user is valid (has valid token)
+   * - Checks that the user has access to the passed repository
+   *
+   * @param repoName
+   *    The name of the repository to check against
+   * @return
+   *    If everything is OK, returns a {@link GitHub} configured with the current {@link User}'s token.
+   *    Else it will throw an error.
+   */
+  checkGit: private function(repo: !string): GitHub js
+
+  /**
+   * Get the GitHub token from the MetadataRepositoryStore
+   */
+  token: function(): string js-server
+
+  /**
+   * Set the GitHub token from the MetadataRepositoryStore
+   *
+   * @param token
+   *         The token string
+   * @param skipValidation
+   *         Whether to skip token validation
+   */
+  setToken: function(token: string, skipValidation: boolean): boolean js-server
+
+  /**
+   * Check whether the current user has a GitHub access token
+   */
+  tokenExists: function(): boolean js-server
+
+  /**
+   * Clear the GitHub token from the MetadataRepositoryStore
+   */
+  clearToken: function(): boolean js-server
+
+  /**
+   * Returns the current github user
+   */
+  currentUser: function(): GitHubUser js-server
+
+  /**
+   * This function returns commits of a branch
+   *
+   * @param branch
+   *             The branch to fetch commits from
+   * @param path
+   *             The file path to limit fetched commits to
+   * @param onlyCurrentUser
+   *             If set to true will only return GitHub commits authored by the current user
+   */
+  getCommits: function(branch: string, path: string, onlyCurrentUser: boolean = false): [GitHubCommit] js-server
+
+  /**
+   * Returns requested detailed information pertaining to a particular git commit
+   */
+  getCommitDetails: function(commit: GitHubCommit, spec: FetchSpec): GitHubRepoCommit js-server
+
+  /**
+   * This function construct the repository name based on the tenant
+   */
+  gitRepo: function(): string js-server
+
+  /**
+   * This function resets the HEAD of a branch to the target commit
+   * Be careful, this is equivalent to do a `git reset --hard <SHA>` and followed by a `git push -f`
+   */
+  resetGitBranch: function(sha: !string, branch: !string): GitHubResponse js-server
+
+  /**
+   * Creates a reference given a commit
+   *
+   * @param ref
+   *           The name of reference to be crated
+   * @param commit
+   *           The SHA1 value to set this reference to
+   */
+  createReference: function(ref: !GitHubReference, commit: !GitHubCommit): GitHubResponse js-server
+
+  /**
+   * This function compares the HEAD of the head branch against the base branch, or compares two SHAs.
+   *
+   * @param head
+   *             The head branch name or SHA
+   *
+   * @param base
+   *             The base branch name or SHA to be compared with. Base will be `master` if left empty.
+   */
+  compare: function(head: !string, base: string): GitHubCompareResult js-server
+
+  /**
+   * This function performs a merge of one branch into another without creating a pull request.
+   *
+   * @param base
+   *             The name of the base branch that the head will be merged into.
+   *
+   * @param head
+   *             The head to merge. It can be a branch name or a SHA
+   *
+   * @param message
+   *             The commit message to use for the merge commit. If omitted, a default message will be used
+   *
+   * @param isReleaseNote
+   *             Whether this commit message should be appended to release note
+   */
+  merge: function(base: !string, head: !string, message: string, isReleaseNote: boolean): GitHubResponse js-server
+
+  /**
+   * This function will create a pull request.
+   *
+   *
+   * @param head
+   *             The head to merge. It can be a branch name of a SHA
+   *
+   * @param base
+   *             The name of the base branch that the head will be merged into.
+   *
+   * @param title
+   *             The title of the pull request.
+   *
+   * @param body
+   *             The body (description) of the pull request blank
+   *
+   * @param isReleaseNote
+   *             Whether this commit message should be appended to release note
+   *
+   * @return GitHubPullRequest
+   */
+  createPullRequest: function(head: !string,
+                              base: !string,
+                              title: !string,
+                              body: string,
+                              isReleaseNote: boolean): GitHubPullRequest js-server
+
+  /**
+   * Checks the status of a pull request
+   *
+   *
+   * @param number
+   *             The pull request number
+   *
+   * @return GitHubPullRequest
+   */
+  pullRequest: function(number: !string): GitHubPullRequest js-server
+
+  /**
+   * This function creates content on a branch
+   *
+   * @param path
+   *           The full path of the file
+   * @param message
+   *           The commit message
+   * @param content
+   *           The content, Base64 encoded
+   * @param branch
+   *           The branch
+   * @return GitHub content change result
+   */
+  createContent: function(path: !string,
+                          message: !string,
+                          content: !string,
+                          branch: string = 'master'): GitHubContentChange js-server
+
+  /**
+   * This function updates content on a branch
+   *
+   * @param path
+   *           The full path of the file
+   * @param message
+   *           The commit message
+   * @param content
+   *           The new content, Base64 encoded
+   * @param sha
+   *           The blob SHA of the file being replaced
+   * @param branch
+   *           The branch. Default to the repository’s default branch (usually `master`)
+   * @return GitHub content change result
+   */
+  updateContent: function(path: !string,
+                          message: !string,
+                          content: !string,
+                          sha: !string,
+                          branch: string = 'master'): GitHubContentChange js-server
+
+  /**
+   * This function reads content
+   *
+   * @param path
+   *                The full path of the file
+   *
+   * @param branch
+   *                The branch
+   *
+   * @return        GitHub content
+   */
+  readContent: function(path: !string, branch: string): GitHubContent js-server
+
+  /**
+   * Returns the branch information
+   *
+   * @param  branch
+   *            The name of the branch. (e.g. `master`)
+   * @return GitHubBranch
+   */
+  branch: function(gitHubBranch: !GitHubBranch): GitHubBranch js-server
+
+  /**
+   * Deletes a branch
+   *
+   * @param  branchName
+   *            The branch name
+   * @return GitHubResponse
+   */
+  deleteBranch: function(gitHubBranch: !GitHubBranch): GitHubResponse js-server
+
+  /**
+   * Create a branch
+   *
+   * @param  newBranch
+   *            The branch name to be created
+   * @param  srcBranch
+   *            The source branch which the new branch will be created from
+   * @return GitHubReference
+   */
+  createBranch: function(newBranch: !string, srcBranch: !string): GitHubReference js-server
+
+  /**
+   * Creates a branch given a sha
+   *
+   * @param branchName
+   *           The branch name to be created
+   * @param sha
+   *           The SHA1 value to set this branch to
+   */
+  createBranchFromSha: function(branchName: !string, sha: !string): GitHubReference js-server
+
+  /**
+   * Creates a branch from the current state of a GitHubFileSystem.
+   *
+   * @param branchName
+   *           The branch name to be created
+   * @param fs
+   *           The GitHubFileSystem.
+   * @param str
+   *           Optional commit message. If none is given, branchName will be used.
+   */
+  createBranchFromGitHubFileSystem: function(branchName: !string, fs: !GitHubFileSystem, msg: string) java
+
+  /**
+   * Given a branch and a commit on that branch, generate a list of all the packages
+   * that have been changed between a commit and the current head, and
+   * any other packages that depend on those packages directly or indirectly.
+   *
+   * This may also be used to check the packages affected by the changes between
+   * two branches.
+   *
+   * @param pathToLocalRepo
+   *             The file system path to the already-cloned repo. (e.g. `/home/jenkins/workspace/mybranch/c3server`)
+   * @param fullRepositoryName
+   *             GitHub's full repository path. (e.g. `c3-e/c3server`)
+   * @param branch
+   *           Name of branch. The logic must start from a branch, not a commit or tag, because
+   *           the GitHubFileSystem operates only on branches, starting from the current commit
+   *           on the branch.
+   * @param repoDir
+   *           The directory of the C3 repository within the GitHub repository, e.g. `'base'`.
+   *           If there are multiple C3 repositories within the same GitHub, this should be run
+   *           individually on each.
+   * @param ref
+   *           The name of the commit/branch/tag from which to calculate the changes;
+   *           if given the SHA of a commit, the files changed will start from the following commit.
+   * @param depth
+   *           The depth (number of tiers) to traverse. If not specified, or <= -1, all tiers will be traversed
+   * @return the names of the affected packages.
+   */
+  packagesAffected: function(pathToLocalRepo: !string,
+                             fullRepositoryName: !string,
+                             branch: !string,
+                             repoDir: !string,
+                             ref: !string,
+                             depth: int = -1): [string] js-server
+
+  /**
+   * Given a branch and a commit on that branch, generate a list of {@link SourceControlFileDiff}s that are split by
+   * the package that the files reside in.
+   *
+   * @param fullRepositoryName
+   *             GitHub's full repository path. (e.g. `c3-e/c3server`)
+   * @param branch
+   *           Name of branch. The logic must start from a branch, not a commit or tag, because
+   *           the GitHubFileSystem operates only on branches, starting from the current commit
+   *           on the branch.
+   * @param repoDir
+   *           The directory of the C3 repository within the GitHub repository, e.g. `'base'`.
+   *           If there are multiple C3 repositories within the same GitHub, this should be run
+   *           individually on each.
+   * @param ref
+   *           The name of the commit/branch/tag from which to calculate the changes;
+   *           if given the SHA of a commit, the files changed will start from the following commit.
+   * @return a {@link SourceControlRepositoryDiff} that splits the file level diffs by package.
+   */
+  repoPackagesCompare: function(fullRepositoryName: !string,
+                                branch: !string,
+                                repoDir: !string,
+                                ref: !string): SourceControlRepositoryDiff js-server
+
+  /**
+   * Generate a list of {@see SourceControlFileDiff} for the GitHubCompareResult.
+   *
+   * @param compareResult
+   *             The compare results obtained from {@see GitHubAPI.compare}
+   *
+   * @param return
+   *             An array of {@see SourceControlFileDiff} representing the file changes.
+   */
+  parseFilePatches: function(compareResult: !GitHubCompareResult): [SourceControlFileDiff] js
+}

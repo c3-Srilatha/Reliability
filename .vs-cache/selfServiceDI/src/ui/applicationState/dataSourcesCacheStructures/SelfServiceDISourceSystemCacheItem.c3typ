@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Cached information about a {@link SourceSystem} for quick lookup for use in the UI.
+ */
+type SelfServiceDISourceSystemCacheItem {
+
+  /**
+   * The specific {@link SourceSystem} object.
+   */
+  sourceSystem: SourceSystem
+
+  /**
+   * Whether the {@link SourceSystem} is currently loading or refreshing its {@link sourceSystemConfig}.
+   */
+  configLoading: boolean
+
+  /**
+   * Whether the {@link SourceSystem} is currently loading or refreshing its {@link pingResult}.
+   */
+  pingLoading: boolean
+
+  /**
+   * Whether the {@link SourceSystem} is currently loading or refreshing its {@link SourceCollection}s. Once fetched,
+   * the {@link SourceCollection}s will be loaded into the
+   * {@link SelfServiceDIDataSourcesCacheApplicationState.sourceCollectionsCache}.
+   */
+  sourceCollectionsLoading: boolean
+
+  /**
+   * The configuration of the {@link SourceSystem}, including credentials and other fields needed to establish the
+   * connection.
+   */
+  sourceSystemConfig: SourceSystem.Config
+
+  /**
+   * Whether the {@link SourceSystem} is was reachable when it was last pinged.
+   */
+  pingResult: PingResult
+
+  /**
+   * Whether the {@link SourceSystem}'s could not be retrieved, but it is still configured. This is necessary when specific mounts are associated
+   * the {@link SourceSystem#rootUrlOverride}
+   */
+  credentialsForRootUrlUnavailable: boolean
+}

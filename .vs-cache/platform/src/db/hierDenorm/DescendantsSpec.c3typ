@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines a spec to fetch descendants using the hierarchy denorm table
+ */
+type DescendantsSpec mixes Spec {
+
+  /**
+   * Relationship between the objects
+   */
+  relationship: string
+
+  /**
+   * Platform fetches children that are up to 'distance' hops away from parent. Default value is 1.
+   */
+  distance: int
+
+  /**
+   * If set, we only return results whose 'name' _startsWith_ the search string
+   */
+  searchString: string
+
+  /**
+   * By default, include parent (depth 0) in the result set.
+   */
+  doNotIncludeParents: boolean
+
+  /**
+   * If true, include information about the node ('toInfo')
+   */
+  includeInfo: boolean
+
+  /**
+   * If set, the number of results are limited to value specified. Default value is 2000.
+   */
+  limit: int
+
+  /**
+   * If set, the offset is applied when fetching results. Default value is 0.
+   */
+  offset: int
+
+  /**
+   * If set, we only return results whose 'name' is >= the filter string
+   */
+  filterByName: string
+}

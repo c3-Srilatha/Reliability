@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type to define the address with components or using geometry or raw text.
+ * sample of create InlineAddress
+ * InlineAddress.make({
+ * raw:'LiSiJia',
+ * formatted:'CaoYangXinCun2Hao104Shi',
+ * components:[{name: 'CaoYangXinCun', abbr: 'CaoYang', types: [{id: 'street_address'}]},
+ * {name: '2Hao', abbr: '2', types: [{id: 'subpremise'}]},
+ * {name: '104Shi', abbr: '104', types: [{id: 'room'}]}
+ * ] ,
+ * geometry: {latitude:35.6, longitude:-27.7}
+ * });
+ */
+type InlineAddress {
+
+  /**
+   * full address  as string
+   */
+  raw: string
+
+  /**
+   * formatted address as string
+   */
+  formatted: string
+
+  /**
+   * address identifed by AdressComponets
+   */
+  components: [GeoAddressComponent] schema suffix 'C'
+
+  /**
+   * The geographical location of the address specified by latitude and longitude coordinates.
+   */
+  geometry: LatLong
+
+  /**
+   * The time zone associated with the address, typically in the format of a time zone identifier (e.g., 'Asia/Shanghai').
+   */
+  timeZone: string
+}

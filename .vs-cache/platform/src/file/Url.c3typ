@@ -1,0 +1,324 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for parsing and constructing Uniform Resource Locator (URL) strings.
+ *
+ * Consider the example URL `ftp://c3iot:pwd@ftp.example.com:8080/docs/my%20resource.html?ion=1&espv=8#chapter1`:
+ * - {@link #scheme scheme}: "ftp"
+ * - {@link #encodedUser encodedUser}: "c3iot"
+ * - {@link #encodedPassword encodedPassword}: "pwd"
+ * - {@link #host host}: "ftp.example.com"
+ * - {@link #port port}: 8080
+ * - {@link #encodedPath encodedPath}: "/docs/my%20resource.html"
+ * - {@link #encodedQuery encodedQuery}: "ion=1&espv=8"
+ * - {@link #encodedFragment encodedFragment}: "chapter1"
+ *
+ * All fields prefixed with "encoded" will have special characters encoded. Corresponding methods without "encoded"
+ * will use {@link UrlEncoder#decodePathComponent} to produce the raw value. For example "my%20resource.html" is
+ * encoding a space as "%20" and the {@link #path path} method will return "my resource.html".
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Learn/Common_questions/Web_mechanics/What_is_a_URL
+ */
+type Url mixes StringSerializable {
+
+  /**
+   * Scheme of URL, ex. scheme = 'ftp'.
+   */
+  scheme: !string
+
+  /**
+   * Encoded (raw) user of URL, ex. user = 'c3iot'.
+   */
+  encodedUser: string
+
+  /**
+   * Encoded (raw) raw password of URL, ex. password = 'pwd'.
+   */
+  encodedPassword: string
+
+  /**
+   * Host of URL, ex. host = 'ftp.example.com'.
+   */
+  host: string
+
+  /**
+   * Port Number of URL, ex. port = 8080. Will null if missing.
+   */
+  port: int32
+
+  /**
+   * Encoded (raw) path of URL, ex. '/docs/my%20resource.html'.
+   */
+  encodedPath: string
+
+  /**
+   * Encoded (raw) query of URL (after the `?` mark), ex. 'ion=1&espv=8'. (This will not include the fragment.)
+   */
+  encodedQuery: string
+
+  /**
+   * Encoded (raw) fragment of URL (after the `#` mark), ex. 'chapter1'.
+   */
+  encodedFragment: string
+
+  /**
+   * Decoded user id for this URL.
+   */
+  user: inline member function(): string
+
+  /**
+   * Decoded password for this URL.
+   */
+  password: inline member function(): string
+
+  /**
+   * Domain of URL, ex. 'example.com'
+   */
+  domainName: inline member function(): string
+
+  /**
+   * Default port number for this URL. This is helpful if port is missing.
+   */
+  defaultPort: inline member function(): !int32 java | js
+
+  /**
+   * Origin of the represented URL. If this does not include a host, null is returned.
+   */
+  origin: inline member function(): string
+
+  /**
+   * Decoded path of URL.e.g.'/docs/my resource.html'
+   */
+  path: inline member function(): UrlPath
+
+  /**
+   * Checks whether a given url belongs to the specified top level domain
+   */
+  isForTopLevelDomain: inline member function(zone: !string): boolean
+
+  /**
+   * Decoded query of URL.
+   */
+  query: inline member function(): UrlQuery
+
+  /**
+   * Decoded fragment of URL, ex. 'chapter1'.
+   */
+  fragment: inline member function(): string
+
+  /**
+   * Retrieves directory url where this file is located.
+   */
+  directoryUrl: inline member function(): !string
+
+  /**
+   * Calls provided action by passing URL of each parent directory of the path in this URL starting from root.
+   *
+   * E.g. for `s3://data-load/dir1/dir2/file` will call `action` 3 times with:
+   * - `s3://data-load/`
+   * - `s3://data-load/dir1/`
+   * - `s3://data-load/dir1/dir2/`
+   */
+  eachDirectory: inline member function(action: !lambda(dirUrl: string)): !int
+
+  /**
+   * Retrieves name of the parent directory. Note that directory names are not URL encoded.
+   */
+  parentDirectory: inline member function(): string
+
+  /**
+   * Retrieves name of the file. Note that file names are not URL encoded.
+   */
+  fileName: inline member function(): string
+
+  /**
+   * Retrieves extension of the file or null if file doesn't have an extension, including the leading dot (e.g., ".html", ".json").
+   * Note that file extensions are not URL encoded.
+   */
+  fileExt: inline member function(): string
+
+  /**
+   * Retrieves extension of the file without the leading dot or null if file doesn't have an extension (e.g., "html", "json").
+   * Note that file extensions are not URL encoded.
+   */
+  fileExtWithoutDot: inline member function(): string
+
+  /**
+   * Retrieves name of the file without file extension.
+   */
+  fileNameNoExt: inline member function(): string
+
+  /**
+   * Changes file name in this instance.
+   */
+  withFileName: inline member function(fileName: !?string): !mixing Url
+
+  /**
+   * Changes file extension in this instance.
+   */
+  withFileExt: inline member function(fileExt: !?string): !mixing Url
+
+  /**
+   * Url encodes and replaces current path.
+   */
+  // TODO PLAT-12089 inline methods do not support variable arguments
+  withPath: member function(parts: string ...): !mixing Url
+
+  /**
+   * Replaces current path with provided encoded path.
+   */
+  // TODO PLAT-12089 inline methods do not support variable arguments
+  withEncodedPath: member function(encodedParts: string ...): !mixing Url
+
+  /**
+   * Return the URL without the query string (`?`) or fragment (`#`).
+   */
+  withoutQueryOrFragment: member function(): !Url
+
+  /**
+   * Url encodes and appends component to path.
+   */
+  // TODO PLAT-12089 inline methods do not support variable arguments
+  appendPath: member function(parts: string ...): !mixing Url
+
+  /**
+   * Appends already URL encoded component to path.
+   */
+  // TODO PLAT-12089 inline methods do not support variable arguments
+  appendEncodedPath: member function(encodedParts: string ...): !mixing Url
+
+  /**
+   * @return true if this is a valid url.
+   */
+  isValid: inline function(url: !string): boolean
+
+  /**
+   * @return true if this is a valid url host.
+   */
+  isValidHost: inline function(host: !string): boolean
+
+  /**
+   * @return true if this is a remote url (e.g. S3, HDFS)
+   */
+  isRemote: inline member function(): boolean
+
+  /**
+   * @return true if this url is reachable for access.
+   */
+  isReachable: inline member function(spec: RetryableSpec): boolean
+
+  /**
+   * @return the result for pinging this URL.
+   */
+  ping: inline member function(spec: RetryableSpec): !PingResult
+
+  /**
+   * @return true if this path has a url scheme.
+   */
+  hasScheme: inline function(path: !string): boolean java | js
+
+  /**
+   * @return true if this path has a HTTP/HTTPS url scheme.
+   */
+  hasHttpScheme: inline function(path: !string): boolean
+
+  /**
+   * Test if the request has query parameters in the URL (`?`).
+   */
+  hasQuery: inline function(url: !string): boolean
+
+  /**
+   * @return true if this path has a HTTP/HTTPS url scheme and not a relative path.
+   */
+  isHttpAbsolute: inline function(path: !string): boolean
+
+  /**
+   * @return url path that can be used to navigate from this URL to a target URL.
+   */
+  relativePathTo: inline member function(targetUrl: Url): UrlPath
+
+  /**
+   * @return serializer / deserializer for file extension of this URL or `null` if none available
+   */
+  serDeser: inline member function(serType: Type, failIfNone: boolean): SerDeser
+
+  /**
+   * Parse the input URL string into Url type and instantiate correct sub-type based on scheme (e.g. FileUrl)
+   * @param url
+   *           A string represents URL
+   * @return the correct Url type constructed from the input URL string
+   */
+  fromString: ~ java | js
+
+  /**
+   * @return a string representation of URL
+   */
+  toString: ~ java | js
+
+  /**
+   * @return true if this is a file:// url.
+   */
+  isFileUrl: final inline member function(): boolean
+
+  /**
+   * @return FileUrl if this is a file:// url or null otherwise.
+   */
+  asFileUrl: final inline member function(): FileUrl
+
+  /**
+   * @return specialized sub-type Url based on provided scheme. Could return Url if scheme has no specialization.
+   */
+  typeFromScheme: final inline function(scheme: !string): !Type
+
+  /**
+   * @return path from a given url. If input is not a fully qualified url assumes it's already a path.
+   */
+  extractPath: inline function(url: string): UrlPath
+
+  /**
+   * @return Url obj with appended parts for in memory content
+   */
+  mem: function(parts: string ...): !Url
+
+  /**
+   * @return checks if host of url is valid domain name (FQDN)
+   */
+  isHostValidDomainName: inline member function(): boolean
+
+  /**
+   * @return checks if host of url is ipv4 or ipv6 address
+   */
+  isHostValidIp: inline member function(): boolean
+
+  /**
+   * @return checks if host of url is ipv4 address
+   */
+  isHostValidIpv4: inline member function(): boolean
+
+  /**
+   * @return checks if host of url is ipv6 address
+   */
+  isHostValidIpv6: inline member function(): boolean
+
+  /**
+   * @return the URL element value properly encoded (UTF-8)
+   */
+  encode: function(s: !?string): ?string java | js
+
+  /**
+   * @return endpoint to root of this URL; ex. { address: ftp.example.com, port: 8080 }
+   */
+  toEndpoint: member function(): !Endpoint
+
+  /**
+   * Splits the fragment from thisURL or path. The first element of the pair will be the URL/path and the second
+   * will be everything after the `#`.
+   */
+  splitFragment: function(s: !?string): !Pair<?string, ?string>
+}

@@ -1,0 +1,6289 @@
+#!/usr/bin/env python3
+from typing import Callable, Any, Literal, Union, Generic, TypeVar, Optional, overload
+from datetime import datetime
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.Include import Include
+from c3.platform.TestRunner import TestRunner
+from c3.platform.FieldPath import FieldPath
+from c3.platform.StreamType import StreamType
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.Mutable import Mutable
+from c3.platform.Promise import Promise
+from c3.platform.TestSuiteResult import TestSuiteResult
+from c3.platform.ObjBuilder import ObjBuilder
+from c3.platform.Promise import Promise
+from c3.platform.FieldType import FieldType
+from c3.platform.ArrayBuilder import ArrayBuilder
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.Type import Type
+from c3.platform.ValueType import ValueType
+from c3.platform.ValueSpec import ValueSpec
+from c3.platform.Obj.GenerateSpec import Obj.GenerateSpec
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.Action.Engine import Action.Engine
+from c3.platform.Data import Data
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.Promise import Promise
+from c3.platform.SetType import SetType
+from c3.platform.ObjBuilder import ObjBuilder
+from c3.platform.ArrayBuilder import ArrayBuilder
+from c3.platform.MapType import MapType
+from c3.platform.Config import Config
+from c3.platform.ObjBuilder import ObjBuilder
+from c3.platform.Exclude import Exclude
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.Promise import Promise
+from c3.platform.TesterRunSpec import TesterRunSpec
+from c3.platform.EventStream import EventStream
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.ReferenceType import ReferenceType
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.ArrayType import ArrayType
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.ArrayBuilder import ArrayBuilder
+from c3.platform.ValidateObjSpec import ValidateObjSpec
+from c3.platform.Promise import Promise
+from c3.platform.ObjBuilder import ObjBuilder
+from c3.platform.Pkg.File.Event import Pkg.File.Event
+from c3.platform.ValidateObjResult import ValidateObjResult
+from c3.platform.Promise import Promise
+from c3.platform.Promise import Promise
+from c3.platform.Obj import Obj
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.EvalMetricsResult import EvalMetricsResult
+from c3.platform.Expr.CompileOptions import Expr.CompileOptions
+from c3.platform.FieldValue import FieldValue
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.Obj.MakeSpec import Obj.MakeSpec
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.Pair import Pair
+from c3.platform.ArrayBuilder import ArrayBuilder
+from c3.platform.File import File
+from c3.platform.TimeRange import TimeRange
+
+# Python definitions for the C3 type Tester
+
+
+class Tester(MutableObj, Configurable[Tester.Config]):
+    """
+    The base type for all testers.
+    
+    A tester is responsible for:
+      - find the correct tests to be executed
+      - execute the tests using the corresponding test executors
+      - collect the test results after the test execution
+    
+    For a Tester to run your test in the appropriate engine(s), the path of your test should conform to the following
+    semantics: "/<package>/test/<requirement>/.../yourTestFile.ext"
+    In the example above, <package> is the name of your {@link Pkg} and <requirement> is the name of your
+    {@link Action.Requirement}. Note that your test will be ran against all
+    {@link Action.Requirement#enginesForTests} for your provided requirement.
+    
+    @remarks this represents a made instance of Tester
+    """
+    
+    testRunner: Optional[TestRunner]
+
+    state: Optional[str]
+    """
+    The current state for the tester.
+    See {@link TesterState} for all tester states.
+    """
+
+    results: Optional[Array[TestSuiteResult]]=None
+    """
+    The collected test results after the test execution.
+    """
+
+    engine: Optional[Action.Engine]
+    """
+    The action engine in which tests will execute.
+    """
+    def __init__(self, testRunner: Optional[TestRunner]=None, state: Optional[str]=None, results: Optional[Array[TestSuiteResult]]=None, engine: Optional[Action.Engine]=None) -> None: ...
+
+    @overload
+    @classmethod
+    def make(cls) -> Tester:
+    """
+    Construct an instance with initial state.
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, fields: Map[str, Any], spec: Obj.MakeSpec) -> Tester:
+    """
+    Construct instance of this type from provided field values and options
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, withDefaults: bool=None) -> Tester:
+    """
+    Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+               populated
+    
+    @see withDefaults
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, fields: Map[str, Union[Any,Any]], withDefaults: bool=None) -> Tester:
+    """
+    Construct an instance from provided fields
+    @param fields
+               Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+               field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+               to Panda.make()
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+               -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+               the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+    
+    
+    @see fromFields
+    @see beforeMake
+    @see afterMake
+    @see withDefaults
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, fields: Any, withDefaults: bool=None) -> Tester:
+    """
+    Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+    
+    ```js
+    User.make({
+      email: 'joe@smith.com',
+      realName: 'Joe Smith'
+    })
+    
+    Obj.make({
+      type: 'User',
+      email: 'joe@smith.com',
+      realName: 'Joe Smith'
+    })
+    ```
+    
+    ```py
+    c3.User.make({
+      "email": 'joe@smith.com',
+      "realName": 'Joe Smith'
+    })
+    
+    c3.Obj.make({
+      "type": 'User',
+      "email": 'joe@smith.com',
+      "realName": 'Joe Smith'
+    })
+    
+    c3.User(email='joe@smith.com', realName='Joe Smith')
+    
+    c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+    ```
+    
+    Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+    specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+    such as {@link Ann.Ser} do not apply.
+    @param fields
+               Fields to construct the instance of the obj with
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+    
+    @see fromFields
+    @see beforeMake
+    @see afterMake
+    @see withDefaults
+    """
+        ...
+    @overload
+    def toJson(self) -> any:
+    """
+    Convert the internal object representation to a JSON object.
+    
+    @return JSON object representation
+    
+    @see #fromJson
+    """
+        ...
+    @overload
+    def toJson(self, include: str=None, exclude: str=None) -> any:
+        ...
+    @overload
+    def toJson(self, include: Include=None, exclude: Exclude=None) -> any:
+        ...
+    @overload
+    def toTypedJson(self, omitTopLevelType: bool=None, actionRequirement: str=None) -> any:
+    """
+    Convert the internal object representation to a _typed_ JSON object.
+    @param omitTopLevelType
+           Whether to leave out `type: {{ type of this serializable instance }}` as the **first** key-value pair in
+           the outer level of the produced json.
+    @param runtime
+           If provided, then any special serialization logic required for the {@link ImplLanguage.Runtime} will be
+           performed. **NOTE** This argument is ignored if `typed` is not `true`. @see Ann.Ser
+    
+    
+    @return JSON object representation
+    
+    @see #fromJson
+    @see #toJson
+    @see serdeser.c3doc
+    @see JsonType
+    """
+        ...
+    @overload
+    def toTypedJson(self, include: str=None, exclude: str=None) -> any:
+        ...
+    @overload
+    def toTypedJson(self, include: Include=None, exclude: Exclude=None) -> any:
+        ...
+    @overload
+    def toJsonString(self) -> str:
+        ...
+    @overload
+    def toJsonString(self, pretty: bool) -> str:
+    """
+    Convert the internal object representation to a serialized JSON string.
+    
+    @return JSON object as string
+    """
+        ...
+    @overload
+    def toTypedJsonString(self) -> str:
+        ...
+    @overload
+    def toTypedJsonString(self, pretty: bool=None, omitTopLevelType: bool=None) -> str:
+        ...
+    @overload
+    def toJsString(self) -> str:
+        ...
+    @overload
+    def toJsString(self, withType: bool) -> str:
+    """
+    Convert the internal object representation to a serialized JavaScript object literal.
+    
+    @return JavaScript object literal string
+    """
+        ...
+    @overload
+    def toXmlString(self) -> str:
+        ...
+    @overload
+    def toXmlString(self, withType: bool) -> str:
+    """
+    Convert the internal object representation to a serialized XML string.
+    
+    @return XML element as string
+    
+    @see #fromXmlString
+    """
+        ...
+    def serialize(self, contentType: str, toUntyped: bool=None) -> Union[str]:
+    """
+    Convert the internal object representation to a string serialized representation of the object.
+    
+    @return string serialized object representation
+    """
+        ...
+    @classmethod
+    def fromJson(cls, json: any) -> Union[Tester]:
+    """
+    Load the JSON-based representation and reconstruct the corresponding object.
+    
+    fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+    a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+    called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+    an instance of the correct type.
+    
+    @see #toJson
+    """
+        ...
+    @classmethod
+    def fromJsonString(cls, json: str) -> Union[Tester]:
+    """
+    Load the JSON-based representation and reconstruct the corresponding object.
+    
+    fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+    a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+    called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+    an instance of the correct type.
+    
+    @see #toJsonString
+    """
+        ...
+    @classmethod
+    def fromXmlString(cls, xml: str) -> Union[Tester]:
+    """
+    Load the XML-based representation and reconstruct the corresponding object.
+    
+    fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+    may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+    isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+    will return an instance of the correct type.
+    
+    @see #toXmlString
+    """
+        ...
+    @classmethod
+    def deserialize(cls, contentStr: str, contentType: str) -> Union[Tester]:
+    """
+    Load from contentType representation and reconstruct the corresponding object.
+    
+    fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+    (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+    will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+    type and will return an instance of the correct type.
+    """
+        ...
+    def fingerprint(self, allIdentifiedRefFields: bool=None, trackRecursiveRefs: bool=None, traversedRefs: SetBuilder[Obj]=None) -> int:
+    """
+    Produce a checksum that can easily be compared to determine if two objects are definitely different. Note that
+    there is a slight possibility that two objects with the same fingerprint will actually differ.
+    
+    The fingerprint recurses into field values, including collections and referenced Objs. The handling of nested
+    {@link Identified identified} references (typically entities) differ in that _only_ the `id` field is included
+    unless the allIdentifiedRefFields option is specified.
+    
+    If the object graph may contain recursive embedded object references, the trackRecursiveRefs option may be used.
+    However, maintaining the list of visited objects is costly so this should not be done unnecessarily.
+    
+    @param allIdentifiedRefFields
+              if `true`, fingerprint individual fields of persistable references, not just the `id`
+    @param trackRecursiveRefs
+              if `true`, a set of referenced objects is maintained to avoid infinite recursion
+    @param traversedRefs
+              only considered together with trackRecursiveRefs and if provided then all traversed references are
+              checked against and added to it
+    @return integer fingerprint
+    
+    @see https://en.wikipedia.org/wiki/Fingerprint_(computing)
+    """
+        ...
+    def retainedMemory(self, deep: bool=None, allMeasured: SetBuilder[Any]=None) -> int:
+    """
+    Measures retained memory by this instance.
+    
+    @param deep
+           if true and this instance contains references to other objects also measures memory retained by those
+    @param allMeasured
+           if set then will skip instances that are in the set and will add instances that where measured by this call
+    @return retained memory in bytes for this instances
+    """
+        ...
+    def type(self) -> Type:
+    """
+    C3 Type of this instance.
+    """
+        ...
+    def replaceType(self, old: Type, new: Type) -> Tester:
+    """
+    Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+    type does not contain fields from old or field value types are not convertable then drops the field.
+    
+    This method is used during live metadata update
+    """
+        ...
+    def super(self, mixin: Type=None) -> Any:
+    """
+     Produce a calling proxy that represents the content of all Obj type's mixins, but not the type itself. This is
+     useful for redispatching **member** methods reimplemented on this type to a parent implementation:
+     ```js
+     function toString() {
+       return this.super().toString() + ', x=' + this.x;
+     }
+     ```
+    
+     ```py
+     def toString(this):
+        return this.super().toString() + ', x=' + this.x
+    ```
+    
+     To redispatch **static** methods, see {@link Type#super}.
+    
+     Note that this not the same as the language-specific `super` keyword because it works through the type system and
+     supports multiple mixins. It behaves like the Python `super()` function, except called on the instance rather than
+     globally.
+    
+     If `mixin` is the implementing type in a client implementation, this will delegate the call to the server.
+     This can be used to create a local implementation "around" the server implementation for additional caching or
+     other local state management.
+    
+     @param mixin if specified, this mixin is used instead or an error is thrown
+     @return "super" calling proxy for this object
+    
+     @see Type.super
+    """
+        ...
+    @overload
+    def instanceOf(self, typeName: str) -> bool:
+    """
+    Checks whether this Obj is an instance of the specified type by checking both its type and the mixin chain.
+    This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+    
+    @return true if this instance is of this type or any of its mixins
+    """
+        ...
+    @overload
+    def instanceOf(self, type: Type) -> bool:
+    """
+    Checks whether this instance is an instance of the specified type by checking both its type and the mixin chain.
+    This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+    
+    @return true if this instance is of this type or any of its mixins
+    
+    @see ValueType#isA
+    """
+        ...
+    def isEmptyObj(self) -> bool:
+    """
+    Whether all the fields of this instance are empty.
+    """
+        ...
+    def isSame(self, other: Obj) -> bool:
+    """
+    Whether the specified instance represents exactly the same object as this instance.
+    """
+        ...
+    @overload
+    def isFieldSet(self, field: str) -> bool:
+    """
+     Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+     if the field value set the its default value by the constructor. A set field is never missing.
+    
+    @param field the field to check
+    
+    @return whether the specified field is set
+    """
+        ...
+    @overload
+    def isFieldSet(self, field: FieldType) -> bool:
+    """
+     Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+     if the field value set the its default value by the constructor. A set field is never missing.
+    
+    @param field the field to check
+    
+    @return whether the specified field is set
+    """
+        ...
+    @overload
+    def isFieldMissing(self, field: str) -> bool:
+    """
+     Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+     should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+    {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+    A missing field is never set.
+    
+    @param field the field to check
+    
+    @return whether the specified field is missing
+    """
+        ...
+    @overload
+    def isFieldMissing(self, field: FieldType) -> bool:
+    """
+     Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+     should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+    {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+    A missing field is never set.
+    
+    @param field the field to check
+    
+    @return whether the specified field is missing
+    """
+        ...
+    @overload
+    def fieldValue(self, field: str, defaultToEmpty: bool=None) -> Union[T]:
+    """
+    Returns value of the given field.
+    
+    @param field
+              Field to return the value for
+           defaultToEmpty
+              will return default empty value if field is missing
+    """
+        ...
+    @overload
+    def fieldValue(self, field: FieldType, defaultToEmpty: bool=None) -> Union[T]:
+    """
+    Returns value of the given field type. Be sure to use the FieldType instance for the exact same type as the type of
+    the obj.
+    
+    @param field
+              Field to return the value for
+           defaultToEmpty
+              will return default empty value if field is missing
+    @return value for the given field
+    """
+        ...
+    def fieldValues(self) -> Union[Array[FieldValue]]:
+    """
+    Returns all non empty field values. Note that it is recommended to use #eachFieldValue instead
+    """
+        ...
+    def fieldValuesByOrdinal(self, skipTrailingEmpty: bool=None) -> Union[Array[Any]]:
+    """
+    Returns all field values including empty ones as array where value of a field is at corresponding ordinal position.
+    Unless `skipTrailingEmpty` parameter is set and there are trailing empty values resulting array has same size as
+    #dataFieldTypes
+    """
+        ...
+    def fieldValuesByFieldType(self) -> Union[Map[FieldType, Any]]:
+    """
+    Returns all non empty field values by field type. Note that it is recommended to use #eachFieldValue instead
+    """
+        ...
+    def fieldValuesByFieldName(self) -> Union[Map[str, Any]]:
+    """
+    Returns all non empty field values by field name. Note that it is recommended to use #eachFieldValue instead
+    """
+        ...
+    def fieldNames(self) -> Union[Array[str]]:
+    """
+    Returns all data field names including those whose values are empty. Array is ordered by
+    field ordinal.
+    """
+        ...
+    def unsetFieldNames(self) -> Union[Array[str]]:
+    """
+    @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@link #isFieldSet are not set}. Array is ordered by
+    field ordinal.
+    """
+        ...
+    def missingFieldNames(self) -> Union[Array[str]]:
+    """
+    @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@Link isFieldMissing are missing}. Array is ordered by
+    field ordinal.
+    """
+        ...
+    @overload
+    def at(self, ordinal: int) -> Union[T]:
+    """
+    Return value of the field at provided ordinal. Throws an error on an invalid value (out of range).
+    
+    @param ordinal
+            Integer ordinal of the field in the parent type
+    @return value of field at ordinal
+    """
+        ...
+    @overload
+    def at(self, expr: str, failIfNotValid: bool=None) -> Union[T]:
+    """
+    Return value for the given serialized expression
+    
+    @param expr
+            Serialized expression to obtain the value in the given Obj
+    @param failIfNotValid
+            If set, fails if not a valid expression
+    @return value obtained as a result of expression evaluation
+    """
+        ...
+    def fieldValueAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[T]:
+    """
+    Looks up a single field value by path from this Obj. Field paths are separated by dots so an expression like
+    `fieldValueAtPath("location.elevation")` is equivalent to `traverse("location").fieldValue("elevation")` except
+    that it also handles `null`. If path contains any collections then only first element will be traversed,
+    unless the collection index is specified in the path.
+    
+    If you need to traverse all elements of collection fields use #fieldValuesAtPath instead.
+    
+    @param fieldPath
+              field names separated by dots
+    @param failIfNotFound
+              if true, an error will be thrown if the any of the field types aren't defined
+    @param context
+              if an error is thrown, the context returned by calling the lambda will be incorporated
+    @return the field or null
+    """
+        ...
+    def fieldValuesAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[Array[T]]:
+    """
+    Looks up all the fields by path from root Obj. If path contains any collections then result will contain all
+    traversals, unless the collection index is specified in the path.
+    
+    @param fieldPath
+              field names separated by dots
+    @param failIfNotFound
+              if true, an error will be thrown if the any of the field types aren't defined
+    @param context
+              if an error is thrown, the context returned by calling the lambda will be incorporated
+    @return fields as a flat list
+    
+    @see #fieldValueAtPath
+    """
+        ...
+    @overload
+    def eachFieldValue(self, action: Callable[[FieldType, Any]]) -> None:
+    """
+    Perform an action for each non-empty field of this object.
+    
+    @param action
+              lambda to apply
+    """
+        ...
+    @overload
+    def eachFieldValue(self, spec: ValueSpec, action: Callable[[FieldType, Any]]) -> None:
+    """
+    Perform an action for each non-empty field of this object. Fields are filtered based on provided `spec`.
+    
+    @param spec
+              which fields to include
+    @param action
+              lambda to apply
+    """
+        ...
+    def eachSetFieldValue(self, action: Callable[[FieldType, Union[Any]]]) -> None:
+    """
+    Perform an action for each {@link isFieldSet set} field of this object.
+    
+    @param action
+              lambda to apply
+    """
+        ...
+    def eachFieldValueWhile(self, spec: ValueSpec, action: Callable[[FieldType, Any], bool]) -> bool:
+    """
+    Perform an action for each field of this object while processing action returns `true`. Fields are filtered based
+    on provided `spec`.
+    
+    @param spec
+              which fields to include
+    @param action
+              lambda to apply; stop if this `action` returns `false
+    @return `true` if iteration was not aborted by lambda i.e. it saw all field values
+    """
+        ...
+    @overload
+    def eachRef(self, action: Callable[[FieldType, Obj]]) -> None:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+    the field value if non-null and for collections of Obj, this means each element in the collection.
+    
+    @param action
+              function to be executed for each pair of field type and Obj instance
+    """
+        ...
+    @overload
+    def eachRef(self, includeEmpty: bool, action: Callable[[FieldType, Obj]]) -> None:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+    the field value if non-null and for collections of Obj, this means each element in the collection.
+    
+    @param includeEmpty
+              if `true` will also process references with `null` / "Empty" references
+    @param action
+              function to be executed for each pair of field type and Obj instance
+    """
+        ...
+    def eachRefWhile(self, includeEmpty: bool, action: Callable[[FieldType, Obj], bool]) -> bool:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type while processing action returns
+    `true`.
+    
+    @param includeEmpty
+              if `true` will also process references with `null` / "Empty" references
+    @param action
+              function to be executed for each pair of field type and Obj instance; stops processing if return `false`
+    @return `true` if iteration was not aborted by lambda i.e. it saw all refs
+    """
+        ...
+    def eachRefRecursive(self, includeEmpty: bool, action: Callable[[FieldPath, Obj]]) -> None:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type or in any child refs.
+    """
+        ...
+    def eachRefRecursiveWhile(self, includeEmpty: bool, action: Callable[[FieldPath, Obj], bool]) -> bool:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type or in any child refs. Continue while
+    processing action returns `true`.
+    """
+        ...
+    @overload
+    def mapFieldValues(self, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester:
+    """
+    Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+    the `mapper` invocation.
+    
+    @param action
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapFieldValues(self, spec: ValueSpec, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester:
+    """
+    Result of this function call is a copy of current instance with all fields replaced based on results of the
+    `mapper` invocation.
+    
+    @param spec
+              which fields to include
+    @param mapper
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapFieldValuesAsync(self, mapper: Callable[[FieldType, Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester]:
+    """
+    Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+    the asynchronous `mapper` invocation.
+    
+    @param action
+              lambda to apply for every field value to produce a new value for that fields
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapFieldValuesAsync(self, spec: ValueSpec, mapper: Callable[[Union[FieldType], Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester]:
+    """
+    Result of this function call is a copy of current instance with all fields replaced based on results of the
+    asynchronous `mapper` invocation.
+    
+    @param spec
+              which fields to include
+    @param mapper
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    def mapFieldValue(self, mapper: Callable[[Any], Union[Any]], field: FieldType=None, includeEmpty: bool=None, convertValue: bool=None) -> Tester:
+    """
+    Result of this function call is a copy of current instance with specified field value replaced based on result of
+    the `mapper` invocation.
+    @param field
+              field being mapped
+    @param includeEmpty
+              if set, invokes mapper for fields with empty value
+    @param mapper
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapRefs(self, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester:
+    """
+    Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+    lambda application.
+    
+    Result of this function call is a copy of current instance with all references replaced based on results of the
+    `mapper` invocation.
+    
+    @param action
+              function to be executed for each pair of field type and Obj instance
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapRefs(self, includeEmpty: bool, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester:
+    """
+    Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+    lambda application.
+    
+    Result of this function call is a copy of current instance with all references replaced based on results of the
+    `mapper` invocation.
+    
+    @param includeEmpty
+              if `true` will also process references with `null` / "Empty" references
+    @param mapper
+              function to be executed for each pair of field type and Obj instance for producing new reference value
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]]) -> Union[T]:
+    """
+    Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+    argument is a result of previous application. Initial value of `accumulator` will be `null`.
+    
+    This function is useful for calculating aggregate values based on all current non empty field values.
+    Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+    e.g
+    ```
+    o = {a:1, b:2, c:0}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+    
+    o = {a: {x:1, y:2}, b: {x:10, z:2}}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+    ```
+    """
+        ...
+    @overload
+    def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+    """
+    Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+    argument is a result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+    
+    This function is useful for calculating aggregate values based on all current non empty field values.
+    Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+    e.g
+    ```
+    o = {a:1, b:2, c:0}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+    
+    o = {a: {x:1, y:2}, b: {x:10, z:2}}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+    ```
+    """
+        ...
+    @overload
+    def foldFieldValues(self, spec: ValueSpec, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+    """
+    Result of this function is application of `folder` lambda to every field value where `accumulator` argument is a
+    result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+    
+    This function is useful for calculating aggregate values based on all field values.
+    Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+    e.g
+    ```
+    o = {a:1, b:2, c:0}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+    
+    o = {a: {x:1, y:2}, b: {x:10, z:2}}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+    ```
+    """
+        ...
+    @overload
+    def evalProjection(self, projection: str, resultType: ValueType=None, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Any]:
+    """
+    Evaluates given projection expression over this instance.
+    """
+        ...
+    @overload
+    def evalProjection(self, projection: any, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[any]:
+    """
+    Evaluates given projection over this instance and returns results as json.
+    """
+        ...
+    @overload
+    def evalProjection(self, projection: any, resultType: Type, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Obj]:
+    """
+    Evaluates given projection over this instance and returns results as instance of the new Obj.
+    """
+        ...
+    @overload
+    def validateObj(self) -> Tester:
+    """
+    Populates all missing default values and throws error if any constraint is violated.
+    """
+        ...
+    @overload
+    def validateObj(self, spec: ValidateObjSpec) -> ValidateObjResult:
+    """
+    Validate that the Obj fields are set according to all the required rules.
+    """
+        ...
+    @overload
+    def withField(self, field: str, value: Any, doNotConvert: bool=None) -> Tester:
+    """
+    Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+    defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+    
+    @param field
+              name of the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, do not attempt to convert the value to match the field's type
+    @return new Obj
+    
+    @see #withoutField
+    @see #defaultField
+    """
+        ...
+    @overload
+    def withField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> Tester:
+    """
+    Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+    defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+    
+    @param field
+              the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, do not attempt to convert the value to match the field's type
+    @return new Obj
+    
+    @see #withoutField
+    @see #defaultField
+    """
+        ...
+    def withFields(self, fields: Map[str, Any], doNotConvert: bool=None) -> Tester:
+    """
+    Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+    defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+    
+    @param fields
+              map of field names/values
+    @param doNotConvert
+              if true, attempt to convert the values to match the fields' type
+    @return new Obj
+    """
+        ...
+    def withFieldAtPath(self, path: str, value: Any, doNotConvert: bool=None, doNotCreateIfMissing: bool=None) -> Tester:
+    """
+    Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+    If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+    
+    Immutable objects may return the same instance if the field being set does not actually represent a
+    change to the existing object.
+    
+    @param path
+              path to set value at
+    @param value
+              value to set
+    @param doNotConvert
+              if true, attempt to convert the values to match the fields' type
+    @param doNotCreateIfMissing
+              true indicates that any empty reference along the path will not set the value
+    @return new Obj
+    """
+        ...
+    def withoutFieldAtPath(self, path: str) -> Tester:
+    """
+    Builds a new Obj without the specified path field.
+    
+    Immutable objects may return the same instance if the field being removed does not actually represent a
+    change to the existing object.
+    
+    @param path
+              path for field to remove
+    @return new Obj
+    
+    @see #withFieldAtPath
+    @see #withoutField
+    """
+        ...
+    @overload
+    def withoutField(self, field: str) -> Tester:
+    """
+    Builds a new Obj, removing the field with the provided name.
+    
+    Immutable objects may return the same instance if the field being removed is not present in the existing object.
+    
+    @param field
+              name of the field to remove
+    @return new Obj with removed field
+    
+    @see #unsetField
+    @see #removeField
+    """
+        ...
+    @overload
+    def withoutField(self, field: FieldType) -> Tester:
+    """
+    Builds a new Obj, removing the field with the provided field type.
+    
+    Immutable objects may return the same instance if the field being removed is not present in the existing object.
+    
+    @param field
+              name of the field to remove
+    @return new Obj with removed field
+    
+    @see #unsetField
+    @see #removeField
+    """
+        ...
+    def withoutFields(self, fields: Array[str]) -> Tester:
+    """
+    Builds a new Obj, removing the fields with the provided names.
+    
+    Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+    
+    @param fields
+              names of the fields to remove
+    @return new Obj with removed fields
+    """
+        ...
+    def withoutFieldsByType(self, fields: Array[FieldType]) -> Tester:
+    """
+    Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+    exact same type as the type of the obj to respect the "ordinal" of the field type
+    
+    Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+    
+    @param fields
+              field types to remove
+    @return new Obj with removed fields
+    """
+        ...
+    def withoutSecretFields(self) -> Tester:
+    """
+    @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+    """
+        ...
+    def secretFieldsSet(self) -> Array[str]:
+    """
+    @return a list of the secret field paths that were found to be set on this Obj.
+    """
+        ...
+    def withDefaults(self, includeEmptyRefsWithDefaults: bool=None, defaultFields: Array[str]=None) -> Tester:
+    """
+    Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+    calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+    {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+    fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+    fields that have already been set.
+    
+    {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+    As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+    
+    @param includeEmptyRefsWithDefaults
+              it `true` then missing / empty child references that have fields with defaults will also be instantiated
+    @param defaultFields
+              If not empty, a list of default field paths to populate.  Any default fields not specified in the
+              array will be ignored.
+    @return new Obj
+    
+    @see #defaultField
+    @see FieldType#defaultValueConst
+    @see FieldType#defaultValue
+    """
+        ...
+    @overload
+    def defaultField(self, field: str) -> Tester:
+    """
+    Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+    method will behave the same as {@link #unsetField}.
+    
+    @param field
+            name of the field to default
+    @return new `Obj` with the specified field set to its default value
+    
+    @see #withField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def defaultField(self, field: FieldType) -> Tester:
+    """
+    Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+    method will behave the same as {@link #unsetField}.
+    
+    @param field
+            field type to default
+    @return new `Obj` with the specified field set to its default value
+    
+    @see #withField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def unsetField(self, field: str) -> Tester:
+    """
+    Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+    is different from {@link removeField}
+    
+    @param field
+            name of the field to unset
+    @return new `Obj` with the specified field unset
+    
+    @see #withoutField
+    @see #removeField
+    """
+        ...
+    @overload
+    def unsetField(self, field: FieldType) -> Tester:
+    """
+    Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+    is different from {@link removeField}
+    
+    @param field
+            field type to unset
+    @return new `Obj` with the specified field unset
+    
+    @see #withoutField
+    @see #removeField
+    """
+        ...
+    @overload
+    def removeField(self, field: str) -> Tester:
+    """
+    Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+    is different from {@link #unsetField}
+    
+    @param field
+            name of the field to remove
+    @return new `Obj` with the specified field removed
+    
+    @see #withoutField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def removeField(self, field: FieldType) -> Tester:
+    """
+    Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+    is different from {@link #unsetField}
+    
+    @param field
+            field type to remove
+    @return new `Obj` with the specified field removed
+    
+    @see #withoutField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, fieldPathMergeSpec: Map[str, str]=None) -> Tester:
+    """
+    Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+    In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+    
+    @param other
+              object
+    @param fieldPathMergeSpec
+              mapping of fields of the object to the respective merge annotations
+    @return the new merged Obj
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, otherFieldsFilter: Type) -> Tester:
+    """
+    Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+    In case of conflicts, fields of other instance take precedence.
+    
+    @param other
+              object
+    @param otherFieldsFilter
+              only fields of otherFieldsFilter type from other are merged into this obj.
+    @return the new merged Obj
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, merger: Callable[[Union[FieldPath], Union[Any], Union[FieldPath], Union[Any]], Union[Any]], deep: bool=None) -> Tester:
+    """
+    Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+    fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+    @param deep
+           if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+           the same key or index.
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Tester:
+    """
+    Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+    fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+    traverse child reference and collection fields.
+    """
+        ...
+    def mergeAndExpandObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Union[R]:
+    """
+    Create new Obj with all non-null fields of this and other. Fields that are non null in both apply merger lambda.
+    Fields that non null in only one of this and other will be in the resulting Obj without change.
+    """
+        ...
+    def mergeJson(self, json: any) -> Tester:
+        ...
+    def mergeChildren(self, deep: bool=None, objKey: Callable[[Union[Obj]], Union[Any]]=None, filter: Callable[[str], bool]=None) -> Tester:
+    """
+    Merge the obj references within the current obj
+    @param deep
+           If set, traverses the reference fields within the obj as well for a deep merge
+    @param objKey
+           lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+    @param filter
+           Field paths that need to be filtered from this merge
+    @return Obj with child references merged
+    """
+        ...
+    def sumObj(self, other: Obj, deep: bool=None) -> Tester:
+    """
+    Adds the numeric Obj fields with the other Objs respective fields.
+    If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+    references with same name and collection elements at same index or key.
+    """
+        ...
+    def singletonArray(self) -> Array[Tester]:
+    """
+    Build an array of the correct type with a single element which is this instance.
+    
+    @return new array instance with this as only element.
+    """
+        ...
+    @classmethod
+    def array(cls, *elements: Array[Any]) -> Union[Array[Tester]]:
+    """
+    Creates an array of instances of this type.
+    """
+        ...
+    @classmethod
+    def arrayBuilder(cls) -> Union[ArrayBuilder[Tester]]:
+    """
+    Creates an array of instances of this type.
+    """
+        ...
+    def singletonSet(self) -> Set[Tester]:
+    """
+    Build an set of the correct type with a single element which is this instance.
+    
+    @return new array instance with this as only element.
+    """
+        ...
+    @classmethod
+    def setBuilder(cls) -> Union[SetBuilder[Tester]]:
+    """
+    Creates a set of instances of this type.
+    """
+        ...
+    @classmethod
+    def mapBuilder(cls) -> Union[MapBuilder[str, Tester]]:
+    """
+    Create a map of string to elements of this type.
+    """
+        ...
+    @classmethod
+    def mapBuilderOf(cls, keyType: ValueType) -> Union[MapBuilder[Any, Tester]]:
+    """
+    Create a map with the given key type and elements of this type.
+    """
+        ...
+    @classmethod
+    def myReferenceType(cls) -> ReferenceType:
+        ...
+    @classmethod
+    def myMapTypeOf(cls, keyType: ValueType) -> MapType:
+        ...
+    @classmethod
+    def myMapType(cls) -> MapType:
+        ...
+    @classmethod
+    def myArrayType(cls) -> ArrayType:
+        ...
+    @classmethod
+    def mySetType(cls) -> SetType:
+        ...
+    @classmethod
+    def myStreamType(cls) -> StreamType:
+        ...
+    def toBuilder(self) -> ObjBuilder[Tester]:
+    """
+    @return new ObjBuilder with initial state set to fields of this instance.
+    """
+        ...
+    @classmethod
+    def builder(cls) -> ObjBuilder[Tester]:
+    """
+    @return new ObjBuilder of this instance.
+    """
+        ...
+    @overload
+    @classmethod
+    def fromFields(cls, fields: Map[FieldType, Any], spec: Obj.MakeSpec) -> Tester:
+    """
+    Construct instance of this type from provided field values and options
+    """
+        ...
+    @overload
+    @classmethod
+    def fromFields(cls, fields: Map[FieldType, Union[Any,Any]], withDefaults: bool=None) -> Tester:
+    """
+    Construct an instance of this type from provided fields
+    @param fields
+               Fields to construct the instance of the obj with
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+    
+    @see withDefaults
+    """
+        ...
+    @classmethod
+    def remake(cls, other: Obj, failIfExtraOrInvalidFields: bool=None) -> Tester:
+    """
+    Construct an instance of this type from provided instance of a subtype or a "duck type".
+    """
+        ...
+    def remakeAs(self, type: Type) -> O:
+    """
+    Creates an obj of the new type with all fields that exist on the original obj that are defined in the new type
+    converted and copied to the new obj instance. Note, that checking assignability and conversion of field values
+    could be costly if types have different value types for same fields.
+    
+    @param type
+            Type of new obj to return
+    @return new obj of the requested type with all fields present in the original obj that are defined in the new type
+            converted and copied to it
+    """
+        ...
+    @classmethod
+    def beforeMake(cls, fields: Map[FieldType, Any]) -> Union[Map[FieldType, Any]]:
+    """
+    Optional override that will be called every time instance of this type is created.
+    
+    
+    Note that it introduces additional overhead so should only be implemented for low volume data.
+    """
+        ...
+    def afterMake(self) -> Tester:
+    """
+    Optional override that will be called after every instance creation.
+    
+    Note that it introduces additional overhead so should only be implemented for low volume data.
+    """
+        ...
+    @classmethod
+    def cachedEmptyInst(cls) -> Tester:
+    """
+    Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+    every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+    Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+    
+    @see ValueType#defaultEmptyValue
+    """
+        ...
+    def toData(self) -> Union[Data]:
+    """
+    Represent the current obj instance as {@link Data}
+    """
+        ...
+    @classmethod
+    def generateObjs(cls, spec: Obj.GenerateSpec=None) -> Union[Stream[Tester]]:
+    """
+    Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+    value is read.
+    """
+        ...
+    @classmethod
+    def generateObj(cls, spec: Obj.GenerateSpec=None) -> Tester:
+    """
+    Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+    random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+    populates fields in a more realistic way.
+    """
+        ...
+    @overload
+    def setField(self, field: str, value: Any, doNotConvert: bool=None) -> Tester:
+    """
+    Sets the mutable field value. The name must correspond to an existing field defined on this type or its mixins.
+    The value must be of the correct type if doNotConvert flag is true.
+    
+    @param name
+              of the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, attempt to convert the value to match the field's type
+    @return this Obj
+    """
+        ...
+    @overload
+    def setField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> Tester:
+    """
+    Sets the mutable field value. The name must correspond to an existing field defined on this type or its mixins.
+    The value must be of the correct type if doNotConvert flag is true.
+    
+    @param field
+              the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, attempt to convert the value to match the field's type
+    @return this Obj
+    """
+        ...
+    def onChange(self, changed: Array[str]) -> None:
+    """
+    Called by the machinery whenever one or more fields of this mutable Obj are changed. If this mutable Obj has
+    field value types that are mutable Obj or collections, then `onChange` will also be called when fields or
+    properties of those values change. The elements of the array indicate the {@link FieldPath}s that changed. For
+    collections, a single element change will be reflected in the FieldPath: for arrays, the index and for maps, the
+    key. More complex operations to the collections will not be reflected in the FieldPath; the path will end at the
+    collection field. This has the same appearance as if the collection field were assigned from a previously
+    unassigned value.
+    
+    Example:
+    ```type
+    type A mixes MutableObj {
+      onChange: ~
+      b: [string]
+      c: map<string, int>
+      d: D
+    }
+    type D mixes MutableObj {
+      onChange: ~
+      e: string
+    }
+    ```
+    ```js
+    var a = A.make({b: ['hello', 'goodbye'], d: {}});
+    a.b[1] = 'World'; // 1
+    a.c['hello'] = 'world'; // 2
+    a.d.e = 'hello' // 3
+    a.b.pop(); // 4
+    ```
+    `A.onChange` should be called four times:
+      1. when the field `b` changed - the FieldPath will be "b[1]".
+      2. when the field `c` changed - the FieldPath will be "c.hello".
+      3. when `d` changed - the FieldPath will be "d.e".
+      4. when the field `b` changed by removing an element - the FieldPath will be "b[1]".
+    
+    `D.onChange` should be called once - the FieldPath will be `e`.
+    
+    Note that if multiple elements of a child collection are changed, you will get multiple field paths.
+    
+    @param changed paths to fields that changed
+    
+    @see #onEdit
+    """
+        ...
+    def onEdit(self, edits: Obj) -> None:
+    """
+    Called by the machinery whenever one or more fields of this mutable Obj are changed. The {@link EditList}
+    contains more information about the values which changed, including their prior values. This allows a full
+    difference to be calculated if desired. Note that maintaining this state is much more costly than simple
+    notification via #onChange and should only be used if truly required.
+    
+    @param edits a list of what changed and the prior values
+    
+    @see #onChange
+    """
+        ...
+    def withoutChangeEvent(self, action: Callable[[Union[Mutable]]]) -> None:
+    """
+    Changes made to the instance inside the provided lambda will not trigger #onChange or #onEdit.
+    
+    @param action the lambda to invoke that makes changes without notification
+    """
+        ...
+    def config(self, secrets: bool=None) -> Tester.Config:
+    """
+    Returns cached configuration for instance of this type. See Configurable type documentation for more details.
+    
+    @param secrets
+             if set to `true` and current role has sufficient permissions configuration will contain values of secret
+             fields. Otherwise configuration will not have values for secrets.
+    @return instance of configuration - never `null`.
+    """
+        ...
+    def configKey(self) -> Union[str]:
+    """
+    @return configuration key for this instance.
+    """
+        ...
+    def configSingletonKey(self) -> Union[str]:
+    """
+    @return configuration key for this type assuming it is singleton.
+    """
+        ...
+    @classmethod
+    def typeConfig(cls) -> Tester.Config:
+    """
+    @return type configuration for the given {@link Configurable} type.
+    E.g. {@see REST} & {@see RestConfig}
+    """
+        ...
+    def testSuitePaths(self) -> Array[str]:
+    """
+    The group of test suites (represented by the metadata sub paths of the test suite) to be executed.
+    E.g. ["<package>/test/path/to/the/test/file"]. This is the {@link testRunner#testSuites} filtered to only include
+    tests which apply to the {@link engine} of this Tester.
+    """
+        ...
+    @classmethod
+    def requirement(cls) -> Union[str]:
+    """
+    Return the string representing the most general {@link Action.Requirement} this tester can run.
+    """
+        ...
+    @classmethod
+    def forPathAndEngine(cls, path: str, engine: str) -> Tester:
+    """
+    Construct a tester for executing tests matching the specified path.
+    @param path
+              The file path. It can be a {@link Pkg.Path}, or a glob pattern.
+              e.g. "<package>/path/to/the/test/file", or "**\/folder/subfolder"
+    
+    @param engine
+              This will be the Tester's {@link Action.Engine}. Note that the resulting Tester's {@link testSuites}
+              will only include test suites applicable to this engine.
+    
+    Note: invoke this API on the desired type of Tester instead of on the Tester type directly.
+    """
+        ...
+    @classmethod
+    def forNameAndEngine(cls, testName: str, engine: str) -> Tester:
+    """
+    Construct a tester for executing tests with the file path containing the specified file name.
+    @param testName
+              The name of the test.
+              e.g. `forName("ExampleJava_Test")` is equivalent to `forPath("**\/*ExampleJava_Test*")`
+    @param engine
+              This will be the Tester's {@link Action.Engine}. Note that the resulting Tester's {@link testSuites}
+              will only include test suites applicable to this engine.
+    
+    Note: invoke this API on the desired type of Tester instead of on the Tester type directly.
+    """
+        ...
+    @classmethod
+    def forEngine(cls, engine: str, deep: bool=None) -> Tester:
+    """
+    Construct a tester for executing all tests within a package for a given {@link Action.Engine}.
+    @param engine
+              This will be the Tester's {@link engine}. Note that the resulting Tester's {@link testSuites}
+              will only include test suites applicable to this engine.
+    @param deep
+              If true, also execute all tests from the dependency packages
+    
+    Note: invoke this API on the desired type of Tester instead of on the Tester type directly.
+    """
+        ...
+    @classmethod
+    def typeForActionEngine(cls, engine: Action.Engine) -> Type:
+    """
+    @return: The Tester subtype for the given {@link Action.Engine}.
+    """
+        ...
+    def run(self, spec: TesterRunSpec=None) -> Tester:
+    """
+    Start running a tester.
+    """
+        ...
+    def beforeRunTestSuiteCode(self, testSuiteCode: str, testSuite: str=None, spec: TesterRunSpec=None) -> None:
+    """
+    If defined, this method will be called before #runTestSuite is invoked for each test suite.
+    """
+        ...
+    def runTestSuiteCode(self, testSuiteCode: str, testSuite: str=None, spec: TesterRunSpec=None) -> TestSuiteResult:
+    """
+    Runs the test suite located at its full {@link Pkg.Path} and updates #results with the {@link TestSuiteResult}
+    @param testSuite
+              The test suite represented by its {@link Pkg.Path}.
+    @param spec
+              The {@link TesterRunSpec} with attributes required to run the Test Suite.
+    """
+        ...
+    def runTestSuiteCodes(self, testSuiteCode: Array[str]=None, testSuites: Array[str]=None, spec: TesterRunSpec=None) -> Map[str, TestSuiteResult]:
+    """
+    Runs the given test suites as a batch, and return the results.
+    If defined, and {@link TesterRunSpec#inSingleSession} is enabled, this is used instead of {@link runTestSuiteCode}.
+    """
+        ...
+    def afterRunTestSuiteCode(self, testSuiteCode: str, testSuite: str=None, spec: TesterRunSpec=None) -> None:
+    """
+    If defined, this method will be called after #runTestSuite is invoked for each test suite.
+    """
+        ...
+    @classmethod
+    def testSuiteCode(cls, testSuite: str) -> Union[str]:
+    """
+    Returns the string contents of the test suite represented by its {@link Pkg.Path}.
+    @param testSuite
+              The test suite represented by its {@link Pkg.Path}.
+    """
+        ...
+    @classmethod
+    def testParams(cls, path: str) -> Union[Map[str, Map[str, Any]]]:
+    """
+    Return a Map of test params for the test corresponding to this Pkg.Path.
+    The test params should be set in test file in the format of:
+        Python: You can put @pytest.mark.testApp(mode="dev") in test to indicate the test to be run in dev mode.
+        There's no way to configure for specific test case yet. The turned map would be {"testApp" : {"mode" : "dev"}}
+    """
+        ...
+    @classmethod
+    def fullTestSuiteName(cls, testSuitePath: str, actionEngineName: str=None) -> str:
+    """
+    Returns the full name of the test suite, including package and runtime, from its {@link Pkg.Path}.
+    Used as the classname attribute of TestSuiteResult and TestCaseResult.
+    Examples: c3.AssertPoly_Test, zoo.test.py-ml-client-ipython-test.standalone.pythonSDK.test_python_sdk
+    @param testSuitePath
+              The test suite represented by its {@link Pkg.Path}.
+    @param actionEngineName
+              Name of the actionEngine used to run the test, e.g. 'py-data_312-server-jep-test'. This is to get the resolved
+              full test name from an un-resolved testSuitePath
+    """
+        ...
+    @classmethod
+    def updateRootLogger(cls, appenders: Array[str], appendersLevels: Array[str]) -> None:
+    """
+    Updates the logger appenders before running a test or resets to defaults after running tests.
+    @param appenders
+              The list of appenders to add, see {@link Logger.AppenderKind}
+    @param appendersLevels
+              The corresponding log level to use for the above appenders, see {@link Logger.Level}
+    """
+        ...
+    @classmethod
+    def appendTesterLogger(cls) -> None:
+    """
+    Updates the logger appenders before running a test to ensure the test results all necessary logs
+    """
+        ...
+    def testSuiteClassName(self, testSuitePath: str) -> str:
+    """
+    Returns the simple class name (e.g. AssertPoly_Test, test_python_sdk) of the test suite from its {@link Pkg.Path}
+    @param testSuitePath
+              The test suite represented by its {@link Pkg.Path}.
+    """
+        ...
+    def cancel(self) -> Tester:
+    """
+    Cancel a running tester.
+    """
+        ...
+    @classmethod
+    def currentBranch(cls, failIfNone: bool=None) -> Union[str]:
+    """
+    Get the current Git branch name. This should never return null in a development environment nor in a normal
+    CI environment, but will return null in production environments.
+    
+    @see Tester.Config#currentBranch
+    """
+        ...
+    @classmethod
+    def baseBranch(cls) -> str:
+    """
+    Guess the base branch for the current branch. If specified in the {@link Tester.Config config} that is used,
+    otherwise it is guessed based on the current branch:
+     - _base_: same branch
+     - epic/…/base: _base_
+     - release-hotfix/…: `release`
+     - hotfix/…: `master`
+     - otherwise `develop`
+    
+    "Base" branches are: `develop`, `release`, `master`.
+    
+    @see #currentBranch
+    @see #isBaseBranch
+    @see Tester.Config#baseBranch
+    """
+        ...
+    @classmethod
+    def guessBaseBranchFor(cls, current: str) -> str:
+    """
+    Form the base branch (falling back to `develop`) for the specified branch. This implements the guessing logic of
+    #baseBranch.
+    """
+        ...
+    @classmethod
+    def isBaseBranch(cls, name: str) -> bool:
+    """
+    Whether this is one of the standard base branches: `develop`, `release`, `master`.
+    """
+        ...
+    
+    class Toolbox(Value):
+        """
+        This type standardises various functions that are used frequently among various tests.
+        The functions provided target the implementation of various components. When the design or implementation changes,
+        the tools provided by the toolbox should change as well.
+        
+        @remarks this represents a made instance of Tester.Toolbox
+        """
+        def __init__(self) -> None: ...
+
+        @classmethod
+        def retryAction(cls, action: Callable[[], Union[T]], earlyExit: Callable[[Union[T]], bool], totalRetries: int=None, timeBetween: int=None) -> Union[Promise[T]]:
+        """
+        Wrapper to facilitate retrying an action multiple times.
+        @param action
+               A supplier denoting the action to continually retake and the T to eventually return.
+        @param earlyExit
+               A predicate denoting the caller's expected result from the action, used to resolve early if expectations
+               from `action` are met.
+        @param totalRetries
+               The amount of retries of `action` to take before giving up.
+        @param timeBetween
+               The amount of time in milliseconds in between each retry.
+        @return An awaitable Promise of the T supplied by `action` and accepted by `earlyExit`, OR the last thing `action`
+               was able to retrieve before exhausting all retries. The Promise will resolve and never reject.
+        """
+            ...
+        @classmethod
+        def observeEvents(cls, action: Callable[[], Union[Any]], eventStream: EventStream[Any], timeout: int=None) -> Union[Promise[Tester.Toolbox.ObservedEvents]]:
+        """
+        Wrapper to capture all events sent from `eventStream` after taking an action.
+        @param action
+               A lambda that puts something into motion, causing `eventStream` to send events.
+        @param eventStream
+               The EventStream to listen to
+        @param timeout
+               How long in milliseconds to listen for.
+        @return {@link TestToolbox.ObservedEvents} all events captured from `eventStream` and the time taken for the last
+               captured event to arrive during the listening period specified by `timeout`.
+        """
+            ...
+        @classmethod
+        def eventExists(cls, event: Pkg.File.Event=None, existsIn: Array[Pkg.File.Event]=None) -> bool:
+        """
+        Returns true if there exists an event E in `existsIn` such that the fields of `event` is a subset of E.
+        This loose matching allows for omission of `sequenceNum` and `kind` in `event`, and `targetFiles` will be an
+        unordered subarray check.
+        
+        Currently ignores any `targetFileFingerprints`.
+        """
+            ...
+        @classmethod
+        def readablePkgFileEvents(cls, events: Array[Pkg.File.Event]=None) -> Union[str]:
+        """
+        Returns a readable string of all {@link Pkg.File.Event}s of the following form:
+               "[{sequenceNum: nth, kind: INFO, targetFiles: [meta://mypackage/package.json]}, ...]"
+        """
+            ...
+        
+        class ObservedEvents():
+            """
+            @remarks this represents a made instance of Tester.Toolbox.ObservedEvents
+            """
+            
+            actionResult: Optional[Any]=None
+            """
+            The result of the action that kicked off this observation of an event stream.
+            """
+
+            observed: Optional[Array[Any]]=None
+            """
+            A list of events received from the event stream, ordered by first arrival.
+            """
+
+            responseTime: Optional[int]=None
+            """
+            The amount of milliseconds it took for the last observed event to arrive.
+            """
+            def __init__(self, actionResult: Optional[Any]=None, observed: Optional[Array[Any]]=None, responseTime: Optional[int]=None) -> None: ...
+
+            @overload
+            def toJson(self) -> any:
+            """
+            Convert the internal object representation to a JSON object.
+            
+            @return JSON object representation
+            
+            @see #fromJson
+            """
+                ...
+            @overload
+            def toJson(self, include: str=None, exclude: str=None) -> any:
+                ...
+            @overload
+            def toJson(self, include: Include=None, exclude: Exclude=None) -> any:
+                ...
+            @overload
+            def toTypedJson(self, omitTopLevelType: bool=None, actionRequirement: str=None) -> any:
+            """
+            Convert the internal object representation to a _typed_ JSON object.
+            @param omitTopLevelType
+                   Whether to leave out `type: {{ type of this serializable instance }}` as the **first** key-value pair in
+                   the outer level of the produced json.
+            @param runtime
+                   If provided, then any special serialization logic required for the {@link ImplLanguage.Runtime} will be
+                   performed. **NOTE** This argument is ignored if `typed` is not `true`. @see Ann.Ser
+            
+            
+            @return JSON object representation
+            
+            @see #fromJson
+            @see #toJson
+            @see serdeser.c3doc
+            @see JsonType
+            """
+                ...
+            @overload
+            def toTypedJson(self, include: str=None, exclude: str=None) -> any:
+                ...
+            @overload
+            def toTypedJson(self, include: Include=None, exclude: Exclude=None) -> any:
+                ...
+            @overload
+            def toJsonString(self) -> str:
+                ...
+            @overload
+            def toJsonString(self, pretty: bool) -> str:
+            """
+            Convert the internal object representation to a serialized JSON string.
+            
+            @return JSON object as string
+            """
+                ...
+            @overload
+            def toTypedJsonString(self) -> str:
+                ...
+            @overload
+            def toTypedJsonString(self, pretty: bool=None, omitTopLevelType: bool=None) -> str:
+                ...
+            @overload
+            def toJsString(self) -> str:
+                ...
+            @overload
+            def toJsString(self, withType: bool) -> str:
+            """
+            Convert the internal object representation to a serialized JavaScript object literal.
+            
+            @return JavaScript object literal string
+            """
+                ...
+            @overload
+            def toXmlString(self) -> str:
+                ...
+            @overload
+            def toXmlString(self, withType: bool) -> str:
+            """
+            Convert the internal object representation to a serialized XML string.
+            
+            @return XML element as string
+            
+            @see #fromXmlString
+            """
+                ...
+            def serialize(self, contentType: str, toUntyped: bool=None) -> Union[str]:
+            """
+            Convert the internal object representation to a string serialized representation of the object.
+            
+            @return string serialized object representation
+            """
+                ...
+            @classmethod
+            def fromJson(cls, json: any) -> Union[Tester.Toolbox.ObservedEvents]:
+            """
+            Load the JSON-based representation and reconstruct the corresponding object.
+            
+            fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+            a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+            called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+            an instance of the correct type.
+            
+            @see #toJson
+            """
+                ...
+            @classmethod
+            def fromJsonString(cls, json: str) -> Union[Tester.Toolbox.ObservedEvents]:
+            """
+            Load the JSON-based representation and reconstruct the corresponding object.
+            
+            fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+            a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+            called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+            an instance of the correct type.
+            
+            @see #toJsonString
+            """
+                ...
+            @classmethod
+            def fromXmlString(cls, xml: str) -> Union[Tester.Toolbox.ObservedEvents]:
+            """
+            Load the XML-based representation and reconstruct the corresponding object.
+            
+            fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+            may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+            isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+            will return an instance of the correct type.
+            
+            @see #toXmlString
+            """
+                ...
+            @classmethod
+            def deserialize(cls, contentStr: str, contentType: str) -> Union[Tester.Toolbox.ObservedEvents]:
+            """
+            Load from contentType representation and reconstruct the corresponding object.
+            
+            fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+            (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+            will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+            type and will return an instance of the correct type.
+            """
+                ...
+            def fingerprint(self, allIdentifiedRefFields: bool=None, trackRecursiveRefs: bool=None, traversedRefs: SetBuilder[Obj]=None) -> int:
+            """
+            Produce a checksum that can easily be compared to determine if two objects are definitely different. Note that
+            there is a slight possibility that two objects with the same fingerprint will actually differ.
+            
+            The fingerprint recurses into field values, including collections and referenced Objs. The handling of nested
+            {@link Identified identified} references (typically entities) differ in that _only_ the `id` field is included
+            unless the allIdentifiedRefFields option is specified.
+            
+            If the object graph may contain recursive embedded object references, the trackRecursiveRefs option may be used.
+            However, maintaining the list of visited objects is costly so this should not be done unnecessarily.
+            
+            @param allIdentifiedRefFields
+                      if `true`, fingerprint individual fields of persistable references, not just the `id`
+            @param trackRecursiveRefs
+                      if `true`, a set of referenced objects is maintained to avoid infinite recursion
+            @param traversedRefs
+                      only considered together with trackRecursiveRefs and if provided then all traversed references are
+                      checked against and added to it
+            @return integer fingerprint
+            
+            @see https://en.wikipedia.org/wiki/Fingerprint_(computing)
+            """
+                ...
+            def retainedMemory(self, deep: bool=None, allMeasured: SetBuilder[Any]=None) -> int:
+            """
+            Measures retained memory by this instance.
+            
+            @param deep
+                   if true and this instance contains references to other objects also measures memory retained by those
+            @param allMeasured
+                   if set then will skip instances that are in the set and will add instances that where measured by this call
+            @return retained memory in bytes for this instances
+            """
+                ...
+            def type(self) -> Type:
+            """
+            C3 Type of this instance.
+            """
+                ...
+            def replaceType(self, old: Type, new: Type) -> Tester.Toolbox.ObservedEvents:
+            """
+            Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+            type does not contain fields from old or field value types are not convertable then drops the field.
+            
+            This method is used during live metadata update
+            """
+                ...
+            def super(self, mixin: Type=None) -> Any:
+            """
+             Produce a calling proxy that represents the content of all Obj type's mixins, but not the type itself. This is
+             useful for redispatching **member** methods reimplemented on this type to a parent implementation:
+             ```js
+             function toString() {
+               return this.super().toString() + ', x=' + this.x;
+             }
+             ```
+            
+             ```py
+             def toString(this):
+                return this.super().toString() + ', x=' + this.x
+            ```
+            
+             To redispatch **static** methods, see {@link Type#super}.
+            
+             Note that this not the same as the language-specific `super` keyword because it works through the type system and
+             supports multiple mixins. It behaves like the Python `super()` function, except called on the instance rather than
+             globally.
+            
+             If `mixin` is the implementing type in a client implementation, this will delegate the call to the server.
+             This can be used to create a local implementation "around" the server implementation for additional caching or
+             other local state management.
+            
+             @param mixin if specified, this mixin is used instead or an error is thrown
+             @return "super" calling proxy for this object
+            
+             @see Type.super
+            """
+                ...
+            @overload
+            def instanceOf(self, typeName: str) -> bool:
+            """
+            Checks whether this Obj is an instance of the specified type by checking both its type and the mixin chain.
+            This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+            
+            @return true if this instance is of this type or any of its mixins
+            """
+                ...
+            @overload
+            def instanceOf(self, type: Type) -> bool:
+            """
+            Checks whether this instance is an instance of the specified type by checking both its type and the mixin chain.
+            This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+            
+            @return true if this instance is of this type or any of its mixins
+            
+            @see ValueType#isA
+            """
+                ...
+            def isEmptyObj(self) -> bool:
+            """
+            Whether all the fields of this instance are empty.
+            """
+                ...
+            def isSame(self, other: Obj) -> bool:
+            """
+            Whether the specified instance represents exactly the same object as this instance.
+            """
+                ...
+            @overload
+            def isFieldSet(self, field: str) -> bool:
+            """
+             Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+             if the field value set the its default value by the constructor. A set field is never missing.
+            
+            @param field the field to check
+            
+            @return whether the specified field is set
+            """
+                ...
+            @overload
+            def isFieldSet(self, field: FieldType) -> bool:
+            """
+             Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+             if the field value set the its default value by the constructor. A set field is never missing.
+            
+            @param field the field to check
+            
+            @return whether the specified field is set
+            """
+                ...
+            @overload
+            def isFieldMissing(self, field: str) -> bool:
+            """
+             Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+             should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+            {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+            A missing field is never set.
+            
+            @param field the field to check
+            
+            @return whether the specified field is missing
+            """
+                ...
+            @overload
+            def isFieldMissing(self, field: FieldType) -> bool:
+            """
+             Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+             should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+            {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+            A missing field is never set.
+            
+            @param field the field to check
+            
+            @return whether the specified field is missing
+            """
+                ...
+            @overload
+            def fieldValue(self, field: str, defaultToEmpty: bool=None) -> Union[T]:
+            """
+            Returns value of the given field.
+            
+            @param field
+                      Field to return the value for
+                   defaultToEmpty
+                      will return default empty value if field is missing
+            """
+                ...
+            @overload
+            def fieldValue(self, field: FieldType, defaultToEmpty: bool=None) -> Union[T]:
+            """
+            Returns value of the given field type. Be sure to use the FieldType instance for the exact same type as the type of
+            the obj.
+            
+            @param field
+                      Field to return the value for
+                   defaultToEmpty
+                      will return default empty value if field is missing
+            @return value for the given field
+            """
+                ...
+            def fieldValues(self) -> Union[Array[FieldValue]]:
+            """
+            Returns all non empty field values. Note that it is recommended to use #eachFieldValue instead
+            """
+                ...
+            def fieldValuesByOrdinal(self, skipTrailingEmpty: bool=None) -> Union[Array[Any]]:
+            """
+            Returns all field values including empty ones as array where value of a field is at corresponding ordinal position.
+            Unless `skipTrailingEmpty` parameter is set and there are trailing empty values resulting array has same size as
+            #dataFieldTypes
+            """
+                ...
+            def fieldValuesByFieldType(self) -> Union[Map[FieldType, Any]]:
+            """
+            Returns all non empty field values by field type. Note that it is recommended to use #eachFieldValue instead
+            """
+                ...
+            def fieldValuesByFieldName(self) -> Union[Map[str, Any]]:
+            """
+            Returns all non empty field values by field name. Note that it is recommended to use #eachFieldValue instead
+            """
+                ...
+            def fieldNames(self) -> Union[Array[str]]:
+            """
+            Returns all data field names including those whose values are empty. Array is ordered by
+            field ordinal.
+            """
+                ...
+            def unsetFieldNames(self) -> Union[Array[str]]:
+            """
+            @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@link #isFieldSet are not set}. Array is ordered by
+            field ordinal.
+            """
+                ...
+            def missingFieldNames(self) -> Union[Array[str]]:
+            """
+            @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@Link isFieldMissing are missing}. Array is ordered by
+            field ordinal.
+            """
+                ...
+            @overload
+            def at(self, ordinal: int) -> Union[T]:
+            """
+            Return value of the field at provided ordinal. Throws an error on an invalid value (out of range).
+            
+            @param ordinal
+                    Integer ordinal of the field in the parent type
+            @return value of field at ordinal
+            """
+                ...
+            @overload
+            def at(self, expr: str, failIfNotValid: bool=None) -> Union[T]:
+            """
+            Return value for the given serialized expression
+            
+            @param expr
+                    Serialized expression to obtain the value in the given Obj
+            @param failIfNotValid
+                    If set, fails if not a valid expression
+            @return value obtained as a result of expression evaluation
+            """
+                ...
+            def fieldValueAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[T]:
+            """
+            Looks up a single field value by path from this Obj. Field paths are separated by dots so an expression like
+            `fieldValueAtPath("location.elevation")` is equivalent to `traverse("location").fieldValue("elevation")` except
+            that it also handles `null`. If path contains any collections then only first element will be traversed,
+            unless the collection index is specified in the path.
+            
+            If you need to traverse all elements of collection fields use #fieldValuesAtPath instead.
+            
+            @param fieldPath
+                      field names separated by dots
+            @param failIfNotFound
+                      if true, an error will be thrown if the any of the field types aren't defined
+            @param context
+                      if an error is thrown, the context returned by calling the lambda will be incorporated
+            @return the field or null
+            """
+                ...
+            def fieldValuesAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[Array[T]]:
+            """
+            Looks up all the fields by path from root Obj. If path contains any collections then result will contain all
+            traversals, unless the collection index is specified in the path.
+            
+            @param fieldPath
+                      field names separated by dots
+            @param failIfNotFound
+                      if true, an error will be thrown if the any of the field types aren't defined
+            @param context
+                      if an error is thrown, the context returned by calling the lambda will be incorporated
+            @return fields as a flat list
+            
+            @see #fieldValueAtPath
+            """
+                ...
+            @overload
+            def eachFieldValue(self, action: Callable[[FieldType, Any]]) -> None:
+            """
+            Perform an action for each non-empty field of this object.
+            
+            @param action
+                      lambda to apply
+            """
+                ...
+            @overload
+            def eachFieldValue(self, spec: ValueSpec, action: Callable[[FieldType, Any]]) -> None:
+            """
+            Perform an action for each non-empty field of this object. Fields are filtered based on provided `spec`.
+            
+            @param spec
+                      which fields to include
+            @param action
+                      lambda to apply
+            """
+                ...
+            def eachSetFieldValue(self, action: Callable[[FieldType, Union[Any]]]) -> None:
+            """
+            Perform an action for each {@link isFieldSet set} field of this object.
+            
+            @param action
+                      lambda to apply
+            """
+                ...
+            def eachFieldValueWhile(self, spec: ValueSpec, action: Callable[[FieldType, Any], bool]) -> bool:
+            """
+            Perform an action for each field of this object while processing action returns `true`. Fields are filtered based
+            on provided `spec`.
+            
+            @param spec
+                      which fields to include
+            @param action
+                      lambda to apply; stop if this `action` returns `false
+            @return `true` if iteration was not aborted by lambda i.e. it saw all field values
+            """
+                ...
+            @overload
+            def eachRef(self, action: Callable[[FieldType, Obj]]) -> None:
+            """
+            Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+            the field value if non-null and for collections of Obj, this means each element in the collection.
+            
+            @param action
+                      function to be executed for each pair of field type and Obj instance
+            """
+                ...
+            @overload
+            def eachRef(self, includeEmpty: bool, action: Callable[[FieldType, Obj]]) -> None:
+            """
+            Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+            the field value if non-null and for collections of Obj, this means each element in the collection.
+            
+            @param includeEmpty
+                      if `true` will also process references with `null` / "Empty" references
+            @param action
+                      function to be executed for each pair of field type and Obj instance
+            """
+                ...
+            def eachRefWhile(self, includeEmpty: bool, action: Callable[[FieldType, Obj], bool]) -> bool:
+            """
+            Execute the specified lambda against each referenced Obj instance in this type while processing action returns
+            `true`.
+            
+            @param includeEmpty
+                      if `true` will also process references with `null` / "Empty" references
+            @param action
+                      function to be executed for each pair of field type and Obj instance; stops processing if return `false`
+            @return `true` if iteration was not aborted by lambda i.e. it saw all refs
+            """
+                ...
+            def eachRefRecursive(self, includeEmpty: bool, action: Callable[[FieldPath, Obj]]) -> None:
+            """
+            Execute the specified lambda against each referenced Obj instance in this type or in any child refs.
+            """
+                ...
+            def eachRefRecursiveWhile(self, includeEmpty: bool, action: Callable[[FieldPath, Obj], bool]) -> bool:
+            """
+            Execute the specified lambda against each referenced Obj instance in this type or in any child refs. Continue while
+            processing action returns `true`.
+            """
+                ...
+            @overload
+            def mapFieldValues(self, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+            the `mapper` invocation.
+            
+            @param action
+                      lambda to apply for every field value to produce a new value for that field
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            @overload
+            def mapFieldValues(self, spec: ValueSpec, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Result of this function call is a copy of current instance with all fields replaced based on results of the
+            `mapper` invocation.
+            
+            @param spec
+                      which fields to include
+            @param mapper
+                      lambda to apply for every field value to produce a new value for that field
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            @overload
+            def mapFieldValuesAsync(self, mapper: Callable[[FieldType, Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester.Toolbox.ObservedEvents]:
+            """
+            Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+            the asynchronous `mapper` invocation.
+            
+            @param action
+                      lambda to apply for every field value to produce a new value for that fields
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            @overload
+            def mapFieldValuesAsync(self, spec: ValueSpec, mapper: Callable[[Union[FieldType], Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester.Toolbox.ObservedEvents]:
+            """
+            Result of this function call is a copy of current instance with all fields replaced based on results of the
+            asynchronous `mapper` invocation.
+            
+            @param spec
+                      which fields to include
+            @param mapper
+                      lambda to apply for every field value to produce a new value for that field
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            def mapFieldValue(self, mapper: Callable[[Any], Union[Any]], field: FieldType=None, includeEmpty: bool=None, convertValue: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Result of this function call is a copy of current instance with specified field value replaced based on result of
+            the `mapper` invocation.
+            @param field
+                      field being mapped
+            @param includeEmpty
+                      if set, invokes mapper for fields with empty value
+            @param mapper
+                      lambda to apply for every field value to produce a new value for that field
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            @overload
+            def mapRefs(self, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+            lambda application.
+            
+            Result of this function call is a copy of current instance with all references replaced based on results of the
+            `mapper` invocation.
+            
+            @param action
+                      function to be executed for each pair of field type and Obj instance
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            @overload
+            def mapRefs(self, includeEmpty: bool, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+            lambda application.
+            
+            Result of this function call is a copy of current instance with all references replaced based on results of the
+            `mapper` invocation.
+            
+            @param includeEmpty
+                      if `true` will also process references with `null` / "Empty" references
+            @param mapper
+                      function to be executed for each pair of field type and Obj instance for producing new reference value
+            @param convertValue
+                      if true, attempt to convert the value to match the field's type
+            """
+                ...
+            @overload
+            def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]]) -> Union[T]:
+            """
+            Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+            argument is a result of previous application. Initial value of `accumulator` will be `null`.
+            
+            This function is useful for calculating aggregate values based on all current non empty field values.
+            Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+            e.g
+            ```
+            o = {a:1, b:2, c:0}
+            o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+            
+            o = {a: {x:1, y:2}, b: {x:10, z:2}}
+            o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+            ```
+            """
+                ...
+            @overload
+            def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+            """
+            Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+            argument is a result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+            
+            This function is useful for calculating aggregate values based on all current non empty field values.
+            Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+            e.g
+            ```
+            o = {a:1, b:2, c:0}
+            o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+            
+            o = {a: {x:1, y:2}, b: {x:10, z:2}}
+            o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+            ```
+            """
+                ...
+            @overload
+            def foldFieldValues(self, spec: ValueSpec, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+            """
+            Result of this function is application of `folder` lambda to every field value where `accumulator` argument is a
+            result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+            
+            This function is useful for calculating aggregate values based on all field values.
+            Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+            e.g
+            ```
+            o = {a:1, b:2, c:0}
+            o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+            
+            o = {a: {x:1, y:2}, b: {x:10, z:2}}
+            o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+            ```
+            """
+                ...
+            @overload
+            def evalProjection(self, projection: str, resultType: ValueType=None, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Any]:
+            """
+            Evaluates given projection expression over this instance.
+            """
+                ...
+            @overload
+            def evalProjection(self, projection: any, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[any]:
+            """
+            Evaluates given projection over this instance and returns results as json.
+            """
+                ...
+            @overload
+            def evalProjection(self, projection: any, resultType: Type, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Obj]:
+            """
+            Evaluates given projection over this instance and returns results as instance of the new Obj.
+            """
+                ...
+            @overload
+            def validateObj(self) -> Tester.Toolbox.ObservedEvents:
+            """
+            Populates all missing default values and throws error if any constraint is violated.
+            """
+                ...
+            @overload
+            def validateObj(self, spec: ValidateObjSpec) -> ValidateObjResult:
+            """
+            Validate that the Obj fields are set according to all the required rules.
+            """
+                ...
+            @overload
+            def withField(self, field: str, value: Any, doNotConvert: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+            defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+            
+            @param field
+                      name of the field
+            @param value
+                      of the field
+            @param doNotConvert
+                      if true, do not attempt to convert the value to match the field's type
+            @return new Obj
+            
+            @see #withoutField
+            @see #defaultField
+            """
+                ...
+            @overload
+            def withField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+            defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+            
+            @param field
+                      the field
+            @param value
+                      of the field
+            @param doNotConvert
+                      if true, do not attempt to convert the value to match the field's type
+            @return new Obj
+            
+            @see #withoutField
+            @see #defaultField
+            """
+                ...
+            def withFields(self, fields: Map[str, Any], doNotConvert: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+            defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+            
+            @param fields
+                      map of field names/values
+            @param doNotConvert
+                      if true, attempt to convert the values to match the fields' type
+            @return new Obj
+            """
+                ...
+            def withFieldAtPath(self, path: str, value: Any, doNotConvert: bool=None, doNotCreateIfMissing: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+            If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+            
+            Immutable objects may return the same instance if the field being set does not actually represent a
+            change to the existing object.
+            
+            @param path
+                      path to set value at
+            @param value
+                      value to set
+            @param doNotConvert
+                      if true, attempt to convert the values to match the fields' type
+            @param doNotCreateIfMissing
+                      true indicates that any empty reference along the path will not set the value
+            @return new Obj
+            """
+                ...
+            def withoutFieldAtPath(self, path: str) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj without the specified path field.
+            
+            Immutable objects may return the same instance if the field being removed does not actually represent a
+            change to the existing object.
+            
+            @param path
+                      path for field to remove
+            @return new Obj
+            
+            @see #withFieldAtPath
+            @see #withoutField
+            """
+                ...
+            @overload
+            def withoutField(self, field: str) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj, removing the field with the provided name.
+            
+            Immutable objects may return the same instance if the field being removed is not present in the existing object.
+            
+            @param field
+                      name of the field to remove
+            @return new Obj with removed field
+            
+            @see #unsetField
+            @see #removeField
+            """
+                ...
+            @overload
+            def withoutField(self, field: FieldType) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj, removing the field with the provided field type.
+            
+            Immutable objects may return the same instance if the field being removed is not present in the existing object.
+            
+            @param field
+                      name of the field to remove
+            @return new Obj with removed field
+            
+            @see #unsetField
+            @see #removeField
+            """
+                ...
+            def withoutFields(self, fields: Array[str]) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj, removing the fields with the provided names.
+            
+            Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+            
+            @param fields
+                      names of the fields to remove
+            @return new Obj with removed fields
+            """
+                ...
+            def withoutFieldsByType(self, fields: Array[FieldType]) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+            exact same type as the type of the obj to respect the "ordinal" of the field type
+            
+            Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+            
+            @param fields
+                      field types to remove
+            @return new Obj with removed fields
+            """
+                ...
+            def withoutSecretFields(self) -> Tester.Toolbox.ObservedEvents:
+            """
+            @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+            """
+                ...
+            def secretFieldsSet(self) -> Array[str]:
+            """
+            @return a list of the secret field paths that were found to be set on this Obj.
+            """
+                ...
+            def withDefaults(self, includeEmptyRefsWithDefaults: bool=None, defaultFields: Array[str]=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+            calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+            {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+            fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+            fields that have already been set.
+            
+            {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+            As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+            
+            @param includeEmptyRefsWithDefaults
+                      it `true` then missing / empty child references that have fields with defaults will also be instantiated
+            @param defaultFields
+                      If not empty, a list of default field paths to populate.  Any default fields not specified in the
+                      array will be ignored.
+            @return new Obj
+            
+            @see #defaultField
+            @see FieldType#defaultValueConst
+            @see FieldType#defaultValue
+            """
+                ...
+            @overload
+            def defaultField(self, field: str) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+            method will behave the same as {@link #unsetField}.
+            
+            @param field
+                    name of the field to default
+            @return new `Obj` with the specified field set to its default value
+            
+            @see #withField
+            @see #unsetField
+            """
+                ...
+            @overload
+            def defaultField(self, field: FieldType) -> Tester.Toolbox.ObservedEvents:
+            """
+            Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+            method will behave the same as {@link #unsetField}.
+            
+            @param field
+                    field type to default
+            @return new `Obj` with the specified field set to its default value
+            
+            @see #withField
+            @see #unsetField
+            """
+                ...
+            @overload
+            def unsetField(self, field: str) -> Tester.Toolbox.ObservedEvents:
+            """
+            Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+            is different from {@link removeField}
+            
+            @param field
+                    name of the field to unset
+            @return new `Obj` with the specified field unset
+            
+            @see #withoutField
+            @see #removeField
+            """
+                ...
+            @overload
+            def unsetField(self, field: FieldType) -> Tester.Toolbox.ObservedEvents:
+            """
+            Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+            is different from {@link removeField}
+            
+            @param field
+                    field type to unset
+            @return new `Obj` with the specified field unset
+            
+            @see #withoutField
+            @see #removeField
+            """
+                ...
+            @overload
+            def removeField(self, field: str) -> Tester.Toolbox.ObservedEvents:
+            """
+            Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+            is different from {@link #unsetField}
+            
+            @param field
+                    name of the field to remove
+            @return new `Obj` with the specified field removed
+            
+            @see #withoutField
+            @see #unsetField
+            """
+                ...
+            @overload
+            def removeField(self, field: FieldType) -> Tester.Toolbox.ObservedEvents:
+            """
+            Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+            is different from {@link #unsetField}
+            
+            @param field
+                    field type to remove
+            @return new `Obj` with the specified field removed
+            
+            @see #withoutField
+            @see #unsetField
+            """
+                ...
+            @overload
+            def mergeObj(self, other: Obj, fieldPathMergeSpec: Map[str, str]=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+            In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+            
+            @param other
+                      object
+            @param fieldPathMergeSpec
+                      mapping of fields of the object to the respective merge annotations
+            @return the new merged Obj
+            """
+                ...
+            @overload
+            def mergeObj(self, other: Obj, otherFieldsFilter: Type) -> Tester.Toolbox.ObservedEvents:
+            """
+            Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+            In case of conflicts, fields of other instance take precedence.
+            
+            @param other
+                      object
+            @param otherFieldsFilter
+                      only fields of otherFieldsFilter type from other are merged into this obj.
+            @return the new merged Obj
+            """
+                ...
+            @overload
+            def mergeObj(self, other: Obj, merger: Callable[[Union[FieldPath], Union[Any], Union[FieldPath], Union[Any]], Union[Any]], deep: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+            fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+            @param deep
+                   if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+                   the same key or index.
+            """
+                ...
+            @overload
+            def mergeObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Tester.Toolbox.ObservedEvents:
+            """
+            Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+            fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+            traverse child reference and collection fields.
+            """
+                ...
+            def mergeAndExpandObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Union[R]:
+            """
+            Create new Obj with all non-null fields of this and other. Fields that are non null in both apply merger lambda.
+            Fields that non null in only one of this and other will be in the resulting Obj without change.
+            """
+                ...
+            def mergeJson(self, json: any) -> Tester.Toolbox.ObservedEvents:
+                ...
+            def mergeChildren(self, deep: bool=None, objKey: Callable[[Union[Obj]], Union[Any]]=None, filter: Callable[[str], bool]=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Merge the obj references within the current obj
+            @param deep
+                   If set, traverses the reference fields within the obj as well for a deep merge
+            @param objKey
+                   lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+            @param filter
+                   Field paths that need to be filtered from this merge
+            @return Obj with child references merged
+            """
+                ...
+            def sumObj(self, other: Obj, deep: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Adds the numeric Obj fields with the other Objs respective fields.
+            If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+            references with same name and collection elements at same index or key.
+            """
+                ...
+            def singletonArray(self) -> Array[Tester.Toolbox.ObservedEvents]:
+            """
+            Build an array of the correct type with a single element which is this instance.
+            
+            @return new array instance with this as only element.
+            """
+                ...
+            @classmethod
+            def array(cls, *elements: Array[Any]) -> Union[Array[Tester.Toolbox.ObservedEvents]]:
+            """
+            Creates an array of instances of this type.
+            """
+                ...
+            @classmethod
+            def arrayBuilder(cls) -> Union[ArrayBuilder[Tester.Toolbox.ObservedEvents]]:
+            """
+            Creates an array of instances of this type.
+            """
+                ...
+            def singletonSet(self) -> Set[Tester.Toolbox.ObservedEvents]:
+            """
+            Build an set of the correct type with a single element which is this instance.
+            
+            @return new array instance with this as only element.
+            """
+                ...
+            @classmethod
+            def setBuilder(cls) -> Union[SetBuilder[Tester.Toolbox.ObservedEvents]]:
+            """
+            Creates a set of instances of this type.
+            """
+                ...
+            @classmethod
+            def mapBuilder(cls) -> Union[MapBuilder[str, Tester.Toolbox.ObservedEvents]]:
+            """
+            Create a map of string to elements of this type.
+            """
+                ...
+            @classmethod
+            def mapBuilderOf(cls, keyType: ValueType) -> Union[MapBuilder[Any, Tester.Toolbox.ObservedEvents]]:
+            """
+            Create a map with the given key type and elements of this type.
+            """
+                ...
+            @classmethod
+            def myReferenceType(cls) -> ReferenceType:
+                ...
+            @classmethod
+            def myMapTypeOf(cls, keyType: ValueType) -> MapType:
+                ...
+            @classmethod
+            def myMapType(cls) -> MapType:
+                ...
+            @classmethod
+            def myArrayType(cls) -> ArrayType:
+                ...
+            @classmethod
+            def mySetType(cls) -> SetType:
+                ...
+            @classmethod
+            def myStreamType(cls) -> StreamType:
+                ...
+            def toBuilder(self) -> ObjBuilder[Tester.Toolbox.ObservedEvents]:
+            """
+            @return new ObjBuilder with initial state set to fields of this instance.
+            """
+                ...
+            @classmethod
+            def builder(cls) -> ObjBuilder[Tester.Toolbox.ObservedEvents]:
+            """
+            @return new ObjBuilder of this instance.
+            """
+                ...
+            @overload
+            @classmethod
+            def fromFields(cls, fields: Map[FieldType, Any], spec: Obj.MakeSpec) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct instance of this type from provided field values and options
+            """
+                ...
+            @overload
+            @classmethod
+            def fromFields(cls, fields: Map[FieldType, Union[Any,Any]], withDefaults: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct an instance of this type from provided fields
+            @param fields
+                       Fields to construct the instance of the obj with
+            @param withDefaults
+                       If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+            
+            @see withDefaults
+            """
+                ...
+            @overload
+            @classmethod
+            def make(cls, fields: Map[str, Any], spec: Obj.MakeSpec) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct instance of this type from provided field values and options
+            """
+                ...
+            @overload
+            @classmethod
+            def make(cls, withDefaults: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+            @param withDefaults
+                       If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+                       populated
+            
+            @see withDefaults
+            """
+                ...
+            @overload
+            @classmethod
+            def make(cls, fields: Map[str, Union[Any,Any]], withDefaults: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct an instance from provided fields
+            @param fields
+                       Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+                       field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+                       to Panda.make()
+            @param withDefaults
+                       If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+                       -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+                       the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+            
+            
+            @see fromFields
+            @see beforeMake
+            @see afterMake
+            @see withDefaults
+            """
+                ...
+            @overload
+            @classmethod
+            def make(cls, fields: Any, withDefaults: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+            
+            ```js
+            User.make({
+              email: 'joe@smith.com',
+              realName: 'Joe Smith'
+            })
+            
+            Obj.make({
+              type: 'User',
+              email: 'joe@smith.com',
+              realName: 'Joe Smith'
+            })
+            ```
+            
+            ```py
+            c3.User.make({
+              "email": 'joe@smith.com',
+              "realName": 'Joe Smith'
+            })
+            
+            c3.Obj.make({
+              "type": 'User',
+              "email": 'joe@smith.com',
+              "realName": 'Joe Smith'
+            })
+            
+            c3.User(email='joe@smith.com', realName='Joe Smith')
+            
+            c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+            ```
+            
+            Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+            specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+            such as {@link Ann.Ser} do not apply.
+            @param fields
+                       Fields to construct the instance of the obj with
+            @param withDefaults
+                       If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+            
+            @see fromFields
+            @see beforeMake
+            @see afterMake
+            @see withDefaults
+            """
+                ...
+            @classmethod
+            def remake(cls, other: Obj, failIfExtraOrInvalidFields: bool=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Construct an instance of this type from provided instance of a subtype or a "duck type".
+            """
+                ...
+            def remakeAs(self, type: Type) -> O:
+            """
+            Creates an obj of the new type with all fields that exist on the original obj that are defined in the new type
+            converted and copied to the new obj instance. Note, that checking assignability and conversion of field values
+            could be costly if types have different value types for same fields.
+            
+            @param type
+                    Type of new obj to return
+            @return new obj of the requested type with all fields present in the original obj that are defined in the new type
+                    converted and copied to it
+            """
+                ...
+            @classmethod
+            def beforeMake(cls, fields: Map[FieldType, Any]) -> Union[Map[FieldType, Any]]:
+            """
+            Optional override that will be called every time instance of this type is created.
+            
+            
+            Note that it introduces additional overhead so should only be implemented for low volume data.
+            """
+                ...
+            def afterMake(self) -> Tester.Toolbox.ObservedEvents:
+            """
+            Optional override that will be called after every instance creation.
+            
+            Note that it introduces additional overhead so should only be implemented for low volume data.
+            """
+                ...
+            @classmethod
+            def cachedEmptyInst(cls) -> Tester.Toolbox.ObservedEvents:
+            """
+            Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+            every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+            Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+            
+            @see ValueType#defaultEmptyValue
+            """
+                ...
+            def toData(self) -> Union[Data]:
+            """
+            Represent the current obj instance as {@link Data}
+            """
+                ...
+            @classmethod
+            def generateObjs(cls, spec: Obj.GenerateSpec=None) -> Union[Stream[Tester.Toolbox.ObservedEvents]]:
+            """
+            Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+            value is read.
+            """
+                ...
+            @classmethod
+            def generateObj(cls, spec: Obj.GenerateSpec=None) -> Tester.Toolbox.ObservedEvents:
+            """
+            Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+            random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+            populates fields in a more realistic way.
+            """
+                ...
+    
+    class AppMetric():
+        """
+        Helper type to centralize metric defaults and steps needed to evaluate App Metrics
+        
+        @remarks this represents a made instance of Tester.AppMetric
+        """
+        def __init__(self) -> None: ...
+
+        @overload
+        def toJson(self) -> any:
+        """
+        Convert the internal object representation to a JSON object.
+        
+        @return JSON object representation
+        
+        @see #fromJson
+        """
+            ...
+        @overload
+        def toJson(self, include: str=None, exclude: str=None) -> any:
+            ...
+        @overload
+        def toJson(self, include: Include=None, exclude: Exclude=None) -> any:
+            ...
+        @overload
+        def toTypedJson(self, omitTopLevelType: bool=None, actionRequirement: str=None) -> any:
+        """
+        Convert the internal object representation to a _typed_ JSON object.
+        @param omitTopLevelType
+               Whether to leave out `type: {{ type of this serializable instance }}` as the **first** key-value pair in
+               the outer level of the produced json.
+        @param runtime
+               If provided, then any special serialization logic required for the {@link ImplLanguage.Runtime} will be
+               performed. **NOTE** This argument is ignored if `typed` is not `true`. @see Ann.Ser
+        
+        
+        @return JSON object representation
+        
+        @see #fromJson
+        @see #toJson
+        @see serdeser.c3doc
+        @see JsonType
+        """
+            ...
+        @overload
+        def toTypedJson(self, include: str=None, exclude: str=None) -> any:
+            ...
+        @overload
+        def toTypedJson(self, include: Include=None, exclude: Exclude=None) -> any:
+            ...
+        @overload
+        def toJsonString(self) -> str:
+            ...
+        @overload
+        def toJsonString(self, pretty: bool) -> str:
+        """
+        Convert the internal object representation to a serialized JSON string.
+        
+        @return JSON object as string
+        """
+            ...
+        @overload
+        def toTypedJsonString(self) -> str:
+            ...
+        @overload
+        def toTypedJsonString(self, pretty: bool=None, omitTopLevelType: bool=None) -> str:
+            ...
+        @overload
+        def toJsString(self) -> str:
+            ...
+        @overload
+        def toJsString(self, withType: bool) -> str:
+        """
+        Convert the internal object representation to a serialized JavaScript object literal.
+        
+        @return JavaScript object literal string
+        """
+            ...
+        @overload
+        def toXmlString(self) -> str:
+            ...
+        @overload
+        def toXmlString(self, withType: bool) -> str:
+        """
+        Convert the internal object representation to a serialized XML string.
+        
+        @return XML element as string
+        
+        @see #fromXmlString
+        """
+            ...
+        def serialize(self, contentType: str, toUntyped: bool=None) -> Union[str]:
+        """
+        Convert the internal object representation to a string serialized representation of the object.
+        
+        @return string serialized object representation
+        """
+            ...
+        @classmethod
+        def fromJson(cls, json: any) -> Union[Tester.AppMetric]:
+        """
+        Load the JSON-based representation and reconstruct the corresponding object.
+        
+        fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+        a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+        called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+        an instance of the correct type.
+        
+        @see #toJson
+        """
+            ...
+        @classmethod
+        def fromJsonString(cls, json: str) -> Union[Tester.AppMetric]:
+        """
+        Load the JSON-based representation and reconstruct the corresponding object.
+        
+        fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+        a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+        called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+        an instance of the correct type.
+        
+        @see #toJsonString
+        """
+            ...
+        @classmethod
+        def fromXmlString(cls, xml: str) -> Union[Tester.AppMetric]:
+        """
+        Load the XML-based representation and reconstruct the corresponding object.
+        
+        fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+        may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+        isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+        will return an instance of the correct type.
+        
+        @see #toXmlString
+        """
+            ...
+        @classmethod
+        def deserialize(cls, contentStr: str, contentType: str) -> Union[Tester.AppMetric]:
+        """
+        Load from contentType representation and reconstruct the corresponding object.
+        
+        fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+        (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+        will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+        type and will return an instance of the correct type.
+        """
+            ...
+        def fingerprint(self, allIdentifiedRefFields: bool=None, trackRecursiveRefs: bool=None, traversedRefs: SetBuilder[Obj]=None) -> int:
+        """
+        Produce a checksum that can easily be compared to determine if two objects are definitely different. Note that
+        there is a slight possibility that two objects with the same fingerprint will actually differ.
+        
+        The fingerprint recurses into field values, including collections and referenced Objs. The handling of nested
+        {@link Identified identified} references (typically entities) differ in that _only_ the `id` field is included
+        unless the allIdentifiedRefFields option is specified.
+        
+        If the object graph may contain recursive embedded object references, the trackRecursiveRefs option may be used.
+        However, maintaining the list of visited objects is costly so this should not be done unnecessarily.
+        
+        @param allIdentifiedRefFields
+                  if `true`, fingerprint individual fields of persistable references, not just the `id`
+        @param trackRecursiveRefs
+                  if `true`, a set of referenced objects is maintained to avoid infinite recursion
+        @param traversedRefs
+                  only considered together with trackRecursiveRefs and if provided then all traversed references are
+                  checked against and added to it
+        @return integer fingerprint
+        
+        @see https://en.wikipedia.org/wiki/Fingerprint_(computing)
+        """
+            ...
+        def retainedMemory(self, deep: bool=None, allMeasured: SetBuilder[Any]=None) -> int:
+        """
+        Measures retained memory by this instance.
+        
+        @param deep
+               if true and this instance contains references to other objects also measures memory retained by those
+        @param allMeasured
+               if set then will skip instances that are in the set and will add instances that where measured by this call
+        @return retained memory in bytes for this instances
+        """
+            ...
+        def type(self) -> Type:
+        """
+        C3 Type of this instance.
+        """
+            ...
+        def replaceType(self, old: Type, new: Type) -> Tester.AppMetric:
+        """
+        Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+        type does not contain fields from old or field value types are not convertable then drops the field.
+        
+        This method is used during live metadata update
+        """
+            ...
+        def super(self, mixin: Type=None) -> Any:
+        """
+         Produce a calling proxy that represents the content of all Obj type's mixins, but not the type itself. This is
+         useful for redispatching **member** methods reimplemented on this type to a parent implementation:
+         ```js
+         function toString() {
+           return this.super().toString() + ', x=' + this.x;
+         }
+         ```
+        
+         ```py
+         def toString(this):
+            return this.super().toString() + ', x=' + this.x
+        ```
+        
+         To redispatch **static** methods, see {@link Type#super}.
+        
+         Note that this not the same as the language-specific `super` keyword because it works through the type system and
+         supports multiple mixins. It behaves like the Python `super()` function, except called on the instance rather than
+         globally.
+        
+         If `mixin` is the implementing type in a client implementation, this will delegate the call to the server.
+         This can be used to create a local implementation "around" the server implementation for additional caching or
+         other local state management.
+        
+         @param mixin if specified, this mixin is used instead or an error is thrown
+         @return "super" calling proxy for this object
+        
+         @see Type.super
+        """
+            ...
+        @overload
+        def instanceOf(self, typeName: str) -> bool:
+        """
+        Checks whether this Obj is an instance of the specified type by checking both its type and the mixin chain.
+        This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+        
+        @return true if this instance is of this type or any of its mixins
+        """
+            ...
+        @overload
+        def instanceOf(self, type: Type) -> bool:
+        """
+        Checks whether this instance is an instance of the specified type by checking both its type and the mixin chain.
+        This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+        
+        @return true if this instance is of this type or any of its mixins
+        
+        @see ValueType#isA
+        """
+            ...
+        def isEmptyObj(self) -> bool:
+        """
+        Whether all the fields of this instance are empty.
+        """
+            ...
+        def isSame(self, other: Obj) -> bool:
+        """
+        Whether the specified instance represents exactly the same object as this instance.
+        """
+            ...
+        @overload
+        def isFieldSet(self, field: str) -> bool:
+        """
+         Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+         if the field value set the its default value by the constructor. A set field is never missing.
+        
+        @param field the field to check
+        
+        @return whether the specified field is set
+        """
+            ...
+        @overload
+        def isFieldSet(self, field: FieldType) -> bool:
+        """
+         Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+         if the field value set the its default value by the constructor. A set field is never missing.
+        
+        @param field the field to check
+        
+        @return whether the specified field is set
+        """
+            ...
+        @overload
+        def isFieldMissing(self, field: str) -> bool:
+        """
+         Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+         should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+        {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+        A missing field is never set.
+        
+        @param field the field to check
+        
+        @return whether the specified field is missing
+        """
+            ...
+        @overload
+        def isFieldMissing(self, field: FieldType) -> bool:
+        """
+         Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+         should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+        {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+        A missing field is never set.
+        
+        @param field the field to check
+        
+        @return whether the specified field is missing
+        """
+            ...
+        @overload
+        def fieldValue(self, field: str, defaultToEmpty: bool=None) -> Union[T]:
+        """
+        Returns value of the given field.
+        
+        @param field
+                  Field to return the value for
+               defaultToEmpty
+                  will return default empty value if field is missing
+        """
+            ...
+        @overload
+        def fieldValue(self, field: FieldType, defaultToEmpty: bool=None) -> Union[T]:
+        """
+        Returns value of the given field type. Be sure to use the FieldType instance for the exact same type as the type of
+        the obj.
+        
+        @param field
+                  Field to return the value for
+               defaultToEmpty
+                  will return default empty value if field is missing
+        @return value for the given field
+        """
+            ...
+        def fieldValues(self) -> Union[Array[FieldValue]]:
+        """
+        Returns all non empty field values. Note that it is recommended to use #eachFieldValue instead
+        """
+            ...
+        def fieldValuesByOrdinal(self, skipTrailingEmpty: bool=None) -> Union[Array[Any]]:
+        """
+        Returns all field values including empty ones as array where value of a field is at corresponding ordinal position.
+        Unless `skipTrailingEmpty` parameter is set and there are trailing empty values resulting array has same size as
+        #dataFieldTypes
+        """
+            ...
+        def fieldValuesByFieldType(self) -> Union[Map[FieldType, Any]]:
+        """
+        Returns all non empty field values by field type. Note that it is recommended to use #eachFieldValue instead
+        """
+            ...
+        def fieldValuesByFieldName(self) -> Union[Map[str, Any]]:
+        """
+        Returns all non empty field values by field name. Note that it is recommended to use #eachFieldValue instead
+        """
+            ...
+        def fieldNames(self) -> Union[Array[str]]:
+        """
+        Returns all data field names including those whose values are empty. Array is ordered by
+        field ordinal.
+        """
+            ...
+        def unsetFieldNames(self) -> Union[Array[str]]:
+        """
+        @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@link #isFieldSet are not set}. Array is ordered by
+        field ordinal.
+        """
+            ...
+        def missingFieldNames(self) -> Union[Array[str]]:
+        """
+        @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@Link isFieldMissing are missing}. Array is ordered by
+        field ordinal.
+        """
+            ...
+        @overload
+        def at(self, ordinal: int) -> Union[T]:
+        """
+        Return value of the field at provided ordinal. Throws an error on an invalid value (out of range).
+        
+        @param ordinal
+                Integer ordinal of the field in the parent type
+        @return value of field at ordinal
+        """
+            ...
+        @overload
+        def at(self, expr: str, failIfNotValid: bool=None) -> Union[T]:
+        """
+        Return value for the given serialized expression
+        
+        @param expr
+                Serialized expression to obtain the value in the given Obj
+        @param failIfNotValid
+                If set, fails if not a valid expression
+        @return value obtained as a result of expression evaluation
+        """
+            ...
+        def fieldValueAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[T]:
+        """
+        Looks up a single field value by path from this Obj. Field paths are separated by dots so an expression like
+        `fieldValueAtPath("location.elevation")` is equivalent to `traverse("location").fieldValue("elevation")` except
+        that it also handles `null`. If path contains any collections then only first element will be traversed,
+        unless the collection index is specified in the path.
+        
+        If you need to traverse all elements of collection fields use #fieldValuesAtPath instead.
+        
+        @param fieldPath
+                  field names separated by dots
+        @param failIfNotFound
+                  if true, an error will be thrown if the any of the field types aren't defined
+        @param context
+                  if an error is thrown, the context returned by calling the lambda will be incorporated
+        @return the field or null
+        """
+            ...
+        def fieldValuesAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[Array[T]]:
+        """
+        Looks up all the fields by path from root Obj. If path contains any collections then result will contain all
+        traversals, unless the collection index is specified in the path.
+        
+        @param fieldPath
+                  field names separated by dots
+        @param failIfNotFound
+                  if true, an error will be thrown if the any of the field types aren't defined
+        @param context
+                  if an error is thrown, the context returned by calling the lambda will be incorporated
+        @return fields as a flat list
+        
+        @see #fieldValueAtPath
+        """
+            ...
+        @overload
+        def eachFieldValue(self, action: Callable[[FieldType, Any]]) -> None:
+        """
+        Perform an action for each non-empty field of this object.
+        
+        @param action
+                  lambda to apply
+        """
+            ...
+        @overload
+        def eachFieldValue(self, spec: ValueSpec, action: Callable[[FieldType, Any]]) -> None:
+        """
+        Perform an action for each non-empty field of this object. Fields are filtered based on provided `spec`.
+        
+        @param spec
+                  which fields to include
+        @param action
+                  lambda to apply
+        """
+            ...
+        def eachSetFieldValue(self, action: Callable[[FieldType, Union[Any]]]) -> None:
+        """
+        Perform an action for each {@link isFieldSet set} field of this object.
+        
+        @param action
+                  lambda to apply
+        """
+            ...
+        def eachFieldValueWhile(self, spec: ValueSpec, action: Callable[[FieldType, Any], bool]) -> bool:
+        """
+        Perform an action for each field of this object while processing action returns `true`. Fields are filtered based
+        on provided `spec`.
+        
+        @param spec
+                  which fields to include
+        @param action
+                  lambda to apply; stop if this `action` returns `false
+        @return `true` if iteration was not aborted by lambda i.e. it saw all field values
+        """
+            ...
+        @overload
+        def eachRef(self, action: Callable[[FieldType, Obj]]) -> None:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+        the field value if non-null and for collections of Obj, this means each element in the collection.
+        
+        @param action
+                  function to be executed for each pair of field type and Obj instance
+        """
+            ...
+        @overload
+        def eachRef(self, includeEmpty: bool, action: Callable[[FieldType, Obj]]) -> None:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+        the field value if non-null and for collections of Obj, this means each element in the collection.
+        
+        @param includeEmpty
+                  if `true` will also process references with `null` / "Empty" references
+        @param action
+                  function to be executed for each pair of field type and Obj instance
+        """
+            ...
+        def eachRefWhile(self, includeEmpty: bool, action: Callable[[FieldType, Obj], bool]) -> bool:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type while processing action returns
+        `true`.
+        
+        @param includeEmpty
+                  if `true` will also process references with `null` / "Empty" references
+        @param action
+                  function to be executed for each pair of field type and Obj instance; stops processing if return `false`
+        @return `true` if iteration was not aborted by lambda i.e. it saw all refs
+        """
+            ...
+        def eachRefRecursive(self, includeEmpty: bool, action: Callable[[FieldPath, Obj]]) -> None:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type or in any child refs.
+        """
+            ...
+        def eachRefRecursiveWhile(self, includeEmpty: bool, action: Callable[[FieldPath, Obj], bool]) -> bool:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type or in any child refs. Continue while
+        processing action returns `true`.
+        """
+            ...
+        @overload
+        def mapFieldValues(self, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester.AppMetric:
+        """
+        Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+        the `mapper` invocation.
+        
+        @param action
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapFieldValues(self, spec: ValueSpec, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester.AppMetric:
+        """
+        Result of this function call is a copy of current instance with all fields replaced based on results of the
+        `mapper` invocation.
+        
+        @param spec
+                  which fields to include
+        @param mapper
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapFieldValuesAsync(self, mapper: Callable[[FieldType, Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester.AppMetric]:
+        """
+        Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+        the asynchronous `mapper` invocation.
+        
+        @param action
+                  lambda to apply for every field value to produce a new value for that fields
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapFieldValuesAsync(self, spec: ValueSpec, mapper: Callable[[Union[FieldType], Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester.AppMetric]:
+        """
+        Result of this function call is a copy of current instance with all fields replaced based on results of the
+        asynchronous `mapper` invocation.
+        
+        @param spec
+                  which fields to include
+        @param mapper
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        def mapFieldValue(self, mapper: Callable[[Any], Union[Any]], field: FieldType=None, includeEmpty: bool=None, convertValue: bool=None) -> Tester.AppMetric:
+        """
+        Result of this function call is a copy of current instance with specified field value replaced based on result of
+        the `mapper` invocation.
+        @param field
+                  field being mapped
+        @param includeEmpty
+                  if set, invokes mapper for fields with empty value
+        @param mapper
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapRefs(self, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester.AppMetric:
+        """
+        Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+        lambda application.
+        
+        Result of this function call is a copy of current instance with all references replaced based on results of the
+        `mapper` invocation.
+        
+        @param action
+                  function to be executed for each pair of field type and Obj instance
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapRefs(self, includeEmpty: bool, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester.AppMetric:
+        """
+        Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+        lambda application.
+        
+        Result of this function call is a copy of current instance with all references replaced based on results of the
+        `mapper` invocation.
+        
+        @param includeEmpty
+                  if `true` will also process references with `null` / "Empty" references
+        @param mapper
+                  function to be executed for each pair of field type and Obj instance for producing new reference value
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]]) -> Union[T]:
+        """
+        Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+        argument is a result of previous application. Initial value of `accumulator` will be `null`.
+        
+        This function is useful for calculating aggregate values based on all current non empty field values.
+        Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+        e.g
+        ```
+        o = {a:1, b:2, c:0}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+        
+        o = {a: {x:1, y:2}, b: {x:10, z:2}}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+        ```
+        """
+            ...
+        @overload
+        def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+        """
+        Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+        argument is a result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+        
+        This function is useful for calculating aggregate values based on all current non empty field values.
+        Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+        e.g
+        ```
+        o = {a:1, b:2, c:0}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+        
+        o = {a: {x:1, y:2}, b: {x:10, z:2}}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+        ```
+        """
+            ...
+        @overload
+        def foldFieldValues(self, spec: ValueSpec, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+        """
+        Result of this function is application of `folder` lambda to every field value where `accumulator` argument is a
+        result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+        
+        This function is useful for calculating aggregate values based on all field values.
+        Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+        e.g
+        ```
+        o = {a:1, b:2, c:0}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+        
+        o = {a: {x:1, y:2}, b: {x:10, z:2}}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+        ```
+        """
+            ...
+        @overload
+        def evalProjection(self, projection: str, resultType: ValueType=None, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Any]:
+        """
+        Evaluates given projection expression over this instance.
+        """
+            ...
+        @overload
+        def evalProjection(self, projection: any, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[any]:
+        """
+        Evaluates given projection over this instance and returns results as json.
+        """
+            ...
+        @overload
+        def evalProjection(self, projection: any, resultType: Type, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Obj]:
+        """
+        Evaluates given projection over this instance and returns results as instance of the new Obj.
+        """
+            ...
+        @overload
+        def validateObj(self) -> Tester.AppMetric:
+        """
+        Populates all missing default values and throws error if any constraint is violated.
+        """
+            ...
+        @overload
+        def validateObj(self, spec: ValidateObjSpec) -> ValidateObjResult:
+        """
+        Validate that the Obj fields are set according to all the required rules.
+        """
+            ...
+        @overload
+        def withField(self, field: str, value: Any, doNotConvert: bool=None) -> Tester.AppMetric:
+        """
+        Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+        defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+        
+        @param field
+                  name of the field
+        @param value
+                  of the field
+        @param doNotConvert
+                  if true, do not attempt to convert the value to match the field's type
+        @return new Obj
+        
+        @see #withoutField
+        @see #defaultField
+        """
+            ...
+        @overload
+        def withField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> Tester.AppMetric:
+        """
+        Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+        defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+        
+        @param field
+                  the field
+        @param value
+                  of the field
+        @param doNotConvert
+                  if true, do not attempt to convert the value to match the field's type
+        @return new Obj
+        
+        @see #withoutField
+        @see #defaultField
+        """
+            ...
+        def withFields(self, fields: Map[str, Any], doNotConvert: bool=None) -> Tester.AppMetric:
+        """
+        Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+        defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+        
+        @param fields
+                  map of field names/values
+        @param doNotConvert
+                  if true, attempt to convert the values to match the fields' type
+        @return new Obj
+        """
+            ...
+        def withFieldAtPath(self, path: str, value: Any, doNotConvert: bool=None, doNotCreateIfMissing: bool=None) -> Tester.AppMetric:
+        """
+        Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+        If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+        
+        Immutable objects may return the same instance if the field being set does not actually represent a
+        change to the existing object.
+        
+        @param path
+                  path to set value at
+        @param value
+                  value to set
+        @param doNotConvert
+                  if true, attempt to convert the values to match the fields' type
+        @param doNotCreateIfMissing
+                  true indicates that any empty reference along the path will not set the value
+        @return new Obj
+        """
+            ...
+        def withoutFieldAtPath(self, path: str) -> Tester.AppMetric:
+        """
+        Builds a new Obj without the specified path field.
+        
+        Immutable objects may return the same instance if the field being removed does not actually represent a
+        change to the existing object.
+        
+        @param path
+                  path for field to remove
+        @return new Obj
+        
+        @see #withFieldAtPath
+        @see #withoutField
+        """
+            ...
+        @overload
+        def withoutField(self, field: str) -> Tester.AppMetric:
+        """
+        Builds a new Obj, removing the field with the provided name.
+        
+        Immutable objects may return the same instance if the field being removed is not present in the existing object.
+        
+        @param field
+                  name of the field to remove
+        @return new Obj with removed field
+        
+        @see #unsetField
+        @see #removeField
+        """
+            ...
+        @overload
+        def withoutField(self, field: FieldType) -> Tester.AppMetric:
+        """
+        Builds a new Obj, removing the field with the provided field type.
+        
+        Immutable objects may return the same instance if the field being removed is not present in the existing object.
+        
+        @param field
+                  name of the field to remove
+        @return new Obj with removed field
+        
+        @see #unsetField
+        @see #removeField
+        """
+            ...
+        def withoutFields(self, fields: Array[str]) -> Tester.AppMetric:
+        """
+        Builds a new Obj, removing the fields with the provided names.
+        
+        Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+        
+        @param fields
+                  names of the fields to remove
+        @return new Obj with removed fields
+        """
+            ...
+        def withoutFieldsByType(self, fields: Array[FieldType]) -> Tester.AppMetric:
+        """
+        Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+        exact same type as the type of the obj to respect the "ordinal" of the field type
+        
+        Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+        
+        @param fields
+                  field types to remove
+        @return new Obj with removed fields
+        """
+            ...
+        def withoutSecretFields(self) -> Tester.AppMetric:
+        """
+        @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+        """
+            ...
+        def secretFieldsSet(self) -> Array[str]:
+        """
+        @return a list of the secret field paths that were found to be set on this Obj.
+        """
+            ...
+        def withDefaults(self, includeEmptyRefsWithDefaults: bool=None, defaultFields: Array[str]=None) -> Tester.AppMetric:
+        """
+        Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+        calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+        {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+        fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+        fields that have already been set.
+        
+        {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+        As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+        
+        @param includeEmptyRefsWithDefaults
+                  it `true` then missing / empty child references that have fields with defaults will also be instantiated
+        @param defaultFields
+                  If not empty, a list of default field paths to populate.  Any default fields not specified in the
+                  array will be ignored.
+        @return new Obj
+        
+        @see #defaultField
+        @see FieldType#defaultValueConst
+        @see FieldType#defaultValue
+        """
+            ...
+        @overload
+        def defaultField(self, field: str) -> Tester.AppMetric:
+        """
+        Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+        method will behave the same as {@link #unsetField}.
+        
+        @param field
+                name of the field to default
+        @return new `Obj` with the specified field set to its default value
+        
+        @see #withField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def defaultField(self, field: FieldType) -> Tester.AppMetric:
+        """
+        Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+        method will behave the same as {@link #unsetField}.
+        
+        @param field
+                field type to default
+        @return new `Obj` with the specified field set to its default value
+        
+        @see #withField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def unsetField(self, field: str) -> Tester.AppMetric:
+        """
+        Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+        is different from {@link removeField}
+        
+        @param field
+                name of the field to unset
+        @return new `Obj` with the specified field unset
+        
+        @see #withoutField
+        @see #removeField
+        """
+            ...
+        @overload
+        def unsetField(self, field: FieldType) -> Tester.AppMetric:
+        """
+        Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+        is different from {@link removeField}
+        
+        @param field
+                field type to unset
+        @return new `Obj` with the specified field unset
+        
+        @see #withoutField
+        @see #removeField
+        """
+            ...
+        @overload
+        def removeField(self, field: str) -> Tester.AppMetric:
+        """
+        Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+        is different from {@link #unsetField}
+        
+        @param field
+                name of the field to remove
+        @return new `Obj` with the specified field removed
+        
+        @see #withoutField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def removeField(self, field: FieldType) -> Tester.AppMetric:
+        """
+        Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+        is different from {@link #unsetField}
+        
+        @param field
+                field type to remove
+        @return new `Obj` with the specified field removed
+        
+        @see #withoutField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, fieldPathMergeSpec: Map[str, str]=None) -> Tester.AppMetric:
+        """
+        Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+        In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+        
+        @param other
+                  object
+        @param fieldPathMergeSpec
+                  mapping of fields of the object to the respective merge annotations
+        @return the new merged Obj
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, otherFieldsFilter: Type) -> Tester.AppMetric:
+        """
+        Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+        In case of conflicts, fields of other instance take precedence.
+        
+        @param other
+                  object
+        @param otherFieldsFilter
+                  only fields of otherFieldsFilter type from other are merged into this obj.
+        @return the new merged Obj
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, merger: Callable[[Union[FieldPath], Union[Any], Union[FieldPath], Union[Any]], Union[Any]], deep: bool=None) -> Tester.AppMetric:
+        """
+        Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+        fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+        @param deep
+               if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+               the same key or index.
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Tester.AppMetric:
+        """
+        Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+        fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+        traverse child reference and collection fields.
+        """
+            ...
+        def mergeAndExpandObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Union[R]:
+        """
+        Create new Obj with all non-null fields of this and other. Fields that are non null in both apply merger lambda.
+        Fields that non null in only one of this and other will be in the resulting Obj without change.
+        """
+            ...
+        def mergeJson(self, json: any) -> Tester.AppMetric:
+            ...
+        def mergeChildren(self, deep: bool=None, objKey: Callable[[Union[Obj]], Union[Any]]=None, filter: Callable[[str], bool]=None) -> Tester.AppMetric:
+        """
+        Merge the obj references within the current obj
+        @param deep
+               If set, traverses the reference fields within the obj as well for a deep merge
+        @param objKey
+               lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+        @param filter
+               Field paths that need to be filtered from this merge
+        @return Obj with child references merged
+        """
+            ...
+        def sumObj(self, other: Obj, deep: bool=None) -> Tester.AppMetric:
+        """
+        Adds the numeric Obj fields with the other Objs respective fields.
+        If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+        references with same name and collection elements at same index or key.
+        """
+            ...
+        def singletonArray(self) -> Array[Tester.AppMetric]:
+        """
+        Build an array of the correct type with a single element which is this instance.
+        
+        @return new array instance with this as only element.
+        """
+            ...
+        @classmethod
+        def array(cls, *elements: Array[Any]) -> Union[Array[Tester.AppMetric]]:
+        """
+        Creates an array of instances of this type.
+        """
+            ...
+        @classmethod
+        def arrayBuilder(cls) -> Union[ArrayBuilder[Tester.AppMetric]]:
+        """
+        Creates an array of instances of this type.
+        """
+            ...
+        def singletonSet(self) -> Set[Tester.AppMetric]:
+        """
+        Build an set of the correct type with a single element which is this instance.
+        
+        @return new array instance with this as only element.
+        """
+            ...
+        @classmethod
+        def setBuilder(cls) -> Union[SetBuilder[Tester.AppMetric]]:
+        """
+        Creates a set of instances of this type.
+        """
+            ...
+        @classmethod
+        def mapBuilder(cls) -> Union[MapBuilder[str, Tester.AppMetric]]:
+        """
+        Create a map of string to elements of this type.
+        """
+            ...
+        @classmethod
+        def mapBuilderOf(cls, keyType: ValueType) -> Union[MapBuilder[Any, Tester.AppMetric]]:
+        """
+        Create a map with the given key type and elements of this type.
+        """
+            ...
+        @classmethod
+        def myReferenceType(cls) -> ReferenceType:
+            ...
+        @classmethod
+        def myMapTypeOf(cls, keyType: ValueType) -> MapType:
+            ...
+        @classmethod
+        def myMapType(cls) -> MapType:
+            ...
+        @classmethod
+        def myArrayType(cls) -> ArrayType:
+            ...
+        @classmethod
+        def mySetType(cls) -> SetType:
+            ...
+        @classmethod
+        def myStreamType(cls) -> StreamType:
+            ...
+        def toBuilder(self) -> ObjBuilder[Tester.AppMetric]:
+        """
+        @return new ObjBuilder with initial state set to fields of this instance.
+        """
+            ...
+        @classmethod
+        def builder(cls) -> ObjBuilder[Tester.AppMetric]:
+        """
+        @return new ObjBuilder of this instance.
+        """
+            ...
+        @overload
+        @classmethod
+        def fromFields(cls, fields: Map[FieldType, Any], spec: Obj.MakeSpec) -> Tester.AppMetric:
+        """
+        Construct instance of this type from provided field values and options
+        """
+            ...
+        @overload
+        @classmethod
+        def fromFields(cls, fields: Map[FieldType, Union[Any,Any]], withDefaults: bool=None) -> Tester.AppMetric:
+        """
+        Construct an instance of this type from provided fields
+        @param fields
+                   Fields to construct the instance of the obj with
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+        
+        @see withDefaults
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, fields: Map[str, Any], spec: Obj.MakeSpec) -> Tester.AppMetric:
+        """
+        Construct instance of this type from provided field values and options
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, withDefaults: bool=None) -> Tester.AppMetric:
+        """
+        Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+                   populated
+        
+        @see withDefaults
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, fields: Map[str, Union[Any,Any]], withDefaults: bool=None) -> Tester.AppMetric:
+        """
+        Construct an instance from provided fields
+        @param fields
+                   Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+                   field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+                   to Panda.make()
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+                   -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+                   the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+        
+        
+        @see fromFields
+        @see beforeMake
+        @see afterMake
+        @see withDefaults
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, fields: Any, withDefaults: bool=None) -> Tester.AppMetric:
+        """
+        Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+        
+        ```js
+        User.make({
+          email: 'joe@smith.com',
+          realName: 'Joe Smith'
+        })
+        
+        Obj.make({
+          type: 'User',
+          email: 'joe@smith.com',
+          realName: 'Joe Smith'
+        })
+        ```
+        
+        ```py
+        c3.User.make({
+          "email": 'joe@smith.com',
+          "realName": 'Joe Smith'
+        })
+        
+        c3.Obj.make({
+          "type": 'User',
+          "email": 'joe@smith.com',
+          "realName": 'Joe Smith'
+        })
+        
+        c3.User(email='joe@smith.com', realName='Joe Smith')
+        
+        c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+        ```
+        
+        Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+        specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+        such as {@link Ann.Ser} do not apply.
+        @param fields
+                   Fields to construct the instance of the obj with
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+        
+        @see fromFields
+        @see beforeMake
+        @see afterMake
+        @see withDefaults
+        """
+            ...
+        @classmethod
+        def remake(cls, other: Obj, failIfExtraOrInvalidFields: bool=None) -> Tester.AppMetric:
+        """
+        Construct an instance of this type from provided instance of a subtype or a "duck type".
+        """
+            ...
+        def remakeAs(self, type: Type) -> O:
+        """
+        Creates an obj of the new type with all fields that exist on the original obj that are defined in the new type
+        converted and copied to the new obj instance. Note, that checking assignability and conversion of field values
+        could be costly if types have different value types for same fields.
+        
+        @param type
+                Type of new obj to return
+        @return new obj of the requested type with all fields present in the original obj that are defined in the new type
+                converted and copied to it
+        """
+            ...
+        @classmethod
+        def beforeMake(cls, fields: Map[FieldType, Any]) -> Union[Map[FieldType, Any]]:
+        """
+        Optional override that will be called every time instance of this type is created.
+        
+        
+        Note that it introduces additional overhead so should only be implemented for low volume data.
+        """
+            ...
+        def afterMake(self) -> Tester.AppMetric:
+        """
+        Optional override that will be called after every instance creation.
+        
+        Note that it introduces additional overhead so should only be implemented for low volume data.
+        """
+            ...
+        @classmethod
+        def cachedEmptyInst(cls) -> Tester.AppMetric:
+        """
+        Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+        every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+        Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+        
+        @see ValueType#defaultEmptyValue
+        """
+            ...
+        def toData(self) -> Union[Data]:
+        """
+        Represent the current obj instance as {@link Data}
+        """
+            ...
+        @classmethod
+        def generateObjs(cls, spec: Obj.GenerateSpec=None) -> Union[Stream[Tester.AppMetric]]:
+        """
+        Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+        value is read.
+        """
+            ...
+        @classmethod
+        def generateObj(cls, spec: Obj.GenerateSpec=None) -> Tester.AppMetric:
+        """
+        Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+        random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+        populates fields in a more realistic way.
+        """
+            ...
+        @classmethod
+        def evaluate(cls, measureWindow: TimeRange, env: str, metricNames: Array[str]="['cpu-usage-by-node', 'jvm-memory-usage-by-node', 'jvm-thread-state-by-node']") -> Union[EvalMetricsResult]:
+        """
+        Evaluates the specified {@link App.Metric}s for the target env over the specified time window.
+        
+        @param measureWindow
+                  {@link TimeRange} time range for the metrics
+        @param env
+                  Id of the {@link Env} for which to evaluate {@link App.Metric}s
+        @param metricNames
+                  Names of the {@link App.Metric}s to evaluate
+        @return
+                  Evaluated {@link EvalMetricsResult}
+        """
+            ...
+    
+    class Config(Config):
+        """
+        Test state configuration applied from outside.
+        
+        @remarks this represents a made instance of Tester.Config
+        """
+        
+        configOverride: Optional[str]=None
+
+        secretOverride: Optional[str]=None
+
+        issues: Optional[Array[str]]=None
+        """
+        Captures any issues that occurred while deserializing from filesystem
+        """
+
+        currentBranch: Optional[str]=None
+        """
+        The current branch name may be pushed down in the configuration if it cannot be determined from the running
+        environment.
+        
+        @see Tester#currentBranch
+        """
+
+        baseBranch: Optional[str]=None
+        """
+        The base branch name may be pushed down in the configuration if the normal pattern is not being used.
+        
+        @see Tester#baseBranch
+        """
+
+        hardwareAvailability: Optional[str]=None
+        """
+        The availability to use for hardware to start up for tests.
+        """
+        def __init__(self, configOverride: Optional[str]=None, secretOverride: Optional[str]=None, issues: Optional[Array[str]]=None, currentBranch: Optional[str]=None, baseBranch: Optional[str]=None, hardwareAvailability: Optional[str]=None) -> None: ...
+
+        @overload
+        def toJson(self) -> any:
+        """
+        Convert the internal object representation to a JSON object.
+        
+        @return JSON object representation
+        
+        @see #fromJson
+        """
+            ...
+        @overload
+        def toJson(self, include: str=None, exclude: str=None) -> any:
+            ...
+        @overload
+        def toJson(self, include: Include=None, exclude: Exclude=None) -> any:
+            ...
+        @overload
+        def toTypedJson(self, omitTopLevelType: bool=None, actionRequirement: str=None) -> any:
+        """
+        Convert the internal object representation to a _typed_ JSON object.
+        @param omitTopLevelType
+               Whether to leave out `type: {{ type of this serializable instance }}` as the **first** key-value pair in
+               the outer level of the produced json.
+        @param runtime
+               If provided, then any special serialization logic required for the {@link ImplLanguage.Runtime} will be
+               performed. **NOTE** This argument is ignored if `typed` is not `true`. @see Ann.Ser
+        
+        
+        @return JSON object representation
+        
+        @see #fromJson
+        @see #toJson
+        @see serdeser.c3doc
+        @see JsonType
+        """
+            ...
+        @overload
+        def toTypedJson(self, include: str=None, exclude: str=None) -> any:
+            ...
+        @overload
+        def toTypedJson(self, include: Include=None, exclude: Exclude=None) -> any:
+            ...
+        @overload
+        def toJsonString(self) -> str:
+            ...
+        @overload
+        def toJsonString(self, pretty: bool) -> str:
+        """
+        Convert the internal object representation to a serialized JSON string.
+        
+        @return JSON object as string
+        """
+            ...
+        @overload
+        def toTypedJsonString(self) -> str:
+            ...
+        @overload
+        def toTypedJsonString(self, pretty: bool=None, omitTopLevelType: bool=None) -> str:
+            ...
+        @overload
+        def toJsString(self) -> str:
+            ...
+        @overload
+        def toJsString(self, withType: bool) -> str:
+        """
+        Convert the internal object representation to a serialized JavaScript object literal.
+        
+        @return JavaScript object literal string
+        """
+            ...
+        @overload
+        def toXmlString(self) -> str:
+            ...
+        @overload
+        def toXmlString(self, withType: bool) -> str:
+        """
+        Convert the internal object representation to a serialized XML string.
+        
+        @return XML element as string
+        
+        @see #fromXmlString
+        """
+            ...
+        def serialize(self, contentType: str, toUntyped: bool=None) -> Union[str]:
+        """
+        Convert the internal object representation to a string serialized representation of the object.
+        
+        @return string serialized object representation
+        """
+            ...
+        @classmethod
+        def fromJson(cls, json: any) -> Union[Tester.Config]:
+        """
+        Load the JSON-based representation and reconstruct the corresponding object.
+        
+        fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+        a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+        called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+        an instance of the correct type.
+        
+        @see #toJson
+        """
+            ...
+        @classmethod
+        def fromJsonString(cls, json: str) -> Union[Tester.Config]:
+        """
+        Load the JSON-based representation and reconstruct the corresponding object.
+        
+        fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+        a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+        called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+        an instance of the correct type.
+        
+        @see #toJsonString
+        """
+            ...
+        @classmethod
+        def fromXmlString(cls, xml: str) -> Union[Tester.Config]:
+        """
+        Load the XML-based representation and reconstruct the corresponding object.
+        
+        fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+        may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+        isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+        will return an instance of the correct type.
+        
+        @see #toXmlString
+        """
+            ...
+        @classmethod
+        def deserialize(cls, contentStr: str, contentType: str) -> Union[Tester.Config]:
+        """
+        Load from contentType representation and reconstruct the corresponding object.
+        
+        fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+        (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+        will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+        type and will return an instance of the correct type.
+        """
+            ...
+        def fingerprint(self, allIdentifiedRefFields: bool=None, trackRecursiveRefs: bool=None, traversedRefs: SetBuilder[Obj]=None) -> int:
+        """
+        Produce a checksum that can easily be compared to determine if two objects are definitely different. Note that
+        there is a slight possibility that two objects with the same fingerprint will actually differ.
+        
+        The fingerprint recurses into field values, including collections and referenced Objs. The handling of nested
+        {@link Identified identified} references (typically entities) differ in that _only_ the `id` field is included
+        unless the allIdentifiedRefFields option is specified.
+        
+        If the object graph may contain recursive embedded object references, the trackRecursiveRefs option may be used.
+        However, maintaining the list of visited objects is costly so this should not be done unnecessarily.
+        
+        @param allIdentifiedRefFields
+                  if `true`, fingerprint individual fields of persistable references, not just the `id`
+        @param trackRecursiveRefs
+                  if `true`, a set of referenced objects is maintained to avoid infinite recursion
+        @param traversedRefs
+                  only considered together with trackRecursiveRefs and if provided then all traversed references are
+                  checked against and added to it
+        @return integer fingerprint
+        
+        @see https://en.wikipedia.org/wiki/Fingerprint_(computing)
+        """
+            ...
+        def retainedMemory(self, deep: bool=None, allMeasured: SetBuilder[Any]=None) -> int:
+        """
+        Measures retained memory by this instance.
+        
+        @param deep
+               if true and this instance contains references to other objects also measures memory retained by those
+        @param allMeasured
+               if set then will skip instances that are in the set and will add instances that where measured by this call
+        @return retained memory in bytes for this instances
+        """
+            ...
+        def type(self) -> Type:
+        """
+        C3 Type of this instance.
+        """
+            ...
+        def replaceType(self, old: Type, new: Type) -> Tester.Config:
+        """
+        Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+        type does not contain fields from old or field value types are not convertable then drops the field.
+        
+        This method is used during live metadata update
+        """
+            ...
+        def super(self, mixin: Type=None) -> Any:
+        """
+         Produce a calling proxy that represents the content of all Obj type's mixins, but not the type itself. This is
+         useful for redispatching **member** methods reimplemented on this type to a parent implementation:
+         ```js
+         function toString() {
+           return this.super().toString() + ', x=' + this.x;
+         }
+         ```
+        
+         ```py
+         def toString(this):
+            return this.super().toString() + ', x=' + this.x
+        ```
+        
+         To redispatch **static** methods, see {@link Type#super}.
+        
+         Note that this not the same as the language-specific `super` keyword because it works through the type system and
+         supports multiple mixins. It behaves like the Python `super()` function, except called on the instance rather than
+         globally.
+        
+         If `mixin` is the implementing type in a client implementation, this will delegate the call to the server.
+         This can be used to create a local implementation "around" the server implementation for additional caching or
+         other local state management.
+        
+         @param mixin if specified, this mixin is used instead or an error is thrown
+         @return "super" calling proxy for this object
+        
+         @see Type.super
+        """
+            ...
+        @overload
+        def instanceOf(self, typeName: str) -> bool:
+        """
+        Checks whether this Obj is an instance of the specified type by checking both its type and the mixin chain.
+        This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+        
+        @return true if this instance is of this type or any of its mixins
+        """
+            ...
+        @overload
+        def instanceOf(self, type: Type) -> bool:
+        """
+        Checks whether this instance is an instance of the specified type by checking both its type and the mixin chain.
+        This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+        
+        @return true if this instance is of this type or any of its mixins
+        
+        @see ValueType#isA
+        """
+            ...
+        def isEmptyObj(self) -> bool:
+        """
+        Whether all the fields of this instance are empty.
+        """
+            ...
+        def isSame(self, other: Obj) -> bool:
+        """
+        Whether the specified instance represents exactly the same object as this instance.
+        """
+            ...
+        @overload
+        def isFieldSet(self, field: str) -> bool:
+        """
+         Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+         if the field value set the its default value by the constructor. A set field is never missing.
+        
+        @param field the field to check
+        
+        @return whether the specified field is set
+        """
+            ...
+        @overload
+        def isFieldSet(self, field: FieldType) -> bool:
+        """
+         Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+         if the field value set the its default value by the constructor. A set field is never missing.
+        
+        @param field the field to check
+        
+        @return whether the specified field is set
+        """
+            ...
+        @overload
+        def isFieldMissing(self, field: str) -> bool:
+        """
+         Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+         should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+        {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+        A missing field is never set.
+        
+        @param field the field to check
+        
+        @return whether the specified field is missing
+        """
+            ...
+        @overload
+        def isFieldMissing(self, field: FieldType) -> bool:
+        """
+         Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+         should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+        {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+        A missing field is never set.
+        
+        @param field the field to check
+        
+        @return whether the specified field is missing
+        """
+            ...
+        @overload
+        def fieldValue(self, field: str, defaultToEmpty: bool=None) -> Union[T]:
+        """
+        Returns value of the given field.
+        
+        @param field
+                  Field to return the value for
+               defaultToEmpty
+                  will return default empty value if field is missing
+        """
+            ...
+        @overload
+        def fieldValue(self, field: FieldType, defaultToEmpty: bool=None) -> Union[T]:
+        """
+        Returns value of the given field type. Be sure to use the FieldType instance for the exact same type as the type of
+        the obj.
+        
+        @param field
+                  Field to return the value for
+               defaultToEmpty
+                  will return default empty value if field is missing
+        @return value for the given field
+        """
+            ...
+        def fieldValues(self) -> Union[Array[FieldValue]]:
+        """
+        Returns all non empty field values. Note that it is recommended to use #eachFieldValue instead
+        """
+            ...
+        def fieldValuesByOrdinal(self, skipTrailingEmpty: bool=None) -> Union[Array[Any]]:
+        """
+        Returns all field values including empty ones as array where value of a field is at corresponding ordinal position.
+        Unless `skipTrailingEmpty` parameter is set and there are trailing empty values resulting array has same size as
+        #dataFieldTypes
+        """
+            ...
+        def fieldValuesByFieldType(self) -> Union[Map[FieldType, Any]]:
+        """
+        Returns all non empty field values by field type. Note that it is recommended to use #eachFieldValue instead
+        """
+            ...
+        def fieldValuesByFieldName(self) -> Union[Map[str, Any]]:
+        """
+        Returns all non empty field values by field name. Note that it is recommended to use #eachFieldValue instead
+        """
+            ...
+        def fieldNames(self) -> Union[Array[str]]:
+        """
+        Returns all data field names including those whose values are empty. Array is ordered by
+        field ordinal.
+        """
+            ...
+        def unsetFieldNames(self) -> Union[Array[str]]:
+        """
+        @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@link #isFieldSet are not set}. Array is ordered by
+        field ordinal.
+        """
+            ...
+        def missingFieldNames(self) -> Union[Array[str]]:
+        """
+        @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@Link isFieldMissing are missing}. Array is ordered by
+        field ordinal.
+        """
+            ...
+        @overload
+        def at(self, ordinal: int) -> Union[T]:
+        """
+        Return value of the field at provided ordinal. Throws an error on an invalid value (out of range).
+        
+        @param ordinal
+                Integer ordinal of the field in the parent type
+        @return value of field at ordinal
+        """
+            ...
+        @overload
+        def at(self, expr: str, failIfNotValid: bool=None) -> Union[T]:
+        """
+        Return value for the given serialized expression
+        
+        @param expr
+                Serialized expression to obtain the value in the given Obj
+        @param failIfNotValid
+                If set, fails if not a valid expression
+        @return value obtained as a result of expression evaluation
+        """
+            ...
+        def fieldValueAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[T]:
+        """
+        Looks up a single field value by path from this Obj. Field paths are separated by dots so an expression like
+        `fieldValueAtPath("location.elevation")` is equivalent to `traverse("location").fieldValue("elevation")` except
+        that it also handles `null`. If path contains any collections then only first element will be traversed,
+        unless the collection index is specified in the path.
+        
+        If you need to traverse all elements of collection fields use #fieldValuesAtPath instead.
+        
+        @param fieldPath
+                  field names separated by dots
+        @param failIfNotFound
+                  if true, an error will be thrown if the any of the field types aren't defined
+        @param context
+                  if an error is thrown, the context returned by calling the lambda will be incorporated
+        @return the field or null
+        """
+            ...
+        def fieldValuesAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[Array[T]]:
+        """
+        Looks up all the fields by path from root Obj. If path contains any collections then result will contain all
+        traversals, unless the collection index is specified in the path.
+        
+        @param fieldPath
+                  field names separated by dots
+        @param failIfNotFound
+                  if true, an error will be thrown if the any of the field types aren't defined
+        @param context
+                  if an error is thrown, the context returned by calling the lambda will be incorporated
+        @return fields as a flat list
+        
+        @see #fieldValueAtPath
+        """
+            ...
+        @overload
+        def eachFieldValue(self, action: Callable[[FieldType, Any]]) -> None:
+        """
+        Perform an action for each non-empty field of this object.
+        
+        @param action
+                  lambda to apply
+        """
+            ...
+        @overload
+        def eachFieldValue(self, spec: ValueSpec, action: Callable[[FieldType, Any]]) -> None:
+        """
+        Perform an action for each non-empty field of this object. Fields are filtered based on provided `spec`.
+        
+        @param spec
+                  which fields to include
+        @param action
+                  lambda to apply
+        """
+            ...
+        def eachSetFieldValue(self, action: Callable[[FieldType, Union[Any]]]) -> None:
+        """
+        Perform an action for each {@link isFieldSet set} field of this object.
+        
+        @param action
+                  lambda to apply
+        """
+            ...
+        def eachFieldValueWhile(self, spec: ValueSpec, action: Callable[[FieldType, Any], bool]) -> bool:
+        """
+        Perform an action for each field of this object while processing action returns `true`. Fields are filtered based
+        on provided `spec`.
+        
+        @param spec
+                  which fields to include
+        @param action
+                  lambda to apply; stop if this `action` returns `false
+        @return `true` if iteration was not aborted by lambda i.e. it saw all field values
+        """
+            ...
+        @overload
+        def eachRef(self, action: Callable[[FieldType, Obj]]) -> None:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+        the field value if non-null and for collections of Obj, this means each element in the collection.
+        
+        @param action
+                  function to be executed for each pair of field type and Obj instance
+        """
+            ...
+        @overload
+        def eachRef(self, includeEmpty: bool, action: Callable[[FieldType, Obj]]) -> None:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+        the field value if non-null and for collections of Obj, this means each element in the collection.
+        
+        @param includeEmpty
+                  if `true` will also process references with `null` / "Empty" references
+        @param action
+                  function to be executed for each pair of field type and Obj instance
+        """
+            ...
+        def eachRefWhile(self, includeEmpty: bool, action: Callable[[FieldType, Obj], bool]) -> bool:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type while processing action returns
+        `true`.
+        
+        @param includeEmpty
+                  if `true` will also process references with `null` / "Empty" references
+        @param action
+                  function to be executed for each pair of field type and Obj instance; stops processing if return `false`
+        @return `true` if iteration was not aborted by lambda i.e. it saw all refs
+        """
+            ...
+        def eachRefRecursive(self, includeEmpty: bool, action: Callable[[FieldPath, Obj]]) -> None:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type or in any child refs.
+        """
+            ...
+        def eachRefRecursiveWhile(self, includeEmpty: bool, action: Callable[[FieldPath, Obj], bool]) -> bool:
+        """
+        Execute the specified lambda against each referenced Obj instance in this type or in any child refs. Continue while
+        processing action returns `true`.
+        """
+            ...
+        @overload
+        def mapFieldValues(self, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester.Config:
+        """
+        Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+        the `mapper` invocation.
+        
+        @param action
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapFieldValues(self, spec: ValueSpec, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> Tester.Config:
+        """
+        Result of this function call is a copy of current instance with all fields replaced based on results of the
+        `mapper` invocation.
+        
+        @param spec
+                  which fields to include
+        @param mapper
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapFieldValuesAsync(self, mapper: Callable[[FieldType, Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester.Config]:
+        """
+        Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+        the asynchronous `mapper` invocation.
+        
+        @param action
+                  lambda to apply for every field value to produce a new value for that fields
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapFieldValuesAsync(self, spec: ValueSpec, mapper: Callable[[Union[FieldType], Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[Tester.Config]:
+        """
+        Result of this function call is a copy of current instance with all fields replaced based on results of the
+        asynchronous `mapper` invocation.
+        
+        @param spec
+                  which fields to include
+        @param mapper
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        def mapFieldValue(self, mapper: Callable[[Any], Union[Any]], field: FieldType=None, includeEmpty: bool=None, convertValue: bool=None) -> Tester.Config:
+        """
+        Result of this function call is a copy of current instance with specified field value replaced based on result of
+        the `mapper` invocation.
+        @param field
+                  field being mapped
+        @param includeEmpty
+                  if set, invokes mapper for fields with empty value
+        @param mapper
+                  lambda to apply for every field value to produce a new value for that field
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapRefs(self, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester.Config:
+        """
+        Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+        lambda application.
+        
+        Result of this function call is a copy of current instance with all references replaced based on results of the
+        `mapper` invocation.
+        
+        @param action
+                  function to be executed for each pair of field type and Obj instance
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def mapRefs(self, includeEmpty: bool, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> Tester.Config:
+        """
+        Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+        lambda application.
+        
+        Result of this function call is a copy of current instance with all references replaced based on results of the
+        `mapper` invocation.
+        
+        @param includeEmpty
+                  if `true` will also process references with `null` / "Empty" references
+        @param mapper
+                  function to be executed for each pair of field type and Obj instance for producing new reference value
+        @param convertValue
+                  if true, attempt to convert the value to match the field's type
+        """
+            ...
+        @overload
+        def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]]) -> Union[T]:
+        """
+        Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+        argument is a result of previous application. Initial value of `accumulator` will be `null`.
+        
+        This function is useful for calculating aggregate values based on all current non empty field values.
+        Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+        e.g
+        ```
+        o = {a:1, b:2, c:0}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+        
+        o = {a: {x:1, y:2}, b: {x:10, z:2}}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+        ```
+        """
+            ...
+        @overload
+        def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+        """
+        Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+        argument is a result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+        
+        This function is useful for calculating aggregate values based on all current non empty field values.
+        Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+        e.g
+        ```
+        o = {a:1, b:2, c:0}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+        
+        o = {a: {x:1, y:2}, b: {x:10, z:2}}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+        ```
+        """
+            ...
+        @overload
+        def foldFieldValues(self, spec: ValueSpec, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+        """
+        Result of this function is application of `folder` lambda to every field value where `accumulator` argument is a
+        result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+        
+        This function is useful for calculating aggregate values based on all field values.
+        Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+        e.g
+        ```
+        o = {a:1, b:2, c:0}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+        
+        o = {a: {x:1, y:2}, b: {x:10, z:2}}
+        o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+        ```
+        """
+            ...
+        @overload
+        def evalProjection(self, projection: str, resultType: ValueType=None, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Any]:
+        """
+        Evaluates given projection expression over this instance.
+        """
+            ...
+        @overload
+        def evalProjection(self, projection: any, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[any]:
+        """
+        Evaluates given projection over this instance and returns results as json.
+        """
+            ...
+        @overload
+        def evalProjection(self, projection: any, resultType: Type, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Obj]:
+        """
+        Evaluates given projection over this instance and returns results as instance of the new Obj.
+        """
+            ...
+        @overload
+        def validateObj(self) -> Tester.Config:
+        """
+        Populates all missing default values and throws error if any constraint is violated.
+        """
+            ...
+        @overload
+        def validateObj(self, spec: ValidateObjSpec) -> ValidateObjResult:
+        """
+        Validate that the Obj fields are set according to all the required rules.
+        """
+            ...
+        @overload
+        def withField(self, field: str, value: Any, doNotConvert: bool=None) -> Tester.Config:
+        """
+        Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+        defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+        
+        @param field
+                  name of the field
+        @param value
+                  of the field
+        @param doNotConvert
+                  if true, do not attempt to convert the value to match the field's type
+        @return new Obj
+        
+        @see #withoutField
+        @see #defaultField
+        """
+            ...
+        @overload
+        def withField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> Tester.Config:
+        """
+        Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+        defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+        
+        @param field
+                  the field
+        @param value
+                  of the field
+        @param doNotConvert
+                  if true, do not attempt to convert the value to match the field's type
+        @return new Obj
+        
+        @see #withoutField
+        @see #defaultField
+        """
+            ...
+        def withFields(self, fields: Map[str, Any], doNotConvert: bool=None) -> Tester.Config:
+        """
+        Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+        defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+        
+        @param fields
+                  map of field names/values
+        @param doNotConvert
+                  if true, attempt to convert the values to match the fields' type
+        @return new Obj
+        """
+            ...
+        def withFieldAtPath(self, path: str, value: Any, doNotConvert: bool=None, doNotCreateIfMissing: bool=None) -> Tester.Config:
+        """
+        Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+        If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+        
+        Immutable objects may return the same instance if the field being set does not actually represent a
+        change to the existing object.
+        
+        @param path
+                  path to set value at
+        @param value
+                  value to set
+        @param doNotConvert
+                  if true, attempt to convert the values to match the fields' type
+        @param doNotCreateIfMissing
+                  true indicates that any empty reference along the path will not set the value
+        @return new Obj
+        """
+            ...
+        def withoutFieldAtPath(self, path: str) -> Tester.Config:
+        """
+        Builds a new Obj without the specified path field.
+        
+        Immutable objects may return the same instance if the field being removed does not actually represent a
+        change to the existing object.
+        
+        @param path
+                  path for field to remove
+        @return new Obj
+        
+        @see #withFieldAtPath
+        @see #withoutField
+        """
+            ...
+        @overload
+        def withoutField(self, field: str) -> Tester.Config:
+        """
+        Builds a new Obj, removing the field with the provided name.
+        
+        Immutable objects may return the same instance if the field being removed is not present in the existing object.
+        
+        @param field
+                  name of the field to remove
+        @return new Obj with removed field
+        
+        @see #unsetField
+        @see #removeField
+        """
+            ...
+        @overload
+        def withoutField(self, field: FieldType) -> Tester.Config:
+        """
+        Builds a new Obj, removing the field with the provided field type.
+        
+        Immutable objects may return the same instance if the field being removed is not present in the existing object.
+        
+        @param field
+                  name of the field to remove
+        @return new Obj with removed field
+        
+        @see #unsetField
+        @see #removeField
+        """
+            ...
+        def withoutFields(self, fields: Array[str]) -> Tester.Config:
+        """
+        Builds a new Obj, removing the fields with the provided names.
+        
+        Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+        
+        @param fields
+                  names of the fields to remove
+        @return new Obj with removed fields
+        """
+            ...
+        def withoutFieldsByType(self, fields: Array[FieldType]) -> Tester.Config:
+        """
+        Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+        exact same type as the type of the obj to respect the "ordinal" of the field type
+        
+        Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+        
+        @param fields
+                  field types to remove
+        @return new Obj with removed fields
+        """
+            ...
+        def withoutSecretFields(self) -> Tester.Config:
+        """
+        @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+        """
+            ...
+        def secretFieldsSet(self) -> Array[str]:
+        """
+        @return a list of the secret field paths that were found to be set on this Obj.
+        """
+            ...
+        def withDefaults(self, includeEmptyRefsWithDefaults: bool=None, defaultFields: Array[str]=None) -> Tester.Config:
+        """
+        Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+        calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+        {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+        fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+        fields that have already been set.
+        
+        {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+        As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+        
+        @param includeEmptyRefsWithDefaults
+                  it `true` then missing / empty child references that have fields with defaults will also be instantiated
+        @param defaultFields
+                  If not empty, a list of default field paths to populate.  Any default fields not specified in the
+                  array will be ignored.
+        @return new Obj
+        
+        @see #defaultField
+        @see FieldType#defaultValueConst
+        @see FieldType#defaultValue
+        """
+            ...
+        @overload
+        def defaultField(self, field: str) -> Tester.Config:
+        """
+        Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+        method will behave the same as {@link #unsetField}.
+        
+        @param field
+                name of the field to default
+        @return new `Obj` with the specified field set to its default value
+        
+        @see #withField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def defaultField(self, field: FieldType) -> Tester.Config:
+        """
+        Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+        method will behave the same as {@link #unsetField}.
+        
+        @param field
+                field type to default
+        @return new `Obj` with the specified field set to its default value
+        
+        @see #withField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def unsetField(self, field: str) -> Tester.Config:
+        """
+        Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+        is different from {@link removeField}
+        
+        @param field
+                name of the field to unset
+        @return new `Obj` with the specified field unset
+        
+        @see #withoutField
+        @see #removeField
+        """
+            ...
+        @overload
+        def unsetField(self, field: FieldType) -> Tester.Config:
+        """
+        Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+        is different from {@link removeField}
+        
+        @param field
+                field type to unset
+        @return new `Obj` with the specified field unset
+        
+        @see #withoutField
+        @see #removeField
+        """
+            ...
+        @overload
+        def removeField(self, field: str) -> Tester.Config:
+        """
+        Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+        is different from {@link #unsetField}
+        
+        @param field
+                name of the field to remove
+        @return new `Obj` with the specified field removed
+        
+        @see #withoutField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def removeField(self, field: FieldType) -> Tester.Config:
+        """
+        Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+        is different from {@link #unsetField}
+        
+        @param field
+                field type to remove
+        @return new `Obj` with the specified field removed
+        
+        @see #withoutField
+        @see #unsetField
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, fieldPathMergeSpec: Map[str, str]=None) -> Tester.Config:
+        """
+        Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+        In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+        
+        @param other
+                  object
+        @param fieldPathMergeSpec
+                  mapping of fields of the object to the respective merge annotations
+        @return the new merged Obj
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, otherFieldsFilter: Type) -> Tester.Config:
+        """
+        Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+        In case of conflicts, fields of other instance take precedence.
+        
+        @param other
+                  object
+        @param otherFieldsFilter
+                  only fields of otherFieldsFilter type from other are merged into this obj.
+        @return the new merged Obj
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, merger: Callable[[Union[FieldPath], Union[Any], Union[FieldPath], Union[Any]], Union[Any]], deep: bool=None) -> Tester.Config:
+        """
+        Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+        fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+        @param deep
+               if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+               the same key or index.
+        """
+            ...
+        @overload
+        def mergeObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Tester.Config:
+        """
+        Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+        fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+        traverse child reference and collection fields.
+        """
+            ...
+        def mergeAndExpandObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Union[R]:
+        """
+        Create new Obj with all non-null fields of this and other. Fields that are non null in both apply merger lambda.
+        Fields that non null in only one of this and other will be in the resulting Obj without change.
+        """
+            ...
+        def mergeJson(self, json: any) -> Tester.Config:
+            ...
+        def mergeChildren(self, deep: bool=None, objKey: Callable[[Union[Obj]], Union[Any]]=None, filter: Callable[[str], bool]=None) -> Tester.Config:
+        """
+        Merge the obj references within the current obj
+        @param deep
+               If set, traverses the reference fields within the obj as well for a deep merge
+        @param objKey
+               lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+        @param filter
+               Field paths that need to be filtered from this merge
+        @return Obj with child references merged
+        """
+            ...
+        def sumObj(self, other: Obj, deep: bool=None) -> Tester.Config:
+        """
+        Adds the numeric Obj fields with the other Objs respective fields.
+        If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+        references with same name and collection elements at same index or key.
+        """
+            ...
+        def singletonArray(self) -> Array[Tester.Config]:
+        """
+        Build an array of the correct type with a single element which is this instance.
+        
+        @return new array instance with this as only element.
+        """
+            ...
+        @classmethod
+        def array(cls, *elements: Array[Any]) -> Union[Array[Tester.Config]]:
+        """
+        Creates an array of instances of this type.
+        """
+            ...
+        @classmethod
+        def arrayBuilder(cls) -> Union[ArrayBuilder[Tester.Config]]:
+        """
+        Creates an array of instances of this type.
+        """
+            ...
+        def singletonSet(self) -> Set[Tester.Config]:
+        """
+        Build an set of the correct type with a single element which is this instance.
+        
+        @return new array instance with this as only element.
+        """
+            ...
+        @classmethod
+        def setBuilder(cls) -> Union[SetBuilder[Tester.Config]]:
+        """
+        Creates a set of instances of this type.
+        """
+            ...
+        @classmethod
+        def mapBuilder(cls) -> Union[MapBuilder[str, Tester.Config]]:
+        """
+        Create a map of string to elements of this type.
+        """
+            ...
+        @classmethod
+        def mapBuilderOf(cls, keyType: ValueType) -> Union[MapBuilder[Any, Tester.Config]]:
+        """
+        Create a map with the given key type and elements of this type.
+        """
+            ...
+        @classmethod
+        def myReferenceType(cls) -> ReferenceType:
+            ...
+        @classmethod
+        def myMapTypeOf(cls, keyType: ValueType) -> MapType:
+            ...
+        @classmethod
+        def myMapType(cls) -> MapType:
+            ...
+        @classmethod
+        def myArrayType(cls) -> ArrayType:
+            ...
+        @classmethod
+        def mySetType(cls) -> SetType:
+            ...
+        @classmethod
+        def myStreamType(cls) -> StreamType:
+            ...
+        def toBuilder(self) -> ObjBuilder[Tester.Config]:
+        """
+        @return new ObjBuilder with initial state set to fields of this instance.
+        """
+            ...
+        @classmethod
+        def builder(cls) -> ObjBuilder[Tester.Config]:
+        """
+        @return new ObjBuilder of this instance.
+        """
+            ...
+        @overload
+        @classmethod
+        def fromFields(cls, fields: Map[FieldType, Any], spec: Obj.MakeSpec) -> Tester.Config:
+        """
+        Construct instance of this type from provided field values and options
+        """
+            ...
+        @overload
+        @classmethod
+        def fromFields(cls, fields: Map[FieldType, Union[Any,Any]], withDefaults: bool=None) -> Tester.Config:
+        """
+        Construct an instance of this type from provided fields
+        @param fields
+                   Fields to construct the instance of the obj with
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+        
+        @see withDefaults
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, fields: Map[str, Any], spec: Obj.MakeSpec) -> Tester.Config:
+        """
+        Construct instance of this type from provided field values and options
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, withDefaults: bool=None) -> Tester.Config:
+        """
+        Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+                   populated
+        
+        @see withDefaults
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, fields: Map[str, Union[Any,Any]], withDefaults: bool=None) -> Tester.Config:
+        """
+        Construct an instance from provided fields
+        @param fields
+                   Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+                   field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+                   to Panda.make()
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+                   -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+                   the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+        
+        
+        @see fromFields
+        @see beforeMake
+        @see afterMake
+        @see withDefaults
+        """
+            ...
+        @overload
+        @classmethod
+        def make(cls, fields: Any, withDefaults: bool=None) -> Tester.Config:
+        """
+        Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+        
+        ```js
+        User.make({
+          email: 'joe@smith.com',
+          realName: 'Joe Smith'
+        })
+        
+        Obj.make({
+          type: 'User',
+          email: 'joe@smith.com',
+          realName: 'Joe Smith'
+        })
+        ```
+        
+        ```py
+        c3.User.make({
+          "email": 'joe@smith.com',
+          "realName": 'Joe Smith'
+        })
+        
+        c3.Obj.make({
+          "type": 'User',
+          "email": 'joe@smith.com',
+          "realName": 'Joe Smith'
+        })
+        
+        c3.User(email='joe@smith.com', realName='Joe Smith')
+        
+        c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+        ```
+        
+        Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+        specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+        such as {@link Ann.Ser} do not apply.
+        @param fields
+                   Fields to construct the instance of the obj with
+        @param withDefaults
+                   If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+        
+        @see fromFields
+        @see beforeMake
+        @see afterMake
+        @see withDefaults
+        """
+            ...
+        @classmethod
+        def remake(cls, other: Obj, failIfExtraOrInvalidFields: bool=None) -> Tester.Config:
+        """
+        Construct an instance of this type from provided instance of a subtype or a "duck type".
+        """
+            ...
+        def remakeAs(self, type: Type) -> O:
+        """
+        Creates an obj of the new type with all fields that exist on the original obj that are defined in the new type
+        converted and copied to the new obj instance. Note, that checking assignability and conversion of field values
+        could be costly if types have different value types for same fields.
+        
+        @param type
+                Type of new obj to return
+        @return new obj of the requested type with all fields present in the original obj that are defined in the new type
+                converted and copied to it
+        """
+            ...
+        @classmethod
+        def beforeMake(cls, fields: Map[FieldType, Any]) -> Union[Map[FieldType, Any]]:
+        """
+        Optional override that will be called every time instance of this type is created.
+        
+        
+        Note that it introduces additional overhead so should only be implemented for low volume data.
+        """
+            ...
+        def afterMake(self) -> Tester.Config:
+        """
+        Optional override that will be called after every instance creation.
+        
+        Note that it introduces additional overhead so should only be implemented for low volume data.
+        """
+            ...
+        @classmethod
+        def cachedEmptyInst(cls) -> Tester.Config:
+        """
+        Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+        every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+        Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+        
+        @see ValueType#defaultEmptyValue
+        """
+            ...
+        def toData(self) -> Union[Data]:
+        """
+        Represent the current obj instance as {@link Data}
+        """
+            ...
+        @classmethod
+        def generateObjs(cls, spec: Obj.GenerateSpec=None) -> Union[Stream[Tester.Config]]:
+        """
+        Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+        value is read.
+        """
+            ...
+        @classmethod
+        def generateObj(cls, spec: Obj.GenerateSpec=None) -> Tester.Config:
+        """
+        Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+        random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+        populates fields in a more realistic way.
+        """
+            ...
+        def isCached(self) -> bool:
+        """
+        @return whether the cache already contains this instance
+        """
+            ...
+        @classmethod
+        def allCached(cls, doNotProduceAll: bool=None) -> Union[Stream[Tester.Config]]:
+        """
+        @param doNotProduceAll if true, will not populate cache and only return available cached instances. Will call
+               `produceAll` if cache is empty or if Ann.cache.all is true & data has not previously been fetched.
+        @return stream of all available Cached instances.
+        """
+            ...
+        @classmethod
+        def find(cls, filter: str=None, doNotProduceAll: bool=None) -> Union[Stream[Tester.Config]]:
+        """
+        @param filter C3 expression based predicate to filter instances. e.g. `field1=='value1' && field2>17`
+        @param doNotProduceAll if true, will not populate cache and only return available cached instances. Will call
+               `produceAll` if cache is empty or if Ann.cache.all is true & data has not previously been fetched.
+        @return existing instances of this type that satisfy filter from data cache.
+        """
+            ...
+        @classmethod
+        def findBy(cls, field: str, value: Any, doNotProduceAll: bool=None) -> Union[Stream[Tester.Config]]:
+        """
+        @param doNotProduceAll if true, will not populate cache and only return available cached instances. Will call
+               `produceAll` if cache is empty or if Ann.cache.all is true & data has not previously been fetched.
+        @return existing instances of this type that satisfy filter from data cache.
+        """
+            ...
+        @classmethod
+        def findByCacheKey(cls, key: str) -> Union[Tester.Config]:
+        """
+        @return cached instance by the cache key. Only returns already cached instances, will not populate cache.
+        
+        @see forCacheKey
+        @see getCached
+        """
+            ...
+        @classmethod
+        def forCacheKey(cls, key: str) -> Union[Tester.Config]:
+        """
+        Returns cached instance by key, with secrets removed.
+        """
+            ...
+        def getCached(self) -> Union[Tester.Config]:
+        """
+        @return cached instance.
+        
+        @see forCacheKey
+        @see findByCacheKey
+        """
+            ...
+        def refreshCache(self) -> Union[Tester.Config]:
+        """
+        @return newly produced cached instance.
+        """
+            ...
+        def cacheKey(self) -> str:
+        """
+        @return cache key for this instance.
+        """
+            ...
+        @classmethod
+        def produce(cls, key: str) -> Union[Tester.Config]:
+        """
+        Should produce an entry for the cache key. This method should not be called directly.
+        """
+            ...
+        @classmethod
+        def produceAll(cls) -> Union[Map[str, Tester.Config]]:
+        """
+        Produces up to 10,000 entries for the cached data and populates the cache with the produced data. You can change the max entry count with {@link Ann.Cache#maxSize}.
+        """
+            ...
+        @classmethod
+        def doProduceAll(cls) -> Union[Map[str, Tester.Config]]:
+        """
+        Override for sub-types to produce all values.
+        """
+            ...
+        def evictFromCache(self) -> None:
+        """
+        Evicts this instance from cache on all nodes of this application.
+        """
+            ...
+        def evictFromCacheLocalOnly(self) -> None:
+        """
+        Evicts this instance from cache of the current node.
+        """
+            ...
+        def evictFromCacheLocalOnlyAllApps(self) -> None:
+        """
+        Evicts this instance from cache on all local apps (c3-c3, env-c3, env-app) that live in the current node.
+        Will not trigger any cache invalidation broadcast.
+        see {@link Server#evictFromLocalAppsCaches}
+        """
+            ...
+        @classmethod
+        def clearCache(cls) -> None:
+        """
+        Clears the data cache for this type on all nodes of this application.
+        """
+            ...
+        @classmethod
+        def clearCacheLocalOnly(cls) -> None:
+        """
+        Clears the data cache for this type on the current node. Will not trigger any cache invalidation broadcast.
+        """
+            ...
+        @classmethod
+        def clearCacheLocalOnlyAllApps(cls) -> None:
+        """
+        Clears the data cache for this type on the current node for all local apps (c3-c3, env-c3, env-app) that live in the current node.
+        Will not trigger any cache invalidation broadcast.
+        see {@link Server#clearLocalAppsCaches}
+        """
+            ...
+        @classmethod
+        def cacheSize(cls) -> Union[int]:
+        """
+        Returns count of cached instances.
+        """
+            ...
+        @classmethod
+        def nativeCache(cls) -> Union[Any]:
+        """
+        Returns instance of the cache for this type.
+        """
+            ...
+        def getConfig(self) -> Tester.Config:
+        """
+        Return cached instance of configuration. For Identifiable configurations `id` field is required. For Nameable
+        configurations `name` field is required.
+        
+        Note that typical pattern is to use Configurable#config instead of this method.
+        """
+            ...
+        def configValue(self, path: str, failIfMissing: bool=None) -> Union[Any]:
+        """
+        @return cached config value for the provided field path if set or `null` or error otherwise depending on
+                `failIfMissing`; note that will not return secret value.
+        """
+            ...
+        def getSecret(self) -> Tester.Config:
+        """
+        Return cached instance of configuration containing only secret values. For Identifiable configuration, `id` field
+        is required. For Nameable configurations `name` field is required.
+        
+        Note that typical pattern is to use Configurable#configWithSecrets instead of this method.
+        """
+            ...
+        def secretValue(self, path: str, failIfMissing: bool=None) -> Union[Any]:
+        """
+        @return cached secret value for the provided field path in this Config object or `null` if not set or error
+                depending on `failIfMissing`.
+        """
+            ...
+        def decodedValue(self, path: str, failIfMissing: bool=None) -> Union[str]:
+        """
+        Reads and url decodes the content at the path.
+        Path must represent a string value.
+        """
+            ...
+        def isUserOverride(self) -> bool:
+        """
+        @return `true` if this configuration instance was set at ConfigOverride.USER level.
+        """
+            ...
+        def isAppOverride(self) -> bool:
+        """
+        @return `true` if this configuration instance was set at ConfigOverride.APP level.
+        """
+            ...
+        def isClusterOverride(self) -> bool:
+        """
+        @return `true` if this configuration instance was set at ConfigOverride.CLUSTER level.
+        """
+            ...
+        def isEnvOverride(self) -> bool:
+        """
+        @return `true` if this configuration instance was set at ConfigOverride.ENV level.
+        """
+            ...
+        def isRootOverride(self) -> bool:
+        """
+        @return `true` if this configuration instance was set at ConfigOverride.ROOT level.
+        """
+            ...
+        def isSeed(self) -> bool:
+        """
+        @return `true` if this configuration has not been set and comes from seed / defaults.
+        """
+            ...
+        @classmethod
+        def isSecret(cls, path: str) -> bool:
+        """
+        @return `true` if provided path is a secret.
+        """
+            ...
+        def configKey(self) -> Union[str]:
+        """
+         @return config key for this instance. The config key is a unique identifier for an instance of a config type.
+         The config key varies based on whether the config is defined with:
+            1. {@link Ann.Config#subfolder}
+                In this case, the name of the subfolder will be included.
+            2. {@link Ann.Config#minOverride} set to {@link ConfigOverride#USER}
+                In this case, the ID of the {@link User} will be included.
+            3. mixes in {@link Named} or {@link Identified}
+        In this case, the name or id of the config will be included. If the config does not mix Named or Identified,
+        the name of the config subtype will be used.
+        
+         The config key includes the above three fields delimited by '/':
+            {subfolder name if applicable}/{user ID if applicable}/{id or name or type name}
+         ```
+         | USER min Override | Identified or Named | Subfolder defined |      Example Config Key     |
+         |-------------------|---------------------|-------------------|-----------------------------|
+         |       no          |         no          |        no         |           MyConfType        |
+         |       yes         |         no          |        no         |       myUserId/MyConfType   |
+         |       no          |         yes         |        no         |             abc             |
+         |       no          |         no          |        yes        |      folder1/MyConfType     |
+         |       no          |         yes         |        yes        |          folder1/abc        |
+         |       yes         |         yes         |        no         |          myUserId/abc       |
+         |       yes         |         no          |        yes        | folder1/myUserId/MyConfType |
+         |       yes         |         yes         |        yes        |     folder1/myUserId/abc    |
+         ```
+         Note that the config key is a computed value and is not set-able.
+         For config subtypes that mixin both {@link Identifiable} and {@link Nameable}, the ID will be used as part of the key.
+        """
+            ...
+        @classmethod
+        def forConfigKey(cls, configKey: str) -> Union[Tester.Config]:
+        """
+        @return return cached config instance for provided config key.
+        """
+            ...
+        @classmethod
+        def listConfigKeys(cls) -> Union[Stream[str]]:
+        """
+        @return stream of all available Config keys for this type; #forConfigKey can be used to look up Config instance.
+        """
+            ...
+        @classmethod
+        def listConfigs(cls, parallel: bool=None, filter: Callable[[str], bool]=None) -> Union[Stream[Tester.Config]]:
+        """
+        @param
+        
+        @return stream of all available Config instances for this type.
+        """
+            ...
+        def allConfigValueOverrides(self, path: str) -> Union[Map[str, any]]:
+        """
+        @return all config template values by override.
+        """
+            ...
+        def allConfigOverrides(self) -> Union[Map[str, any]]:
+        """
+        @return all config template jsons by override.
+        """
+            ...
+        def allSecretValueOverrides(self, path: str) -> Union[Map[str, any]]:
+        """
+        @return all secret template values by override.
+        """
+            ...
+        def allSecretOverrides(self) -> Union[Map[str, any]]:
+        """
+        @return all secret templates by override.
+        """
+            ...
+        def setConfigValue(self, path: str, value: Any, override: str=None, embeddedFileName: str=None) -> None:
+        """
+        Sets configuration field value at provided path in this Config object. Note will not set secret value.
+        If `embeddedFileName` parameter is provided, then config value will be stored in a separate embedded file.
+        @see clearConfigValue
+        """
+            ...
+        @overload
+        def setConfigValues(self, from_: Map[str, Any], override: str=None) -> None:
+        """
+        Sets multiple field values to those specified in the map. The map keys are the paths.
+        @see setConfigValue
+        """
+            ...
+        @overload
+        def setConfigValues(self, from_: Tester.Config, override: str=None) -> None:
+        """
+        Sets multiple field values to be the same as the passed instance.
+        @see setConfigValue
+        """
+            ...
+        def setConfigValueTemplate(self, path: str, valueTemplate: str, override: str=None) -> None:
+        """
+        Sets configuration field value template at provided path in this Config object. Note will not set secret value.
+        If `embeddedFileName` parameter is provided, then config value will be stored in a separate embedded file.
+        @see clearConfigValue
+        """
+            ...
+        def insertConfigElementAt(self, pathToCollectionField: str, index: int, value: Any, override: str=None) -> None:
+        """
+        Adds a single value at the specified index in a collection at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def setConfigElementAt(self, pathToCollectionField: str, index: int, value: Any, override: str=None) -> None:
+        """
+        Sets a single value at the specified index in a collection at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def addConfigElement(self, pathToCollectionField: str, value: Any, override: str=None) -> None:
+        """
+        Adds a single value to a collection at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def setConfigMapValue(self, pathToMapField: str, key: Any, value: Any, override: str=None) -> None:
+        """
+        Sets a key-value pair in specified map at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def removeConfigElementAt(self, pathToCollectionField: str, index: int, override: str=None) -> None:
+        """
+        Removes a single value at the specified index in a collection at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def removeConfigElement(self, pathToCollectionField: str, value: Any, override: str=None) -> None:
+        """
+        Removes a single value in a collection at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def removeConfigMapKey(self, pathToMapField: str, key: Any, override: str=None) -> None:
+        """
+        Removes a single key in a map at provided path in this Config object.
+        Note this will merge based on the {@link Ann.Merge} collection value for the field.
+        """
+            ...
+        def setEncodedValue(self, path: str, value: str, override: str) -> None:
+        """
+        Url encodes the content at the path and returns new config object with the encoded value.
+        Path must represent a string value.
+        """
+            ...
+        def setSecretValue(self, path: str, value: Any, override: str=None) -> None:
+        """
+        Sets secret field value or secrets within value at provided path in this Config object.
+        @see clearSecretValue
+        """
+            ...
+        @overload
+        def setSecretValues(self, from_: Map[str, Any], override: str=None) -> None:
+        """
+        Sets multiple secret field values to those specified in the map. The map keys are the paths.
+        @see setSecretValue
+        """
+            ...
+        @overload
+        def setSecretValues(self, from_: Tester.Config, override: str=None) -> None:
+        """
+        Sets multiple secret field values to be the same as the passed instance.
+        @see setSecretValue
+        """
+            ...
+        def setSecretValueTemplate(self, path: str, value: str, override: str=None) -> None:
+        """
+        Sets secret field value template at provided path in this Config object.
+        @see clearSecretValue
+        """
+            ...
+        def clearConfigValue(self, path: str, override: str=None) -> None:
+        """
+        Clears configuration field value at provided path in this Config object at provided override level. Note will not
+        clear secret value.
+        """
+            ...
+        def clearSecretValue(self, path: str, override: str=None) -> None:
+        """
+        Clears secret field value at provided path in this Config object at provided override level.
+        """
+            ...
+        def clearConfigValueAllOverrides(self, path: str) -> None:
+        """
+        Clears configuration field value at provided path in this Config object at all override levels. Note will not
+        clear secret value.
+        """
+            ...
+        def clearSecretValueAllOverrides(self, path: str) -> None:
+        """
+        Clears secret field value at provided path in this Config object at all override levels.
+        """
+            ...
+        @classmethod
+        def rawConfigOrSecretValue(cls, configKey: str, path: str, override: str=None, failIfMissing: bool=None) -> Union[any]:
+        """
+        @return config or secret value for the provided config key, field path, and override if set
+        """
+            ...
+        @classmethod
+        def setConfigOrSecretValue(cls, configKey: str, path: str, value: Any=None, override: str=None) -> None:
+        """
+        Sets config or secret value for the provided config key, field path and override.
+        """
+            ...
+        @classmethod
+        def setConfigAndSecretValue(cls, configKey: str, path: str, value: Any=None, override: str=None) -> None:
+        """
+        Sets config and secret value for the provided config key, field path and override. Equivalent to calling both
+        setConfigValue and setSecretValue
+        """
+            ...
+        @classmethod
+        def setConfigOrSecretValueTemplate(cls, configKey: str, path: str, valueTemplate: str=None, override: str=None) -> None:
+        """
+        Sets config or secret value template for the provided config key, field path and override.
+        """
+            ...
+        @classmethod
+        def hasSubTypes(cls) -> bool:
+        """
+        @return `true` if this Config type has other sub types.
+        """
+            ...
+        @classmethod
+        def hasSecretField(cls) -> bool:
+        """
+        @return true if this Config type has Ann.Config#secret annotation on the Config type of child config types
+        """
+            ...
+        @classmethod
+        def isSingleInstance(cls) -> bool:
+        """
+        @return `true` if this Config type has only one instance.
+        """
+            ...
+        @classmethod
+        def isUserOverridable(cls) -> bool:
+        """
+        @returns `true` if this Config is user override-able.
+        """
+            ...
+        @classmethod
+        def dfltOverride(cls, override: str=None) -> str:
+        """
+        @return default configuration override level
+        """
+            ...
+        @classmethod
+        def loadConfigAndSecret(cls, configKey: str) -> Union[Tester.Config]:
+        """
+         Loads config and secret by key if exists, default config, or `null` if `doNotDefaultIfMissing` config annotation is
+        true and config does not exist.
+         Note that this skips caching and directly fetches config from the config store, and secret from vault.
+        """
+            ...
+        def loadConfigOverride(self, override: str) -> Union[any]:
+        """
+        Loads config override template json if exists or `null`. Will not include secrets.
+        Note that this skips caching and directly fetches config from the config store.
+        """
+            ...
+        def loadSecretOverride(self, override: str) -> Union[any]:
+        """
+        Loads secret override template json if exists or `null`. Will not include non secrets.
+        Note that this skips caching and directly fetches secret from the vault.
+        """
+            ...
+        def embeddedFile(self, embeddedFileName: str, override: str=None) -> File:
+        """
+        @return file for an embedded config value.
+        """
+            ...
+        @classmethod
+        def configFolder(cls) -> str:
+        """
+        @return config folder name
+        """
+            ...
+        @classmethod
+        def configSubFolder(cls) -> str:
+        """
+        @return config sub folder name for this type
+        """
+            ...
+        @classmethod
+        def configFileEncodedPath(cls, configKey: str, userOverride: bool=None) -> str:
+        """
+        @return config file encoded path for a given key and potentially user under the config dir for this type.
+        """
+            ...
+        def configAndSecretFiles(self, override: str) -> Union[Pair[File, File]]:
+        """
+        @return pair of config and secret files for a given override; note that will always return instance of
+                File even if physical file doesn't exist.
+        """
+            ...
+        def configFilePath(self, override: str) -> Union[str]:
+        """
+        @return the config file path for a config instance at a given override;
+        """
+            ...
+        def secretFilePath(self, override: str) -> Union[str]:
+        """
+        @return the secret file path for a config instance at a given override;
+        """
+            ...
+        def configAndSecretFilePair(self, override: str, appId: str) -> Union[Pair[File, File]]:
+        """
+        @return pair of config and secret files for provided override / appId; note that will always return pair
+                of Files even if physical file doesn't exist.
+        """
+            ...
+        def allConfigAndSecretFiles(self) -> Union[Map[str, Pair[File, File]]]:
+        """
+        @return map of pair of config and secret files by override; note that will always return instance of
+                File even if physical file doesn't exist.
+        """
+            ...
+        @classmethod
+        def configAndSecretDirs(cls, override: str=None) -> Union[Pair[File, File]]:
+        """
+        @return pair of config and secret template directories for override
+        """
+            ...
+        @classmethod
+        def allConfigAndSecretDirs(cls) -> Union[Map[str, Pair[File, File]]]:
+        """
+        @return map of pair of config and secret template directories by override; note that will always return instance of
+                File even if physical folder doesn't exist.
+        """
+            ...
+        @classmethod
+        def configAndSecretOverrideBaseDirs(cls, override: str=None) -> Union[Pair[File, File]]:
+        """
+        @return pair of config and secret Base directories for the given override
+        """
+            ...
+        @classmethod
+        def configKeyForFile(cls, file: File, failIfInvalid: bool=None) -> Union[str]:
+        """
+        @return config key for a given config or secret file. If file is not a valid config or secret then will return
+                `null` or fail based on `failIfInvalid`
+        """
+            ...
+        @classmethod
+        def configKeyForFileUrl(cls, fileUrl: str) -> Union[str]:
+        """
+        @return config key for a given config or secret file url. If file is not a valid config or secret then will return
+                `null` or fail based on `failIfInvalid`
+        """
+            ...
+        @classmethod
+        def configTypeForDir(cls, dir: str, failIdInvalid: bool=None) -> Union[Type]:
+        """
+        @return Config sub-type for a config directory name.
+        """
+            ...
+        def setConfig(self, override: str=None) -> None:
+        """
+        Sets configuration. For Identifiable configurations `id` field is required. Does not set secret values. Use
+        #setSecret or #setSecretValue for that.
+        """
+            ...
+        def setSecret(self, override: str=None) -> None:
+        """
+        Sets configuration. For Identifiable configurations `id` field is required. Does not set non secret values. Use
+        #setConfigValue or #setConfig for that.
+        """
+            ...
+        def eachOverride(self, action: Callable[[Config, str]]=None) -> None:
+        """
+        Executes actions on all config override levels (within a valid range) for a particular instance of config.
+        """
+            ...
+        @classmethod
+        def eachOverrideOnType(cls, action: Callable[[str]]=None) -> None:
+        """
+        Executes actions on all config override levels (within a valid range) for the Type itself (not instance).
+        """
+            ...
+        @classmethod
+        def minOverride(cls) -> str:
+        """
+        Minimum configuration override level. Default is {@link ConfigOverride#APP}.
+        """
+            ...
+        @classmethod
+        def maxOverride(cls) -> str:
+        """
+        Maximum configuration override level. Default is {@link ConfigOverride#ROOT}.
+        """
+            ...
+        def clearConfigAndSecretOverride(self, override: str) -> None:
+        """
+        Clears specified configuration override including secrets for this instance.
+        
+        @param override
+               Specifies the {@link ConfigOverride} level, of this config to clear.
+        """
+            ...
+        def clearConfigAndSecretAllOverrides(self) -> None:
+        """
+        Clears specified configuration including secrets for this instance on all override levels.
+        """
+            ...
+        @classmethod
+        def clearAllConfigAndSecretOverrides(cls, override: str, confirm: bool=None) -> None:
+        """
+        Clears every config and secret instance for this type and subtypes on all overrides lower than the specified
+        override (that is, Config#clearAllConfigAndSecretOverrides with App override parameter will clear all configs on
+        {@link ConfigOverride#APP} and {@link ConfigOverride#USER} level).
+        
+        @param override
+               Specifies the {@link ConfigOverride} level of this config to clear. All overrides lower than this override
+               will also be cleared.
+        @param confirm
+               Confirmation from user that they understand and confirm deletion of this configuration.
+        """
+            ...
+        @classmethod
+        def secretFieldPaths(cls) -> Union[Array[FieldPath]]:
+        """
+        returns a list of all field paths that are secret
+        """
+            ...
+        def removeSecrets(self) -> Union[Tester.Config]:
+        """
+        @return this config without any secret values.
+        """
+            ...
+        def removeNonSecrets(self) -> Union[Tester.Config]:
+        """
+        @return this config with only secret values.
+        """
+            ...
+        def validate(self) -> Tester.Config:
+        """
+        Validates and alters fields in the configuration to fit specific requirements. sub-types can override to add custom
+        validation and setup.
+        """
+            ...
+        @classmethod
+        def rawJson(cls, configKey: str) -> Union[any]:
+        """
+        @return The cached and merged JSON of all defined configuration templates for this instance, including secrets.
+        """
+            ...
+        @classmethod
+        def setJson(cls, configKey: str, json: any, secret: bool=None, override: str=None) -> File:
+        """
+        @return sets Json template for a specified override.
+        """
+            ...
+        @classmethod
+        def setJsonValue(cls, configKey: str, field: str, json: any, override: str=None) -> File:
+        """
+        @return sets Json template field for a specified override.
+        """
+            ...
+        @classmethod
+        def setJsonField(cls, configKey: str, field: str, json: any, secret: bool=None, override: str=None) -> File:
+        """
+        @return sets Json template field for a specified override.
+        """
+            ...
+        @classmethod
+        def templateBindings(cls, configKey: str) -> Union[any]:
+        """
+        Returns json containing configuration template bindings for a provided config key. Override this method to provide your
+        own list of template bindings
+        """
+            ...
+        @classmethod
+        def evalTemplate(cls, template: str, extraBindings: Map[str, str]=None) -> str:
+        """
+        Evaluate a given template by applying the default config bindings.
+        Default config bindings are:
+        1. owner - owner of the config
+        2. region - abbreviated region in which the cluster is
+        3. cluster - current cluster id
+        4. env - current env id
+        5. app - current app id
+        7. user - current user
+        8. type - type on which this api is called
+        For example, "${owner}--${cluster}-${env}-${app}"
+        
+        @param template
+                   Template string that needs to be evaluated. For example, "${owner}--${cluster}-${env}-${app}-${schemaName}"
+        @param extraBindings
+                   Any additional binding params not included in the default config bindings
+        @return evaluated template
+        """
+            ...
+        @classmethod
+        def rawJsonCacheSize(cls) -> Union[int]:
+        """
+        Returns count of cached raw Json.
+        """
+            ...
+        @classmethod
+        def rawJsonNativeCache(cls) -> Union[Any]:
+        """
+        Returns instance of the cache for this type for raw Json.
+        """
+            ...
+

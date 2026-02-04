@@ -1,0 +1,155 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Make a bar plot.
+ *
+ * # Example: Simple Bar Chart
+ * ```JavaScript
+ * var N = 20,
+ *     x = C3.Array.patternOfInt(N, n => n + 1),
+ *     y = C3.Array.patternOfDbl(N, n => 10 + Math.random() * 40);
+ * PlotAxes.make().bar({ x: x, height: y }).show();
+ * ```
+ *
+ * # Example: Variable-Width Bar Chart
+ * ```JavaScript
+ * var N = 20,
+ *     x = C3.Array.patternOfInt(N, n => n + 1),
+ *     y = C3.Array.patternOfDbl(N, n => 10 + Math.random() * 40),
+ *     w = C3.Array.patternOfDbl(N, n => y[n] < 20 || y[n] > 30 ? 0.8 : 0.5);
+ * PlotAxes.make().bar({
+ *   x: x,
+ *   height: y,
+ *   width: w
+ * }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.bar.html
+ */
+type PlotBarSpec mixes PlotElementSpec {
+
+  /**
+   * The x coordinates of the bars. See also align for the alignment of the bars to the coordinates.
+   *
+   * Python: sequence of scalars
+   */
+  x: [any]
+
+  /**
+   * The height(s) of the bars.
+   *
+   * Python: scalar or sequence of scalars
+   */
+  height: any
+
+  /**
+   * The width(s) of the bars (default: 0.8).
+   *
+   * Python: scalar or array-like
+   */
+  width: any
+
+  /**
+   * The y coordinate(s) of the bars bases (default: 0).
+   *
+   * Python: scalar or array-like
+   */
+  bottom: any
+
+  data: any
+
+  /**
+   * The colors of the bar faces.
+   *
+   * Python: scalar or array-like
+   */
+  color: any
+
+  /**
+   * The colors of the bar edges.
+   * (matplotlib edgecolor)
+   *
+   * Python: scalar or array-like
+   */
+  edgeColor: any
+
+  /**
+   * Width of the bar edge(s). If 0, don't draw edges.
+   * (matplotlib linewidth)
+   *
+   * Python: scalar or array-like
+   */
+  lineWidth: any
+
+  /**
+   * The tick labels of the bars. Default: None (Use default numeric labels.)
+   * (matplotlib tick_label)
+   *
+   * Python: string or array-like
+   */
+  tickLabel: string | [any]
+
+  /**
+   * If not None, add horizontal / vertical errorbars to the bar tips. The values are +/- sizes relative to the data:
+   * (matplotlib xerr)
+   *
+   * Python: scalar or array-like of shape(N,) or shape(2,N)
+   */
+  xErr: any
+
+  /**
+   * If not None, add horizontal / vertical errorbars to the bar tips. The values are +/- sizes relative to the data:
+   * (matplotlib yerr)
+   *
+   * Python: scalar or array-like of shape(N,) or shape(2,N)
+   */
+  yErr: any
+
+  /**
+   * The line color of the errorbars.
+   * (matplotlib ecolor)
+   *
+   * Python: scalar or array-like
+   */
+  eColor: any = 'black'
+
+  /**
+   * The length of the error bar caps in points. Default: None, which will take the value from rcParams["errorbar.capsize"].
+   * (matplotlib capsize)
+   *
+   * Python: scalar
+   */
+  capSize: any
+
+  /**
+   * Dictionary of kwargs to be passed to the errorbar method. Values of ecolor or capsize defined here take precedence over the independent kwargs.
+   * (matplotlib error_kw)
+   */
+  errorKw: json
+
+  /**
+   * If True, set the y-axis to be log scale.
+   */
+  log: boolean = false
+
+  /**
+   * This is for internal use only. Please use barh for horizontal bar plots. Default: 'vertical'.
+   *
+   * Python: {'vertical', 'horizontal'}
+   */
+  orientation: string enum('vertical', 'horizontal')
+
+  /**
+   * Alignment of the bars to the x coordinates:
+   *
+   * Python: {'center', 'edge'}
+   */
+  align: string enum('center', 'edge') = 'center'
+}

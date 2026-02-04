@@ -1,0 +1,337 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Jenkins Rest endpoints wrapper
+ *
+ * Instance (REST).url: "https://jenkins.c3iot.io/<instance>"
+ * Instance (REST).auth: Authenticator.generateBasicAuthToken(JENKINS_USER, JENKINS_USER_TOKEN)
+ *
+ * Usage:
+ *      // Store config on the environment
+ *      var jenkinsConfig = Jenkins.make({name : '<instance>'}).config(true)
+ *      jenkinsConfig.setConfigValue('url', 'https://jenkins.c3iot.io/<instance>')
+ *      jenkinsConfig.setSecretValue('auth', Authenticator.generateBasicAuthToken('<username>', <TokenValue>))
+ *      // Create a Jenkins instance by referencing the stored config
+ *      var jenkinsConfig = Jenkins.make({name : '<instance>'}).config(true)
+ *      var jenkins = Jenkins.make({name: '<instance>', url: jenkinsConfig.url, auth: jenkinsConfig.auth})
+ *      // call something on this jenkins instance
+ */
+type Jenkins mixes REST, Named {
+
+  /**
+   * Returns information for a specific build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/${build_number}/api/json`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param buildNumber
+   *          The build number that you want to inspect
+   *
+   * @returns JenkinsBuild of a specific build.
+   */
+  @rest(uri='job', method='GET')
+  build: abstract member function(@rest(partOfURI=true, uriPrefix='/')
+                                  jobPath: !string,
+                                  @rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                  buildNumber: !int): JenkinsBuild
+
+  /**
+   * Get a test report of all tests in the current Jenkins build.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param buildNumber
+   *          The build number that you want to inspect
+   *
+   * @returns JenkinsTestReport
+   */
+  @rest(uri='job', method='GET')
+  testReport: abstract member function(@rest(partOfURI=true, uriPrefix='/')
+                                       jobPath: !string,
+                                       @rest(partOfURI=true, uriPrefix='/', uriSuffix='/testReport/api/json')
+                                       buildNumber: !int): JenkinsTestReport
+
+  /**
+   * Returns information up to the last 100 builds
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=builds[*]{0,5}`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch a list of builds. If you want a range of builds from a START to an END then do [*]{start,end}
+   *          where `start` is the build at `start` builds ago inclusive and `end` is the build at `end` builds ago exclusive.
+   *          So if start = 10 and end = 15, you get a range of builds 10 - 14 builds ago. If end exceeds 100,
+   *          the output still caps at 100. So if start = 60 and end = 160, you get 40 builds.
+   *
+   * @returns a JenkinsBuilds type
+   */
+  @rest(uri='job', method='GET')
+  builds: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                   jobPath: !string,
+                                   @rest(queryParameter=true)
+                                   tree: string = 'builds[*]'): JenkinsBuilds
+
+  /**
+   * List jobs under a specific path
+   * Jenkins URI: `GET jenkins_url + /job/${folder_name}/api/json?tree=jobs[name,url]`
+   *
+   * @param folder_name
+   *          The folder_name for which you want to retrieve the jobs
+   * @param tree
+   *          Use the tree parameter to filter only the required fields: jobs[name,url]
+   *
+   * @returns a List of JenkinsJobs
+   */
+  @rest(uri='job', method='GET')
+  listJobs: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                     folder_name: !string,
+                                     @rest(queryParameter=true)
+                                     tree: string = 'jobs[name,url]'): JenkinsListJobResult
+
+  /**
+   * Returns information for the last build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastBuild of the job. The default [*] fetches all the fields in lastBuild
+   *          lastBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                      jobPath: !string,
+                                      @rest(queryParameter=true)
+                                      tree: string = 'lastBuild[*]'): JenkinsLastBuild
+
+  /**
+   * Returns information for the last completed build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastCompletedBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastCompletedBuild of the job. The default [*] fetches all the fields in lastCompletedBuild
+   *          lastCompletedBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastCompletedBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastCompletedBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                               jobPath: !string,
+                                               @rest(queryParameter=true)
+                                               tree: string = 'lastCompletedBuild[*]'): JenkinsLastCompletedBuild
+
+  /**
+   * Returns information for the last failed build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastFailedBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastFailedBuild of the job. The default [*] fetches all the fields in lastFailedBuild
+   *          lastFailedBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastFailedBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastFailedBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                            jobPath: !string,
+                                            @rest(queryParameter=true)
+                                            tree: string = 'lastFailedBuild[*]'): JenkinsLastFailedBuild
+
+  /**
+   * Returns information for the last stable build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastStableBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastStableBuild of the job. The default [*] fetches all the fields in lastStableBuild
+   *          lastStableBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastStableBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastStableBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                            jobPath: !string,
+                                            @rest(queryParameter=true)
+                                            tree: string = 'lastStableBuild[*]'): JenkinsLastStableBuild
+
+  /**
+   * Returns information for the last successful build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastSuccessfulBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastSuccessfulBuild of the job. The default [*] fetches all the fields in lastSuccessfulBuild
+   *          lastSuccessfulBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastSuccessfulBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastSuccessfulBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                                jobPath: !string,
+                                                @rest(queryParameter=true)
+                                                tree: string = 'lastSuccessfulBuild[*]'): JenkinsLastSuccessfulBuild
+
+  /**
+   * Returns information for the last unstable build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastUnstableBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastUnstableBuild of the job. The default [*] fetches all the fields in lastUnstableBuild
+   *          lastUnstableBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastUnstableBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastUnstableBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                              jobPath: !string,
+                                              @rest(queryParameter=true)
+                                              tree: string = 'lastUnstableBuild[*]'): JenkinsLastUnstableBuild
+
+  /**
+   * Returns information for the last unsuccessful build
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/api/json?tree=lastUnsuccessfulBuild[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the lastUnsuccessfulBuild of the job. The default [*] fetches all the fields in lastUnsuccessfulBuild
+   *          lastUnsuccessfulBuild[id] would only fetch the id field.
+   *
+   * @returns a JenkinsLastUnsuccessfulBuild type
+   */
+  @rest(uri='job', method='GET')
+  lastUnsuccessfulBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                                  jobPath: !string,
+                                                  @rest(queryParameter=true)
+                                                  tree: string = 'lastUnsuccessfulBuild[*]')
+                                           : JenkinsLastUnsuccessfulBuild
+
+  /**
+   * Returns health report of the current job.
+   * Jenkins URI: `GET jenkins_url + /job/${job_name}/lastBuild/api/json?tree=healthReport[*]`.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param tree
+   *          Fetch the heatlhReport of the job. The default [*] fetches all the fields in healthReport
+   *          healthReport[score] would only fetch the `score` field.
+   *
+   * @returns a HealthReport Type
+   */
+  @rest(uri='job', method='GET')
+  healthReport: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/api/json')
+                                         jobPath: !string,
+                                         @rest(queryParameter=true)
+                                         tree: string = 'healthReport[*]'): JenkinsJobHealthReport
+
+  /**
+   * Returns just the header to figure out the size of Jenkins console log. Use this information to then call the the
+   * consoleLog function with the correct start offset so that you can look at a part of a log instead of the whole log.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param buildNumber
+   *          The build number that you want to inspect
+   * @param start
+   *          Byte offset you want to start looking inside the log. If this byte offset is greater than file size, it will
+   *          be set to 0. That is it will return the whole log file which can cause an out of memory crash.
+   */
+  @rest(uri='job', method='HEAD')
+  consoleLogHeader: abstract member function(@rest(partOfURI=true, uriPrefix='/')
+                                             jobPath: !string,
+                                             @rest(partOfURI=true, uriPrefix='/', uriSuffix='/logText/progressiveText')
+                                             buildNumber: !int,
+                                             @rest(queryParameter=true)
+                                             start: int = 0): HttpResponse
+
+  /**
+   * Returns the Jenkins console log for a given build.
+   *
+   * @param jobPath
+   *          The path of the job for which you want to retrieve the build
+   * @param buildNumber
+   *          The build number that you want to inspect
+   * @param start
+   *          Byte offset you want to start looking inside the log. If this byte offset is greater than file size, it will
+   *          be set to 0. That is it will return the whole log file which can cause an out of memory crash.
+   */
+  @rest(uri='job', method='GET')
+  consoleLog: abstract member function(@rest(partOfURI=true, uriPrefix='/')
+                                       jobPath: !string,
+                                       @rest(partOfURI=true, uriPrefix='/', uriSuffix='/logText/progressiveText')
+                                       buildNumber: !int,
+                                       @rest(queryParameter=true)
+                                       start: int = 0): HttpResponse
+
+  /**
+   * Execute the specified groovy script
+   *
+   * @param script
+   *          The groovy script to execute
+   *
+   * @returns The result of the groovy script. Groovy script that returns a result is prefixed with "Result: "
+   */
+  @rest(uri='scriptText', method='POST', contentType='application/x-www-form-urlencoded', acceptType='text/plain')
+  executeGroovy: abstract member function(script: !string): string
+
+  /**
+   * Trigger a build job by name.
+   * Jenkins URI: `POST jenkins_url + /job/${job_name}/build`.
+   * Usage:
+   *      // trigger a jenkins build job
+   *      var response = jenkins.triggerBuild('<job_name>', '{"parameter": [{"name":"REPOSITORY_URL", "value":"<url>"}, {"name":"REPOSITORY_NAME", "value":"<repo>"}, {"name":"BRANCH_NAME", "value":"<branch>"}]}')
+   *
+   * @param jobName
+   *          The name of the Jenkins build job to be triggered.
+   * @param params
+   *          A string representing a dictionary of properties expected by the target Jenkins build job.
+   *          Example: REPOSITORY_URL, REPOSITORY_NAME, BRANCH_NAME, ...
+   * @returns The HTTP response as received from Jenkins.
+   */
+  @rest(uri='job', method='POST', contentType='application/x-www-form-urlencoded', acceptType='text/plain')
+  triggerBuild: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/build')
+                                         jobName: !string,
+                                         @rest(parameterName='json')
+                                         params: !string): HttpResponse
+
+  /**
+   * Connect to the specified Jenkins instance
+   *
+   * @param name
+   *          Logical name.  Used to pull config (see {@link JenkinsConfig})
+   * @param url
+   *          Base url.  If supplied, will be used in lieu of available JenkinsConfig.url
+   * @param auth
+   *          Authentication token. If supplied, will be used in lieu of available JenkinsConfig.auth.
+   *          See {@link Authenticator} for auth token types and generation.
+   *
+   * @returns A Jenkins object for the target url
+   */
+  connect: function(name: !string, url: string, auth: string): Jenkins
+
+  @rest(uri='queue/api/json', method='GET')
+  queue: abstract member function(): JenkinsQueue
+
+  /**
+   * Returns information for the Jenkins "computer" api output. Contains information about the current executors, including
+   * idle executors, busy executors, and total executors
+   * For documentation on the Jenkins computer api, @see https://www.jenkins.io/doc/book/using/remote-access-api/
+   */
+  @rest(uri='computer/api/json', method='GET')
+  computer: abstract member function(): JenkinsComputerResult
+}

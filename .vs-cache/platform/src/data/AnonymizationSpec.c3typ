@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification used to anonymize a collection. Personal Identifiable Information (PII) will be replaced with
+ * fake values and other QuasiIdentifiers (QId) will the anonymized using Anonymization Algorithm.
+ *
+ * For more information, also
+ * @see Anonymizer
+ * @see Ann.PII
+ * @see Ann.QuasiId
+ */
+type AnonymizationSpec mixes Spec {
+
+  /**
+   * piiFields are suppressed from the dataset by generating fake data in their place
+   */
+  piiFields: map<string, string>
+
+  /**
+   * quasiIds are used by data anonymization algorithm to generalize specific fields from the dataset.
+   */
+  quasiIds: [QuasiId]
+
+  /**
+   * Include spec indicating how far to traverse references for anonymization.  If not specify, only fields directly
+   * owned by the type being anonymized will be included.  If specified only fields indicated by the include will be
+   * included though they may be references to entity type fields outside of the type being anonymized.
+   */
+  include: string
+
+  /**
+   * Specify the least number of data points which should be same across all the QuasifierIdentifiers (QuasiIds )
+   * fields for each record in the dataset. In other word, to specify the k in K-anonymity property in the dataset
+   *
+   * K-anonymity property: a dataset is K-anonymous, when each row has quasi-identifiers attributes that
+   * are suppressed or generalized until each row is identical with at least k-1 other rows. At this point
+   * the data is said to be confidential or K-anonymous.
+   *
+   * Higher value of k means higher confidentiality but also more information loss due to anonymization.
+   * Lower value of k means lower confidentiality but also less information loss due to anonymization.
+   *
+   * Choose value according to the use case but if unspecified, then a default value of `5` is used.
+   */
+  kAnonymityFactor: int32 = 5
+
+  /**
+   * Complete the spec from user from Annotations
+   *
+   * @param meta, TypeMeta of input obj
+   * @param spec, Spec provided by user
+   * @return complete spec
+   *
+   * Useful for user to identify what quasi identifiers (Ann.QuasiId) are annotated on the TypeMeta.
+   * May not be relevant to use every time, since we do this during anonymization anyway.
+   */
+  completeSpec: private function(meta: !TypeMeta, spec: AnonymizationSpec): AnonymizationSpec
+}

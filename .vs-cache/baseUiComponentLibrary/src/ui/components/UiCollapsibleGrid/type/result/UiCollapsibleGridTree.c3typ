@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link UiCollapsibleGrid#componentData}
+ */
+type UiCollapsibleGridTree {
+  /**
+   * root node for the {@link UiCollapsibleGrid}.
+   */
+  rootNode: UiCollapsibleGridTreeNode
+
+  /**
+   * Sets the initial pixel width for the spreadsheet columns.
+   */
+  columnWidth: [int]
+
+  /**
+   * If true, allow column to be resized when hovering over the vertical border line between the column headers.
+   */
+  resizable: boolean = false
+
+  /**
+   * The configs for how to display the numerical values in the grid.
+   * To provide date level formatting, check {@link UiCollapsibleGridTreeNodeDatum#format}.
+   * By default the numbers will display without formating.
+   * This will be overridden by a {@link UiCollapsibleGridTreeNode row} or
+   * {@link UiCollapsibleGridTreeNodeDatum cell} format spec.
+   * It's essential to understand that the format specification provided here applies
+   * to all numerical values within the row. So, if a date is provided as a value in milliseconds,
+   * it will be formatted as a number unless accompanied by a [date format](UiCollapsibleGridTreeNodeDatum#format).
+   * Therefore, to avoid such cases its recommended to specify dates as either an ISO 8601 string or a localized string.
+   */
+  valueFormatSpec: [UiSdlNumberParamKindFormatSpec]
+
+  /**
+   * List containing grouping applied to data in the tree grid. This
+   * field needs to be populated correctly in order to allow correct export
+   * of grid as flattened csv.
+   */
+  treeGroupings: [string]
+
+  /**
+   * Mapping between color and label to pass information via props and populate {@link UiCollapsibleGrid} legend.
+   */
+  legendItems: [UiCollapsibleGridLegendItem]
+}

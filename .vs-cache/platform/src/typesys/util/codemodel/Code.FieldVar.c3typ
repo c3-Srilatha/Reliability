@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "field" represents a single class field declaration.
+ *
+ * @see Code.DefinedClass
+ * @see Code.Assignment
+ * @see Code.FieldRef
+ */
+@code(py="none")
+type Code.FieldVar mixes Code.Node, Code.WithName, Code.DocumentationTarget, Code.AnnotationTarget, Code.WithMods {
+
+  /**
+   * Type of the field.
+   */
+  fieldType: member function(): Code.TypeBase
+
+  /**
+   * The initial value of the field.
+   */
+  init: member function(): Code.Expr
+
+  /**
+   * Get the parent class of this field.
+   */
+  parentClass: private member function(failIfNone: boolean): Code.DefinedClass
+
+  _name: !~
+
+  @code(js="none")
+  _fieldType: private Code.TypeBase
+
+  _init: private Code.Expr
+}

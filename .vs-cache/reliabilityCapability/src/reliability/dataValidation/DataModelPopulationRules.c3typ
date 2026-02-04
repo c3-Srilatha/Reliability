@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functions used by the {@link DataValidationRule rules} for the "Data Model Population" ruleset.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type DataModelPopulationRules mixes Value {
+
+  /**
+   * Checks for the population of fields. `fields` and `referenceFields` arguments are mappings from field names to priority levels if those fields are not populated.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @param typeName
+   *           The name of the type to validate.
+   * @param fields
+   *           A map from field names to priority levels for field population validation.
+   * @param referenceFields
+   *           A map from reference field names to priority levels for validation.
+   * @param matchingFields
+   *           A map from matching field names to priority levels for validation.
+   * @return An array of {@link DataValidationRuleResult} objects representing validation results.
+   */
+  validateFieldPopulation: function(args: map<string, any>,
+                                    typeName: !string,
+                                    fields: map<string, int>,
+                                    referenceFields: map<string, int>,
+                                    matchingFields: map<string, int>): [DataValidationRuleResult] js-rhino
+
+  /**
+   * Checks for {@link Sensor#pointSeries} population.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @param p1LookbackMonths
+   *           If no data exists for this many months before now, a P1 rule violation is raised.
+   * @param p2LookbackMonths
+   *           If no data exists for this many months before now, a P2 rule violation is raised. Should be less than p1LookbackMonths.
+   * @return An array of {@link DataValidationRuleResult} objects representing validation results.
+   */
+  validateSensorData: function(args: map<string, any>,
+                               p1LookbackMonths: int = 4,
+                               p2LookbackMonths: int = 1): [DataValidationRuleResult] js-rhino
+
+  /**
+   * Checks that old {@link Sensor#typeIdent} strings do not show up in the {@link PhysicalAsset} table.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @return A {@link DataValidationRuleResult} object representing the validation result.
+   */
+  validateSensorTypeIdent: function(args: map<string, any>): DataValidationRuleResult js-rhino
+
+  /**
+   * Checks for proper hierarchy denormalization and asset hierarchical relations.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @param connectedAssetsThreshold
+   *           The threshold for connected assets validation (default: 0.8).
+   * @return An array of {@link DataValidationRuleResult} objects representing validation results.
+   */
+  validateReliabilityAssetHierarchy: function(args: map<string, any>,
+                                              connectedAssetsThreshold: double = 0.8): [DataValidationRuleResult] js-rhino
+
+  /**
+   * Checks for a healthy frequency of {@link AssetClass} assignment and associated sensor relations.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @param assetClassAssignmentThreshold
+   *           The threshold for asset class assignment validation (default: 0.1).
+   * @return An array of {@link DataValidationRuleResult} objects representing validation results.
+   */
+  validateAssetClasses: function(args: map<string, any>,
+                                              assetClassAssignmentThreshold: double = 0.1)
+                                       : [DataValidationRuleResult] js-rhino
+
+  /**
+   * Checks that each {@link ExpectedSensor} has a simple metric on {@link ReliabilityAsset} with no bindings.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @return An array of {@link DataValidationRuleResult} objects representing validation results.
+   */
+  validateExpectedSensorMetrics: function(args: map<string, any>): [DataValidationRuleResult] js-rhino
+
+  /**
+   * Checks that {@link ReliabilityAsset}s with an assigned {@link AssetClass} have associated {@link ReliabilityAssetSensorRelation}s linking to {@link Sensor}s.
+   * @param args
+   *           A map containing arguments needed for validation.
+   * @param p1Coefficient
+   *           The P1 coefficient for validation (default: 0).
+   * @param p2Coefficient
+   *           The P2 coefficient for validation (default: 0.4).
+   * @return An array of {@link DataValidationRuleResult} objects representing validation results.
+   */
+  validateAssetSensorRelations: function(args: map<string, any>,
+                                         p1Coefficient: double = 0,
+                                         p2Coefficient: double = 0.4): [DataValidationRuleResult] js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

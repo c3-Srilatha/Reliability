@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Manages the execution of a set of model evaluations, one for each model in {@link #models}/{@link #modelFilter}
+ * or one for each model produced by {@link #trainJobRun}.
+ * This is created by {@link MlModel.Evaluation.Job#start}.
+ */
+type MlModel.Evaluation.JobRun extends MlWorkflowCoordinatable<MlModel.Evaluation.Result> type key 'MEJER' {
+
+  /**
+   * {@link MlModel.Evaluation.Job} that this job run belongs to
+   */
+  job: !MlModel.Evaluation.Job
+
+  /**
+   * Spec that was used to specify execution constraints for this evaluation run.
+   */
+  spec: !MlModel.Evaluation.Spec
+
+  /**
+   * Model filter for fetching {@link MlModel}s to be evaluated.
+   */
+  modelFilter: string serialized Filter
+
+  /**
+   * List of {@link MlModel}s to be evaluated.
+   */
+  models: [string serialized MlModel]
+
+  /**
+   * {@link MlModel.Train.JobRun} for fetching {@link MlModel}s to be evaluated.
+   */
+  trainJobRun: MlModel.Train.JobRun
+
+  /**
+   * Returns all {@link MlModel.Evaluation.Result}s associated with this {@link MlModel.Evaluation.JobRun}.
+   * @param spec
+   *    Common specifications for fetching the results.
+   * @return a list of {@link MlModel.Evaluation.Result}.
+   */
+  evaluationResults: member function(spec: FetchSpec): ![MlModel.Evaluation.Result]
+
+  generateNextResults:          ~
+  startResult:                  ~
+  completeResult:               ~
+  customSummaryFieldsForResult: ~ py
+}

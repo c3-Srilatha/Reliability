@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Holds information about a specific bucket within a given partition for a {@link Partitionable} type
+ */
+type DataPartitionBucket mixes Identifiable, ContentMeta {
+
+  /**
+   * Represents the specific bucket (indicating specific sort key range if present) for this given partition. If sort key is not present, this
+   * will be the same as {@link partitionKey}. The value needs to be naturally ordered for comparison
+   */
+  id: ~
+
+  /**
+   * Partition key for this partition
+   */
+  partitionKey: !string
+
+  /**
+   * Type of objects stored in this bucket. This is an internal field (populated while instantiation a DataPartitionBucket during {@link fromObjs})
+   * and is used for deserialization during {@link readObjs}. If not provided, serType will default to the type
+   * of the internal {@link KvRow}.
+   */
+  serType: private Type
+
+  /**
+   * Min values based on the sort key in this partition. The min values is computed based on the metadata
+   * provided as a part of {@link Ann.Db#persistenceOrder} in the right order.
+   * If {@link Ann.Db#persistenceOrder} is not present then objs will be sorted based on id.
+   * Note: persistenceOrder containing functions is currently not supported for bucketing and will result in all objects
+   * in a single bucket (e.g. "start,descending(timestamp)")
+   */
+  minSortKey: [any]
+
+  /**
+   * Max values based on the sort key in this partition. The max values is computed based on the metadata
+   * provided as a part of {@link Ann.Db#persistenceOrder} in the right order.
+   * If {@link Ann.Db#persistenceOrder} is not present then objs will be sorted based on id
+   * Note: persistenceOrder containing functions is currently not supported for bucketing and will result in all objects
+   * in a single bucket (e.g. "start,descending(timestamp)")
+   */
+  maxSortKey: [any]
+
+  /**
+   * Count of objs in this partition
+   */
+  count: !int
+
+  /**
+   * Read contents of this partition's bucket as objs
+   */
+  readObjs: member function(): stream<Obj>
+
+  /**
+   * Generate bucket id from the given min sort key value. Returned value will maintain natural sort order
+   * Currently supported value types are datetime, string. It is important that the result is in the natural sort order
+   * to be able to push down comparison operations down to the underlying datastores
+   */
+  bucketId: private inline function(minSortKeyValue: ![any]): !string
+
+  /**
+   * Delete the contents of the existing bucket. If backed by a File {@see DataPartitionBucket#contentLocation},
+   * then the remote file will be deleted. If backed by in memory content (@see DataPartitionBucketValue), then
+   * the in memory buffer will be set to null
+   */
+  deleteContent: private inline member function()
+
+  /**
+   * Create a bucket from existing objs. For internal use only to generate buckets via {@link DataPartition#fromObjs}
+   * @param objs
+   *         Objects that need to be written
+   * @spec
+   *        Indicates how objects need to be written
+   * @return instance of updated bucket with contents written
+   */
+  fromObjs: private function(objs: stream<Obj>): DataPartitionBucket
+}

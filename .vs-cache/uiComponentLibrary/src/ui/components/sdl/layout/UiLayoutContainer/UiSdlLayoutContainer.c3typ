@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that represents a layout container.
+ */
+@typeScript
+@uiComponentCategorizer(name='Layout container', category='Components')
+type UiSdlLayoutContainer mixes UiSdlComponent<UiSdlNoData>, UiSdlComponentSubtitle {
+
+  /**
+   * The title for layout container, a {@link UiSdlLayoutContainerTitle} instance.
+   */
+  title: UiSdlLayoutContainerTitle
+
+  /**
+   * Whether to wrap the children components in a card layout. When
+   * {@link title} is defined, this is forced to `true`.
+   */
+  wrapped: boolean
+
+  /**
+   * An nested array of {@link UiSdlVariableWidthComponentRef} to be rendered in the main content.
+   */
+  children: [[UiSdlVariableWidthComponentRef]]
+
+  /**
+   * Triggers an action that applies to the whole component.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *           The suffix of the action that should be triggered.
+   * @param args
+   *           The extra arguments that should be sent through the action.
+   * @returns a `LAYOUT_CONTAINER_ACTION_CLICK_${actionSuffix}` action
+   *   - payload {object} The arguments defined for the layout container action and component id.
+   */
+  @uiSdlActionCreator(actionType='LAYOUT_CONTAINER_ACTION_CLICK_${actionSuffix}')
+  triggerLayoutContainerAction: function(id: string,
+                                         actionSuffix: string,
+                                         args: json): UiSdlLayoutContainerTriggerAction ts-client
+}

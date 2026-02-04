@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Renders {@link Genai.Query.Result}s in a side panel feed format.
+ */
+@typeScript
+type GenAiUiFeedSidePanel mixes GenAiUiSidePanelBase, UiSdlComponent<UiSdlNoData> {
+  /**
+   * The id of the {@link GenAiUiApplicationState} this feed interacts with
+   */
+  applicationStateId: !string
+
+  /**
+   * The id of the {@link GenAiUiFeedApplicationState} this feed interacts with
+   */
+  feedApplicationStateId: !string
+
+  /**
+   * UI Settings dependent on the backend configuration
+   */
+  uiSettings: !GenAiUiConfig
+
+  /**
+   * The query tool options available to the user. This allows the user to target a specific tool when submitting a
+   * query.
+   */
+  queryToolOptions: [Genai.Agent.Tool.Config.UiOptions]
+
+  /**
+   * The agent config name to use for the query. If one is specified, all queries will be submitted to this agent and
+   * the agent selector will not be displayed.
+   */
+  agentConfigName: string
+
+  /**
+   * Whether to the resultId of the GenAI result should be tracked as a query param in the URL.
+   * This allows to reload the conversation on page refresh.
+   */
+  addResultIdQueryParam: boolean
+
+  /**
+   * The initial width of the side panel when expanded after being collapsed.
+   */
+  initialExpandedWidth: !string
+
+  /**
+   * The full width of the side panel when expanded with the "expand / full screen" button.
+   */
+  fullyExpandedWidth: string
+
+  /**
+   * The placeholder text for the search input field
+   */
+  searchPlaceholder: string
+
+  /**
+   * Additional classname to apply to the side panel for styling purposes.
+   */
+  className: string
+
+  /**
+   * The title of the side panel header
+   */
+  headerTitle: string
+
+  /**
+   * The icon to display in the side panel header
+   */
+  headerIcon: string
+
+  /**
+   * The expand/collapse behavior of the side panel.
+   * - `overlay` - The side panel will be displayed on top of the page.
+   * - `block` - The side panel will push the page content on expand and collapse.
+   */
+  behavior: string enum ("overlay", "block") = "overlay"
+}

@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Obj that stores the instance of a push stream of data values.  It is parameterized by the individual value type.
+ */
+type PushStream<E> mixes Closable, Value {
+
+  /**
+   * Pushes the next single value into stream. Throws exception if stream is closed.
+   */
+  write: abstract member function(value: !E)
+
+  /**
+   * Pushes the next batch of values into stream. Throws exception if stream is closed.
+   */
+  writeBatch: abstract member function(value: !?[E])
+
+  /**
+   * Pushes the next batch of values into stream. Throws exception if stream is closed.
+   */
+  writeStream: abstract member function(value: !?stream<E>)
+
+  /**
+   * Creates new push stream based on logic in provided callbacks.
+   */
+  create: function(onWrite: !lambda(v: E, s: mixing PushStream<E>),
+                   onClose: lambda(s: mixing PushStream<E>)): !mixing PushStream<E>
+
+  /**
+   * Creates new buffered push stream based on logic in provided callbacks.
+   */
+  createBuffered: function(onWrite: !lambda(buf: [E], s: mixing PushStream<E>),
+                           onClose: lambda(s: mixing PushStream<E>),
+                           bufferSize: int32): !PushStream<E>
+
+  /**
+   * Creates new buffered push stream based on logic in provided callbacks and accumulates stats on after write of a
+   * buffer.
+   */
+  createBufferedWithStats: function(onWrite: !lambda(v: E, s: mixing PushStream<E>): ObjStats,
+                                    onClose: lambda(s: mixing PushStream<E>),
+                                    bufferSize: int32): !PushStreamWithStats<E>
+
+  /**
+   * Callback on stream close.
+   */
+  doClose: private abstract ~
+}

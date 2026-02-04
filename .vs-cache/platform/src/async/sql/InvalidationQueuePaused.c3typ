@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue pausing table. This type is used to facilitate app specific pausing of queues.
+ */
+@db(systemType=true, compactType=true, domain='queues')
+entity type InvalidationQueuePaused mixes Cached schema name 'ASYNQ_INVQPAUSED' {
+
+  /**
+   * Internal id of invalidation queue type that is paused.
+   */
+  queueTypeId: int schema name 'QUEUE_TYPE_ID'
+
+  /**
+   * Reason why the queue was paused.
+   */
+  pausedFor: string schema name 'PAUSED_FOR'
+
+  version: ~ not persistable
+
+  /**
+   * Pause the specified queue in the current app. If the queue is already paused for any reason, this
+   * function does nothing.
+   *
+   * @param queueType
+   *        Queue type to pause.
+   * @param pauseFor
+   *        Reason for pausing the queue. If specified, calling `resume` will resume the queue if either the
+   *        same specific reason is given, or if no reason is given.
+   */
+  pause: private function(queueType: !Type, pauseFor: string)
+
+  /**
+   * Resume the specified queue in the current app.
+   *
+   * @param queueType
+   *        Queue type to resume.
+   * @param pausedFor
+   *        If specified, only resume the queue if it was paused for the specified reason.  If not specified
+   *        resume the queue regardless of why it was paused.
+   */
+  resume: private function(queueType: !Type, pausedFor: string)
+
+  /**
+   * Determines if a queue is paused in the current app.
+   *
+   * @param queueType
+   *        Queue type to check.
+   * @param pausedFor
+   *        If specified, returns true only if the queue is paused for the specified reason.
+   *        If not specified, returns true if the queue is paused for any reason.
+   *
+   * @return true if the queue is paused in the current app.
+   */
+  isPaused: private function(queueType: !Type, pausedFor: string): boolean
+}

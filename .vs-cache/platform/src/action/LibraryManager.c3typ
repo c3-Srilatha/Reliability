@@ -1,0 +1,142 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * LibraryManager is responsible for resolving, merging, installing, and uninstalling {@link ImplLanguage#Runtime}s.
+ */
+private type LibraryManager<C: LibraryManager.Config, R: ImplLanguage.ResolvedRuntime> mixes Named, Singleton, Configurable<C> {
+
+  CONDA: const string = 'conda'
+  NPM:   const string = 'npm'
+
+  /**
+   * Helper function called by {@link ImplLanguage#resolveRuntime} under the hood.
+   *
+   * Resolves the specified runtime by fully determining the version of libraries in
+   * {@link ImplLanguage#Runtime#libraries} as well as their required dependent libraries.
+   * The parameter `runtime` should already be 'merged' with any runtimes it depends on, so its `libraries` field
+   * should include the `libraries` of those inherited runtimes.
+   * If the parameter runtime (or one of the runtimes it inherits from) declares `testLibraries`, then two resolved
+   * runtimes for each location should be returned: one for production and one for testing.
+   *
+   * @param runtime
+   *        an instance of {@link ImplLanguage#Runtime} to be resolved
+   * @param doNotValidate
+   *            Runtime resolution typically involves validation to confirm that the resolved runtimes satisfy the
+   *            declared runtime. In some cases, it may be desirable or necessary to disable this validation. For
+   *            example, if one of the packages has an installation name that does not match its 'importable' name.
+   *
+   * @return a ResolvedRuntime for production and, if the parameter runtime has `testLibraries`, one for test
+   */
+  // TODO: PLAT-45939 update this documentation
+  resolveRuntime: private abstract member function(runtime: !ImplLanguage.Runtime, doNotValidate: boolean): !R
+
+  /**
+   * Helper function called by {@link ImplLanguage#installRuntime} which is responsible for
+   * installing the given runtime.
+   * If overridePath is given, the runtime will be installed at the given path, instead of runtime.runtimePath().
+   *
+   * @see ImplLanguage#installRuntime
+   */
+  installRuntime: abstract member function(runtime: !R, overridePath: string)
+
+  /**
+   * Helper function called by {@link ImplLanguage#uninstallRuntime} which is responsible for
+   * uninstalling the given runtime.
+   *
+   * @see ImplLanguage#uninstallRuntime
+   */
+  uninstallRuntime: abstract member function(runtime: !R)
+
+  /**
+   * @return the full path for all runtimes
+   * For runtimes installed via {@link CondaLibraryManager}, this will return "/usr/local/share/c3/runtimes/conda/"
+   */
+  runtimesBasePath: member function(): !string
+
+  forName: ~
+  inst:    abstract ~
+
+  /**
+   * Helper function to create a runtime directory to install a given runtime
+   */
+  createRuntimeDirectory: member function(runtimePath: !string): any
+
+  /**
+   * This method will execute {@link https://docs.conda.io/projects/conda/en/latest/commands/clean.html conda clean} and
+   * {@link https://pip.pypa.io/en/stable/cli/pip_cache/ pip cache purge} for conda library manager
+   * and  will execute "npm cache clean" for npm library manager.
+   * @param removalTarget
+   *        The target to remove. All possible targets and their descriptions can be found in the link above. For npm this field should be kept empty
+   */
+  clearPackageCache: private abstract member function(removalTarget: string enum('all', 'index-cache', 'packages', 'tarballs', 'force-pkgs-dirs', 'tempfiles', 'logfiles'))
+
+  /**
+   * Populates {@link ArtifactHub.Artifact} for each {@link ImplLanguage.Library library} contained in the supplied
+   * {@link ImplLanguage.Runtime}. This function will throw if {@link CondaLibraryManager.Config#useArtifactHub} is not set to true.
+   * Since this method installs and uninstalls {@link ImplLanguage.ResolvedRuntime}s, it can interfere with concurrently executing python actions, so
+   * make sure to only call when no other python actions are running in {@link Action.Engine}s with these {@link ImplLanguage.ResolvedRuntime}s.
+   * @param runtimes
+   *        Array of {@link ImplLanguage.Runtime}.
+   * @return A named tuple with fields `populatedRuntimes` and `errors`. The `populatedRuntimes` field is an array of {@link ImplLanguage.ResolvedRuntime}
+   *         which were successfully populated. The `errors` field is a map from {@link ImplLanguage.ResolvedRuntime} as the key
+   *         and the error message as value.
+   */
+  populateArtifactHubForRuntimes: member function(runtimes: [ImplLanguage.Runtime])
+                                           : !{ populatedRuntimes: [string serialized ImplLanguage.ResolvedRuntime], errors: map<string serialized ImplLanguage.ResolvedRuntime, string> }
+
+  /*
+   * Populates {@link ArtifactHub.Artifact} for each {@link ImplLanguage.Library library} contained in all {@link ImplLanguage.Runtime}
+   * in the corresponding package or packages. This function will throw if {@link CondaLibraryManager.Config#useArtifactHub} is not set to true.
+   * Since this method installs and uninstalls {@link ImplLanguage.ResolvedRuntime}s, it can interfere with concurrently executing python actions, so
+   * make sure to only call when no other python actions are running in {@link Action.Engine}s with these {@link ImplLanguage.ResolvedRuntime}s.
+   * @param deep
+   *        If true, populate for the current package and all dependent packages. If false, only populate for current package.
+   * @return A named tuple with fields `populatedRuntimes` and `errors`. The `populatedRuntimes` field is an array of {@link ImplLanguage.ResolvedRuntime}
+   *         which were successfully populated. The `errors` field is a map from {@link ImplLanguage.ResolvedRuntime} as the key
+   *         and the error message as value.
+   */
+  populateArtifactHubForPkgRuntimes: member function(deep: boolean)
+                                              : !{ populatedRuntimes: [string serialized ImplLanguage.ResolvedRuntime], errors: map<string serialized ImplLanguage.ResolvedRuntime, string> }
+
+  /**
+   * Exports all @link{ArtifactHub.Artifact}s related to {@link ImplLanguage.ResolvedRuntime}s for a LibraryManager.
+   *
+   * @return location of zip file with the following structure:
+   *         One file named artifacts that holds json serialized artifacts
+   *         For each artifact, a file named after the artifact id that holds {@link ArtifactHub.Artifact.Content}.
+   */
+  exportRuntimeArtifacts: member function(): string serialized Url
+
+  /**
+   * Returns array of strings of LibraryManager's artifact types to be exported.
+   * For {@link NpmLibraryManager} the artifact types are {@link ArtifactHub.ArtifactKind.NPM_PKG} and {@link ArtifactHub.ArtifactKind.NPM_PKG_METADATA}
+   * For {@link CondaLibraryManager} the artifact types are {@link ArtifactHub.ArtifactKind.CONDA_PKG}, {@link ArtifactHub.ArtifactKind.PY_PACKAGE_INDEX_PKG}, and {@link ArtifactHub.ArtifactKind.PY_PACKAGE_INDEX_SIMPLE}.
+   */
+  artifactTypes: private abstract member function(): [string enum ArtifactHub.ArtifactKind]
+
+  /**
+   * Checks if a runtime is installed by seeing whether node_modules exists in runtime directory for npm runtimes or {runtimePath}/bin/python executable for Conda exists.
+   */
+  isInstalled: private abstract member function(runtime: !R): boolean
+
+  /**
+   * @param useAppInternalUrl
+   *        If true it will use {@link App#internalUrl} as the host url.
+   *        Otherwise, if method called from {@link CondaLibraryManager} or callFromCluster is true it will use {@link Server#endpointUrl}, else {@link App#endpoint} is used.
+   * @param authToken
+   *        The auth token for the User artifactreader to access the ArtifactHub if we are using ArtifactHub.
+   * @param callFromCluster
+   *        If true and useAppInternalUrl false it will use {@link Server#endpointUrl} as the host url else it will use {@link App#endpoint}.
+   * @returns
+   *          The url which LibraryManager uses to download packages from ArtifactHub when {@link LibraryManager.Config#useArtifactHub} is true.
+   */
+  hostUrlForArtifactHub: private member function(useAppInternalUrl: boolean,
+                                                 authToken: string,
+                                                 callFromCluster: boolean): Url
+}

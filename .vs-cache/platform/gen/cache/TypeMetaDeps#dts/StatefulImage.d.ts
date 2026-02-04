@@ -1,0 +1,972 @@
+// TypeScript definitions for the C3 type StatefulImage
+
+/**
+ * Stateful image representation.
+ * Not yet fully implemented
+ * Remove abstract for full implement this type
+ *
+ * @remarks this represents a value passed to a method that expects an instance of StatefulImage
+ */
+declare interface IStatefulImage {
+
+  /**
+   * Width in pixels of this media if known
+   *
+   * @see readMetadata
+   * @see safeWidth
+   */
+  width?: number | null;
+
+  /**
+   * Height in pixels of this media if known
+   *
+   * @see readMetadata
+   * @see safeWidth
+   */
+  height?: number | null;
+
+  /**
+   * Url of the source image file. In-memory content may not match content stored in the file system, but we keep this
+   * reference to know what is source was.
+   */
+  contentLocation?: string | null;
+}
+
+/**
+ * Stateful image representation.
+ * Not yet fully implemented
+ * Remove abstract for full implement this type
+ *
+ * @remarks this represents a made instance of StatefulImage
+ */
+declare class StatefulImage extends Obj {
+
+  /**
+   * Width in pixels of this media if known
+   *
+   * @see readMetadata
+   * @see safeWidth
+   */
+  readonly width?: number | null;
+  withWidth(width: number | null): StatefulImage;
+
+  /**
+   * Height in pixels of this media if known
+   *
+   * @see readMetadata
+   * @see safeWidth
+   */
+  readonly height?: number | null;
+  withHeight(height: number | null): StatefulImage;
+
+  /**
+   * Url of the source image file. In-memory content may not match content stored in the file system, but we keep this
+   * reference to know what is source was.
+   */
+  readonly contentLocation?: string | null;
+  withContentLocation(contentLocation: string | null): StatefulImage;
+
+  /**
+   * Construct an instance with initial state.
+   */
+  static make(): StatefulImage;
+
+  /**
+   * Construct an instance of this type from the string. This is an alias for #fromString, as a specific overload
+   * when the argument is a known string.
+   *
+   * @see #fromString
+   */
+  static make(s: string | null): StatefulImage | null;
+
+  /**
+   * Construct instance of this type from provided field values and options
+   */
+  static make(fields: C3.Map<string | null, any> | null, spec: Obj.MakeSpec | null): StatefulImage;
+
+  /**
+   * Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+   *            populated
+   *
+   * @see withDefaults
+   */
+  static make(withDefaults?: boolean): StatefulImage;
+
+  /**
+   * Construct an instance from provided fields
+   * @param fields
+   *            Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+   *            field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+   *            to Panda.make()
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+   *            -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+   *            the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+   *
+   *
+   * @see fromFields
+   * @see beforeMake
+   * @see afterMake
+   * @see withDefaults
+   */
+  static make(fields: C3.Map<string | null, any | any | null> | null, withDefaults?: boolean): StatefulImage;
+
+  /**
+   * Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+   *
+   * ```js
+   * User.make({
+   *   email: 'joe@smith.com',
+   *   realName: 'Joe Smith'
+   * })
+   *
+   * Obj.make({
+   *   type: 'User',
+   *   email: 'joe@smith.com',
+   *   realName: 'Joe Smith'
+   * })
+   * ```
+   *
+   * ```py
+   * c3.User.make({
+   *   "email": 'joe@smith.com',
+   *   "realName": 'Joe Smith'
+   * })
+   *
+   * c3.Obj.make({
+   *   "type": 'User',
+   *   "email": 'joe@smith.com',
+   *   "realName": 'Joe Smith'
+   * })
+   *
+   * c3.User(email='joe@smith.com', realName='Joe Smith')
+   *
+   * c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+   * ```
+   *
+   * Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+   * specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+   * such as {@link Ann.Ser} do not apply.
+   * @param fields
+   *            Fields to construct the instance of the obj with
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+   *
+   * @see fromFields
+   * @see beforeMake
+   * @see afterMake
+   * @see withDefaults
+   */
+  static make(fields: any, withDefaults?: boolean): StatefulImage;
+
+  /**
+   * Serialize image using it's id.
+   */
+  toString(): string | null;
+
+  /**
+   * Construct image from id.
+   */
+  static fromString(s: string | null): StatefulImage | null;
+
+  /**
+   * Load the JSON-based representation and reconstruct the corresponding object.
+   *
+   * fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+   * called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+   * an instance of the correct type.
+   *
+   * @see #toJson
+   */
+  static fromJson(json: any | null): StatefulImage | null;
+
+  /**
+   * Load the JSON-based representation and reconstruct the corresponding object.
+   *
+   * fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+   * a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+   * called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+   * an instance of the correct type.
+   *
+   * @see #toJsonString
+   */
+  static fromJsonString(json: string | null): StatefulImage | null;
+
+  /**
+   * Load the XML-based representation and reconstruct the corresponding object.
+   *
+   * fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+   * may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+   * isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+   * will return an instance of the correct type.
+   *
+   * @see #toXmlString
+   */
+  static fromXmlString(xml: string | null): StatefulImage | null;
+
+  /**
+   * Load from contentType representation and reconstruct the corresponding object.
+   *
+   * fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+   * (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+   * will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+   * type and will return an instance of the correct type.
+   */
+  static deserialize(contentStr: string | null, contentType: string): StatefulImage | null;
+
+  /**
+   * Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+   * type does not contain fields from old or field value types are not convertable then drops the field.
+   *
+   * This method is used during live metadata update
+   */
+  replaceType(old: Type, new_: Type): StatefulImage;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValues(mapper: λBiFunction<FieldType, any, any>, convertValue?: boolean): StatefulImage;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValues(spec: ValueSpec, mapper: λBiFunction<FieldType, any, any>, convertValue?: boolean): StatefulImage;
+
+  /**
+   * Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+   * the asynchronous `mapper` invocation.
+   *
+   * @param action
+   *           lambda to apply for every field value to produce a new value for that fields
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValuesAsync(mapper: λBiFunction<FieldType, any, C3.Promise<any> | null>, convertValue?: boolean): C3.Promise<StatefulImage | null>;
+
+  /**
+   * Result of this function call is a copy of current instance with all fields replaced based on results of the
+   * asynchronous `mapper` invocation.
+   *
+   * @param spec
+   *           which fields to include
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValuesAsync(spec: ValueSpec, mapper: λBiFunction<FieldType | null, any, C3.Promise<any> | null>, convertValue?: boolean): C3.Promise<StatefulImage | null>;
+
+  /**
+   * Result of this function call is a copy of current instance with specified field value replaced based on result of
+   * the `mapper` invocation.
+   * @param field
+   *           field being mapped
+   * @param includeEmpty
+   *           if set, invokes mapper for fields with empty value
+   * @param mapper
+   *           lambda to apply for every field value to produce a new value for that field
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapFieldValue(field?: FieldType | null, includeEmpty?: boolean, mapper: λFunction<any, any>, convertValue?: boolean): StatefulImage;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param action
+   *           function to be executed for each pair of field type and Obj instance
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapRefs(mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): StatefulImage;
+
+  /**
+   * Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+   * lambda application.
+   *
+   * Result of this function call is a copy of current instance with all references replaced based on results of the
+   * `mapper` invocation.
+   *
+   * @param includeEmpty
+   *           if `true` will also process references with `null` / "Empty" references
+   * @param mapper
+   *           function to be executed for each pair of field type and Obj instance for producing new reference value
+   * @param convertValue
+   *           if true, attempt to convert the value to match the field's type
+   */
+  mapRefs(includeEmpty: boolean, mapper: λBiFunction<FieldType, Obj, Obj | null>, convertValue?: boolean): StatefulImage;
+
+  /**
+   * Populates all missing default values and throws error if any constraint is violated.
+   */
+  validateObj(): StatefulImage;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           name of the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  withField(field: string, value: any, doNotConvert?: boolean): StatefulImage;
+
+  /**
+   * Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+   * defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+   *
+   * @param field
+   *           the field
+   * @param value
+   *           of the field
+   * @param doNotConvert
+   *           if true, do not attempt to convert the value to match the field's type
+   * @return new Obj
+   *
+   * @see #withoutField
+   * @see #defaultField
+   */
+  withField(field: FieldType, value: any, doNotConvert?: boolean): StatefulImage;
+
+  /**
+   * Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+   * defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+   *
+   * @param fields
+   *           map of field names/values
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @return new Obj
+   */
+  withFields(fields: C3.Map<string | null, any> | null, doNotConvert?: boolean): StatefulImage;
+
+  /**
+   * Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+   * If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+   *
+   * Immutable objects may return the same instance if the field being set does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path to set value at
+   * @param value
+   *           value to set
+   * @param doNotConvert
+   *           if true, attempt to convert the values to match the fields' type
+   * @param doNotCreateIfMissing
+   *           true indicates that any empty reference along the path will not set the value
+   * @return new Obj
+   */
+  withFieldAtPath(path: string, value: any, doNotConvert?: boolean, doNotCreateIfMissing?: boolean): StatefulImage;
+
+  /**
+   * Builds a new Obj without the specified path field.
+   *
+   * Immutable objects may return the same instance if the field being removed does not actually represent a
+   * change to the existing object.
+   *
+   * @param path
+   *           path for field to remove
+   * @return new Obj
+   *
+   * @see #withFieldAtPath
+   * @see #withoutField
+   */
+  withoutFieldAtPath(path: string): StatefulImage;
+
+  /**
+   * Builds a new Obj, removing the field with the provided name.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  withoutField(field: string | null): StatefulImage;
+
+  /**
+   * Builds a new Obj, removing the field with the provided field type.
+   *
+   * Immutable objects may return the same instance if the field being removed is not present in the existing object.
+   *
+   * @param field
+   *           name of the field to remove
+   * @return new Obj with removed field
+   *
+   * @see #unsetField
+   * @see #removeField
+   */
+  withoutField(field: FieldType | null): StatefulImage;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided names.
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           names of the fields to remove
+   * @return new Obj with removed fields
+   */
+  withoutFields(fields: C3.Array<string | null> | null): StatefulImage;
+
+  /**
+   * Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+   * exact same type as the type of the obj to respect the "ordinal" of the field type
+   *
+   * Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+   *
+   * @param fields
+   *           field types to remove
+   * @return new Obj with removed fields
+   */
+  withoutFieldsByType(fields: C3.Array<FieldType | null> | null): StatefulImage;
+
+  /**
+   * @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+   */
+  withoutSecretFields(): StatefulImage;
+
+  /**
+   * Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+   * calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+   * {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+   * fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+   * fields that have already been set.
+   *
+   * {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+   * As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+   *
+   * @param includeEmptyRefsWithDefaults
+   *           it `true` then missing / empty child references that have fields with defaults will also be instantiated
+   * @param defaultFields
+   *           If not empty, a list of default field paths to populate.  Any default fields not specified in the
+   *           array will be ignored.
+   * @return new Obj
+   *
+   * @see #defaultField
+   * @see FieldType#defaultValueConst
+   * @see FieldType#defaultValue
+   */
+  withDefaults(includeEmptyRefsWithDefaults?: boolean, defaultFields?: C3.Array<string | null>): StatefulImage;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         name of the field to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  defaultField(field: string): StatefulImage;
+
+  /**
+   * Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+   * method will behave the same as {@link #unsetField}.
+   *
+   * @param field
+   *         field type to default
+   * @return new `Obj` with the specified field set to its default value
+   *
+   * @see #withField
+   * @see #unsetField
+   */
+  defaultField(field: FieldType): StatefulImage;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         name of the field to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  unsetField(field: string): StatefulImage;
+
+  /**
+   * Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+   * is different from {@link removeField}
+   *
+   * @param field
+   *         field type to unset
+   * @return new `Obj` with the specified field unset
+   *
+   * @see #withoutField
+   * @see #removeField
+   */
+  unsetField(field: FieldType): StatefulImage;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         name of the field to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  removeField(field: string): StatefulImage;
+
+  /**
+   * Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+   * is different from {@link #unsetField}
+   *
+   * @param field
+   *         field type to remove
+   * @return new `Obj` with the specified field removed
+   *
+   * @see #withoutField
+   * @see #unsetField
+   */
+  removeField(field: FieldType): StatefulImage;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+   *
+   * @param other
+   *           object
+   * @param fieldPathMergeSpec
+   *           mapping of fields of the object to the respective merge annotations
+   * @return the new merged Obj
+   */
+  mergeObj(other: Obj | null, fieldPathMergeSpec?: C3.Map<string | null, string | null>): StatefulImage;
+
+  /**
+   * Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+   * In case of conflicts, fields of other instance take precedence.
+   *
+   * @param other
+   *           object
+   * @param otherFieldsFilter
+   *           only fields of otherFieldsFilter type from other are merged into this obj.
+   * @return the new merged Obj
+   */
+  mergeObj(other: Obj | null, otherFieldsFilter: Type): StatefulImage;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+   * @param deep
+   *        if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+   *        the same key or index.
+   */
+  mergeObj(other: Obj | null, deep?: boolean, merger: λQuadFunction<FieldPath | null, any, FieldPath | null, any, any>): StatefulImage;
+
+  /**
+   * Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+   * fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+   * traverse child reference and collection fields.
+   */
+  mergeObj(other: Obj | null, merger: λQuadFunction<FieldType | null, any, FieldType | null, any, any>): StatefulImage;
+
+  mergeJson(json: any | null): StatefulImage;
+
+  /**
+   * Merge the obj references within the current obj
+   * @param deep
+   *        If set, traverses the reference fields within the obj as well for a deep merge
+   * @param objKey
+   *        lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+   * @param filter
+   *        Field paths that need to be filtered from this merge
+   * @return Obj with child references merged
+   */
+  mergeChildren(deep?: boolean, objKey?: λFunction<Obj | null, any> | null, filter?: λPredicate<string> | null): StatefulImage;
+
+  /**
+   * Adds the numeric Obj fields with the other Objs respective fields.
+   * If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+   * references with same name and collection elements at same index or key.
+   */
+  sumObj(other: Obj | null, deep?: boolean): StatefulImage;
+
+  /**
+   * Build an array of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  singletonArray(): C3.Array<StatefulImage | null>;
+
+  /**
+   * Creates an array of instances of this type.
+   */
+  static array(...elements: any[]): C3.Array<StatefulImage | null>;
+
+  /**
+   * Creates an array of instances of this type.
+   */
+  static arrayBuilder(): ArrayBuilder<StatefulImage | null> | null;
+
+  /**
+   * Build an set of the correct type with a single element which is this instance.
+   *
+   * @return new array instance with this as only element.
+   */
+  singletonSet(): C3.Set<StatefulImage | null>;
+
+  /**
+   * Creates a set of instances of this type.
+   */
+  static setBuilder(): SetBuilder<StatefulImage | null> | null;
+
+  /**
+   * Create a map of string to elements of this type.
+   */
+  static mapBuilder(): MapBuilder<string | null, StatefulImage | null> | null;
+
+  /**
+   * Create a map with the given key type and elements of this type.
+   */
+  static mapBuilderOf(keyType: ValueType): MapBuilder<any, StatefulImage | null> | null;
+
+  /**
+   * @return new ObjBuilder with initial state set to fields of this instance.
+   */
+  toBuilder(): ObjBuilder<StatefulImage | null>;
+
+  /**
+   * @return new ObjBuilder of this instance.
+   */
+  static builder(): ObjBuilder<StatefulImage | null>;
+
+  /**
+   * Construct instance of this type from provided field values and options
+   */
+  static fromFields(fields: C3.Map<FieldType | null, any> | null, spec: Obj.MakeSpec | null): StatefulImage;
+
+  /**
+   * Construct an instance of this type from provided fields
+   * @param fields
+   *            Fields to construct the instance of the obj with
+   * @param withDefaults
+   *            If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+   *
+   * @see withDefaults
+   */
+  static fromFields(fields: C3.Map<FieldType | null, any | any | null> | null, withDefaults?: boolean): StatefulImage;
+
+  /**
+   * Construct an instance of this type from provided instance of a subtype or a "duck type".
+   */
+  static remake(other: Obj | null, failIfExtraOrInvalidFields?: boolean): StatefulImage;
+
+  /**
+   * Optional override that will be called every time instance of this type is created.
+   *
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  static beforeMake(fields: C3.Map<FieldType | null, any> | null): C3.Map<FieldType | null, any>;
+
+  /**
+   * Optional override that will be called after every instance creation.
+   *
+   * Note that it introduces additional overhead so should only be implemented for low volume data.
+   */
+  afterMake(): StatefulImage;
+
+  /**
+   * Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+   * every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+   * Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+   *
+   * @see ValueType#defaultEmptyValue
+   */
+  static cachedEmptyInst(): StatefulImage;
+
+  /**
+   * Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+   * value is read.
+   */
+  static generateObjs(spec?: Obj.GenerateSpec | null): Stream<StatefulImage>;
+
+  /**
+   * Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+   * random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+   * populates fields in a more realistic way.
+   */
+  static generateObj(spec?: Obj.GenerateSpec | null): StatefulImage;
+
+  /**
+   * @return width in pixels of this visual media
+   *
+   * @see readMetadata
+   */
+  safeWidth(): number;
+
+  /**
+   * @return height in pixels of this visual media
+   *
+   * @see readMetadata
+   */
+  safeHeight(): number;
+
+  /**
+   * Reads metadata such as #width and #height. Note if media metadata has not been read it is more efficient to
+   * call #readMetadata first before calling #safeWidth and #safeHeight
+   */
+  readMediaMetadata(): StatefulImage;
+
+  /**
+   * @return instance of the Visual Media from provided content and optionally reads metadata
+   */
+  static fromContent(content: Content, readMetadata?: boolean): StatefulImage;
+
+  /**
+   * Constructs instance of the Visual media from provided binary content and optionally reads metadata. It is advisable
+   * to specify content type but if skipped then best effort is made to guess the visual media type.
+   */
+  static fromRawBinary(data: any, contentType?: string | null, width?: number | null, height?: number | null): StatefulImage;
+
+  /**
+   * Constructs instance of the visual media from provided base64 encoded content and optionally reads visual media metadata. It is
+   * advisable to specify content type but if skipped then best effort is made to guess the content type.
+   */
+  static fromBase64String(data: string, contentType?: string | null, width?: number | null, height?: number | null): StatefulImage;
+
+  /**
+   * @return binary data for this Visual Media
+   */
+  rawBinary(): any | null;
+
+  /**
+   * @return binary data for this Image with specified MediaType.
+   */
+  rawBinary(mediaType?: string | null): any;
+
+  /**
+   * Updates visual media with provided binary data
+   */
+  withRawBinary(data: any, contentType?: string | null, width?: number | null, height?: number | null): StatefulImage;
+
+  /**
+   * @return base64 string encoded data for this Image
+   */
+  base64String(): string | null;
+
+  /**
+   * Updates visual media with provided base64 encoded data
+   */
+  withBase64String(data: string, contentType?: string | null, width?: number | null, height?: number | null): StatefulImage;
+
+  /**
+   * Saves content of the this Media as File.
+   */
+  saveToFile(encodedPathOrUrl: string): File;
+
+  /**
+   * Render image as HTML.
+   */
+  renderer(): HtmlRenderer | null;
+
+  /**
+   * Do not generate java signatures for these methods and instead implement in py
+   */
+  _repr_(): string | null;
+
+  /**
+   * Implementation of _repr_html_() function
+   */
+  _reprHtml_(): string | null;
+
+  /**
+   * Read Image from file. If prefix is {@link Data#LOCAL_FOLDER_PREFIX}, then the file will be loaded from
+   * the local process of the caller of this function, as opposed to from the C3 {@link FileSystem}.
+   * @param file
+   *    url of the file to instantiate an Image from.
+   * @param failIfMissing
+   *    iff set, then function will fail if a file cannot be found at the provided url.
+   * @return the instantiated Image.
+   */
+  static fromFile(file: string, failIfMissing?: boolean): Image | null;
+
+  /**
+   * Read Image from binary
+   * If `mediaType` is not specified, an attempt will be made to auto-detect the image type.
+   * Supported formats are: SVG (should be passed explicitly), JPEG, PNG, BMP, WBMP, GIF.
+   */
+  static fromMediaContent(img: any, mediaType?: string | null, url?: string | null): Image;
+
+  /**
+   * @return a C3 Image from a Java native image.
+   */
+  static fromBufferedImage(bi?: any, spec?: ImageOperSpec | null): Image;
+
+  /**
+   * @return a copy of the image converted to ImageContent
+   */
+  toImageContent(): ImageContent;
+
+  /**
+   * Saves image to the specified directory. Filename is taken from #contentLocation
+   */
+  save(file: string, mediaType?: string | null): void;
+
+  /**
+   * Image type
+   *
+   * @see readMetadata
+   * @see safeImageType
+   */
+  get imageType(): string;
+
+  /**
+   * Returns MediaType of the Image
+   */
+  get mediaType(): string;
+
+  /**
+   * @return the [Data URI](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) containing this image
+   */
+  get dataUrl(): string;
+
+  /**
+   * @return name of image file without extension if name is known. Otherwise null will be returned.
+   */
+  get fileNameNoExt(): string | null;
+
+  /**
+   * Draws a list of {@link BoundingBox} on a copy of this image.
+   */
+  draw(boxes: C3.Array<BoundingBox | null>, spec?: BoundingBoxDrawingSpec | null): Image;
+
+  /**
+   * Scale with scaling factor.
+   *
+   * @param scale
+   *           Scaling factor. Should be positive number.
+   */
+  scale(scale: number): Image;
+
+  /**
+   * Scale the image to the newWidth and newHeight
+   *
+   * @param newWidth
+   *           New width of the image. Should be positive number.
+   * @param newHeight
+   *           New height of the image. Should be positive number.
+   */
+  resize(newWidth: number, newHeight: number): Image;
+
+  /**
+   * Crop the image at the topLeft or bottomRight values provided.
+   *
+   * `topLeftX + width` should be smaller or equal than the image's width and `topLeftY + height` smaller or equal than the image's height.
+   * Otherwise error will be thrown.
+   */
+  crop(topLeftX: number, topLeftY: number, width: number, height: number): Image;
+
+  /**
+   * Flip image. If no parameter is given will flip horizontally.
+   */
+  flip(vertically?: boolean): Image;
+
+  /**
+   * Rotate image.
+   */
+  rotate(angle: number): Image;
+
+  /**
+   * Convert image to grayscale.
+   */
+  toGrayscale(): Image;
+
+  /**
+   * Return color of the pixel encoded as ARGB.
+   * (0, 0) is a top-left corner.
+   * Throw an error if coordinates are out of range.
+   */
+  rgb(x: number, y: number): number;
+
+  /**
+   * @return an array of integer pixels row-to-row, with each pixel encoded as ARGB.
+   */
+  rgbData(): C3.Array<number | null>;
+
+  /**
+   * Lookup a stateful image by id.
+   */
+  static forId(id: string | null, failIfMissing?: boolean): StatefulImage | null;
+
+  /**
+   * All instances of images in memory.
+   */
+  static all(): C3.Array<StatefulImage | null>;
+
+  /**
+   * Clones this image.
+   */
+  clone(): StatefulImage;
+
+  /**
+   * Discards this image effectively making this instance of the dataset unusable after this call.
+   */
+  close(): void;
+
+  /**
+   * Set pixel on image.
+   */
+  setRgb(x: number, y: number, r: number, g: number, b: number): StatefulImage;
+
+  /**
+   * Display image nicely in jupyter
+   */
+  visualize(maxWidth?: number | null, maxHeight?: number | null): any;
+}
+
+
+interface λFunction<T, R> {
+  (t: T): R
+}
+
+interface λBiFunction<T, U, R> {
+  (t: T, u: U): R
+}
+
+interface λQuadFunction<T, U, V, W, R> {
+  (t: T, u: U, v: V, w: W): R
+}
+
+interface λPredicate<T> {
+  (t: T): boolean
+}

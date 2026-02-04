@@ -1,0 +1,119 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines how to calculate performance of {@link MlModel}s, by specifying a map of {@link MlScoringMetric}s
+ * and information required to fetch inputs for {@link MlScoringMetric} calculation. All the {@link MlScoringMetric}s defined in
+ * this {@link MlModel.Monitor.Group} share the same inputs.
+ * Used in {@link MlModel.Monitor.Job#groups}.
+ *
+ * See {@link link MlModel.Monitor.Job}
+ *
+ * Usage:
+ * ```python
+ * # Define monitor groups for a multi-output `c3.MlModel` with two predictions - `sales` and `revenue`.
+ * # Assumption - predictions are available for all 7 continents in the world.
+ *
+ * # Example 1 - Using pre-defined sub-types of `c3.MlScoringMetric` for monitoring `sales` prediction.
+ *
+ * # Define metrics
+ * metric_map = { "precision" : c3.MlPrecisionMetric(), "recall": c3.MlRecallMetric()}
+ *
+ * # Define how to fetch inputs for scoring metrics defined in `metric_map`
+ * # Users need to define type `DataForSales` by mixing `MlModel.Monitor.Data`
+ * # to fetch predictions/labels/contexts.
+ *
+ * fetch_input = c3.MonitorExample.DataForSales()
+ *
+ * # Define a monitoring group
+ * # This monitoring group defines two metrics - `precision` and `recall` for `sales` prediction
+ * # `modelOutputNames` is `sales` as this metric group sets up performance monitoring for `sales`
+ * # `filter` indicates to select predictions from `North America`.
+ * # `groupBy` indicates to calculate one metric per country per model, on predictions from `North America`.
+ * monitor_group_sales = c3.MlModel.Monitor.Group(metrics=metric_map,
+ *                                                input=fetch_input,
+ *                                                filter="continent=North America",
+ *                                                groupBy=["country"])
+ *
+ * # Example 2 - Define a monitor group using custom scoring metric that uses both `sales` and `revenue` predictions.
+ * # Define metrics
+ * def custom_score(targetOutput=None, modelOutput=None, context=None):
+ *    # Multi-input is a Named Tuple - names of `targetOutput` and `modelOutput` for multi-input score
+ *    # is specified in `c3.MlScoringMetricSpec`.
+ *    target_output_sales = targetOutput.t1.to_pandas()
+ *    model_output_sales = modelOutput.m1.to_pandas()
+ *    target_output_revenue = targetOutput.t2.to_pandas()
+ *    model_output_revenue = modelOutput.m2.to_pandas()
+ *    assert len(target_output_sales) == len(model_output_sales), "sales has different lengths"
+ *    assert len(target_output_revenue) == len(model_output_revenue), "revenue has different lengths"
+ *    assert len(target_output_sales) == len(target_output_revenue), "sales and revenue have different lengths"
+ *
+ *    diff_of_pred1 = target_output_sales - model_output_sales.sum()
+ *    diff_of_pred2 = target_output_revenue - model_output_revenue.sum()
+ *    return (diff_of_pred1 + diff_of_pred2)/len(target_output_sales)
+ *
+ * custom_metric = c3.MlCustomMetric.fromPyFunc(py_func=custom_score,
+ *                                              spec=c3.MlScoringMetricSpec(targetOutputNames=["t1", t2"],
+ *                                                                           modelOutputNames=["m1", m2"]))
+ *
+ * # This monitoring group defines one combined custom metric for the `sales` and `revenue`.
+ * # `targetOutputMapping` and `modelOutputMapping` are required fields for a multi-input
+ * # scoring metric to indicate mapping between label/prediction name and respective target/model output
+ * # name in `custom_metric`.
+ *
+ * custom_monitor_metric = c3.MlMappedMetric(
+ *   scoringMetric=custom_metric,
+ *   targetOutputMapping={'t1': 'sales', 't2': 'revenue'},
+ *   modelOutputMapping={'m1': 'sales', 'm2': 'revenue'}
+ * )
+ *
+ * metric_map = {"custom_score" : custom_monitor_metric}
+ *
+ * # Define how to fetch predictions and labels
+ * fetch_input = c3.MonitorExample.DataForAll()
+ *
+ * # Define a monitoring group
+ * # All predictions will be used as there is no `filter`.
+ * # One score per model wil be calculated as there is no `groupBy`.
+ * monitor_group_combined = c3.MlModel.Monitor.Group(metrics=metric_map,
+ *                                                   input=fetch_input
+ *                                                    )
+ * ```
+ * NOTE: It is important to understand why `custom_metric` was not included in `monitor_group_sales`.
+ * The reason is - All the metrics defined in a monitoring group share the same inputs.
+ * Since inputs for `custom_score` (`sales` and `predictions`) are different ,
+ * from `precision` and `recall` (`sales` only), they are in different monitor groups.
+ * The difference is due to specification of `filter` and `groupBy`.
+ */
+type MlModel.Monitor.Group {
+
+  /**
+   * A map of user-defined score name to {@link MlScoringMetric}s to be used for monitoring model performance.
+   */
+  metrics: !map<string, MlScoringMetric>
+
+  /**
+   * A {@link MlModel.Monitor.Data} instance responsible for gathering a list
+   * of model predictions, corresponding labels, and optional scoring context.
+   */
+  input: !MlModel.Monitor.Data
+
+  /**
+   * Filter to select the inputs in scope for this monitoring group.
+   * It is input to {@link MlModel.Monitor.DataSpec#filter} for customization of {@link MlModel.Monitor.Data#dataGroupsFromSpec}.
+   * If unspecified or null, no filtering is applied.
+   */
+  filter: string serialized Filter
+
+  /**
+   * The columns/attributes to group predictions and labels by. This value will be passed to {@link MlModel.Monitor.Data}
+   * that is responsible for separating predictions/labels for each unique group value. This monitoring group will
+   * then produce a score for each metric and each unique group value.
+   */
+  groupBy: [string]
+}

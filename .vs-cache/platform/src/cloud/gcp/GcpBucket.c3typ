@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=false,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='gcpb')
+type GcpBucket mixes GcpResource {
+
+  cloudFunc:   ~
+  getResource: ~
+
+  /**
+   * @return notification configurations for the gcp bucket.
+   * Notification configuration consists of user given name, list of events, target topic name,
+   * and payload type.
+   */
+  notificationConfigs: member function(): map<string, GcpBucketNotificationConfig>
+
+  /**
+   * This method is used to set notification configurations for the bucket. Configuration on the bucket is uniquely
+   * identified using user given name. This method will overwrite configurations if configuration with same id
+   * already exists, otherwise it will create a new configuration.
+   *
+   * @param configs is a map of user given template name and notification configuration template.
+   */
+  upsertNotificationConfigs: member function(configs: !?map<string, GcpBucketNotificationConfig>): Map<string, Error>
+
+  /**
+   * This method is used to delete notification configuration for the bucket. Configuration on the bucket is uniquely
+   * identified using user given name.
+   *
+   * @param ids is a the ids of notification to be deleted
+   */
+  deleteNotificationConfigs: member function(ids: [string]): Map<string, Error>
+}

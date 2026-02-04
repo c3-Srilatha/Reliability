@@ -1,0 +1,137 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * The base type for any vector type.
+ * Because each extending type may have a different length embedding field, making Genai.Vector
+ * an extendable entity does not provide any benefit.
+ */
+type Genai.Vector {
+  /**
+   * The retriever for which this vector was created
+   */
+  retriever: !Genai.Retriever
+
+  /**
+   * The source from which the passage for the embedding was drawn. Used for filtering on source metadata.
+   */
+  source: !Genai.Source
+
+  /**
+   * If true, the vector should not be included in searches.
+   */
+  inactive: boolean
+
+  /**
+   * The vector embedding.
+   */
+  emb: string
+
+  /**
+   * Update the #inactive field for the given vectorIds.
+   */
+  markVectorsActiveOrInactive: private inline function(vectorType: !Type, vectorIds: ![string], inactive: boolean) py
+
+  /**
+   * Helper to convert the 1-dimensional numpy.ndarray to the string format required by the @vector annotation
+   * Currently, embeddings (numpy.ndarray) must be passed as a string representation of a float array
+   *
+   * @param embeddingArray
+   *           the c3.Array or 1-d numpy.ndarray to convert
+   * @param vectorDimension
+   *           the dimension of the embedding field. If larger than the length of the embeddingArray,
+   *           the embedding will be padded with zeros
+   *
+   * @return the string representation of the embedding
+   */
+  // https://c3energy.atlassian.net/wiki/spaces/ENG/pages/8488552891/Vector+Store+Phase+2+Design+Document+v.8.4#Usage.1
+  // https://c3energy.atlassian.net/wiki/spaces/ENG/pages/8544027128/Vector+Store+Phase2+Documentation#Upserting-vectors-to-your-table%3A
+  // TODO: GEN-12703 Remove support for numpy array input type
+  formatEmbedding: inline function(embeddingArray: ![float] | !native, vectorDimension: int): !string py
+
+  /**
+   * Helper function to create the 'vectorDistance' call string that can be used in a fetch, eval, or evaluate
+   * `order` to sort results by distance from a given vector.
+   *
+   * @param embeddingArray
+   *            the c3.Array or 1-d numpy.ndarray embedding
+   * @param embeddingFieldName
+   *           the name of the embedding field in the entity type
+   * @param spec
+   *           the spec to pass to vectorDistance.
+   * @param vectorDimension
+   *           the dimension of the embedding field. If larger than the length of the embeddingArray,
+   *           the embedding will be padded with zeros
+   * @return the string to use in a EvaluateSpec.projection
+   */
+  // TODO: GEN-12703 Remove support for numpy array input type
+  vectorDistanceString: inline function(
+    embeddingArray: ![float] | !native,
+    embeddingFieldName: string = 'emb',
+    spec: Expr.DistanceSpec,
+    vectorDimension: int): !string py
+
+  /**
+   * Given a list of 'distances' from a vectorDistance call, return a list of scores in the range of 0 to 1 where
+   * higher means a better match (smaller distance).
+   */
+  scoresFromVectorDistances: inline function(distances: ![float]): ![float] py
+
+  /**
+   * Helper function to persist the embedding vectors for the given documents.
+   * **NOTE** this must be called on a persistable subtype of `Genai.Vector`.
+   *
+   * @param retrieverId
+   *           the id of the retriever for which the embeddings are being persisted
+   * @param documents
+   *          the Documents for which the embeddings are being persisted
+   *          see genai/genAiBase/resource/code/c3genai/retrieval/common/doc.py
+   * @param corpusEmbeddings
+   *           the list (or np.array) of 1-d np.array embeddings for the documents
+   * @param markVectorsInactive
+   *           whether the vectors should be marked as inactive
+   * @param vectorIds
+   *           the ids of the vectors to persist. If provided, this argument must have the same length as
+   *           `documents` and `corpusEmbeddings`. If not provided, doc.metadata["source"] will be used as the id.
+   * @param otherFieldsDicts
+   *           a list of dictionaries containing the values for the other fields in the persisted
+   *           vector entity.
+   * @param vectorDimension
+   *            the dimension of the embedding field. If larger than the length of each embedding array,
+   *            the embeddings will be padded with zeros
+   */
+  // TODO: GEN-12703 Remove support for numpy array input type
+  persistEmbeddingVectors: private inline function(retrieverId: !string,
+                                                   documents: ![native],
+                                                   corpusEmbeddings: ![[float]] | ![native],
+                                                   markVectorsInactive: boolean,
+                                                   vectorIds: [string],
+                                                   otherFieldsDicts: [native],
+                                                   vectorDimension: int) py
+  /**
+   * The number of vectors to persist in each batch for the given vector type.
+   * The value is retrieved from {@link Genai.Vector.Config#persistBatchSize}.
+   */
+  persistBatchSize: private cached function(): !int py
+
+  /**
+   * The number of vectors to include in each batch when fetching or removing.
+   * and filtering on id.
+   * The value is retrieved from {@link Genai.Vector.Config#filterIdLimit}.
+   */
+  filterIdLimit: private cached function(): !int py
+
+  /**
+   * The embedding dimension.
+   * Derived from the value of the vector annotation.
+   */
+  inferEmbSize: private cached function(): !int py
+}

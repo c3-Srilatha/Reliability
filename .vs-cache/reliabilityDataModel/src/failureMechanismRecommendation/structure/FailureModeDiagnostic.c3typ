@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the failure mode diagnostic for assessing failure modes.
+ */
+@db(versionHistory=true)
+entity type FailureModeDiagnostic mixes Value, ExemptFromFacilityFilter schema name 'FMDGT' {
+
+  /**
+   * The name of the diagnostic.
+   */
+  name: ~
+
+  /**
+   * The display name of the diagnostic translated based on id.
+   */
+  displayName: string translate by id
+
+  /**
+   * Description to display translated based on id.
+   */
+  displayDescription: string translate by id
+
+  /**
+   * The font awesome icon that represents a diagnostic.
+   */
+  faIconConfig: FaIconConfig
+
+  /**
+   * Lambda function to determine if the diagnostic should be triggered.
+   *
+   * param data
+   *       Sensor data for diagnostic evaluation.
+   * param threshold
+   *       Threshold value for triggering the diagnostic.
+   * param diagnosticMode
+   *       Evaluation mode for the diagnostic.
+   * return `true` if diagnostic is triggered, otherwise `false`.
+   */
+  lambda: lambda(data: ![double], threshold: !double, diagnosticMode: !string enum FailureModeEvaluationMode): boolean schema suffix 'LMD'
+
+  /**
+   * Performs linear regression on the provided data to estimate the trend.
+   *
+   * @param data The input data to perform regression on.
+   * @return A pair of <slope, intercept> values.
+   */
+  linearRegression: function(data: ![double]): Pair<double, double> js-rhino
+}

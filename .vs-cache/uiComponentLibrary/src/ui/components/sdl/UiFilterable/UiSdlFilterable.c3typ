@@ -1,0 +1,104 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A filterble UI component type.
+ */
+@typeScript
+type UiSdlFilterable {
+
+  /**
+   * Private helper function to generate a filter expression from {@link fieldValues}.
+   *
+   * @param filterValues
+   *         A mapping of field names to values.
+   *
+   * @return string
+   *         The filter string representing the {@link fieldValues}.
+   */
+  generateFilterString: private function(fieldValues: map<string, any>): string ts-client
+
+  /**
+   * Private helper function to get relevant field values for this specific component from raw field values.
+   * Every component at this page should call this helper function to get the relevant field values.
+   * What it does is loop over raw field values and only look at the fields that have the same data type at
+   * `dataMappings` field as the data type used in data spec.  Also if applicable, it will transform the fieldNames
+   * as specified in the {@link UiSdlFieldSetFilterFieldSetting#componentsToFilterMapping} or
+   * {@link UiSdlFieldSetInputFieldSetting#metricBasedComponentsToInputMapping} value.
+   *
+   * @param fieldValues
+   *           A mapping of field names to values.
+   * @param typeName
+   *           The name of the type to get relevant fields for.
+   * @param componentId
+   *           Optional componentId; this will be used when checking if there are any component field bindings; if so,
+   *           the fieldName will be transformed to that which is specified in the
+   *           {@link UiSdlFieldSetFilterFieldSetting#componentsToFilterMapping} or
+   *           {@link UiSdlFieldSetInputFieldSetting#metricBasedComponentsToInputMapping} value.
+   *
+   * @return Only relevant field values.
+   */
+  getRelevantFieldValues: private function(fieldValues: !map<string, any>,
+                                           typeName: string,
+                                           componentId: string): map<string, any> ts-client
+
+  /**
+   * Generate each filter string element of final filter string.
+   *
+   * @param item
+   *          Json config of one field to filter on.
+   * @param field
+   *          Field path on type.
+   */
+  generateFilterStringElem: private function(item: any, field: string): string ts-client
+
+  /**
+   * Transform fieldName for this specific component based on the field bindings.
+   * Will determine which field value applies to the current component and what field to assign that value to.
+   *
+   * @param fieldName
+   *           The fieldName which may be transformed.
+   * @param fieldValue
+   *           The fieldValue associated with the fieldName.
+   * @param componentId
+   *           The componentId for the component to be filtered.
+   *
+   * @return Only relevant field values.
+   */
+  transformFieldNameForComponentBinding: private function(fieldName: !string,
+                                                          fieldValue: !map<string, any>,
+                                                          componentId: !string): !string ts-client
+
+  /**
+   * Triggers `FILTER_SUBMIT` action.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='FILTER_SUBMIT')
+  filterSubmitEpic: private function(actionStream: UiSdlActionsObservable,
+                                     stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `ADVANCED_FILTER_SUBMIT` action.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='ADVANCED_FILTER_SUBMIT')
+  advancedFilterSubmitEpic: private function(actionStream: UiSdlActionsObservable,
+                                             stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+}

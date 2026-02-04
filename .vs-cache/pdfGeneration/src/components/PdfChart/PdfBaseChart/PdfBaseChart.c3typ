@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The type that defines the base chart configuration for charts made in Matplotlib.
+ */
+type PdfBaseChart<PCDS: PdfComponentDataSpec> mixes PdfComponent<PCDS> {
+
+  /**
+   * Graphing library used to generate the chart
+   */
+  plottingLibrary: string enum('matplotlib') = 'matplotlib'
+
+  /**
+   * Title configuration for the chart.
+   */
+  titleConfig: PdfChartTitleConfig
+
+  /**
+   * Size configuration for the chart.
+   */
+  chartSizeConfig: !PdfChartSizeConfig
+
+  /**
+   * X-axis configuration for the chart.
+   */
+  xAxisConfig: PdfChartXAxisConfig
+
+  /**
+   * Y-axis configuration for the chart.
+   */
+  yAxisConfig: PdfChartYAxisConfig
+
+  /**
+   * Legend configuration for the chart.
+   */
+  legendConfig: PdfChartLegendConfig
+
+  /**
+   * @inheritdoc
+   */
+  renderComponent: abstract ~
+}

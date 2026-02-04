@@ -1,0 +1,37 @@
+
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that is created when a percentage of sensors fails and belongs to the same {@link ProtectionLoop} type.
+ *
+ */
+entity type ProtectionLoopAlert mixes FeatureEvaluatable schema name 'LP' {
+
+  /**
+   * The parent {@link ProtectionLoop} this alert is on. TODO: REL-4645 remove field once dataAlerting migrated.
+   */
+  parent: !ProtectionLoop
+
+  /**
+   * The time the alert was triggered. TODO: REL-4645 remove field once dataAlerting migrated.
+   */
+  timestamp: !datetime
+
+  /**
+   * Current risk Status {@link ProtectionLoopRiskStatus}
+   */
+  risk: string enum ProtectionLoopRiskStatus
+
+  /**
+   * Unhealthy sensors in the protection loop.
+   * {@link ProtectionLoop}
+   */
+  unhealthySensors: [Sensor] schema suffix 'SNR'
+}

@@ -1,0 +1,359 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper C3 Type for building filter expressions.
+ */
+type Filter mixes StringSerializable, DefaultInstance<Filter>, Spec {
+
+  /**
+   * The string representation of the Filter.
+   */
+  value: private string = ''
+
+  /**
+   * Adds a string literal to the expression. This can be used for syntax that isn't supported by the builder directly
+   * or for other special formatting purposes.
+   *
+   * @param literal
+   *           string literal to be added
+   * @return updated filter
+   */
+  lit: inline member function(literal: !string): !Filter js | java
+
+  /**
+   * Adds a literal string, as returned by the specified lambda, to the expression. This can be used for syntax that
+   * isn't supported by the builder directly or for other special formatting purposes.
+   *
+   * @param literal
+   *           lambda that returns the string literal to be added
+   * @return updated filter
+   */
+  lit: inline member function(literal: !lambda(): !string): !Filter js | java
+
+  /**
+   * Adds an equality element to the expression. This consists of a simple comparison of a field with a single value,
+   * as in the SQL expression "name = *value*".  The actual expression language syntax is "name == *value*" where
+   * *value* is formatted and escaped appropriately.
+   *
+   * Note that if the value argument is a lambda, it will be called to produce the value used.
+   *
+   * @param name
+   *           field to compare against
+   * @param value
+   *           value to compare
+   * @return updated filter
+   */
+  eq: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a negative equality element to the expression.
+   *
+   * @param name
+   *           field to compare against
+   * @param value
+   *           value to compare
+   * @return updated filter
+   */
+  ne: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a less-than inequality element to the expression.
+   *
+   * @param name
+   *           field to compare against
+   * @param value
+   *           value to compare
+   * @return updated filter
+   */
+  lt: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a less-than-or-equal-to inequality element to the expression.
+   *
+   * @param name
+   *           field to compare against
+   * @param value
+   *           value to compare
+   * @return updated filter
+   */
+  le: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a greater-than inequality element to the expression.
+   *
+   * @param name
+   *           field to compare against
+   * @param value
+   *           value to compare
+   * @return updated filter
+   */
+  gt: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a greater-than-or-equal-to inequality element to the expression.
+   *
+   * @param name
+   *           field to compare against
+   * @param value
+   *           value to compare
+   * @return updated filter
+   */
+  ge: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a field existence check to the expression.
+   * @param name
+   *           field to check existence of
+   * @return updated filter
+   */
+  exists: inline member function(name: !string): !Filter js | java
+
+  /**
+   * Adds a multi-comparison to the expression.
+   * "intersects" is used as a shorthand for an *or* of many values, particularly when
+   * the number of values is not known in advance.
+   *
+   * If _no_ values are provided (no arguments are passed), this is equivalent to false.
+   * Null and undefined values arguments are ignored.
+   *
+   * If a single array argument is passed, the values are its elements.
+   *
+   * @param name
+   *           field to check existence of
+   * @param values
+   *           array of values to intersect
+   * @return updated filter
+   */
+  intersects: inline member function(name: !string, values: any ...): !Filter js | java
+
+  /**
+   * Adds a multi-comparison to the expression, using the value returned by a lambda.
+   * "intersects" is used as a shorthand for an *or* of many values, particularly when
+   * the number of values is not known in advance.
+   *
+   * If _no_ values are provided (the lambda returns an empty array), this is equivalent to false.
+   * Null and undefined values in the returned array are ignored.
+   *
+   * @param name
+   *           field to check existence of
+   * @param values
+   *           lambda that returns an array of values; null elements are skipped
+   * @return updated filter
+   */
+  intersects: inline member function(name: !string, values: !lambda(): !?[any]): !Filter js | java
+
+  /**
+   * Adds a prefix match to the expression.
+   * @param name
+   *           field to check the prefix of
+   * @param value
+   *           prefix to compare against
+   * @return updated filter
+   */
+  startsWith: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a suffix match to the expression.
+   * @param name
+   *           field to check the suffix of
+   * @param value
+   *           suffix to compare against
+   * @return updated filter
+   */
+  endsWith: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a infix match to the expression.
+   * @param name
+   *           field to check the infix of
+   * @param value
+   *           infix to compare against
+   * @return updated filter
+   */
+  contains: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds a infix match ignoring case to the expression
+   * @param name
+   *           field to check the infix of
+   * @param value
+   *           infix to compare against
+   * @return updated filter
+   */
+  containsIgnoreCase: inline member function(name: !string, value: !any): !Filter js | java
+
+  /**
+   * Adds `!` to the expression.
+   * @return updated filter
+   */
+  not: inline member function(): !Filter js | java
+
+  /**
+   * Adds ` && ` to the expression.
+   * @return updated filter
+   */
+  and: inline member function(): !Filter js | java
+
+  /**
+   * Returns the conjunction (`&&` operator) between the instance and the `expr` filter.
+   * If one of the clause is void, the other is simply returned as is.
+   * Otherwise, both clauses are surrounded by parentheses and joined with a `&&` operator.
+   *
+   * Example:
+   * ```javascript
+   * const f = Filter.eq("name", "some value");
+   * f.and(Filter.intersects("category", ["A", "B"])).toString();
+   * // '(name == "some value") && (intersects(category, ["A", "B"]))'
+   * f.and('intersects(category, ["A", "B"])').toString();
+   * // '(name == "some value") && (intersects(category, ["A", "B"]))'
+   * f.and("");
+   * // 'name == "some value"'
+   * ```
+   *
+   * @param expr
+   *           Another filter to combine with the current one with a `&&` operator.
+   * @return updated filter
+   */
+  and: inline member function(expr: !?string serialized Expr): !Filter js | java
+
+  /**
+   * Adds ` || ` to the expression.
+   * @return updated filter
+   */
+  or: inline member function(): !Filter js | java
+
+  /**
+   * Returns the disjunction (`||` operator) between the instance and the `expr` filter.
+   * If one of the clause is void, the other is simply returned as is.
+   * Otherwise, both clauses are surrounded by parentheses and joined with a `||` operator.
+   *
+   * Example:
+   * ```javascript
+   * const f = Filter.eq("name", "some value");
+   * f.or(Filter.intersects("category", ["A", "B"])).toString();
+   * // '(name == "some value") || (intersects(category, ["A", "B"]))'
+   * f.or('intersects(category, ["A", "B"])').toString();
+   * // '(name == "some value") || (intersects(category, ["A", "B"]))'
+   * f.or("");
+   * // 'name == "some value"'
+   * ```
+   *
+   * @param expr
+   *           Another filter to combine with the current one with a `||` operator.
+   * @return updated filter
+   */
+  or: inline member function(expr: !?string serialized Expr): !Filter js | java
+
+  /**
+   * Adds `(` to the expression.
+   * @return updated filter
+   */
+  lp: inline member function(): !Filter js | java
+
+  /**
+   * Adds `)` to the expression.
+   * @return updated filter
+   */
+  rp: inline member function(): !Filter js | java
+
+  /**
+   * Equivalent to `.lp().lit(value).rp()`. May be used to like
+   * `Filter.eq('id', id).or().paren(Filter.startsWith('name', prefix).and().endsWith('name', suffix))`
+   *
+   * @param lit
+   *           The filter literal to append in parens. Note this should not be an unquoted value.
+   * @return updated filter
+   */
+  paren: inline member function(lit: !any): !Filter js | java
+
+  /**
+   * Converts the current filter into a valid Sql Where Expression
+   */
+  @beta
+  toSql: inline member function(): string
+
+  /**
+   * Returns the current `value` field of the {@link Filter}.
+   *
+   * @return the value.
+   */
+  toString: ~ js | java | py
+
+  /**
+   * Generates a {@link Filter} from a string.
+   *
+   * @param s
+   *           The string to set as the value of the filter.
+   * @return the constructed {@link Filter}.
+   */
+  fromString: ~ js | java | py
+
+  /**
+   * @return expression matching field with value. Handles null values, primitives and collections.
+   */
+  fieldEq: private inline function(field: !string, value: !?any): !string
+
+  /**
+   * @return expression if field contains a value. Handles primitives.
+   */
+  fieldContains: private inline function(field: !string, value: !?any): !string
+
+  /**
+   * @return expression for text search (e.g. `matchesText(field, value)`)
+   */
+  fieldMatchesText: inline function(field: !string, value: !string): !string
+
+  /**
+   * For array of objects, it will return a filter string expression
+   * ```
+   * var arr = [{id: "1",name: "a"},{id: "2", name: "b"}]
+   * Filter.idsEq(arr)
+   * ```
+   * should return `"id == \"1\" || id == \"2\""`
+   * @return filter expression that can be used to find instances that have id field values as input objects
+   */
+  idsEq: private inline function(obj: ![Obj]): string
+
+  /**
+   * For a single object, match all of its fields and all of the fields of its nested references.
+   * ```
+   * var obj = {id: "1",info: {name: "a", height: 10}};
+   * Filter.matchAllFields(obj)
+   * ```
+   * should return `id == "1" && info.name == "a" && info.height == 10`
+   * @return filter expression that can be used to find instances that have same primitive field values as input object
+   *         and all its nested references.
+   */
+  matchAllFields: private inline function(obj: !?Obj): string
+
+  /**
+   * For a single field in an object, match all of its fields and all of the fields of its nested references.
+   * ```
+   * var obj = {id: "1",info: {name: "a", height: 10}};
+   * Filter.matchField('info', obj)
+   * ```
+   * should return `info.name == "a" && info.height == 10`
+   * @return filter expression that can be used to find instances that have same primitive field value as input object
+   * and all its nested references.
+   */
+  matchReference: private inline function(field: string, obj: !?Obj): string
+
+  /**
+   * @return Filter on datetime `field` to be within `timeRange`
+   */
+  timeRange: private function(field: !string, timeRange: TimeRange): !Filter
+
+  /**
+   * @return Filter on datetime `field` to be within `timeRanges`
+   */
+  timeRanges: private function(field: !string, timeRanges: ![TimeRange]): !Filter
+
+  inst:   ~ java | js | py
+  toJson: ~ java | js | py
+}

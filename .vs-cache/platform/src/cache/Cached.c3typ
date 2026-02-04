@@ -1,0 +1,155 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for data that needs to be cached per app. Sub-type can be any type whose instances will be cached.
+ * Following sub-types are supported implicitly
+ *  * Singleton (#inst)
+ *  * DefaultInstance (#inst)
+ *  * Config (#forConfigKey)
+ *
+ * Persistable types can also mix Cached. In that case instances will be cached by their id. But needs to be explicitly
+ *
+ * e.g.:
+ * ```
+ *  entity type MyCachedData mixes Cached {
+ *    data: any
+ *  }
+ * ```
+ * Then create / update and delete instance of MyCachedData as usual and use #forId or #find to get cached version(s).
+ * Cache will be automatically refreshed when data gets modified in the database. However there will be a delay between
+ * modify & delete and cache refresh.
+ *
+ * Any other sub type of Cached will have to explicitly claim and implement #produce and #produceAll:
+ *  If the sub type mixes:
+ *   * Persistable (#forId) - #produce(key) should return instance by id=key and #produceAll should return all instances
+ *   * Identified (#forId) - #produce(key) should return instance by id=key and #produceAll should return all instances
+ *   * Named (#forName) - #produce(key) should return instance by name=key and #produceAll should return all instances
+ */
+abstract type Cached {
+
+  /**
+   * @return whether the cache already contains this instance
+   */
+  isCached: inline member function(): !boolean
+
+  /**
+   * @param doNotProduceAll if true, will not populate cache and only return available cached instances. Will call
+   *        `produceAll` if cache is empty or if Ann.cache.all is true & data has not previously been fetched.
+   * @return stream of all available Cached instances.
+   */
+  allCached: inline function(doNotProduceAll: boolean): stream<mixing Cached>
+
+  /**
+   * @param filter C3 expression based predicate to filter instances. e.g. `field1=='value1' && field2>17`
+   * @param doNotProduceAll if true, will not populate cache and only return available cached instances. Will call
+   *        `produceAll` if cache is empty or if Ann.cache.all is true & data has not previously been fetched.
+   * @return existing instances of this type that satisfy filter from data cache.
+   */
+  find: inline function(filter: string, doNotProduceAll: boolean): stream<mixing Cached>
+
+  /**
+   * @param doNotProduceAll if true, will not populate cache and only return available cached instances. Will call
+   *        `produceAll` if cache is empty or if Ann.cache.all is true & data has not previously been fetched.
+   * @return existing instances of this type that satisfy filter from data cache.
+   */
+  findBy: inline function(field: !string, value: !?any, doNotProduceAll: boolean): stream<mixing Cached>
+
+  /**
+   * @return cached instance by the cache key. Only returns already cached instances, will not populate cache.
+   *
+   * @see forCacheKey
+   * @see getCached
+   */
+  findByCacheKey: inline function(key: !string): mixing Cached
+
+  /**
+   * @return cached instance by the key.
+   *
+   * @see forCacheKey
+   * @see findByCacheKey
+   */
+  forCacheKey: inline function(key: !?string): mixing Cached
+
+  /**
+   * @return cached instance.
+   *
+   * @see forCacheKey
+   * @see findByCacheKey
+   */
+  getCached: inline member function(): mixing Cached
+
+  /**
+   * @return newly produced cached instance.
+   */
+  refreshCache: inline member function(): mixing Cached
+
+  /**
+   * @return cache key for this instance.
+   */
+  cacheKey: inline member function(): !string
+
+  /**
+   * Should produce an entry for the cache key. This method should not be called directly.
+   */
+  produce: private function(key: !string): mixing Cached
+
+  /**
+   * Produces up to 10,000 entries for the cached data and populates the cache with the produced data. You can change the max entry count with {@link Ann.Cache#maxSize}.
+   */
+  produceAll: private function(): map<string, mixing Cached>
+
+  /**
+   * Override for sub-types to produce all values.
+   */
+  doProduceAll: private optional function(): map<string, mixing Cached>
+
+  /**
+   * Evicts this instance from cache on all nodes of this application.
+   */
+  evictFromCache: private member function()
+
+  /**
+   * Evicts this instance from cache of the current node.
+   */
+  evictFromCacheLocalOnly: private member function()
+
+  /**
+   * Evicts this instance from cache on all local apps (c3-c3, env-c3, env-app) that live in the current node.
+   * Will not trigger any cache invalidation broadcast.
+   * see {@link Server#evictFromLocalAppsCaches}
+   */
+  evictFromCacheLocalOnlyAllApps: private member function()
+
+  /**
+   * Clears the data cache for this type on all nodes of this application.
+   */
+  clearCache: private function()
+
+  /**
+   * Clears the data cache for this type on the current node. Will not trigger any cache invalidation broadcast.
+   */
+  clearCacheLocalOnly: private function()
+
+  /**
+   * Clears the data cache for this type on the current node for all local apps (c3-c3, env-c3, env-app) that live in the current node.
+   * Will not trigger any cache invalidation broadcast.
+   * see {@link Server#clearLocalAppsCaches}
+   */
+  clearCacheLocalOnlyAllApps: private function()
+
+  /**
+   * Returns count of cached instances.
+   */
+  cacheSize: private inline function(): int
+
+  /**
+   * Returns instance of the cache for this type.
+   */
+  nativeCache: private inline function(): @java(class='c3.platform.cache.Cache') native
+}

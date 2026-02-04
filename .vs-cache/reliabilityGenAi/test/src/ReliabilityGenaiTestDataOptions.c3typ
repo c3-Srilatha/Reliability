@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test data options for creating Reliability Generative Ai test data.
+ */
+type ReliabilityGenaiTestDataOptions {
+
+  /**
+   * Whether to manually upload files through the file system or through the admin page.
+   * Set to false by default, allowing users to upload files directly through the admin page.
+   * If set to true, this will automatically upload a test pdf file with the size based on {@link ReliabilityGenaiTestDataOptions#fileSize}.
+   */
+  uploadDefaultFiles : boolean = false
+
+  /**
+   * Size of test file to upload when {@link ReliabilityGenaiTestDataOptions#uploadDefaultFiles} is set to true.
+   */
+  fileSize: !string enum('Small', 'Large') = 'Small'
+
+  /**
+   * The name of the {@link Facility} to be created
+   */
+  facilityName: string = 'Test Facility'
+
+  /**
+   * The name of the parent {@link ReliabilityAsset} to be created
+   */
+  parentAssetName: string = 'Gas Turbine'
+
+  /**
+   * The name of the child {@link ReliabilityAsset} to be created
+   */
+  childAssetName: string = 'Lube Oil'
+
+  /**
+   * The names of the expected {@link ExpectedSensor} to be created
+   */
+  expectedSensorNames: [string] = ['ExpectedSensor1', 'ExpectedSensor2', 'ExpectedSensor3']
+
+  /**
+   * The name of the {@link FailureMode} to be created
+   */
+  failureModeName: string = 'GG Bearing Seal Problem'
+
+  /**
+   * The risk score values for {@ReliabilityRiskScoreMlPrediction} to be created
+   */
+  riskScoreValues: [double] = [0.7, 0.8, 0.9, 1.0]
+
+  /**
+   * The alert values for {@ReliabilityRiskScoreMlPrediction} to be created
+   */
+  alertValues: [int] = [1, 1, 1, 0]
+
+  /**
+   * The ids of {@Sensor} to be created
+   */
+  sensorIds: [string] = ['LO Supply Pressure', 'LO Tank Pressure', 'LO Tank Level']
+
+  /**
+   * The names of {@cases} to be created
+   */
+  caseNames: [string] = ['Lube Oil - Investigate High Pressure', 'testCase with no alert']
+}

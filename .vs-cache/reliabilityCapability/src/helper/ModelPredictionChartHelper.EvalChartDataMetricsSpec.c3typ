@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type specifies the necessary values to evaluate the {@link ReliabilityMlModel model} outputs,
+ * {@link ReliabilityAsset asset} features, and {@link Sensor sensor}s quantity metrics at
+ * {@link ModelPredictionChartHelper#evalChartDataMetrics}
+ */
+type ModelPredictionChartHelper.EvalChartDataMetricsSpec mixes Spec {
+
+  /**
+   * The {@link ReliabilityMlModel#id} of the model to retrieve outputs for.
+   */
+  modelId: string serialized ReliabilityMlModel
+
+  /**
+   * The {@link ReliabilityAsset#id} of the asset on which the metric is evaluated.
+   */
+  assetId: string serialized ReliabilityAsset
+
+  /**
+   * The {@link Sensor#id}s of the sensors to evaluate the quantity metric.
+   */
+  sensorIds: [string serialized Sensor]
+
+  /**
+   * The {@link ReliabilityMlModel} output names.
+   */
+  outputNames: [string]
+
+  /**
+   * The {@link Feature.Set#id}s for the {@link ReliabilityMlModel}
+   */
+  featureIds: [string serialized Feature.Set]
+
+  /**
+   * The {@link Interval} to evaluate the metrics.
+   */
+  interval: Interval
+
+  /**
+   * The start date to evaluate the metrics.
+   */
+  startDate: datetime
+
+  /**
+   * The end date to evaluate the metrics.
+   */
+  endDate: datetime
+}

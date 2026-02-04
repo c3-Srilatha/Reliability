@@ -1,0 +1,22 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a process-only pipe that computes the residual between actual and expected values. The input
+ * {@link Data} must already be aligned.
+ */
+entity type Reconstruction.ResidualPipe extends MlAtomicPipe<{actual: Data, expected: Data}, void, Data> type key 'RCDR' {
+  /**
+   * The column names of the `residual` output. If it is not set, this pipe will use the column names from the `actual`
+   * input
+   */
+  columns: [string]
+
+  doProcess: ~ py
+}

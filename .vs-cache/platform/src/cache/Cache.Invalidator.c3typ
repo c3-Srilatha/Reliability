@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base class used to invalidate cache entries in a distributed environment.
+ */
+private type Cache.Invalidator {
+
+  /**
+   * Cache key for the session token for the cache.invalidator user root for this application
+   */
+  userSessionCacheKey: function(appId: !string): !string
+
+  /**
+   * Broadcasts the message to the correct location based on CacheBroadcastConfig, CacheMessage, and the current context
+   */
+  @action(group+='cluster-admin')
+  broadcast: function(message: CacheMessage)
+
+  /**
+   * Clears the cache based on the message only in this node.
+   */
+  clearLocal: function(message: CacheMessage)
+
+  /**
+   * Evicts the key in the message from cache only in this node.
+   */
+  evictLocal: function(message: CacheMessage)
+
+  /**
+   * Broadcasts the message to all nodes in the cluster.
+   */
+  @action(group+='cluster-admin')
+  broadcastToCluster: abstract function(message: CacheMessage)
+
+  /**
+   * Broadcasts the message to all nodes in the environment.
+   */
+  @action(group+='env-admin')
+  broadcastToEnv: abstract function(message: CacheMessage)
+
+  /**
+   * Broadcasts the message to all nodes in the application.
+   */
+  @action(group+='app-admin')
+  broadcastToApp: abstract function(message: CacheMessage)
+
+  /**
+   * Checks if the message can currently be broadcast in the cluster.
+   */
+  ableToBroadcast: function(message: CacheMessage): boolean
+
+  // ================================== Deprecated ==================================
+
+  /**
+   * Evicts the key in the message from cache.
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion=8.9, details='Use broadcast instead')
+  evict: function(message: CacheMessage)
+
+  /**
+   * Clears the cache based on the message.
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion=8.9, details='Use broadcast instead')
+  clear: function(message: CacheMessage)
+
+  /**
+   * Sends eviction message to correct node depending on what type of eviction occurred on the Cached type in Http Manner
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion=8.9, details='Use Cache.Invalidator.HTTP instead')
+  broadcastHttp: member function(message: CacheMessage)
+
+  /**
+   * Sends eviction message to correct node depending on what type of eviction occurred on the Cached type in Db Manner
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion=8.9, details='Use Cache.Invalidator.DB instead')
+  broadcastDb: member function(message: CacheMessage)
+}

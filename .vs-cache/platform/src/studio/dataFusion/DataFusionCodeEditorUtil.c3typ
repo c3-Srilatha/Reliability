@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util type for dataFusion code editor.
+ */
+type DataFusionCodeEditorUtil {
+
+  /**
+   * Returns the type definition for the given type name.
+   *
+   * @param typeName
+   *           The name of the type.
+   * @param pkg
+   *           The name of the root package for the current application.
+   * @returns a map with two key/value pairs:
+   *    originalDeclaration: [declaration code]
+   *    remixDeclaration: [declaration code] if applicable
+   */
+  getTypeDefinition: function(typeName: string, pkg: string): map<string, string> js-server
+
+  /**
+   * Returns the javaScript source code of a given type.
+   *
+   * @param typeName
+   *            The name of the type.
+   * @param pkg
+   *         The name of the root package for the current application.
+   * @returns a map with two key/value pairs:
+   *    originalSourceCode: [implementation code]
+   *    remixSourceCode: [implementation code] if applicable
+   */
+  getSourceCode: function(typeName: string, pkg: string): map<string, string> js-server
+
+  /**
+   * Returns the functions information of a given type.
+   *
+   * @param typeName
+   *           The name of the type.
+   * @param pkg
+   *           The name of the root package for the current application.
+   */
+  getFunctionsInfo: function(typeName: string, pkg: string): map<string, map<string, [string]>> js-server
+
+  /**
+   * Returns the functions information of a given type.
+   *
+   * @param typeMeta
+   *            The meta of the type.
+   */
+  getNewFunctionsInfo: function(typeMeta: TypeMeta): map<string, map<string, [string]>> js-server
+
+  /**
+   * Returns the sub path directory of a given type.
+   *
+   * @param typeMeta
+   *            The meta of the type.
+   */
+  getSubPathDir: function(typeMeta: TypeMeta): string js-server
+
+  /**
+   * If a type is remixed, returns either the type declaration code, or the type implementation code, depending
+   * on the value of the `codeType` argument.
+   *
+   * @param typeMeta
+   *           The typeMeta of the type.
+   * @param pkg
+   *           The name of the root package that the type belongs to.
+   * @param codeType
+   *           Whether to get the type declaration or implementation code.
+   * @returns The remix code .
+   */
+  getRemixCode: function(typeMeta: TypeMeta, pkg: string, codeType: string enum RemixCodeType): string js-server
+}

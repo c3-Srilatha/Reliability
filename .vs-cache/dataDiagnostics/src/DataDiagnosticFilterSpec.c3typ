@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type passed into {@link DataTag} via {@link DataDiagnosticOverrideSpec}
+ * which can optionally specify a different set of entities to run the diagnostic logic on than the ones specified in the
+ * diagnostic itself. Only either the list of ids or the filter is used, with the ids taking
+ * precedence over the filter if both are supplied.
+ */
+type DataDiagnosticFilterSpec mixes Spec {
+
+  /**
+   * List of entity ids to run the {@link DataDiagnostic} logic on.
+   */
+  ids: [string]
+
+  /**
+   * Filter on {@link DataDiagnostic#srcType} to specify which entities to run the logic on.
+   */
+  filter: Filter
+}

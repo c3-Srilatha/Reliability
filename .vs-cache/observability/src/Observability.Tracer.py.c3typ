@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+/**
+ * Native type used to interact with the Observability following the OpenTelemetry standard.
+ * For more information, see [OpenTelemetry Introduction]<https://opentelemetry.io/docs/concepts/what-is-opentelemetry/>.
+ * For Traces, see [OpenTelemetry Traces] <https://opentelemetry.io/docs/concepts/signals/traces/>
+ * For Spans, see [OpenTelemetry Spans] <https://opentelemetry.io/docs/concepts/signals/traces/#spans>
+ * This type assumes that the execution context includes "py-opentelemetry" runtime.
+ */
+native py remix type Observability.Tracer {
+  /**
+   * @return a native opentelemetry Span object with the given name as the current span in the trace.
+   *
+   * Example usage:
+   * ```python
+   * with c3.Observability.Tracer.start_as_current_span("my_span_name", kind="span_kind") as span:
+   *     span.set_attribute("key", "value")
+   * ```
+   *
+   * This span supports the following methods:
+   * - `set_attribute(key: str, value: primitive)`: sets an attribute on the span.
+   *                                                Supported value types are str, float, int, bool or an array those.
+   *                                                You cannot mix different types in the same array.
+   * - `set_attribute_lambda(key: str, value: primitive | lambda)`: sets an attribute on the span. value is a primitive or a python lambda that evaluates to a primitive value.
+   * - `set_attributes(attributes: dict)`: sets multiple attributes on the span.
+   * - `set_attributes_lambda(attributes: dict | lambda)`: sets multiple attributes on the span. If dictionary, Each value can either be a primitive or a python lambda that evaluates to a primitive value.
+   * If lambda, lambda evaluates to a dictionary that sets multiple attributes on the span.
+   */
+  start_as_current_span: inline function(name: !string, spec: Observability.SpanSpec): !native py
+
+  /**
+   * Attempts to flush the in-memory spans to persistable {@link Observability.Span.Record}s.
+   *
+   * Example usage:
+   * ```python
+   * with c3.Observability.Tracer.start_as_current_span("my_span_name", kind="span_kind") as span:
+   *     span.set_attribute("key", "value")
+   * c3.Observability.Tracer.flush()
+   * ```
+   */
+  flush: inline function() py
+
+  /**
+   * Initialization of tracer provider and span processor for collecting traces and spans.
+   */
+  initialize: private inline function(): !native py
+}

@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Grafana HTTP API abstraction.
+ * https://grafana.com/docs/grafana/latest/developers/http_api/
+ */
+@action(group='cluster-admin')
+type Grafana mixes REST<Grafana.Config>, Named, DefaultInstance {
+
+  DEFAULT: const string = 'DEFAULT'
+
+  /**
+   * @return the default instance named 'DEFAULT'
+   */
+  inst: ~
+
+  /**
+   * List all datasources.
+   * https://grafana.com/docs/grafana/latest/developers/http_api/data_source/#get-all-datasources
+   */
+  @rest(uri='api/datasources', method='GET', skipThis=true)
+  datasources: abstract member function(): [Grafana.Datasource]
+
+  /**
+   * Get a datasource by ID.
+   * https://grafana.com/docs/grafana/latest/developers/http_api/data_source/#get-a-single-datasource-by-id
+   * @deprecated Use datasourceByUid instead
+   */
+  @rest(uri='api/datasources', method='GET', skipThis=true, partOfURI=true)
+  datasourceById: abstract member function(@rest(partOfURI=true, uriPrefix='/id/')
+                                           datasourceId: !int): Grafana.Datasource
+
+  /**
+   * Get a datasource by UID.
+   * https://grafana.com/docs/grafana/latest/developers/http_api/data_source/#get-a-single-datasource-by-uid
+   */
+  @rest(uri='api/datasources/uid', method='GET', skipThis=true, partOfURI=true)
+  datasourceByUid: abstract member function(@rest(partOfURI=true, uriPrefix='/') uid: !string): Grafana.Datasource
+}

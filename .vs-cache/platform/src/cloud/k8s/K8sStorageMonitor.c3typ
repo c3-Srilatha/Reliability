@@ -1,0 +1,241 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@action(group+='cluster-admin')
+type K8sStorageMonitor mixes Singleton, Mutable {
+
+  /**
+   * A map between the dir path and the size for the directory.
+   * The paths are specified by {@link ServerStorageDirsConfig}.
+   * Error values:
+   *   0 represents the directory is not existing yet or the used bytes for the directory is 0.
+   *  -1 represents the underlying {@link ServerDirectorySize#sizeForDir} operation was failing due to some errors.
+   *  -2 represents the operation timed out while calculating the capacity for the given directory.
+   */
+  dirUsages: map<string, int>
+
+  /**
+   * A map between the dir path and the time when the directory usage was updated.
+   * The paths are specified by {@link ServerStorageDirsConfig}.
+   */
+  dirUsagesUpdatedTime: map<string, datetime>
+
+  /**
+   * A map between the persistent volume name and the capacity for the persistent volume.
+   * The volume names are the pvc volume names which are backing the pvc directories within {@link ServerStorageDirsConfig}.
+   * Error values:
+   *   0 represents the directory is not existing yet or the capacity bytes for the directory is 0.
+   *  -1 represents the underlying {@link ServerDirectorySize#storageStatsForMountForDir} operation was failing due to some errors.
+   *  -2 represents the calculation for the dir capacity times out.
+   */
+  persistentVolumeCapacities: map<string, int>
+
+  inst: ~
+
+  /**
+   * Retrieves storage usage for all the pvc volume the current node is using.
+   * @return A map of PVC Volume Name to its current used disk size in bytes.
+   * e.g. the returned map can be <"pvc-volume", 96>
+   * 96 represents the number of bytes that has been used for "pvc-volume".
+   * Note: All pvc volumes will be listed including the ones where usage cannot be computed, which will have a -1 value.
+   */
+  overallPersistentVolumeUsage: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves storage capacity for all the pvc volume the current node is using.
+   * @return A map of PVC Volume Name to its current disk capacity in bytes.
+   * e.g. the returned map can be <"pvc-volume", 96>
+   * 96 represents the number of bytes that "pvc-volume" can hold.
+   * Note: All pvc volumes will be listed including the ones where capacity cannot be computed, which will have a -1 value.
+   */
+  overallPersistentVolumeCapacity: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves storage usages for all the root emptyDir volume paths (root means emptyDir volume's subPath is not defined) from {@link K8sPod}.
+   * @return A map of emptyDir Volume Name to its current used disk size in bytes.
+   * e.g. the returned map can be <"pod-volume", 96>
+   * 96 represents the number of bytes that has been used for "pod-volume".
+   * Note: All emptyDir volumes will be listed including the ones where usage cannot be computed, which will have a -1 value.
+   */
+  overallEmptyDirVolumeUsage: function(): MapBuilder<string, int>
+
+  /**
+   * Estimates storage usages for the current {@link K8sPod}.
+   * Compute the total storage usage as follows:
+   * {@link K8sStorageMonitor#overallEmptyDirVolumeUsage} + the sum of all entries in {@link K8sStorageMonitor#containerDirUsages}.
+   * @return estimated overall ephemeral storage usage in bytes.
+   */
+  overallEphemeralStorageUsage: function(): int
+
+  /**
+   * Retrieves ephemeral storage capacity for the current {@link K8sPod}'s "c3-server" container.
+   * @return ephemeral volume capacity in bytes.
+   */
+  overallEphemeralStorageCapacity: function(): int
+
+  /**
+   * Retrieves sizes for the paths in the current node that are
+   *  1. Backed by pvc
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A MapBuilder linking each filesystem path to its corresponding dirSize.
+   */
+  pvcDirUsages: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves sizes for the paths in the current node that are
+   *  1. Backed by emptyDir
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * e.g. In podSpec, if we have something like this,
+   * "volumes": [
+   *      {
+   *        "name": "pod-volume",
+   *        "emptyDir": {}
+   *      }
+   *    ],
+   * "volumeMounts": [
+   *    {
+   *      "name": "pod-volume",
+   *      "mountPath": "/usr/local/share/c3/server/log",
+   *      "subPath": "c3log"
+   *    }
+   *  ]
+   * That means the path "/usr/local/share/c3/server/log" is backed by emptyDir.
+   * All its subPaths like "/usr/local/share/c3/server/log/somename" will also be backed by the same emptyDir volume.
+   * @return A MapBuilder of paths backed by ephemeral volume to its corresponding dirSize.
+   */
+  emptyDirUsages: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves sizes for the paths in the current node that are
+   *  1. Backed by container
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * e.g. "/tmp" exists in the c3-server container although it is not appearing in the podSpec.
+   * That means it is backed by the container's ephemeral volume. And will be cleaned up once the container restarts.
+   * @return A MapBuilder of paths backed by container ephemeral volume to its corresponding dirSize.
+   */
+  containerDirUsages: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves sizes for the paths in the current node that are
+   *  1. Backed by ephemeral storage
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A MapBuilder of paths backed by ephemeral volume to its corresponding dirSize.
+   * This will be the combination of emptyDirUsages and containerDirUsages.
+   */
+  ephemeralDirUsages: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves sizes for the paths in the current node that are
+   *  1. Backed by emptyDir with medium: Memory (If you set the emptyDir.medium field to "Memory", Kubernetes mounts a tmpfs (RAM-backed filesystem) for you instead.)
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * e.g. In podSpec, if we have something like this,
+   * "volumes": [
+   *    {
+   *      "name": "shared-mem",
+   *       "emptyDir": {
+   *          "medium": "Memory"
+   *       }
+   *    },
+   * ],
+   * "volumeMounts": [
+   *    {
+   *      "name": "shared-mem",
+   *      "mountPath": "/dev/shm"
+   *    }
+   * ]
+   * That means the path "/dev/shm" is backed by emptyDir.
+   * All its subPaths like "/dev/shm/somename" will also be backed by the same emptyDir volume.
+   * @return A MapBuilder of paths backed by ephemeral volume to its corresponding dirSize.
+   */
+  memoryDirUsages: function(): MapBuilder<string, int>
+
+  /**
+   * Retrieves all the paths in the current node that are
+   *  1. Backed by Persistent Volume Claims
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A list of paths
+   */
+  pvcDirs: function(): ![string]
+
+  /**
+   * Retrieves all the paths in the current node that are
+   *  1. Backed by emptyDir
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A list of paths
+   */
+  emptyDirs: function(): ![string]
+
+  /**
+   * Retrieves all the paths in the current node that are
+   *  1. Backed by container writable layer
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A list of paths
+   */
+  containerDirs: function(): ![string]
+
+  /**
+   * Retrieves all the paths in the current node that are
+   *  1. Backed by ephemeral storage (emptyDir or container writable layer)
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A list of paths
+   */
+  ephemeralDirs: function(): ![string]
+
+  /**
+   * Retrieves all the paths in the current node that are
+   *  1. Backed by emptyDir with medium: Memory
+   *  2. Present in {@link ServerStorageDirsConfig}
+   * @return A list of paths
+   */
+  memoryDirs: function(): ![string]
+
+  /**
+   * @param dirPath
+   *          the path for which the user is trying to find the according volume.
+   * @param computeType
+   *          computeType type for calculating storage size for the specified dirPath.
+   *          Can be {@link K8sStorageMonitor#DU} or {@link K8sStorageMonitor#DF}.
+   *          If not passed in, will calculate it smartly based on the dirPath. More specifically,
+   *          if the dirPath is backed by pvc and it is a root directory, will utilize {@link K8sStorageMonitor#DF},
+   *          Otherwise, will utilize {@link K8sStorageMonitor#DU}.
+   * @return the updated {@link K8sStorageMonitor#dirUsages} map.
+   */
+  updateUsageForDir: function(dirPath: !string, computeType: string enum StorageUsageComputeType): map<string, int>
+
+  /**
+   * @param dirPath
+   *          the path for which the user is trying to estimate the available disk space.
+   * @param opSpec
+   *          Optional spec for specifying ensureCacheUpdatedAfterInvocation.
+   *          See {@link K8sStorageMonitorOpSpec} for more details.
+   * Note that this is not an exact measure for ephemeral backed directories.
+   * It is an accurate measure for pvc backed directories.
+   * @return The estimated available disk space in Bytes.
+   */
+  estimatedDiskFreeBytesForDir: function(dirPath: !string, opSpec: K8sStorageMonitorOpSpec): int
+
+  /**
+   * The function will ensure that all directory usage timestamps
+   * (stored in `dirUsagesUpdatedTime`) are more recent than the current time.
+   * This guarantees that the cache has been fully refreshed at least once.
+   * @param waitSpec
+   *          Optional spec for specifying retry waitSpec.
+   */
+  waitForCacheUpdate: function(waitSpec: WaitSpec)
+
+  /**
+   * The function will ensure that the directory usage timestamps
+   * (stored in `dirUsagesUpdatedTime`) for dirPath is more recent than the current time.
+   * This guarantees that the cache has been refreshed for dirPath.
+   * @param dirPath
+   *          the path for which the user is trying to wait for update.
+   * @param waitSpec
+   *          Optional spec for specifying retry waitSpec.
+   */
+  waitForCacheUpdateForDir: function(dirPath: !string, waitSpec: WaitSpec)
+}

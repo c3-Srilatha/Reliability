@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Uninterpreted data, declared as `binary`.  This is a series of byte values that can be used
+ * to store arbitrary data, such as an image.
+ *
+ * Binary data stored in NoSQL databases is always arbitrary length.
+ *
+ * Binary should not be used to store strings because this will require extra information on
+ * the character encoding to be maintained.  Use `string` instead.
+ *
+ * There are three types of binary data, backed by different Java implementations: HeapByteBuffer, DirectByteBuffer, and
+ * MappedByteBuffer.  The type of binary data is determined by the `isSharedMemory` and `isMemoryMapped` functions.
+ * HeapByteBuffer is the default; DirectByteBuffer is used for direct memory access between Java and JEP; MappedByteBuffer
+ * is used to implement shared memory between Java and Py4j.
+ *
+ * @see PrimitiveType
+ */
+type Binary mixes Value {
+
+  /**
+   * Wrap a Java ByteBuffer as a Binary.
+   */
+  wrap: private function(bytes: @java(class="java.nio.ByteBuffer") native): Binary
+
+  /**
+   * Wrap a Java byte array as a Binary on heap.
+   */
+  wrap: function(bytes: @java(class="byte[]") native): Binary
+
+  /**
+   * Wrap a Java byte array as a Binary on heap.
+   */
+  wrap: function(bytes: @java(class="byte[]") native, offset: int32, length: int32): Binary
+
+  /**
+   * Allocate a new Binary with the given capacity on heap.
+   */
+  allocate: private function(capacity: int32): Binary
+
+  /**
+   * Allocate a new Binary with the given capacity off heap, using direct memory.
+   */
+  allocateDirect: private function(capacity: int32): Binary
+
+  /**
+   * Allocate a new Binary with the given capacity off heap, using memory mapped file.
+   */
+  allocateMapped: private function(capacity: int32): Binary
+
+  /**
+   * @return true if the binary data is using direct memory. Note that this also returns true for memory mapped files.
+   */
+  isDirectMemory: private member function(): boolean
+
+  /**
+   * @return true if the binary data is backed by a memory mapped file.
+   */
+  isMemoryMapped: private member function(): boolean
+
+  /**
+   * @return the file name of the memory mapped file, if #isMemoryMapped; empty otherwise.
+   */
+  filename: private member function(): string
+}

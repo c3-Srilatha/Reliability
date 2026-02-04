@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Most AWS services (except for Amazon Kinesis and DynamoDB) use the push model to publish events and invoke AWS
+ * Lambda. The AwsLambdaPolicy states the push permission for such Aws service.
+ */
+type AwsLambdaPolicy {
+
+  /**
+   * The Amazon Resource Name of the event source
+   */
+  eventSourceArn: string
+
+  /**
+   * The AWS account ID (without a hyphen) of the source owner.
+   */
+  sourceAccount: string
+
+  /**
+   * The sId (statement ID) is an identifier that you provide for each Aws Lambda Policy
+   */
+  sId: !string
+
+  /**
+   * The principal specifies who is getting this permission. For example, it can be Amazon IoT
+   * service principal (iot.amazonaws.com) if you want Amazon IoT to invoke the function.
+   */
+  principal: !string
+
+  /**
+   * The  action specifies which Amazon Lambda action is allowed in this statement, such as lambda:CreateFunction
+   * and lambda:InvokeFunction. You can use wildcard (lambda:* ) to grant permission for all Amazon Lambda actions.
+   */
+  action: !string
+}

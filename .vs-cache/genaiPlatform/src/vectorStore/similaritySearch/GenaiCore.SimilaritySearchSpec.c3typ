@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines optional parameters for a similarity search.
+ * Used in {@link GenaiCore.VectorStore#similaritySearch}.
+ */
+type GenaiCore.SimilaritySearchSpec mixes Spec {
+
+  /**
+   * The number of results to return from the similarity search.
+   * Default is 5 if not specified.
+   */
+  k: int
+
+  /**
+   * The name of the fields/paths of the stored object that should be considered
+   * metadata and therefore returned as part of {@link GenaiCore.VectorStore#similaritySearch}.
+   * Specify an empty list if no metadata should be returned.
+   */
+  metadataPaths: ?[string]
+
+  /**
+   * Filter to apply to {@link GenaiCore.VectorStore#similaritySearch}. Depending on the vector store,
+   * this may be implemented as pre- or post-filtering.
+   * In addition, for vector stores that support pre-filtering, the filter may need
+   * to be specified in the specific format required by the vector store.
+   * Consult the specific doc on your vector store type for specific details.
+   */
+  metadataFilter: any
+}

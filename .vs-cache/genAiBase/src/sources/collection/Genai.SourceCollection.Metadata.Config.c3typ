@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config to define the behavior for implicit filtering for {@link Genai.SourceFile}s in vector store similarity search.
+ */
+type Genai.SourceCollection.Metadata.Config mixes Config, Identifiable {
+  /**
+   * Enable/Disable implicit filtering using the #fieldsToInclude
+   * If set to true, the #fieldsToInclude will be included during vector store embedding creation.
+   * An optional lambda {@link Genai.SourceCollection#syncMetadataLambda} can also be used to serialize the metadata which will be included in the embedding.
+   *
+   * If this value is changed, all indexed {@link Genai.SourceFile}s will have to be re-indexed
+   * to include/remove the metadata fields from the embeddings.
+   */
+  embedMetadata: boolean
+
+  /**
+   * Fields to be included as a part of the vector store embedding.
+   * If not specified, all fields in {@link Genai.SourceFile.Metadata} will be included in the embedding.
+   */
+  fieldsToInclude: [string]
+}

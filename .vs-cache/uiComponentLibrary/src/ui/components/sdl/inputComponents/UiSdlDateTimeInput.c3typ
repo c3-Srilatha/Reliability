@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * DateTime input component type.
+ */
+@typeScript
+@uiComponentCategorizer(name='Date time input', category='Components')
+type UiSdlDateTimeInput mixes UiSdlComponent<UiSdlDateTimeRangeDataSpec>, UiSdlDateTimeInputBase {
+
+  /**
+   * The specification used for retrieving data for the range of available dates.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataCollection')
+  dataSpec: ~
+
+  /**
+   * Holds the data to set the range of available dates.
+   */
+  dataCollection: [Obj]
+
+  /**
+   * Whether the dropdown will take the full width of its parent.
+   */
+  fluid: boolean
+
+  /**
+   * Content to appear in the input when the input is empty.
+   */
+  placeholder: string
+
+  /**
+   * Whether or not to send invalid inputs created from keyboard edit to redux.
+   * This also allows those invalid inputs from keyboard edit to set the field validity to false.
+   * Setting this to true makes redux control the invalid prop of the UiSdlDateTimeInput completely.
+   * This is only supported within {@link UiSdlForm}.
+   */
+  allowInvalidKeyValue: boolean = false
+}

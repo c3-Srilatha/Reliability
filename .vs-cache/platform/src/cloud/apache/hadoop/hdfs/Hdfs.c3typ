@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Hdfs implementation.
+ */
+type Hdfs mixes BlobFileSystem<HdfsFile>, FileSystemConfigurable<HdfsConfig> {
+
+  /**
+   * Converts relative or fully qualified path to the format hdfs apis require as input.
+   */
+  hdfsPath: private inline function(path: !string): !string
+
+  hostAndPathFromUrlOrEncodedPath: ~
+  supportsContentType:             ~
+
+  /**
+   * List all Apache Hdfs file systems.
+   *
+   * @returns the list of HdfsClient
+   */
+  listClients: function(): [HdfsClient]
+
+  /**
+   * Stop all the underlying Apache FileSystem impls. The FileSystem instances will
+   * be started up on the next access. Admin only function.
+   */
+  stopAllClients: function()
+
+  /**
+   * Stop the underlying Apache FileSystem impl. The FileSystem instance will
+   * be started up on the next access. Admin only function.
+   *
+   * @param clientKey
+   *           clientKey used in identifying the client
+   * @returns the HdfsClient that's removed
+   */
+  stopClient: function(clientKey: !string): HdfsClient
+}

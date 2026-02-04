@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Record of a hardware profile, used to specify cloud node instances.
+ * HardwareProfile should be used as the resource definition of cloud "hardware" or
+ * instance type (e.g. used for c3server worker nodes).
+ */
+@beta
+type HardwareProfile mixes BaseHardwareResourceRequirements, Named, HardwareProfile.AdminFields {
+
+  forName: ~
+
+  /**
+   * Upserts a hardware profile into the config framework based on parameters specified.
+   *
+   * @param spec
+   *         Specification for resources under {@link HardwareProfile.CreateSpec} to supply.
+   * @return hardware profile object based on parameters specified.
+   */
+  upsertProfile: function(spec: !HardwareProfile.CreateSpec): !HardwareProfile
+
+  /**
+   * Checks if hardware with this {@link HardwareProfile} satisfy given {@link HardwareConstraint}.
+   */
+  satisfiesConstraint: member function(constraint: !HardwareConstraint): boolean
+}

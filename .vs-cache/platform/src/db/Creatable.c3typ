@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type containing functions for create operations.
+ */
+type Creatable mixes Identifiable {
+
+  /**
+   * Creates an instance of a C3 type. If the operation fails an exception will be thrown.  This will fail if the
+   * instance already exist.
+   *
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return The created obj.  If an include spec is specified in the 'spec.include' field, then the returned obj
+   *         will have only those fields populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  create: abstract member function(spec: UpsertSpec): mixing Creatable
+
+  /**
+   * Creates multiple instances of a C3 type. If the operation fails and {@link UpsertSpec#dontThrowOnBatchError} is not
+   * specified (the default), then a C3BatchException will be thrown.  Otherwise {@link errors will be reported in the
+   * returned {@link ObjList}.  This will fail if any of the instances already exist.
+   *
+   * @param objs
+   *           New objs to create.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return List of created objs and any errors encountered (if 'spec.dontThrowOnBatchError' is true.  If an
+   *         include spec is specified in the 'spec.include' field, then the returned objs will have only those
+   *         fields populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  createBatch: abstract function(objs: !?[mixing Creatable], spec: UpsertSpec): ObjList<mixing Creatable>
+
+  /**
+   * Creates multiple instances of a C3 type. If the operation fails and {@link UpsertSpec#dontThrowOnBatchError} is not
+   * specified (the default), then a C3BatchException will be thrown.  Otherwise {@link errors will be reported in the
+   * returned {@link ObjList}.  This will fail if any of the instances already exist.
+   *
+   * @param objs
+   *           New objs to create.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return  ObjList containing statistics for the operation as well as optionally (depending on the value of
+   *          `spec.includeObjsInResults`.
+   */
+  @action(group+='write')
+  createBatchObjStream: abstract function(objs: !?stream<mixing Creatable>,
+                                          spec: CreateBatchObjStreamSpec): ObjList<mixing Creatable>
+}

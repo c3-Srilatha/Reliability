@@ -1,0 +1,124 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for plotting the charts on the Residual Diagnostics Alert Detail page.
+ *
+ * This spec will be populated using the values selected in the ResidualDiagnosticsAlertDetailFilterPanel
+ * and sent to the charting API.
+ */
+type ResidualAlertFilterPanelSpec mixes Spec {
+
+  /**
+   * The constant name for the mask indicating when the asset is not operational.
+   * Used to filter out non-operational periods in the chart.
+   *
+   * @see ReliabilityMlDatasetPreparationRunCommon#maskDatasets
+   */
+  NON_OPERATIONAL_MASK_NAME: const string = "mask_IsAssetNotOperational"
+
+  /**
+   * Start date selected in the filter panel.
+   */
+  start: !string
+
+  /**
+   * End date selected in the filter panel.
+   */
+  end: !string
+
+  /**
+   * The {@link Interval} selected for the plotting the values.
+   */
+  interval: !Interval
+
+  /**
+   * Plot alerts on the chart if the field is set to `true`.
+   */
+  showAlerts: boolean = true
+
+  /**
+   * Show unplanned events on the chart if the field is set to `true`.
+   */
+  showUnplannedEvents: boolean
+
+  /**
+   * Show work orders on the chart if the field is set to `true`.
+   */
+  showWorkOrders: boolean
+
+  /**
+   * Show training period on the chart if the field is set to `true`.
+   */
+  showTrainingPeriod: boolean
+
+  /**
+   * Selected features to be plotted.
+   *
+   * This field will carry the IDs of features selected in filter panel.
+   */
+  features: [string]
+
+  /**
+   * Show the feature contribution->risk score mapping on chart if field set to `true`.
+   */
+  showFeatureContributionsToRiskScore: boolean = true
+
+  /**
+   * Show the feature reconstruction on chart if field set to `true`.
+   */
+  showFeatureReconstruction: boolean = true
+
+  /**
+   * Show the sensor training bounds on chart if field set to `true`.
+   */
+  displaySensorTrainingBounds: boolean
+
+  /**
+   * List of selected sensors in the filter panel.
+   */
+  sensors: [string serialized Sensor]
+
+  /**
+   * List of {@link ReliabilityMetric} Ids to be selected.
+   */
+  reliabilityMetricIds: [string serialized ReliabilityMetric]
+
+  /**
+   * The id of the {@link ReliabilityAssetAlert} being viewed.
+   */
+  alertId: !string
+
+  /**
+   * If true, filter out non-operational periods from the charts using the #NON_OPERATIONAL_MASK_NAME.
+   */
+  showNonOperationalPeriods: boolean = false
+
+  /**
+   * Executes this spec to generate data for the Residual Diagnostics Alert Detail page based on the spec fields.
+   *
+   * This function constructs the appropriate queries for different data components:
+   * - Sensor measurements via {@link ReliabilitySensorTimedDataQuery}
+   * - Reliability metrics via {@link ReliabilityMetricTimedDataQuery}
+   * - Model outputs via {@link ReliabilityModelOutputsTimedDataQuery} (risk scores, feature contributions)
+   * - Feature values via {@link ReliabilityFeatureTimedDataQuery}.
+   * - Event data via {@link ReliabilityEventTimedDataQuery} (alerts, unplanned events, work orders)
+   *
+   * All individual queries are combined into a global {@link ReliabilityTimedDataQuery}
+   * which is executed with the configured time parameters.
+   *
+   * @returns {map<string, any>} A map containing structured with the following keys and values:
+   *   - 'sensorData': Sensor measurements over time
+   *   - 'metricData': Reliability metrics over time
+   *   - 'modelOutputs': Model predictions and feature contributions
+   *   - 'featureData': Raw and reconstructed feature values
+   *   - 'eventData': Alerts, unplanned events, and work orders
+   */
+  executeSpec: inline member function(): map<string, any> js-rhino
+}

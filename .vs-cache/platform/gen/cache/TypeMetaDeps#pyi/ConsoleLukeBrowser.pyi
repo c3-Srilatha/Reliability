@@ -1,0 +1,2933 @@
+#!/usr/bin/env python3
+from typing import Callable, Any, Literal, Union, Generic, TypeVar, Optional, overload
+from datetime import datetime
+from c3.platform.LukeAsyncQueueNode import LukeAsyncQueueNode
+from c3.platform.LukeCookie import LukeCookie
+from c3.platform.Include import Include
+from c3.platform.FieldPath import FieldPath
+from c3.platform.StreamType import StreamType
+from c3.platform.LukeWindowSpec import LukeWindowSpec
+from c3.platform.Mutable import Mutable
+from c3.platform.Promise import Promise
+from c3.platform.FieldType import FieldType
+from c3.platform.LukeAsyncQueueFile import LukeAsyncQueueFile
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.LukeGetOrRemoveCookieSpec import LukeGetOrRemoveCookieSpec
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.Type import Type
+from c3.platform.ValueType import ValueType
+from c3.platform.ValueSpec import ValueSpec
+from c3.platform.LukeAsyncQueueSpy import LukeAsyncQueueSpy
+from c3.platform.Obj.GenerateSpec import Obj.GenerateSpec
+from c3.platform.Data import Data
+from c3.platform.LukeBrowser import LukeBrowser
+from c3.platform.LukeCoreConfig import LukeCoreConfig
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.LukeBrowserWebElement import LukeBrowserWebElement
+from c3.platform.LukeWindowRect import LukeWindowRect
+from c3.platform.SetType import SetType
+from c3.platform.ObjBuilder import ObjBuilder
+from c3.platform.MapType import MapType
+from c3.platform.Exclude import Exclude
+from c3.platform.SetBuilder import SetBuilder
+from c3.platform.LukeAsyncQueueCollection import LukeAsyncQueueCollection
+from c3.platform.LukeDynamicValue import LukeDynamicValue
+from c3.platform.LukeActionPermissionSpec import LukeActionPermissionSpec
+from c3.platform.ReferenceType import ReferenceType
+from c3.platform.ArrayType import ArrayType
+from c3.platform.User import User
+from c3.platform.MapBuilder import MapBuilder
+from c3.platform.ValidateObjSpec import ValidateObjSpec
+from c3.platform.ArrayBuilder import ArrayBuilder
+from c3.platform.ValidateObjResult import ValidateObjResult
+from c3.platform.LukeSpy import LukeSpy
+from c3.platform.UiPerformanceTimingSpec import UiPerformanceTimingSpec
+from c3.platform.Promise import Promise
+from c3.platform.Promise import Promise
+from c3.platform.Obj import Obj
+from c3.platform.LukeAsyncQueueCollection import LukeAsyncQueueCollection
+from c3.platform.LukeJasmineEnvSpec import LukeJasmineEnvSpec
+from c3.platform.Expr.CompileOptions import Expr.CompileOptions
+from c3.platform.FieldValue import FieldValue
+from c3.platform.Obj.MakeSpec import Obj.MakeSpec
+from c3.platform.BrowserEngine import BrowserEngine
+
+# Python definitions for the C3 type ConsoleLukeBrowser
+
+
+class ConsoleLukeBrowser(LukeBrowser):
+    """
+    Console specific helper functions
+    
+    @remarks this represents a made instance of ConsoleLukeBrowser
+    """
+    
+    timeout: Optional[int]=None
+    """
+    The default timeout for each chain of {@link LukeAsyncQueueNode}s
+    """
+
+    abortFlag: Optional[bool]=None
+    """
+    The flag to be switched on when the LukeCore instance should be aborted
+    """
+
+    abortReason: Optional[str]=None
+    """
+    The reason why the abort flag is set
+    """
+
+    failureThreshold: Optional[int]=None
+    """
+    Threshold for number of failed Jasmine blocks before test abort
+    """
+
+    failCount: Optional[int]=None
+    """
+    Used to count number of failed Jasmine specs LukeCore instance has processed
+    """
+
+    currentJasmineBlock: Optional[str]=None
+    """
+    Stores the type of jasmine block in current LukeCore lifecycle
+    """
+
+    planOnly: Optional[bool]=None
+    """
+    Indicates that only the Luke chain plan should be emitted when run() is called for a given Luke node
+    """
+
+    jasmineEnvSpec: Optional[LukeJasmineEnvSpec]=None
+    """
+    The spec for the Jasmine environment
+    """
+
+    paused: Optional[bool]=None
+    """
+    Indicates if the LukeCore instance is paused
+    """
+
+    toResolve: Optional[Any]=None
+    """
+    The placeholder Promise used in a paused LukeCore instance
+    """
+
+    asyncQueue: Optional[Array[LukeAsyncQueueNode]]=None
+    """
+    Stores the async queue nodes to be run in the future
+    """
+
+    activeNode: Optional[LukeAsyncQueueNode]=None
+    """
+    The current active node
+    """
+
+    dynamicValues: Optional[Map[str, Any]]=None
+    """
+    A map storing values for {@link LukeDynamicValue}s
+    """
+
+    altSelectors: Optional[Map[str, Any]]=None
+    """
+    A map storing alternative selector info
+    """
+
+    skipQueueFlag: Optional[bool]=None
+    """
+    Whether to skip the remaining chains in the queue
+    """
+
+    browserEngine: Optional[BrowserEngine]=None
+    """
+    The {@link BrowserEngine} that drives the automation.
+    """
+
+    spies: Optional[Array[LukeSpy]]=None
+    """
+    Stores the deployed spies
+    """
+    def __init__(self, timeout: Optional[int]=None, abortFlag: Optional[bool]=None, abortReason: Optional[str]=None, failureThreshold: Optional[int]=None, failCount: Optional[int]=None, currentJasmineBlock: Optional[str]=None, planOnly: Optional[bool]=None, jasmineEnvSpec: Optional[LukeJasmineEnvSpec]=None, paused: Optional[bool]=None, toResolve: Optional[Any]=None, asyncQueue: Optional[Array[LukeAsyncQueueNode]]=None, activeNode: Optional[LukeAsyncQueueNode]=None, dynamicValues: Optional[Map[str, Any]]=None, altSelectors: Optional[Map[str, Any]]=None, skipQueueFlag: Optional[bool]=None, browserEngine: Optional[BrowserEngine]=None, spies: Optional[Array[LukeSpy]]=None) -> None: ...
+
+    @overload
+    @classmethod
+    def make(cls) -> ConsoleLukeBrowser:
+    """
+    Construct an instance with initial state.
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, fields: Map[str, Any], spec: Obj.MakeSpec) -> ConsoleLukeBrowser:
+    """
+    Construct instance of this type from provided field values and options
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, withDefaults: bool=None) -> ConsoleLukeBrowser:
+    """
+    Construct an instance of this type with no non-default field values unless explicitly specified by passing param true
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0)
+               populated
+    
+    @see withDefaults
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, fields: Map[str, Union[Any,Any]], withDefaults: bool=None) -> ConsoleLukeBrowser:
+    """
+    Construct an instance from provided fields
+    @param fields
+               Fields (in the format <field_name, value>) to construct an instance of the obj. Note that "type" as a
+               field_name will be considered as the actual Obj's type, e.g. Obj.make({"type": "Panda"}) is equivalent
+               to Panda.make()
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32
+               -> 0) populated. Passing an empty value for a field will result in the initial value being set if
+               the field does not {@link ValueModifier#PRESERVES_EMPTY preserve empty}
+    
+    
+    @see fromFields
+    @see beforeMake
+    @see afterMake
+    @see withDefaults
+    """
+        ...
+    @overload
+    @classmethod
+    def make(cls, fields: Any, withDefaults: bool=None) -> ConsoleLukeBrowser:
+    """
+    Construct an instance of this type from provided fields. Note it is more efficient to use #fromFields and other overloads
+    
+    ```js
+    User.make({
+      email: 'joe@smith.com',
+      realName: 'Joe Smith'
+    })
+    
+    Obj.make({
+      type: 'User',
+      email: 'joe@smith.com',
+      realName: 'Joe Smith'
+    })
+    ```
+    
+    ```py
+    c3.User.make({
+      "email": 'joe@smith.com',
+      "realName": 'Joe Smith'
+    })
+    
+    c3.Obj.make({
+      "type": 'User',
+      "email": 'joe@smith.com',
+      "realName": 'Joe Smith'
+    })
+    
+    c3.User(email='joe@smith.com', realName='Joe Smith')
+    
+    c3.Obj(type='User', email='joe@smith.com', realName='Joe Smith')
+    ```
+    
+    Note that this is **not** the same as the [serialization format](serdeser.c3doc). This is a convenient way to
+    specify fields and values in the "JSON like" form supported by each language, but the usual serialization rules,
+    such as {@link Ann.Ser} do not apply.
+    @param fields
+               Fields to construct the instance of the obj with
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+    
+    @see fromFields
+    @see beforeMake
+    @see afterMake
+    @see withDefaults
+    """
+        ...
+    @overload
+    def toJson(self) -> any:
+    """
+    Convert the internal object representation to a JSON object.
+    
+    @return JSON object representation
+    
+    @see #fromJson
+    """
+        ...
+    @overload
+    def toJson(self, include: str=None, exclude: str=None) -> any:
+        ...
+    @overload
+    def toJson(self, include: Include=None, exclude: Exclude=None) -> any:
+        ...
+    @overload
+    def toTypedJson(self, omitTopLevelType: bool=None, actionRequirement: str=None) -> any:
+    """
+    Convert the internal object representation to a _typed_ JSON object.
+    @param omitTopLevelType
+           Whether to leave out `type: {{ type of this serializable instance }}` as the **first** key-value pair in
+           the outer level of the produced json.
+    @param runtime
+           If provided, then any special serialization logic required for the {@link ImplLanguage.Runtime} will be
+           performed. **NOTE** This argument is ignored if `typed` is not `true`. @see Ann.Ser
+    
+    
+    @return JSON object representation
+    
+    @see #fromJson
+    @see #toJson
+    @see serdeser.c3doc
+    @see JsonType
+    """
+        ...
+    @overload
+    def toTypedJson(self, include: str=None, exclude: str=None) -> any:
+        ...
+    @overload
+    def toTypedJson(self, include: Include=None, exclude: Exclude=None) -> any:
+        ...
+    @overload
+    def toJsonString(self) -> str:
+        ...
+    @overload
+    def toJsonString(self, pretty: bool) -> str:
+    """
+    Convert the internal object representation to a serialized JSON string.
+    
+    @return JSON object as string
+    """
+        ...
+    @overload
+    def toTypedJsonString(self) -> str:
+        ...
+    @overload
+    def toTypedJsonString(self, pretty: bool=None, omitTopLevelType: bool=None) -> str:
+        ...
+    @overload
+    def toJsString(self) -> str:
+        ...
+    @overload
+    def toJsString(self, withType: bool) -> str:
+    """
+    Convert the internal object representation to a serialized JavaScript object literal.
+    
+    @return JavaScript object literal string
+    """
+        ...
+    @overload
+    def toXmlString(self) -> str:
+        ...
+    @overload
+    def toXmlString(self, withType: bool) -> str:
+    """
+    Convert the internal object representation to a serialized XML string.
+    
+    @return XML element as string
+    
+    @see #fromXmlString
+    """
+        ...
+    def serialize(self, contentType: str, toUntyped: bool=None) -> Union[str]:
+    """
+    Convert the internal object representation to a string serialized representation of the object.
+    
+    @return string serialized object representation
+    """
+        ...
+    @classmethod
+    def fromJson(cls, json: any) -> Union[ConsoleLukeBrowser]:
+    """
+    Load the JSON-based representation and reconstruct the corresponding object.
+    
+    fromJson is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+    a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+    called-on type, but perhaps not identical. In particular, `Obj.fromJson` works for any actual type and will return
+    an instance of the correct type.
+    
+    @see #toJson
+    """
+        ...
+    @classmethod
+    def fromJsonString(cls, json: str) -> Union[ConsoleLukeBrowser]:
+    """
+    Load the JSON-based representation and reconstruct the corresponding object.
+    
+    fromJsonString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which may be
+    a type that mixes in the type on which it is called). This means that the resulting object's type will be isA the
+    called-on type, but perhaps not identical. In particular, `Obj.fromJsonString` works for any actual type and will return
+    an instance of the correct type.
+    
+    @see #toJsonString
+    """
+        ...
+    @classmethod
+    def fromXmlString(cls, xml: str) -> Union[ConsoleLukeBrowser]:
+    """
+    Load the XML-based representation and reconstruct the corresponding object.
+    
+    fromXmlString is be called on the type be deserialized and must reconstruct an Obj of the appropriate type (which
+    may be a type that mixes in the type on which it is called). This means that the resulting object's type will be
+    isA the called type, but perhaps not identical. In particular, `Obj.fromXmlString` works for any actual type and
+    will return an instance of the correct type.
+    
+    @see #toXmlString
+    """
+        ...
+    @classmethod
+    def deserialize(cls, contentStr: str, contentType: str) -> Union[ConsoleLukeBrowser]:
+    """
+    Load from contentType representation and reconstruct the corresponding object.
+    
+    fromString is be called on the type be deserialized and must reconstruct an object of the appropriate type
+    (which may be a type that mixes in the type on which it is called). This means that the resulting object's type
+    will be isA the called-on type, but perhaps not identical. In particular, `fromString` works for any actual
+    type and will return an instance of the correct type.
+    """
+        ...
+    def fingerprint(self, allIdentifiedRefFields: bool=None, trackRecursiveRefs: bool=None, traversedRefs: SetBuilder[Obj]=None) -> int:
+    """
+    Produce a checksum that can easily be compared to determine if two objects are definitely different. Note that
+    there is a slight possibility that two objects with the same fingerprint will actually differ.
+    
+    The fingerprint recurses into field values, including collections and referenced Objs. The handling of nested
+    {@link Identified identified} references (typically entities) differ in that _only_ the `id` field is included
+    unless the allIdentifiedRefFields option is specified.
+    
+    If the object graph may contain recursive embedded object references, the trackRecursiveRefs option may be used.
+    However, maintaining the list of visited objects is costly so this should not be done unnecessarily.
+    
+    @param allIdentifiedRefFields
+              if `true`, fingerprint individual fields of persistable references, not just the `id`
+    @param trackRecursiveRefs
+              if `true`, a set of referenced objects is maintained to avoid infinite recursion
+    @param traversedRefs
+              only considered together with trackRecursiveRefs and if provided then all traversed references are
+              checked against and added to it
+    @return integer fingerprint
+    
+    @see https://en.wikipedia.org/wiki/Fingerprint_(computing)
+    """
+        ...
+    def retainedMemory(self, deep: bool=None, allMeasured: SetBuilder[Any]=None) -> int:
+    """
+    Measures retained memory by this instance.
+    
+    @param deep
+           if true and this instance contains references to other objects also measures memory retained by those
+    @param allMeasured
+           if set then will skip instances that are in the set and will add instances that where measured by this call
+    @return retained memory in bytes for this instances
+    """
+        ...
+    def type(self) -> Type:
+    """
+    C3 Type of this instance.
+    """
+        ...
+    def replaceType(self, old: Type, new: Type) -> ConsoleLukeBrowser:
+    """
+    Returns new instance with all references to old type, including result of #type, replaced with new type. If new
+    type does not contain fields from old or field value types are not convertable then drops the field.
+    
+    This method is used during live metadata update
+    """
+        ...
+    def super(self, mixin: Type=None) -> Any:
+    """
+     Produce a calling proxy that represents the content of all Obj type's mixins, but not the type itself. This is
+     useful for redispatching **member** methods reimplemented on this type to a parent implementation:
+     ```js
+     function toString() {
+       return this.super().toString() + ', x=' + this.x;
+     }
+     ```
+    
+     ```py
+     def toString(this):
+        return this.super().toString() + ', x=' + this.x
+    ```
+    
+     To redispatch **static** methods, see {@link Type#super}.
+    
+     Note that this not the same as the language-specific `super` keyword because it works through the type system and
+     supports multiple mixins. It behaves like the Python `super()` function, except called on the instance rather than
+     globally.
+    
+     If `mixin` is the implementing type in a client implementation, this will delegate the call to the server.
+     This can be used to create a local implementation "around" the server implementation for additional caching or
+     other local state management.
+    
+     @param mixin if specified, this mixin is used instead or an error is thrown
+     @return "super" calling proxy for this object
+    
+     @see Type.super
+    """
+        ...
+    @overload
+    def instanceOf(self, typeName: str) -> bool:
+    """
+    Checks whether this Obj is an instance of the specified type by checking both its type and the mixin chain.
+    This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+    
+    @return true if this instance is of this type or any of its mixins
+    """
+        ...
+    @overload
+    def instanceOf(self, type: Type) -> bool:
+    """
+    Checks whether this instance is an instance of the specified type by checking both its type and the mixin chain.
+    This is the most convenient way to ask "is this type usable in a context requiring the other type?"
+    
+    @return true if this instance is of this type or any of its mixins
+    
+    @see ValueType#isA
+    """
+        ...
+    def isEmptyObj(self) -> bool:
+    """
+    Whether all the fields of this instance are empty.
+    """
+        ...
+    def isSame(self, other: Obj) -> bool:
+    """
+    Whether the specified instance represents exactly the same object as this instance.
+    """
+        ...
+    @overload
+    def isFieldSet(self, field: str) -> bool:
+    """
+     Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+     if the field value set the its default value by the constructor. A set field is never missing.
+    
+    @param field the field to check
+    
+    @return whether the specified field is set
+    """
+        ...
+    @overload
+    def isFieldSet(self, field: FieldType) -> bool:
+    """
+     Used to determine if a field is set. A field is set if a value was provided for that field to a constructor, or
+     if the field value set the its default value by the constructor. A set field is never missing.
+    
+    @param field the field to check
+    
+    @return whether the specified field is set
+    """
+        ...
+    @overload
+    def isFieldMissing(self, field: str) -> bool:
+    """
+     Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+     should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+    {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+    A missing field is never set.
+    
+    @param field the field to check
+    
+    @return whether the specified field is missing
+    """
+        ...
+    @overload
+    def isFieldMissing(self, field: FieldType) -> bool:
+    """
+     Used to determine if a field is missing. The value of a missing field is not known, so a missing field's value
+     should not be used. For example, when {@link Fetchable#fetch fetching} an entity, a field that is not
+    {@link Include included} in the fetch is missing. Accessing a missing field will yield an empty value.
+    A missing field is never set.
+    
+    @param field the field to check
+    
+    @return whether the specified field is missing
+    """
+        ...
+    @overload
+    def fieldValue(self, field: str, defaultToEmpty: bool=None) -> Union[T]:
+    """
+    Returns value of the given field.
+    
+    @param field
+              Field to return the value for
+           defaultToEmpty
+              will return default empty value if field is missing
+    """
+        ...
+    @overload
+    def fieldValue(self, field: FieldType, defaultToEmpty: bool=None) -> Union[T]:
+    """
+    Returns value of the given field type. Be sure to use the FieldType instance for the exact same type as the type of
+    the obj.
+    
+    @param field
+              Field to return the value for
+           defaultToEmpty
+              will return default empty value if field is missing
+    @return value for the given field
+    """
+        ...
+    def fieldValues(self) -> Union[Array[FieldValue]]:
+    """
+    Returns all non empty field values. Note that it is recommended to use #eachFieldValue instead
+    """
+        ...
+    def fieldValuesByOrdinal(self, skipTrailingEmpty: bool=None) -> Union[Array[Any]]:
+    """
+    Returns all field values including empty ones as array where value of a field is at corresponding ordinal position.
+    Unless `skipTrailingEmpty` parameter is set and there are trailing empty values resulting array has same size as
+    #dataFieldTypes
+    """
+        ...
+    def fieldValuesByFieldType(self) -> Union[Map[FieldType, Any]]:
+    """
+    Returns all non empty field values by field type. Note that it is recommended to use #eachFieldValue instead
+    """
+        ...
+    def fieldValuesByFieldName(self) -> Union[Map[str, Any]]:
+    """
+    Returns all non empty field values by field name. Note that it is recommended to use #eachFieldValue instead
+    """
+        ...
+    def fieldNames(self) -> Union[Array[str]]:
+    """
+    Returns all data field names including those whose values are empty. Array is ordered by
+    field ordinal.
+    """
+        ...
+    def unsetFieldNames(self) -> Union[Array[str]]:
+    """
+    @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@link #isFieldSet are not set}. Array is ordered by
+    field ordinal.
+    """
+        ...
+    def missingFieldNames(self) -> Union[Array[str]]:
+    """
+    @return the name of all {@link TypeMeta#dataFieldTypes} on this `Obj` that {@Link isFieldMissing are missing}. Array is ordered by
+    field ordinal.
+    """
+        ...
+    @overload
+    def at(self, ordinal: int) -> Union[T]:
+    """
+    Return value of the field at provided ordinal. Throws an error on an invalid value (out of range).
+    
+    @param ordinal
+            Integer ordinal of the field in the parent type
+    @return value of field at ordinal
+    """
+        ...
+    @overload
+    def at(self, expr: str, failIfNotValid: bool=None) -> Union[T]:
+    """
+    Return value for the given serialized expression
+    
+    @param expr
+            Serialized expression to obtain the value in the given Obj
+    @param failIfNotValid
+            If set, fails if not a valid expression
+    @return value obtained as a result of expression evaluation
+    """
+        ...
+    def fieldValueAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[T]:
+    """
+    Looks up a single field value by path from this Obj. Field paths are separated by dots so an expression like
+    `fieldValueAtPath("location.elevation")` is equivalent to `traverse("location").fieldValue("elevation")` except
+    that it also handles `null`. If path contains any collections then only first element will be traversed,
+    unless the collection index is specified in the path.
+    
+    If you need to traverse all elements of collection fields use #fieldValuesAtPath instead.
+    
+    @param fieldPath
+              field names separated by dots
+    @param failIfNotFound
+              if true, an error will be thrown if the any of the field types aren't defined
+    @param context
+              if an error is thrown, the context returned by calling the lambda will be incorporated
+    @return the field or null
+    """
+        ...
+    def fieldValuesAtPath(self, fieldPath: str, failIfNotFound: bool=None, context: Callable[[], Union[str]]=None) -> Union[Array[T]]:
+    """
+    Looks up all the fields by path from root Obj. If path contains any collections then result will contain all
+    traversals, unless the collection index is specified in the path.
+    
+    @param fieldPath
+              field names separated by dots
+    @param failIfNotFound
+              if true, an error will be thrown if the any of the field types aren't defined
+    @param context
+              if an error is thrown, the context returned by calling the lambda will be incorporated
+    @return fields as a flat list
+    
+    @see #fieldValueAtPath
+    """
+        ...
+    @overload
+    def eachFieldValue(self, action: Callable[[FieldType, Any]]) -> None:
+    """
+    Perform an action for each non-empty field of this object.
+    
+    @param action
+              lambda to apply
+    """
+        ...
+    @overload
+    def eachFieldValue(self, spec: ValueSpec, action: Callable[[FieldType, Any]]) -> None:
+    """
+    Perform an action for each non-empty field of this object. Fields are filtered based on provided `spec`.
+    
+    @param spec
+              which fields to include
+    @param action
+              lambda to apply
+    """
+        ...
+    def eachSetFieldValue(self, action: Callable[[FieldType, Union[Any]]]) -> None:
+    """
+    Perform an action for each {@link isFieldSet set} field of this object.
+    
+    @param action
+              lambda to apply
+    """
+        ...
+    def eachFieldValueWhile(self, spec: ValueSpec, action: Callable[[FieldType, Any], bool]) -> bool:
+    """
+    Perform an action for each field of this object while processing action returns `true`. Fields are filtered based
+    on provided `spec`.
+    
+    @param spec
+              which fields to include
+    @param action
+              lambda to apply; stop if this `action` returns `false
+    @return `true` if iteration was not aborted by lambda i.e. it saw all field values
+    """
+        ...
+    @overload
+    def eachRef(self, action: Callable[[FieldType, Obj]]) -> None:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+    the field value if non-null and for collections of Obj, this means each element in the collection.
+    
+    @param action
+              function to be executed for each pair of field type and Obj instance
+    """
+        ...
+    @overload
+    def eachRef(self, includeEmpty: bool, action: Callable[[FieldType, Obj]]) -> None:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type. For reference fields, this means
+    the field value if non-null and for collections of Obj, this means each element in the collection.
+    
+    @param includeEmpty
+              if `true` will also process references with `null` / "Empty" references
+    @param action
+              function to be executed for each pair of field type and Obj instance
+    """
+        ...
+    def eachRefWhile(self, includeEmpty: bool, action: Callable[[FieldType, Obj], bool]) -> bool:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type while processing action returns
+    `true`.
+    
+    @param includeEmpty
+              if `true` will also process references with `null` / "Empty" references
+    @param action
+              function to be executed for each pair of field type and Obj instance; stops processing if return `false`
+    @return `true` if iteration was not aborted by lambda i.e. it saw all refs
+    """
+        ...
+    def eachRefRecursive(self, includeEmpty: bool, action: Callable[[FieldPath, Obj]]) -> None:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type or in any child refs.
+    """
+        ...
+    def eachRefRecursiveWhile(self, includeEmpty: bool, action: Callable[[FieldPath, Obj], bool]) -> bool:
+    """
+    Execute the specified lambda against each referenced Obj instance in this type or in any child refs. Continue while
+    processing action returns `true`.
+    """
+        ...
+    @overload
+    def mapFieldValues(self, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> ConsoleLukeBrowser:
+    """
+    Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+    the `mapper` invocation.
+    
+    @param action
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapFieldValues(self, spec: ValueSpec, mapper: Callable[[FieldType, Any], Union[Any]], convertValue: bool=None) -> ConsoleLukeBrowser:
+    """
+    Result of this function call is a copy of current instance with all fields replaced based on results of the
+    `mapper` invocation.
+    
+    @param spec
+              which fields to include
+    @param mapper
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapFieldValuesAsync(self, mapper: Callable[[FieldType, Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[ConsoleLukeBrowser]:
+    """
+    Result of this function call is a copy of current instance with all non empty fields replaced based on results of
+    the asynchronous `mapper` invocation.
+    
+    @param action
+              lambda to apply for every field value to produce a new value for that fields
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapFieldValuesAsync(self, spec: ValueSpec, mapper: Callable[[Union[FieldType], Any], Union[Promise[Any]]], convertValue: bool=None) -> Promise[ConsoleLukeBrowser]:
+    """
+    Result of this function call is a copy of current instance with all fields replaced based on results of the
+    asynchronous `mapper` invocation.
+    
+    @param spec
+              which fields to include
+    @param mapper
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    def mapFieldValue(self, mapper: Callable[[Any], Union[Any]], field: FieldType=None, includeEmpty: bool=None, convertValue: bool=None) -> ConsoleLukeBrowser:
+    """
+    Result of this function call is a copy of current instance with specified field value replaced based on result of
+    the `mapper` invocation.
+    @param field
+              field being mapped
+    @param includeEmpty
+              if set, invokes mapper for fields with empty value
+    @param mapper
+              lambda to apply for every field value to produce a new value for that field
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapRefs(self, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> ConsoleLukeBrowser:
+    """
+    Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+    lambda application.
+    
+    Result of this function call is a copy of current instance with all references replaced based on results of the
+    `mapper` invocation.
+    
+    @param action
+              function to be executed for each pair of field type and Obj instance
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def mapRefs(self, includeEmpty: bool, mapper: Callable[[FieldType, Obj], Union[Obj]], convertValue: bool=None) -> ConsoleLukeBrowser:
+    """
+    Executes the specified lambda against each referenced Obj instance and replaces it's value with result of this
+    lambda application.
+    
+    Result of this function call is a copy of current instance with all references replaced based on results of the
+    `mapper` invocation.
+    
+    @param includeEmpty
+              if `true` will also process references with `null` / "Empty" references
+    @param mapper
+              function to be executed for each pair of field type and Obj instance for producing new reference value
+    @param convertValue
+              if true, attempt to convert the value to match the field's type
+    """
+        ...
+    @overload
+    def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]]) -> Union[T]:
+    """
+    Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+    argument is a result of previous application. Initial value of `accumulator` will be `null`.
+    
+    This function is useful for calculating aggregate values based on all current non empty field values.
+    Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+    e.g
+    ```
+    o = {a:1, b:2, c:0}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+    
+    o = {a: {x:1, y:2}, b: {x:10, z:2}}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+    ```
+    """
+        ...
+    @overload
+    def foldFieldValues(self, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+    """
+    Result of this function is application of `folder` lambda to every non empty field value where `accumulator`
+    argument is a result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+    
+    This function is useful for calculating aggregate values based on all current non empty field values.
+    Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+    e.g
+    ```
+    o = {a:1, b:2, c:0}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+    
+    o = {a: {x:1, y:2}, b: {x:10, z:2}}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+    ```
+    """
+        ...
+    @overload
+    def foldFieldValues(self, spec: ValueSpec, folder: Callable[[FieldType, Any, Union[T]], Union[T]], initial: T=None) -> Union[T]:
+    """
+    Result of this function is application of `folder` lambda to every field value where `accumulator` argument is a
+    result of previous application. Initial value of `accumulator` is provided via `initial` parameter.
+    
+    This function is useful for calculating aggregate values based on all field values.
+    Based on the folder, may return `any` value. (Primitive, Obj, Collection, Any, etc.)
+    e.g
+    ```
+    o = {a:1, b:2, c:0}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == 0 // Primitive
+    
+    o = {a: {x:1, y:2}, b: {x:10, z:2}}
+    o.foldFieldValues((ft,value,acc) -> Val.min(acc,value)) == {x:1, y:2, z: 2} // Obj
+    ```
+    """
+        ...
+    @overload
+    def evalProjection(self, projection: str, resultType: ValueType=None, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Any]:
+    """
+    Evaluates given projection expression over this instance.
+    """
+        ...
+    @overload
+    def evalProjection(self, projection: any, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[any]:
+    """
+    Evaluates given projection over this instance and returns results as json.
+    """
+        ...
+    @overload
+    def evalProjection(self, projection: any, resultType: Type, bindings: Map[str, Any]=None, options: Expr.CompileOptions=None) -> Union[Obj]:
+    """
+    Evaluates given projection over this instance and returns results as instance of the new Obj.
+    """
+        ...
+    @overload
+    def validateObj(self) -> ConsoleLukeBrowser:
+    """
+    Populates all missing default values and throws error if any constraint is violated.
+    """
+        ...
+    @overload
+    def validateObj(self, spec: ValidateObjSpec) -> ValidateObjResult:
+    """
+    Validate that the Obj fields are set according to all the required rules.
+    """
+        ...
+    @overload
+    def withField(self, field: str, value: Any, doNotConvert: bool=None) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+    defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+    
+    @param field
+              name of the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, do not attempt to convert the value to match the field's type
+    @return new Obj
+    
+    @see #withoutField
+    @see #defaultField
+    """
+        ...
+    @overload
+    def withField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj instance by adding the provided field in it. The name must correspond to an existing field
+    defined on this type or its mixins. The value must be of the correct type if doNotConvert flag is true.
+    
+    @param field
+              the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, do not attempt to convert the value to match the field's type
+    @return new Obj
+    
+    @see #withoutField
+    @see #defaultField
+    """
+        ...
+    def withFields(self, fields: Map[str, Any], doNotConvert: bool=None) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj instance by adding the provided fields in it. The name must correspond to an existing fields
+    defined on this type or its mixins. The values must be of the correct type if doNotConvert flag is true.
+    
+    @param fields
+              map of field names/values
+    @param doNotConvert
+              if true, attempt to convert the values to match the fields' type
+    @return new Obj
+    """
+        ...
+    def withFieldAtPath(self, path: str, value: Any, doNotConvert: bool=None, doNotCreateIfMissing: bool=None) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj with the value at the specified path field. If the field is null, the field #isFieldSet to null.
+    If you would like to #unsetField, you should call #withoutFieldAtPath instead.
+    
+    Immutable objects may return the same instance if the field being set does not actually represent a
+    change to the existing object.
+    
+    @param path
+              path to set value at
+    @param value
+              value to set
+    @param doNotConvert
+              if true, attempt to convert the values to match the fields' type
+    @param doNotCreateIfMissing
+              true indicates that any empty reference along the path will not set the value
+    @return new Obj
+    """
+        ...
+    def withoutFieldAtPath(self, path: str) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj without the specified path field.
+    
+    Immutable objects may return the same instance if the field being removed does not actually represent a
+    change to the existing object.
+    
+    @param path
+              path for field to remove
+    @return new Obj
+    
+    @see #withFieldAtPath
+    @see #withoutField
+    """
+        ...
+    @overload
+    def withoutField(self, field: str) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj, removing the field with the provided name.
+    
+    Immutable objects may return the same instance if the field being removed is not present in the existing object.
+    
+    @param field
+              name of the field to remove
+    @return new Obj with removed field
+    
+    @see #unsetField
+    @see #removeField
+    """
+        ...
+    @overload
+    def withoutField(self, field: FieldType) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj, removing the field with the provided field type.
+    
+    Immutable objects may return the same instance if the field being removed is not present in the existing object.
+    
+    @param field
+              name of the field to remove
+    @return new Obj with removed field
+    
+    @see #unsetField
+    @see #removeField
+    """
+        ...
+    def withoutFields(self, fields: Array[str]) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj, removing the fields with the provided names.
+    
+    Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+    
+    @param fields
+              names of the fields to remove
+    @return new Obj with removed fields
+    """
+        ...
+    def withoutFieldsByType(self, fields: Array[FieldType]) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj, removing the fields with the provided field types. Be sure to use the FieldType instance for the
+    exact same type as the type of the obj to respect the "ordinal" of the field type
+    
+    Immutable objects may return the same instance if the fields being removed are not present in the existing object.
+    
+    @param fields
+              field types to remove
+    @return new Obj with removed fields
+    """
+        ...
+    def withoutSecretFields(self) -> ConsoleLukeBrowser:
+    """
+    @return a new Obj, removing the field types marked with annotation @config(secret=true) recursively
+    """
+        ...
+    def secretFieldsSet(self) -> Array[str]:
+    """
+    @return a list of the secret field paths that were found to be set on this Obj.
+    """
+        ...
+    def withDefaults(self, includeEmptyRefsWithDefaults: bool=None, defaultFields: Array[str]=None) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj instance by adding the default values (if defined) for all unset fields. This is implemented by
+    calling {@link FieldType#defaultValue defaultValue} for a field if it is not already set and
+    {@link FieldType#hasDefault has a default}. It will also set {@see ValueType#initialValue initial values} for
+    fields with required primitive ValueTypes (E.g. x: `!int32` -> will be set to 0). Note that this will not overwrite
+    fields that have already been set.
+    
+    {@link FunctionParam#validateArg} will call {@link #withDefaults} for {@link Spec}s passed as arguments to methods.
+    As a result, methods should be implemented assuming all default values are set on `Spec` arguments.
+    
+    @param includeEmptyRefsWithDefaults
+              it `true` then missing / empty child references that have fields with defaults will also be instantiated
+    @param defaultFields
+              If not empty, a list of default field paths to populate.  Any default fields not specified in the
+              array will be ignored.
+    @return new Obj
+    
+    @see #defaultField
+    @see FieldType#defaultValueConst
+    @see FieldType#defaultValue
+    """
+        ...
+    @overload
+    def defaultField(self, field: str) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj, by setting a field on this `Obj` to the field's default value. If the field has no default, this
+    method will behave the same as {@link #unsetField}.
+    
+    @param field
+            name of the field to default
+    @return new `Obj` with the specified field set to its default value
+    
+    @see #withField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def defaultField(self, field: FieldType) -> ConsoleLukeBrowser:
+    """
+    Builds a new Obj, by setting a field on this `Obj` to the fields default value. If the field has no default, this
+    method will behave the same as {@link #unsetField}.
+    
+    @param field
+            field type to default
+    @return new `Obj` with the specified field set to its default value
+    
+    @see #withField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def unsetField(self, field: str) -> ConsoleLukeBrowser:
+    """
+    Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+    is different from {@link removeField}
+    
+    @param field
+            name of the field to unset
+    @return new `Obj` with the specified field unset
+    
+    @see #withoutField
+    @see #removeField
+    """
+        ...
+    @overload
+    def unsetField(self, field: FieldType) -> ConsoleLukeBrowser:
+    """
+    Unsets a field from this `Obj`, meaning that the field will become not {@link #isFieldSet set}. Note that this
+    is different from {@link removeField}
+    
+    @param field
+            field type to unset
+    @return new `Obj` with the specified field unset
+    
+    @see #withoutField
+    @see #removeField
+    """
+        ...
+    @overload
+    def removeField(self, field: str) -> ConsoleLukeBrowser:
+    """
+    Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+    is different from {@link #unsetField}
+    
+    @param field
+            name of the field to remove
+    @return new `Obj` with the specified field removed
+    
+    @see #withoutField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def removeField(self, field: FieldType) -> ConsoleLukeBrowser:
+    """
+    Removes a field from this `Obj`, meaning that the field will become {@link isFieldMissing missing}. Note that this
+    is different from {@link #unsetField}
+    
+    @param field
+            field type to remove
+    @return new `Obj` with the specified field removed
+    
+    @see #withoutField
+    @see #unsetField
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, fieldPathMergeSpec: Map[str, str]=None) -> ConsoleLukeBrowser:
+    """
+    Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+    In case of conflicts, fields of other instance take precedence unless otherwise specified by the fieldPathMergeSpec
+    
+    @param other
+              object
+    @param fieldPathMergeSpec
+              mapping of fields of the object to the respective merge annotations
+    @return the new merged Obj
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, otherFieldsFilter: Type) -> ConsoleLukeBrowser:
+    """
+    Merges all the fields of the provided Obj into this instance, producing a new Obj of the same type as this one.
+    In case of conflicts, fields of other instance take precedence.
+    
+    @param other
+              object
+    @param otherFieldsFilter
+              only fields of otherFieldsFilter type from other are merged into this obj.
+    @return the new merged Obj
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, merger: Callable[[Union[FieldPath], Union[Any], Union[FieldPath], Union[Any]], Union[Any]], deep: bool=None) -> ConsoleLukeBrowser:
+    """
+    Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+    fields that exist on other Obj and do not exist on this Obj will not be added to final Obj.
+    @param deep
+           if set to true then traverse reference and collection fields and merge corresponding fields or elements with
+           the same key or index.
+    """
+        ...
+    @overload
+    def mergeObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> ConsoleLukeBrowser:
+    """
+    Merge the fields of this Obj with corresponding fields on other Obj using the provided lambda. This means that
+    fields that exist other Obj and do not exist on this Obj will not be added to final Obj or evaluated. Does not
+    traverse child reference and collection fields.
+    """
+        ...
+    def mergeAndExpandObj(self, other: Obj, merger: Callable[[Union[FieldType], Union[Any], Union[FieldType], Union[Any]], Union[Any]]) -> Union[R]:
+    """
+    Create new Obj with all non-null fields of this and other. Fields that are non null in both apply merger lambda.
+    Fields that non null in only one of this and other will be in the resulting Obj without change.
+    """
+        ...
+    def mergeJson(self, json: any) -> ConsoleLukeBrowser:
+        ...
+    def mergeChildren(self, deep: bool=None, objKey: Callable[[Union[Obj]], Union[Any]]=None, filter: Callable[[str], bool]=None) -> ConsoleLukeBrowser:
+    """
+    Merge the obj references within the current obj
+    @param deep
+           If set, traverses the reference fields within the obj as well for a deep merge
+    @param objKey
+           lambda specifying how to obtain the key for the Obj while determining which Objs to merge
+    @param filter
+           Field paths that need to be filtered from this merge
+    @return Obj with child references merged
+    """
+        ...
+    def sumObj(self, other: Obj, deep: bool=None) -> ConsoleLukeBrowser:
+    """
+    Adds the numeric Obj fields with the other Objs respective fields.
+    If deep is set it will traverse reference and collection fields and sum corresponding numeric fields in
+    references with same name and collection elements at same index or key.
+    """
+        ...
+    def singletonArray(self) -> Array[ConsoleLukeBrowser]:
+    """
+    Build an array of the correct type with a single element which is this instance.
+    
+    @return new array instance with this as only element.
+    """
+        ...
+    @classmethod
+    def array(cls, *elements: Array[Any]) -> Union[Array[ConsoleLukeBrowser]]:
+    """
+    Creates an array of instances of this type.
+    """
+        ...
+    @classmethod
+    def arrayBuilder(cls) -> Union[ArrayBuilder[ConsoleLukeBrowser]]:
+    """
+    Creates an array of instances of this type.
+    """
+        ...
+    def singletonSet(self) -> Set[ConsoleLukeBrowser]:
+    """
+    Build an set of the correct type with a single element which is this instance.
+    
+    @return new array instance with this as only element.
+    """
+        ...
+    @classmethod
+    def setBuilder(cls) -> Union[SetBuilder[ConsoleLukeBrowser]]:
+    """
+    Creates a set of instances of this type.
+    """
+        ...
+    @classmethod
+    def mapBuilder(cls) -> Union[MapBuilder[str, ConsoleLukeBrowser]]:
+    """
+    Create a map of string to elements of this type.
+    """
+        ...
+    @classmethod
+    def mapBuilderOf(cls, keyType: ValueType) -> Union[MapBuilder[Any, ConsoleLukeBrowser]]:
+    """
+    Create a map with the given key type and elements of this type.
+    """
+        ...
+    @classmethod
+    def myReferenceType(cls) -> ReferenceType:
+        ...
+    @classmethod
+    def myMapTypeOf(cls, keyType: ValueType) -> MapType:
+        ...
+    @classmethod
+    def myMapType(cls) -> MapType:
+        ...
+    @classmethod
+    def myArrayType(cls) -> ArrayType:
+        ...
+    @classmethod
+    def mySetType(cls) -> SetType:
+        ...
+    @classmethod
+    def myStreamType(cls) -> StreamType:
+        ...
+    def toBuilder(self) -> ObjBuilder[ConsoleLukeBrowser]:
+    """
+    @return new ObjBuilder with initial state set to fields of this instance.
+    """
+        ...
+    @classmethod
+    def builder(cls) -> ObjBuilder[ConsoleLukeBrowser]:
+    """
+    @return new ObjBuilder of this instance.
+    """
+        ...
+    @overload
+    @classmethod
+    def fromFields(cls, fields: Map[FieldType, Any], spec: Obj.MakeSpec) -> ConsoleLukeBrowser:
+    """
+    Construct instance of this type from provided field values and options
+    """
+        ...
+    @overload
+    @classmethod
+    def fromFields(cls, fields: Map[FieldType, Union[Any,Any]], withDefaults: bool=None) -> ConsoleLukeBrowser:
+    """
+    Construct an instance of this type from provided fields
+    @param fields
+               Fields to construct the instance of the obj with
+    @param withDefaults
+               If set, then the Obj is made with default & initial values (required primitive fields e.g. !int32 -> 0) populated
+    
+    @see withDefaults
+    """
+        ...
+    @classmethod
+    def remake(cls, other: Obj, failIfExtraOrInvalidFields: bool=None) -> ConsoleLukeBrowser:
+    """
+    Construct an instance of this type from provided instance of a subtype or a "duck type".
+    """
+        ...
+    def remakeAs(self, type: Type) -> O:
+    """
+    Creates an obj of the new type with all fields that exist on the original obj that are defined in the new type
+    converted and copied to the new obj instance. Note, that checking assignability and conversion of field values
+    could be costly if types have different value types for same fields.
+    
+    @param type
+            Type of new obj to return
+    @return new obj of the requested type with all fields present in the original obj that are defined in the new type
+            converted and copied to it
+    """
+        ...
+    @classmethod
+    def beforeMake(cls, fields: Map[FieldType, Any]) -> Union[Map[FieldType, Any]]:
+    """
+    Optional override that will be called every time instance of this type is created.
+    
+    
+    Note that it introduces additional overhead so should only be implemented for low volume data.
+    """
+        ...
+    def afterMake(self) -> ConsoleLukeBrowser:
+    """
+    Optional override that will be called after every instance creation.
+    
+    Note that it introduces additional overhead so should only be implemented for low volume data.
+    """
+        ...
+    @classmethod
+    def cachedEmptyInst(cls) -> ConsoleLukeBrowser:
+    """
+    Creates an empty inst using `MyType.make()` and caches it. Avoid recreating multiple copies of the spec for
+    every action dispatch. The cached inst can also be used for comparing whether the object is an empty or not
+    Will only create empty instance for immutable Obj e.g. if an Obj is Mutable, this method will throw an error
+    
+    @see ValueType#defaultEmptyValue
+    """
+        ...
+    def toData(self) -> Union[Data]:
+    """
+    Represent the current obj instance as {@link Data}
+    """
+        ...
+    @classmethod
+    def generateObjs(cls, spec: Obj.GenerateSpec=None) -> Union[Stream[ConsoleLukeBrowser]]:
+    """
+    Generate a stream of instances of this type. The stream is endless and will call #generateObj each time a new
+    value is read.
+    """
+        ...
+    @classmethod
+    def generateObj(cls, spec: Obj.GenerateSpec=None) -> ConsoleLukeBrowser:
+    """
+    Generate a single instance of this type. The base implementation uses {@link DataGenObj} to generate uniform
+    random (gibberish) values for all fields, but it may be overridden by specific types with custom logic that
+    populates fields in a more realistic way.
+    """
+        ...
+    @overload
+    def setField(self, field: str, value: Any, doNotConvert: bool=None) -> ConsoleLukeBrowser:
+    """
+    Sets the mutable field value. The name must correspond to an existing field defined on this type or its mixins.
+    The value must be of the correct type if doNotConvert flag is true.
+    
+    @param name
+              of the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, attempt to convert the value to match the field's type
+    @return this Obj
+    """
+        ...
+    @overload
+    def setField(self, field: FieldType, value: Any, doNotConvert: bool=None) -> ConsoleLukeBrowser:
+    """
+    Sets the mutable field value. The name must correspond to an existing field defined on this type or its mixins.
+    The value must be of the correct type if doNotConvert flag is true.
+    
+    @param field
+              the field
+    @param value
+              of the field
+    @param doNotConvert
+              if true, attempt to convert the value to match the field's type
+    @return this Obj
+    """
+        ...
+    def onChange(self, changed: Array[str]) -> None:
+    """
+    Called by the machinery whenever one or more fields of this mutable Obj are changed. If this mutable Obj has
+    field value types that are mutable Obj or collections, then `onChange` will also be called when fields or
+    properties of those values change. The elements of the array indicate the {@link FieldPath}s that changed. For
+    collections, a single element change will be reflected in the FieldPath: for arrays, the index and for maps, the
+    key. More complex operations to the collections will not be reflected in the FieldPath; the path will end at the
+    collection field. This has the same appearance as if the collection field were assigned from a previously
+    unassigned value.
+    
+    Example:
+    ```type
+    type A mixes MutableObj {
+      onChange: ~
+      b: [string]
+      c: map<string, int>
+      d: D
+    }
+    type D mixes MutableObj {
+      onChange: ~
+      e: string
+    }
+    ```
+    ```js
+    var a = A.make({b: ['hello', 'goodbye'], d: {}});
+    a.b[1] = 'World'; // 1
+    a.c['hello'] = 'world'; // 2
+    a.d.e = 'hello' // 3
+    a.b.pop(); // 4
+    ```
+    `A.onChange` should be called four times:
+      1. when the field `b` changed - the FieldPath will be "b[1]".
+      2. when the field `c` changed - the FieldPath will be "c.hello".
+      3. when `d` changed - the FieldPath will be "d.e".
+      4. when the field `b` changed by removing an element - the FieldPath will be "b[1]".
+    
+    `D.onChange` should be called once - the FieldPath will be `e`.
+    
+    Note that if multiple elements of a child collection are changed, you will get multiple field paths.
+    
+    @param changed paths to fields that changed
+    
+    @see #onEdit
+    """
+        ...
+    def onEdit(self, edits: Obj) -> None:
+    """
+    Called by the machinery whenever one or more fields of this mutable Obj are changed. The {@link EditList}
+    contains more information about the values which changed, including their prior values. This allows a full
+    difference to be calculated if desired. Note that maintaining this state is much more costly than simple
+    notification via #onChange and should only be used if truly required.
+    
+    @param edits a list of what changed and the prior values
+    
+    @see #onChange
+    """
+        ...
+    def withoutChangeEvent(self, action: Callable[[Union[Mutable]]]) -> None:
+    """
+    Changes made to the instance inside the provided lambda will not trigger #onChange or #onEdit.
+    
+    @param action the lambda to invoke that makes changes without notification
+    """
+        ...
+    def config(self) -> Union[LukeCoreConfig]:
+    """
+    Returns a singleton config instance mixing {@link LukeCoreConfig}
+    """
+        ...
+    @classmethod
+    def addLukeRunToJasmine(cls) -> None:
+    """
+    Integrates {@link LukeCore#run} into all jasmine blocks such as beforeAll, beforeEach, it and afterEach
+    """
+        ...
+    @classmethod
+    def runJasmine(cls, suiteName: str, testFunction: Callable[[]], jasmineEnvSpec: LukeJasmineEnvSpec=None) -> None:
+    """
+    This function executes the boilerplate setup
+    that is required for all {@link LukeCore} tests.
+    
+    @param suiteName
+              The name of the suite
+    @param testFunction
+              The outermost describe function that initiates the test
+    @param jasmineEnvSpec
+              An optional configuration to modify the Jasmine environment during the run.
+    """
+        ...
+    def onStatusUpdate(self, payload: any) -> None:
+    """
+    Handler interface for life cycle updates of luke async queue.
+    A concrete Luke type (with specific engine) can choose to implement it.
+    """
+        ...
+    def goto(self, location: str, responseTimeout: int=None, windowSpec: LukeWindowSpec=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Navigate current session to a new location/url
+    
+    @param location
+             The location. For example, http://www.c3.ai.
+    @param responseTimeout
+             The amount of time allowed for the new window to respond.
+    @param windowSpec
+             The specifications for the window.
+    """
+        ...
+    def back(self) -> Union[LukeAsyncQueueNode]:
+    """
+    Navigates the browser one step back, equivalent of hitting back arrow in browser
+    
+    @return A {@link LukeAsyncQueueNode} that will resolve when "back" is performed
+    """
+        ...
+    def forward(self) -> Union[LukeAsyncQueueNode]:
+    """
+    Navigates the browser one step forward, equivalent of hitting forward arrow in browser
+    
+    @return A {@link LukeAsyncQueueNode} that will resolve when "forward" is performed
+    """
+        ...
+    def run(self, rootNode: LukeAsyncQueueNode=None) -> Union[Promise[Any]]:
+    """
+    Runs the async queue, node after node.
+    @param rootNode
+             If provided, it will run the nested async queue of the given rootNode.
+             Otherwise it will run the "master" async queue of the Luke instance.
+    """
+        ...
+    def clearAsyncQueue(self, rootNode: LukeAsyncQueueNode=None) -> None:
+    """
+    Clears the async queue
+    @param rootNode
+             If provided, it will clear the nested async queue of the given rootNode.
+             Otherwise it will clear the "master" async queue of the Luke instance.
+    """
+        ...
+    def abort(self) -> None:
+    """
+    Sets the private abortFlag field to true
+    """
+        ...
+    def shouldAbort(self) -> bool:
+    """
+    Checks if LukeCore Lifecycle has been aborted.
+    Returns true if the abortFlag is true and jasmine suite is not involved in teardown
+    """
+        ...
+    def isC3BrowserContext(self) -> bool:
+    """
+    Verifies if the context is a browser context.
+    Returns true if Luke is running in a browser context.
+    """
+        ...
+    def processChain(self, head: LukeAsyncQueueNode) -> Union[Promise[Any]]:
+    """
+    Internally processes one chain of async nodes without wait and retry
+    @param head
+             The head node of the chain
+    @return A promise that will be resolved when the chain of nodes complete
+    """
+        ...
+    def runChain(self, head: LukeAsyncQueueNode, scope: Union[ConsoleLukeBrowser,LukeAsyncQueueNode]=None) -> Union[Promise[Any]]:
+    """
+    Internally runs one chain of async nodes with wait and retry
+    @param head
+             The head node of the chain
+    @param scope
+             The scope of the async queue
+    @return A promise that will be resolved when the chain of nodes complete
+    """
+        ...
+    def skipQueue(self, scope: Union[ConsoleLukeBrowser,LukeAsyncQueueNode]=None) -> None:
+    """
+    Skips the remaining chains in the queue of the specified scope
+    @param scope
+             The scope of the queue
+    """
+        ...
+    def transformDynamicArgs(self, args: Array[Any]) -> Union[Array[Any]]:
+    """
+    Internally transforms args that are {@link LukeDynamicValue}s to their current values
+    before calling the async function on a {@link LukeAsyncQueueNode}
+    @param args
+             The args to be transformed
+    @return the transformed args
+    """
+        ...
+    def errorMessage(self, error: Any=None) -> Union[str]:
+    """
+    Generates an error message with a screenshot and browser logs when {@link #runChain} fails after the last try.
+    @param error
+             The error obj thrown during the last failed try
+    @return The generated error message
+    """
+        ...
+    def addErrorNode(self, errorMessage: str) -> Union[LukeAsyncQueueNode]:
+    """
+    Adds a error node that will immediately reject with an error message as the head of a chain to the async queue.
+    It is useful when a pageObject (component helper) determines that an error always needs to be thrown
+    without actually running its asynchronous logic.
+    @param errorMessage
+             The error message to reject with for the chain
+    @return a {@link LukeAsyncQueueNode} that will be rejected with the error message
+    """
+        ...
+    def addChain(self, head: LukeAsyncQueueNode, label: str=None) -> None:
+    """
+    Adds a chain to the asyncQueue
+    @param head
+             The head of the chain
+    @param label
+             The label of the head
+    """
+        ...
+    def search(self, selector: str, resolveOnFound: bool=None, timeout: int=None) -> Union[LukeBrowserWebElement]:
+    """
+    Searches for an element by a css selector
+    @param selector
+             The css selector or xPath selector. Note that if xPath is used, please add a prefix 'xp:', e.g. 'xp: ./button' to differentiate it from a CSS selector.
+    @param resolveOnFound
+             If true, only resolve the node when a dom element is found
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeWebElement} that will be resolved with the search result
+    """
+        ...
+    def searchAll(self, selector: str, resolveOnFound: bool=None, timeout: int=None) -> Union[LukeAsyncQueueCollection[LukeBrowserWebElement]]:
+    """
+    Searches for all elements that matches a css selector
+    @param selector
+             The css selector or xPath selector. Note that if xPath is used, please add a prefix 'xp:', e.g. 'xp: ./button' to differentiate it from a CSS selector.
+    @param resolveOnFound
+             If true, only resolve the node when at least a dom element is found
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeAsyncQueueNode} that will be resolved with the search result (an array of {@link SeleniumWebElement})
+    """
+        ...
+    def searchForElementWithText(self, selector: str, text: Union[str,LukeDynamicValue], resolveOnFound: bool=None, timeout: int=None) -> Union[LukeBrowserWebElement]:
+    """
+    Searches for all elements with a selector and returns the first element that has the given text.
+    @param selector
+             The css selector
+    @param text
+             The text to match
+    @param resolveOnFound
+             If true, only resolve the node when a dom element is found
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeWebElement} that will be resolved with the search result
+    """
+        ...
+    def click(self, selector: str, timeout: int=None) -> Union[LukeBrowserWebElement]:
+    """
+    Clicks an element by a css selector
+    @param selector
+             The css selector targeting the dom element
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeWebElement} that will be resolved when the target element is clicked
+    """
+        ...
+    def dragAndDrop(self, dragElementSelector: str, dropElementSelector: str, xOffset: float=None, yOffset: float=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Drags an element at a specified selector to drop over another specified selector
+    @param dragElementSelector
+              The selector for the element to drag
+    @param dropElementSelector
+              The selector for the element to drop over
+    @param xOffset
+              The x offset from the left edge of the target element
+    @param yOffset
+              The y offset from the top edge of the target element
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeAsyncQueueNode} that will be resolved when "drag and drop" is done
+    """
+        ...
+    def setValue(self, selector: str, value: Union[str,int,bool,LukeDynamicValue]=None, timeout: int=None) -> Union[LukeBrowserWebElement]:
+    """
+    Sets value on an element that matches a css selector
+    @param selector
+             The css selector targeting the dom element
+    @param value
+             The value to be set
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeWebElement} that will be resolved when the value is set on the target element
+    """
+        ...
+    def getValue(self, selector: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Gets value from an element that matches a css selector
+    @param selector
+             The css selector targeting the dom element
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeAsyncQueueNode} that will be resolved with the value of the target element
+    """
+        ...
+    def getUrl(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Get current url
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeAsyncQueueNode} that will be resolved with the current url
+    """
+        ...
+    def searchFiles(self, pattern: str, resolveOnFound: bool=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Searches for file(s) matching the given pattern to exist in the download directory
+    Note that this function depends on a condition that the c3 server has access to
+    the download folder. Such a condition is often hard to satisfy when the c3 server and the browser
+    reside on separate (virtual) machines. For {@link LukeBrowser}, use the preferred APIs
+    {@link LukeBrowser#searchForDownloadedFile} and {@link LukeBrowser#searchForDownloadedFiles}
+    to overcome those restrictions on environment setups.
+    
+    @param  pattern
+               The pattern of the file path to search for
+    @param resolveOnFound
+               If true, only resolve if at least one matching file was found
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeAsyncQueueNode} that will be resolved with the files found
+    """
+        ...
+    def uploadFile(self, selector: str, path: str=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Uploads a file to an input that matches a selector
+    @param selector
+             The CSS selector targeting the dom element
+    @param path
+             The path to the file to upload
+    @param timeout
+             Timeout in seconds for the chain
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the file is uploaded
+    """
+        ...
+    def enqueue(self, callback: Any, args: Array[Any]=None, nodeType: Type=None, label: str=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Will add a new chain to the LukeAsyncQueue. Users can leverage this function for composing chains in their test script
+    @param callback
+             The function that either (1) yields a promise or (2) adds async chains to a nested async queue
+    @param args
+             The additional arguments to be passed to the promise function in the next node
+    @param nodeType
+             The type of the async node to be enqueued
+    @param label
+             The label of the node
+    @param timeout
+             Timeout in seconds for the chain
+    @return An async node that is enqueued in the LukeAsyncQueue
+    """
+        ...
+    def enqueueValue(self, value: Any, nodeType: Type=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Adds a chain to the async queue. The head of the chain will resolve the provided value which can be either
+    a static value or a {@link LukeDynamicValue}
+    @example
+    ```js
+    luke.enqueueValue(LukeDynamicValue.makeValue('sum')).assert('toEqual', 5);
+    ```
+    
+    @param value
+             The value to be resolved by the head
+    @param nodeType
+             The type of the async node to be enqueued
+    @param timeout
+             Timeout in seconds for the chain
+    @return An async node that is enqueued in the LukeAsyncQueue
+    """
+        ...
+    def nodePerformance(self, lambda_: Callable[[]], ntimes: int, metricName: str=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Measures the performance of the tail node of a chain generated by a lambda function.
+    It runs the lambda function n times to generate n chains and measures the max, min and average
+    run time (seconds) of the tail node.
+    @param lambda
+             The lambda function that generates the tail node to be measured. A {@Luke} instance will be
+             be passed to the lambda function. Bind a scope to your lambda function if you need to access it inside.
+    @param ntimes
+             The n times.
+    @param metricName
+             The name we want to give our metric when we persist it as a {@link TestCase}. Defaults to 'defaultMetric'.
+    @return A {@link LukeAsyncQueueNode} that will resolve the performance stats of the tail node.
+    
+    @example
+    ```js
+    // Measures the 'click' node 5 times and resolves the stats
+    luke.nodePerformance(function (client) {
+      return client.search('button').click();
+    }, 5).then(function (client, result) {
+      expect(result.max).toBeLessThan(0.01); // expect the max run time to be less than 0.01 seconds
+      expect(result.avg).toBeLessThan(0.005); // expect the average run time to be less than 0.005 seconds
+    });
+    ```
+    """
+        ...
+    def chainPerformance(self, lambda_: Callable[[]], ntimes: int, metricName: str=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Measures the performance of the entire chain generated by a lambda function.
+    It runs the lambda function n times to generate n chains and measures the max, min and average
+    run time (seconds) of the chain.
+    
+    @param lambda
+             The lambda function of the chain to be measured. A {@link LukeBrowser} instance will be
+             be passed to the lambda function. Bind a scope to your lambda function if you need to access it inside.
+    @param ntimes
+             The n times.
+    @param metricName
+             The name we want to give our metric when we persist it as a {@link TestCaseResult}. Defaults to 'defaultMetric'.
+    @return A {@link LukeAsyncQueueNode} that will resolve the performance stats of the chain.
+    
+    @example
+    ```js
+    // Measures the 'click' node 5 times and resolves the stats
+    luke.chainPerformance(function (client) {
+      return client.search('button').click();
+    }, 5).then(function (result) {
+      expect(result.max).toBeLessThan(0.01); // expect the max run time to be less than 0.01 seconds
+      expect(result.avg).toBeLessThan(0.005); // expect the average run time to be less than 0.005 seconds
+    });
+    ```
+    """
+        ...
+    def lambdaPerformance(self, lambda_: Callable[[]], metricName: str=None, timeout: float=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Measures the performance of the provided lambda function.
+    
+    @param lambda
+              The lambda function to be measured.
+    @param metricName
+              The name we want to give our metric when we persist it as a {@link TestCaseResult}. Defaults to 'defaultMetric'.
+    @param timeout
+              Timeout in seconds for the lambda function.
+    @return A {@link LukeAsyncQueueNode} that will resolve the performance of the lambda function.
+    """
+        ...
+    def isDynamicValue(self, value: Any=None) -> bool:
+    """
+    Checks whether a value is a {@link LukeDynamicValue}
+    @param value
+             The value to check
+    @return Whether the value is a {@link LukeDynamicValue}
+    """
+        ...
+    def resolveDynamicValue(self, name: Union[LukeDynamicValue,str]) -> Union[Any]:
+    """
+    Returns the current value for a {@link LukeDynamicValue}
+    @param name
+             The {@link LukeDynamicValue} or its name
+    @return the current value
+    """
+        ...
+    def updateDynamicValue(self, name: Union[LukeDynamicValue,str], value: Any=None) -> None:
+    """
+    Updates the current value for a {@link LukeDynamicValue}
+    @param name
+             The {@link LukeDynamicValue} or its name
+    @param value
+             The new value for the {@link LukeDynamicValue}
+    """
+        ...
+    def runLambda(self, funk: Callable[[], Union[any]], args: Array[Any]=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Runs a function with arguments in the browser
+    
+    @param  funk
+               The lambda function to execute.
+    @param  args
+               Lambda arguments, accessible within the function as `arguments[i]`,
+               where `i` corresponds to the index of the argument
+    @return An async node that is resolved with the result of successfully running the lambda.
+    """
+        ...
+    def runAsyncLambda(self, funk: Callable[[], Union[any]], args: Array[Any]=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Runs an asynchronous function with the passed arguments in the browser.
+    The function is expected to return a promise that will be resolved when the async logic completes.
+    
+    Example:
+    ```js
+    this.client.runAsyncLambda(function (element) {
+      return new Promise(function (resolve, reject) {
+        setTimeout(function () {
+          resolve(window.$(element).html());
+        }, 2000);
+      });
+    }, ['span.some-class']).assert('toEqual', 'Some Text');
+    ```
+    
+    @param  funk
+               The lambda function to execute.
+    @param  args
+               Lambda arguments, accessible within the function as `arguments[i]`,
+               where `i` corresponds to the index of the argument
+    @param  timeout
+               Timeout in seconds for the async lambda execution
+    @return An async node that is resolved with the result of successfully running the lambda.
+    """
+        ...
+    def setAuthToken(self, username: str, password: str, hostUrl: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Generates an auth token using the given credentials and set it into a cookie named "c3auth".
+    
+    @param username
+               the username
+    @param password
+               the user's password
+    @param hostUrl
+               the root url of the server
+    @param timeout
+               Timeout in seconds for the async lambda execution
+    @return An async node that is resolved when the authtoken is set
+    """
+        ...
+    def domTitle(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Gets the document.title of the current page
+    
+    @param  timeout
+               Timeout in seconds for the chain
+    @return A {@link LukeAsyncQueueNode} that will be resolved with the dom title
+    """
+        ...
+    def setCookie(self, cookie: LukeCookie, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Sets a cookie
+    @param cookie
+              The cookie to be set
+    @param  timeout
+               Timeout in seconds for the chain
+    @return {@LukeAsyncQueueNode} that will resolve when the cookie is set
+    """
+        ...
+    def resetToDefault(self) -> None:
+    """
+    Resets all toggleable flags and settings to default values
+    """
+        ...
+    def debug(self) -> Union[LukeAsyncQueueNode]:
+    """
+    Sets a debugger when the chain is run, during execution phase
+    """
+        ...
+    def logToServer(self, msg: str, source: str) -> None:
+    """
+    Logs the message passed in to the server logs.
+    @param msg
+             The message in string form.
+    @param source
+             The context of where the log call is triggered.
+    """
+        ...
+    def wrapServerLog(self, msg: str, source: str) -> None:
+    """
+    Helper function that is used in {@link #logToServer} to evaluate the log call in the server.
+    Needed because we want to execute the script within the server, but we call {@link logToServer}
+    at available JS runtime.
+    @param msg
+             The message in string form.
+    @param source
+             The context of where the log call is triggered.
+    """
+        ...
+    def maximizeWindow(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Maximizes the primary test window size.
+    
+    @return {@LukeAsyncQueueNode} that will resolve when the window is maximized
+    """
+        ...
+    def resizeWindow(self, rect: LukeWindowRect=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Resizes the primary test window size to the provided dimensions
+    @param rect
+             An {@link LukeWindowRect} object. Note that offset is not available for the chrome browser.
+    
+    @return {@LukeAsyncQueueNode} that will resolve when the window is resized
+    """
+        ...
+    def getWindowSize(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Evaluates the primary test window size.
+    @return {@LukeAsyncQueueNode} that will resolve with the window size
+    """
+        ...
+    @classmethod
+    def init(cls, timeout: int=None, failureThreshold: int=None) -> LukeBrowser:
+    """
+    Sets up a LukeBrowser instance.
+    
+    @param timeout
+             The default timeout in seconds for running each chain of {@LukeAsyncQueueNode}s.
+    @param failureThreshold
+             The max number of Jasmine assertions that can fail before test aborts for the returned LukeBrowser instance.
+    @return A Luke instance with a {@link BrowserEngine}.
+    """
+        ...
+    @classmethod
+    def connect(cls, timeout: int=None) -> LukeBrowser:
+    """
+    Connect to the browser via the {@link BrowserEngine}.
+    
+    @param timeout
+             The default timeout in seconds for running each chain of {@LukeAsyncQueueNode}s.
+    @return A Luke instance with a {@link BrowserEngine}.
+    """
+        ...
+    def addSpy(self, spy: LukeSpy) -> None:
+    """
+    Adds a spy to {@link #spies} for tracking purposes. Internal use only by {@link Luke}.
+    @param spy
+             The spy.
+    """
+        ...
+    def addRequestMock(self, type: str, action: str, response: Union[str,any]=None, status: int=None, headers: any=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Adds a request mock with a static response for a pair of type and action.
+    @param type
+             The type name.
+    @param action
+             The action name.
+    @param response
+             The response content.
+    @param status
+             The response status.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the mock is added.
+    """
+        ...
+    def addRequestMockWithHandler(self, type: str, action: str, handler: Any, args: Array[Any]=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Adds a request mock with a handler function for a pair of type and action.
+    @param type
+             The type name.
+    @param action
+             The action name.
+    @param handler
+             The handler function where developers can generate a response dynamically according to a request.
+             The request params and a helper function will be passed to the handler.
+             The helper function takes the response content, optionally with a status and headers.
+    @param args
+             The additional arguments to be passed to the handler function.
+    @param timeout
+             Timeout in seconds for the chain.
+    @example
+    ```js
+    luke.addRequestMockWithHandler('Machine', 'fetch', function (params, respond, targetId) {
+               var filter = params.spec && params.spec.filter;
+               // targetId is passed in as an additional argumeent
+               if (filter && filter.indexOf(targetId) > -1) {
+                 respond({
+                   count: 1,
+                   objs: [
+                     {
+                       id: 'special-id',
+                       status: 'pending',
+                     },
+                   ],
+                 });
+               } else {
+                 respond({ message: 'unauthorized' }, 401, { 'X-Frame-Options': 'SAMEORIGIN' })
+               }
+             }, ['special-id']);
+    ```
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the mock is added.
+    """
+        ...
+    def addRequestMockWithUrl(self, url: str, response: Union[str,any]=None, status: int=None, headers: any=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Adds a request mock with a static response for the url endpoint.
+    @param url
+             The url endpoint. It can be a static endpoint ('/some/fake/endpoint/1') or a RegExp wrapped in a string ('\\/some\\/fake\\/endpoint\\/(\\d+)').
+             Note that the JavaScript RegExp constructor is used to construct the RegExp string.
+    @param response
+             The response content.
+    @param status
+             The response status.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the mock is added.
+    """
+        ...
+    def addRequestMockWithUrlAndHandler(self, url: str, handler: Any, args: Array[Any]=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Adds a request mock with a handler function for a url.
+    @param url
+             The url endpoint. It can be a static endpoint ('/some/fake/endpoint/1') or a RegExp wrapped in a string ('\\/some\\/fake\\/endpoint\\/(\\d+)').
+             Note that the JavaScript RegExp constructor is used to construct the RegExp string.
+    @param handler
+             The handler function where developers can generate a response dynamically according to a request.
+             The request params and a helper function will be passed to the handler.
+             The helper function takes the response content, optionally with a status and headers.
+    @param args
+             The additional arguments to be passed to the handler function.
+    @param timeout
+             Timeout in seconds for the chain.
+    @example
+    ```js
+    luke.addRequestMockWithHandler('/some/fake/endpoint', function (params, respond, data) {
+               data = data.concat(' modified');
+               respond(data);
+             }, ['data']);
+    ```
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the mock is added.
+    """
+        ...
+    def xhrTrackerForAction(self, type: str, action: str, timeout: int=None) -> Union[LukeAsyncQueueSpy]:
+    """
+    Collects all xhr records for a pair of type and action, and plays them to a jasmine.Spy for making spy assertions, e.g. toHaveBeenCalled.
+    For each xhr record, its params and headers will be played to the spy.
+    @param type
+             The type name.
+    @param action
+             The action name.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueSpy} that will be resolved with a jasmine.Spy that has listened to all relevant xhr requests.
+    @example
+    ```js
+    luke.xhrTrackerForAction('MyType', 'myAction').assert('toHaveBeenCalled');
+    luke.xhrTrackerForAction('MyType', 'myAction').assert('toHaveBeenCalledWith', [
+      { name: 'Test', value: 36 }, // the params
+      jasmine.objectContaining({   // the headers, if you are only interested in a subset of headers, use jasmine.objectContaining to wrap them
+         X-Tunnel-tag: 'testTag',
+      }),
+    ]);
+    ```
+    """
+        ...
+    def xhrTrackerForUrl(self, url: str, timeout: int=None) -> Union[LukeAsyncQueueSpy]:
+    """
+    Collects all xhr records for a url endpoint, and plays them to a jasmine.Spy for making spy assertions, e.g. toHaveBeenCalled.
+    For each xhr record, its params and headers will be played to the spy.
+    @param url
+             The url endpoint. It can be a static endpoint ('/some/fake/endpoint/1') or a RegExp wrapped in a string ('\\/some\\/fake\\/endpoint\\/(\\d+)').
+             Note that the JavaScript RegExp constructor is used to construct the RegExp string.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueSpy} that will be resolved with a jasmine.Spy that has listened to all relevant xhr requests.
+    @example
+    luke.xhrTrackerForAction('/some/fake/endpoint').assert('toHaveBeenCalled');
+    luke.xhrTrackerForAction('\\/some\\/fake\\/endpoint\\/(\\d+)').assert('toHaveBeenCalledWith', [
+      { name: 'Test', value: 36 }, // the params
+      jasmine.objectContaining({   // the headers, if you are only interested in a subset of headers, use jasmine.objectContaining to wrap them
+         X-Tunnel-tag: 'testTag',
+      }),
+    ]);
+    """
+        ...
+    def xhrRecords(self, includeResponse: bool=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Collects all xhr records.
+    @param includeResponse
+             Whether to include response.
+    @param timeout
+             Timeout in seconds for the chain.
+    
+    @return a {@link LukeAsyncQueueNode} that will be resolved with all xhr records.
+    @example
+    [
+      {
+        id: 1587764952251.8535,
+        url: "/api/1/SDLDemoMachine?action=fetch",
+        method: "POST",
+        async: true,
+        headers: { Accept: "application/json", "Content-type": "application/json" },
+        mocked: true,
+        body: '{"spec":{"limit":15,"include":"name, category, location.id, status, metric1, metric2, metric3Change","filter":""}}',
+        sentAt: 1587764952251,
+      }
+    ]
+    """
+        ...
+    def xhrActions(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Collects all C3 actions made through xhr requests.
+    @return a {@link LukeAsyncQueueNode} that will be resolved with all actions with typeName and actionName.
+    @example
+    [
+      {
+        typeName: "User",
+        actionName: "fetch",
+      },
+    ]
+    """
+        ...
+    def validateActionPermissions(self, spec: LukeActionPermissionSpec) -> Union[LukeAsyncQueueNode]:
+    """
+    For each action made through an xhr request (collected by {@link #xhrActions}), validate whether it is
+    permitted by a permission source specified by a {@link LukeActionPermissionSpec}.
+    @param spec
+             Specifies a source that defines action permissions.
+    @return {@link LukeAsyncQueueNode} that will be resolved when the action permissions are validated.
+    @example
+    luke.validateActionPermissions({
+      pageId: 'MyApp.MyPage' // permissions defined in page metadata
+    });
+    
+    luke.validateActionPermissions({
+      roleId: 'MyApp.Developer' // permissions defined by the Role of 'MyApp.Developer'
+    });
+    
+    luke.validateActionPermissions({
+      groupId: 'MyApp.AnalystGroup' // permissions defined by the Group of 'MyApp.AnalystGroup'
+    });
+    
+    luke.validateActionPermissions({
+      userId: 'MyApp.MyTestUser' // permissions granted to the User of 'MyApp.MyTestUser'
+    });
+    """
+        ...
+    def spyOn(self, expression: str, method: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Spies on a function in the browser runtime. As a side effect, the original function
+    becomes a no-op.
+    @param expression
+             The expression to access the object holding the target function.
+    @param method
+             The name of the method.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the spy is set.
+    @example
+    // Swallows all console.log calls and records them
+    luke.spyOn('console', 'log');
+    // ... Some UI logic has triggered console.log
+    luke.spyTracker('console', 'log').assert('toHaveBeenCalled');
+    """
+        ...
+    def spyOnAndCallFake(self, expression: str, method: str, fakeFunction: Any, partialArgs: Array[Any]=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Spies on a function in the browser runtime. The original function will be replaced by a fake function.
+    @param expression
+             The expression to access the object holding the target function.
+    @param method
+             The name of the method.
+    @param fakeFunction
+             The fake function to replace the original function.
+    @param partialArgs
+             Partially applied arguments, followed by "real" arguments passed to the original function will
+             be passed to the fake function.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the spy is set.
+    @example
+    // Escalates console.log to console.warn and adds a prefix generated by a function to each message.
+    var prefix = generatePrefix();
+    luke.spyOnAndCallFake('console', 'log', function (prefix, message) {
+      console.warn(prefix + ': ' + message);
+    }, [prefix]);
+    // ... Some UI logic has triggered console.log('UI is loaded');
+    // Note that the partial args are excluded from each spy call, only the "real" args passed to the original function
+    // will be recorded.
+    luke.spyTracker('console', 'log').assert('toHaveBeenCalledWith', ['UI is loaded']);
+    """
+        ...
+    def spyOnAndCallThrough(self, expression: str, method: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Spies on a function in the browser runtime and keeps original function functionality.
+    @param expression
+             The expression to access the object holding the target function.
+    @param method
+             The name of the method.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the spy is set.
+    @example
+    // Swallows all console.log calls and records them
+    luke.spyOnAndCallThrough('console', 'log');
+    // ... Some UI logic has triggered console.log
+    // Note that there will be no change to the console.log behavior, unlike with {@link #spyOn}
+    luke.spyTracker('console', 'log').assert('toHaveBeenCalled');
+    """
+        ...
+    def spyOnAndReturn(self, expression: str, method: str, returnObj: Any=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Spies on a function in the browser runtime and return the specified value when the function is called.
+    @param expression
+             The expression to access the object holding the target function.
+    @param method
+             The name of the method.
+    @param returnObj
+             The object to return when the function is called.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the spy is set.
+    @example
+    // Swallows all console.log calls and records them
+    luke.spyOnAndReturn('console', 'log', 'Hi');
+    // ... Some UI logic has triggered console.log and 'Hi' will be returned
+    """
+        ...
+    def removeSpy(self, expression: str, method: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Removes the spy from a function.
+    @param expression
+             The expression to access the object holding the target function.
+    @param method
+             The name of the method.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when the spy is removed.
+    @example
+    luke.removeSpy('console', 'log');
+    """
+        ...
+    def removeSpies(self, timeout: int=None) -> None:
+    """
+    Removes all deployed spies tracked by {@link #spies}.
+    @param timeout
+             Timeout in seconds for each chain of removing a spy.
+    """
+        ...
+    def spyTracker(self, expression: str, method: str, timeout: int=None) -> Union[LukeAsyncQueueSpy]:
+    """
+    Collects all calls to a function that has been spied on and plays them to a jasmine.Spy for making spy assertions, e.g. toHaveBeenCalled and toHaveBeenCalledWith.
+    @param expression
+             The expression to access the object holding the target function.
+    @param method
+             The name of the method.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueSpy} that will resolve a jasmine.Spy that has listened to all calls to the target function.
+    @example
+    luke.spyTracker('console', 'log').assert('toHaveBeenCalled');
+    luke.spyTracker('console', 'log').assert('toHaveBeenCalledTimes', [3]);
+    luke.spyTracker('console', 'log').assert('toHaveBeenCalledWith', ['UI is loaded!']);
+    """
+        ...
+    def clearRequestMocks(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Clears all existing request mocks.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueNode} that will be resolved when all mocks are cleared.
+    """
+        ...
+    def getCookie(self, cookie: LukeGetOrRemoveCookieSpec, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Gets a cookie.
+    @param cookie
+              The cookie to get.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved with the cookie.
+    """
+        ...
+    def removeCookie(self, cookie: LukeGetOrRemoveCookieSpec, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Removes a cookie.
+    @param cookie
+              The cookie to be removed.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the cookie is removed.
+    """
+        ...
+    def accessibilityScore(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Gets the accessibility score for the current page. The score is largely based on
+    how Lighthouse scores accessibility, and ranges from 0-100. To view the score, either
+    append the {@link LukeAsyncQueueNode#inspectResult} node or {@link LukeAsyncQueueNode#assert} node.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return A {@link LukeAsyncQueueNode} that will be resolved with the score.
+    @example
+             luke.goto("https://www.google.com/");
+             luke.accessibilityScore().inspectResult();
+             luke.accessibilityScore().assert('toBeGreaterThan', 80);
+    """
+        ...
+    def reportAccessibility(self, threshold: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Turns results from AxeResults object into a HTML report through {@link #generateAccessibilityReport}.
+    Opens up a new tab with the report's HTML content if not in light-mode (light mode removes all the UI components
+    and is turned on by adding 'mode=light' in the url param).
+    The path of the downloaded report can be found on {@link LukeCoreConfig}.
+    @param threshold
+             The threshold for a passing accessibility score.
+    @return A {@link LukeAsyncQueueNode} that will be resolved with the report.
+    """
+        ...
+    @classmethod
+    def generateAccessibilityReport(cls, axeResults: any, score: int, downloadPath: str, threshold: int=None) -> Union[str]:
+    """
+    Downloads and opens the html report generated from the AxeResults object in
+    {@link #reportAccessibility}. Runs through the nodejs ImplLanguage.Runtime. If a threshold is provided,
+    the score color will be determined by whether or not it is greater than the threshold (green if the
+    score is greater, red otherwise). If a threshold is not provided, the threshold is defaulted to 80.
+    @param axeResults
+             The result after calling axe.run().
+    @param score
+             The score of the accessibility report.
+    @param downloadPath
+             The download path of the accessibility report.
+    @param threshold
+             The threshold for a passing accessibility score.
+    @return A string that is our HTML report.
+    """
+        ...
+    def searchForDownloadedFile(self, filenameRegex: str, resolveOnFound: bool=None, timeout: int=None) -> Union[LukeAsyncQueueFile]:
+    """
+    Searches for a file matching the given regex pattern in the download directory.
+    If multiple files are found, the one with the latest download start timestamp will be returned.
+    @param filenameRegex
+               The filename regex to match.
+    @param resolveOnFound
+               If true, only resolve if a matching file was found.
+    @param timeout
+               Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueFile} that will resolve with the found file.
+    """
+        ...
+    def searchForDownloadedFiles(self, filenameRegex: str, resolveOnFound: bool=None, timeout: int=None) -> Union[LukeAsyncQueueCollection[LukeAsyncQueueFile]]:
+    """
+    Searches for file(s) matching the given regex pattern in the download directory.
+    The files will be sorted by the descending order of the download start timestamp.
+    @param filenameRegex
+               The filename regex to match.
+    @param resolveOnFound
+               If true, only resolve if at least one matching file was found.
+    @param timeout
+               Timeout in seconds for the chain.
+    @return a {@link LukeAsyncQueueCollection} of {@link LukeAsyncQueueFile}s that will resolve with the found files.
+    """
+        ...
+    def closeWindow(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Closes the active UI window, note that all tabs inside the window will be closed as a result.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the active window is closed.
+    """
+        ...
+    def reloadWindow(self) -> Union[LukeAsyncQueueNode]:
+    """
+    Reloads the active UI window.
+    @return {@LukeAsyncQueueNode} that will be resolved when the active window is reloaded.
+    """
+        ...
+    def switchToChildFrame(self, selector: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Switches the scope of Luke automation actions (click, search and etc) to a child iframe.
+    Note that it is possible to switch to a deeply nested iframe by walking through the tree path from
+    the main frame (root) to the target frame. To go back to the main frame, use {@link #switchToMainFrame}.
+    @example
+    luke.switchToChildFrame('iframe.level-one'); // from the main frame to level one
+    luke.switchToChildFrame('iframe.level-two'); // from level one to level two
+    luke.switchToChildFrame('iframe.level-three'); // from level two to level three
+    
+    @param selector
+             The selector that locates the iframe tag.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the action scope is switched to the target frame.
+    """
+        ...
+    def switchToMainFrame(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Switches the scope of Luke automation actions (click, search and etc) to the main frame (root) of a browser tab.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the action scope is switched to the main frame.
+    """
+        ...
+    def tabs(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Gets a list of open browser tabs.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved with a list of tabs, each tab object
+    contains id, index, url, title and active status of the tab.
+    Note that indexing is based on the order of tabs by when they were opened, not by their
+    positioning in the browser window. Also note that switching tabs won't switch the action
+    scope of the frames for each tab. If the action scope of one tab is on an iframe, switching
+    to another tab and back won't change its action scope to its default main frame.
+    @example
+    [
+      {
+        id: 5088,
+        index: 0,
+        url: "https://my-page.io",
+        title: "My Page",
+        active: true,
+      },
+      {
+        id: 5092,
+        index: 1,
+        url: "https://another-page.io",
+        title: "Another Page",
+        active: false,
+      }
+    ]
+    """
+        ...
+    def switchToTab(self, index: int, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Switches to a tab by index. Note that indexing is based on the order of tabs by when they were opened,
+    not by their positioning in the browser window. If you are uncertain about the index of the target tab,
+    you can find it by getting all the tabs ({@link #tabs}) and filtering them by url, title or active status.
+    Also note that switching tabs won't switch the action scope of the frames for each tab. If the action scope
+    of one tab is on an iframe, switching to another tab and back won't change its action scope to its default main frame.
+    @param index
+             The index of the target tab.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the target tab is switched to.
+    """
+        ...
+    def switchToNextTab(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Switches to the next tab. It will behave in a round-robin manner. Note that indexing is based on
+    the order of tabs by when they were opened, not by their positioning in the browser window.
+    Also note that switching tabs won't switch the action scope of the frames for each tab. If the action scope
+    of one tab is on an iframe, switching to another tab and back won't change its action scope to its default main frame.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the next tab is switched to.
+    """
+        ...
+    def closeTab(self, index: int=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Closes a tab by index. Note that indexing is based on the order of tabs by when they were opened,
+    not by their positioning in the browser window. If you are uncertain about the index of the target tab,
+    you can find it by getting all the tabs ({@link #tabs}) and filtering them by url, title or active status.
+    @param index
+             The index of the target tab.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the target tab is closed.
+    """
+        ...
+    def proxyToChildPlayground(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Sets proxy to a child playground so that the parent playground can send control commands to UI pages
+    directly managed by the child playground. This is useful for testing LukePlayground features. For example,
+    to test the "record and replay" workflow, a parent playground can open a child playground and operate
+    it to start a recording flow for a target page. To simulate user interactions on the target page
+    for the child playground to detect and record, the parent will have to obtain skip-level control of the target page
+    that is not being directly managed by itself. By setting proxy to the child playground, the gap can be bridged between
+    the parent playground and a target page controlled by the child playground.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the proxy is set.
+    """
+        ...
+    def stopProxy(self, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Stops the proxy to a child playground.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the proxy is stopped.
+    """
+        ...
+    def addConfirmMock(self, value: bool=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Sets the return value of the window.confirm() function in the controlled ui instance.
+    @param value
+             The return value of the window.confirm() function.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return {@LukeAsyncQueueNode} that will be resolved when the confirm mock is set.
+    """
+        ...
+    def alertSpy(self, timeout: int=None) -> Union[LukeAsyncQueueSpy]:
+    """
+    Collects all calls to window.alert and plays them to a jasmine.Spy for making spy assertions, e.g. toHaveBeenCalled and toHaveBeenCalledWith.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return A {@link LukeAsyncQueueSpy} that will resolve a jasmine.Spy that has listened to all calls to the target function.
+    """
+        ...
+    def confirmSpy(self, timeout: int=None) -> Union[LukeAsyncQueueSpy]:
+        ...
+    def pause(self) -> None:
+    """
+    Pauses Luke test execution.
+    """
+        ...
+    def resume(self) -> None:
+    """
+    Resumes Luke test execution
+    """
+        ...
+    def next(self) -> Union[Promise[any]]:
+    """
+    If called when paused, returns a Promise that waits to be resolved.
+    If called when not paused, return a Promise that resolves immediately.
+    @return A Promise that will be resolved.
+    """
+        ...
+    def nextChain(self) -> None:
+    """
+    Resolves the Promise created in {@link #next}.
+    """
+        ...
+    def measurePageLoadTime(self, spec: UiPerformanceTimingSpec, timeout: int, hotLoad: bool=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Makes a call to the browser engine to get the performance measurements. This works by sending a
+    request to the ui page to run our measurements with the specified requirements, and the result is
+    processed by {@link #pageLoadTime}.
+    @param spec
+             Specification including the page that needs at least a polling interval and selectors.
+    @param timeout
+             The max time in seconds we allow for our performance timing.
+    @param hotLoad
+             A boolean flag indicating if the measurement should be for a hot load, where hot load is defined
+             to be if the page has already been loaded in the same window session.
+    @return A {@link LukeAsyncQueueNode} that resolves on measurement completion.
+    """
+        ...
+    def pageLoadTime(self, spec: UiPerformanceTimingSpec, hotLoad: bool=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Go to a page and execute a script on the client to calculate the load time of the page. This
+    function is mainly processing the results of {@link #measurePageLoadTime}. See {@link UiPerformanceTimingSpec}
+    for details on what is needed as an input.
+    @param spec
+             Specification including the page that needs at least a polling interval and selectors.
+    @param hotLoad
+             A boolean flag indicating if the measurement should be for a hot load, where hot load is defined
+             to be if the page has already been loaded in the same window session.
+    @return A {@link LukeAsyncQueueNode} that resolves performance timing results {@see UiPerformanceTimingResult}.
+    """
+        ...
+    def timeToQuiet(self, metricName: str=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Measures the time it takes for the page to become quiet. This is useful for measuring the time it takes for
+    the page to finish its ajax and long-running JavaScript tasks, essentially waiting for the page to become "quiet".
+    @param metricName
+             The name to give to this metric measurement. Defaults to 'timeToQuiet'.
+    @param timeout
+             The max time in seconds we allow for our performance timing.
+    @return A {@link LukeAsyncQueueNode} that resolves to the time in seconds the the page took to become quiet starting from invocation.
+    """
+        ...
+    def getScreenshot(self, relativePath: str=None) -> Union[any]:
+    """
+    Retrieve the screenshot at the relative path under the {@link LukeCoreConfig.screenShotPath} directory using {@link LocalFileSystem}.
+    @param relativePath
+             The relative path to retrieve the screenshot at within the screenshots directory.
+    
+    @return The screenshot in binary form.
+    """
+        ...
+    def screenshot(self) -> Union[LukeAsyncQueueNode]:
+    """
+    Take a screen shot of the current viewport.
+    @return A {@link LukeAsyncQueueNode} that resolves to a Base64 encoded string representing the page screenshot.
+    """
+        ...
+    def elementScreenshot(self, selector: str=None, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Take a screen shot of the specified element.
+    @param selector
+             The selector for the element to take a screenshot of.
+    @param timeout
+             The allowed time to find the element.
+    @return A {@link LukeAsyncQueueNode} that resolves to a Base64 encoded string representing the element screenshot.
+    """
+        ...
+    def compareScreenshot(self, relativeScreenshotPath: str, threshold: float, timeout: int=None, removeScreenshotsOnPass: bool='true') -> Union[LukeAsyncQueueNode]:
+    """
+    Takes a screenshot of the browser and compares to an expected screenshot with the given screenshot name.
+    The screenshot that is generated from this function must be smaller than 4MB.
+    @example
+      ```
+      this.client = LukeBrowser.init();
+      this.client.compareScreenshot('myTestFileName/screenshot1.png', 0.1, 10, true).assert('toEqual', true);
+      ```
+    @param relativeScreenshotPath
+              The screenshot path to find and to create, relative to an `expected` directory nested under
+              the `test` directory. For example, if a screenshot is stored as
+              `test/js-luke-browser/screenshots/expected/myTestFileName/screenshot1.png`, the
+              `relativeScreenshotPath` should be `myTestFileName/screenshot1.png`, where `.png` is optional.
+              This same relative path will also be used as the filename when writing output `png` files.
+    @param threshold
+              A double value representing the decimal percentage of pixel matching below which screenshot differences are ignored and the comparison
+              will be considered "passing".
+    @param timeout
+             Timeout in seconds for the chain.
+    @param removeScreenshotsOnPass
+              A boolean flag indicating whether the screenshots saved to the `/actual/`, `/expected/`, and `/diff/` sub-directories should be
+              removed when the comparison passes with the provided threshold value. The screenshots will always be saved when the comparison fails.
+              Note that if you are synced with VSCE, the screenshots will also be saved to the `/test/screenshots/` directory of your package.
+    @return A {@link LukeAsyncQueueNode} that resolves to a boolean determining whether the comparison has passed the check.
+            When a comparison fails or `removeScreenshotsOnPass` is `false`, screenshots will be saved to the `/actual/`, `/expected/`, and `/diff/` sub-directories
+            nested under the path provided to the {@link LukeCoreConfig.screenShotPath}.
+    """
+        ...
+    def compareElementScreenshot(self, selector: str, relativeScreenshotPath: str, threshold: float, timeout: int=None, removeScreenshotsOnPass: bool='true') -> Union[LukeAsyncQueueNode]:
+    """
+    Takes a screenshot of the given element and compares to an expected screenshot with the given screenshot name.
+    The screenshot that is generated from this function must be smaller than 4MB.
+    @example
+      ```
+      this.client = LukeBrowser.init();
+      this.client.compareScreenshot('myTestFileName/screenshot1.png', 0.1, 10, true).assert('toEqual', true);
+      ```
+    @param selector
+              The selector for the element to take a screenshot of.
+    @param relativeScreenshotPath
+              The screenshot path to find and to create, relative to an `expected` directory nested under
+              the `test` directory. For example, if a screenshot is stored as
+              `test/js-luke-browser/screenshots/expected/myTestFileName/screenshot1.png`, the
+              `relativeScreenshotPath` should be `myTestFileName/screenshot1.png`, where `.png` is optional.
+              This same relative path will also be used as the filename when writing output `png` files.
+    @param threshold
+              A double value representing the decimal percentage of pixel matching below which screenshot differences are ignored and the comparison
+              will be considered "passing".
+    @param timeout
+             Timeout in seconds for the chain.
+    @param removeScreenshotsOnPass
+              A boolean flag indicating whether the screenshots saved to the `/actual/`, `/expected/`, and `/diff/` sub-directories should be
+              removed when the comparison passes with the provided threshold value. The screenshots will always be saved when the comparison fails.
+              Note that if you are synced with VSCE, the screenshots will also be saved to the `/test/screenshots/` directory of your package.
+    @return A {@link LukeAsyncQueueNode} that resolves to a boolean determining whether the comparison has passed the check.
+            When a comparison fails or `removeScreenshotsOnPass` is `false`, screenshots will be saved to the `/actual/`, `/expected/`, and `/diff/` sub-directories
+            nested under the path provided to the {@link LukeCoreConfig.screenShotPath}.
+    """
+        ...
+    @classmethod
+    def compareImages(cls, imageOnePath: str, imageTwoPath: str, outputPath: str) -> Union[Any]:
+    """
+    Compares `png` screenshots and outputs a "diff" screenshot with all differences highlighted in red.
+    @param imageOnePath
+              A path to a `png` file (including the `.png` extension) to compare to the image at {@link imageTwoPath}.
+    @param imageTwoPath
+              A path to a `png` file (including the `.png` extension) to compare to the image at {@link imageOnePath}.
+    @param outputPath
+              A full path for a `png` file (including the `.png` extension) to create a "diff" image from the
+              comparison of the images at {@link imageOnePath} and {@link imageTwoPath}.
+    @return The result of the comparison
+    """
+        ...
+    def setOAuthToken(self, accessToken: str, hostUrl: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Generates a session token using the given OAuth token and sets it into a cookie named "c3auth".
+    @param accessToken
+             The OAuth access token used to generate the session token.
+    @param hostUrl
+             The path associated with the access token, usually the page that needs to be accessed.
+    @param timeout
+               Timeout in seconds for the chain.
+    @return An async node that is resolved when the session token is set
+    """
+        ...
+    def impersonateUserForUrl(self, user: User, hostUrl: str, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Sets the current session token to the one associated with the given user. The session token is only applicable to the passed in url.
+    Functionally, this means that the next time Luke opens the given url, the url will believe Luke is the given user.
+    @example
+      this.client = LukeBrowser.init();
+      this.testUser = TestIdp.createTestUser(<username>, <password>, ['C3.AppAdmin']);
+      this.client.impersonateUserForUrl(this.testUser, 'https://test-page.com');
+      this.client.goto('https://test-page.com'); // opens the page with testUser's session token
+      TestIdp.removeTestUsers([this.testUser]); // remove your test users when you are done with them
+    @param user
+             The user, with its specific roles and permissions, to impersonate.
+    @param hostUrl
+             The url that the given user will be impersonated at.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return An async node that is resolved when the session token is set
+    """
+        ...
+    def realHover(self, clientX: int, clientY: int, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Calls the {@link BrowserEngine} to move the mouse to the specified coordinates to simulate a hover event.
+    This uses the Chrome DevTools Protocol to move the mouse to the specified coordinates, which is treated as a trusted event.
+    This is particularly useful for performing hover actions in elements such as canvas.
+    @param clientX
+             The x-coordinate of the mouse in the viewport.
+    @param clientY
+             The y-coordinate of the mouse in the viewport.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return A {@link LukeAsyncQueueNode} that will be resolved when the mouse is moved to the specified coordinates.
+    """
+        ...
+    def realClick(self, clientX: int, clientY: int, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Calls the {@link BrowserEngine} to click the specified coordinates with a native event.
+    This uses the Chrome DevTools Protocol to click the specified coordinates, which is treated as a trusted event.
+    @param clientX
+             The x-coordinate of the mouse in the viewport.
+    @param clientY
+             The y-coordinate of the mouse in the viewport.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return A {@link LukeAsyncQueueNode} that will be resolved when the mouse is moved to the specified coordinates.
+    """
+        ...
+    def realDrag(self, startClientX: int, startClientY: int, endClientX: int, endClientY: int, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Calls the {@link BrowserEngine} to simulate a drag event by clicking and moving the mouse from the start coordinates to the end coordinates.
+    This uses the Chrome DevTools Protocol to move the mouse to the specified coordinates, which is treated as a trusted event.
+    This is particularly useful for performing drag and drop actions in elements such as canvas.
+    @param startClientX
+             The x-coordinate of the start of the drag in the viewport.
+    @param startClientY
+             The y-coordinate of the start of the drag in the viewport.
+    @param endClientX
+             The x-coordinate of the end of the drag in the viewport.
+    @param endClientY
+             The y-coordinate of the end of the drag in the viewport.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return A {@link LukeAsyncQueueNode} that will be resolved when the drag event is completed.
+    """
+        ...
+    def chromeProtocolLambda(self, method: str, commandParams: any, timeout: int=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Utilizes Chrome DevTool Protocols to trigger actions on the active browser.
+    Chrome DevTool Protocol actions are treated as trusted events on the browser, which
+    may simulate user interactions more accurately.
+    NOTE: This method is intended for advanced users who are familiar with Chrome DevTool Protocols.
+    To see all available Chrome DevTool Protocol methods, please refer to the official documentation:
+    https://chromedevtools.github.io/devtools-protocol/
+    @param method
+             The Chrome DevTool Protocol method to be invoked.
+    @param commandParams
+             The parameters to be passed to the Chrome DevTool Protocol method.
+    @param timeout
+             Timeout in seconds for the chain.
+    @return A promise that will be resolved or rejected with the result.
+    """
+        ...
+    def wait(self, seconds: float=None) -> Union[LukeAsyncQueueNode]:
+    """
+    Waits for a specified amount of time before continuing any Luke actions.
+    @param seconds
+             The number of seconds to wait.
+    """
+        ...
+    def triggerMouseEvent(self, node: Any, eventType: str) -> None:
+    """
+    Wrapper function to create mouse events.
+    @param node
+               Any object that is an EventTarget (can receive events and have listeners).
+    @param eventType
+               The type of event that is triggered.
+    """
+        ...
+    def selectTab(self, tab: LukeBrowserWebElement) -> None:
+    """
+    Helper function to click on tab buttons in the console.
+    @param tab
+              The {@link LukeBrowserWebElement} to click on.
+    """
+        ...
+    def selectPluginTab(self, pluginTabName: str) -> None:
+    """
+    Helper function to select plugin on the left pane in the console.
+    @param pluginTabName
+              The {@link ConsolePlugin#name} to click on.
+    """
+        ...
+    def setEditor(self, index: int, value: str) -> None:
+    """
+    Sets text inside of monaco editor. Can be used for editing file content in console.
+    @param index
+                The index of the monaco editor cell.
+    @param value
+                The value to populate the cell.
+    """
+        ...
+    def setNotebookCell(self, value: str=None, cellIndex: int=None) -> None:
+    """
+    Sets the text inside notebook cell with index 'cellIndex' for the selected open notebook.
+    @param value
+                The value to populate the cell.
+    @param index
+                The index of the notebook cell. If empty, the currently selected cell will be used.
+    """
+        ...
+    @classmethod
+    def selectors(cls) -> Union[Any]:
+    """
+    CSS selectors for html elements in Console.
+    """
+        ...
+    def gotoConsole(self) -> None:
+    """
+    Go to Ui Console index page. Depending on dev/prod mode, the actual path to goto differs.
+    Before visiting the page, localStorage is cleared.
+    """
+        ...
+

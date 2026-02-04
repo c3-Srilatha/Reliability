@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents interchangeable proxy models for calling completions.
+ *
+ * Example:
+ * ```python
+ * c3.LambdaGenerativeProxy.fromLambda('MyProxy', c3.Lambda.fromPySrc('...'));
+ * c3.GenerativeProxy.forName('MyProxy').completion(query='Hello, world!')
+ * ```
+ */
+@beta
+abstract type GenerativeProxy<C: GenerativeProxy.Config> mixes Named, Configurable<C> {
+
+  /**
+   * Finds {@link GenerativeProxy proxy} by name.
+   */
+  forName: final ~
+
+  /**
+   * Calling completion according to the {@link GenerativeProxy proxy} {@link GenerativeProxy.Config configuration}.
+   *
+   * @param params
+   *           Inputs for the completion, including query, chat history, and etc.
+   * @return A {@link GenerativeProxy.Completion} object that contains results of the completion, such as text, and etc.
+   */
+  completion: abstract member function(params: !GenerativeProxy.CompletionSpec): !GenerativeProxy.Completion
+
+  /**
+   * List configured {@link GenerativeProxy proxy}.
+   */
+  list: final function(): [!mixing GenerativeProxy<C>]
+
+  /**
+   * Validates proxy configuration.
+   *
+   * Fails if error occurs during the test inference.
+   */
+  validate: final member function()
+}

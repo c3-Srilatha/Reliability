@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * `AiAssistant.AskParams` is a type that defines the parameters for an 'ask' request to the AI Assistant.
+ */
+type AiAssistant.AskParams {
+
+  /**
+   * The last query asked by the user.
+   */
+  @deprecated(details="Replaced by AiAssistant.AskParams#question")
+  query: string
+
+  /**
+   * The current question being asked by the user.
+   */
+  question: !string
+
+  /**
+   * The client from which the ask request is sent
+   */
+  client: string enum AiAssistant.ClientType
+
+  /**
+   * This is the chat history that the user has with the assistant until the last query.
+   *
+   * See {@link AiAssistant.Feedback.Question#chatHistory} for more details.
+   */
+  chatHistory: [AiAssistant.QAPair]
+
+  /**
+   * Number of times the user has requested for a response for the same question.
+   * `0` would be the first response, `1` would be first regeneration request, and so on.
+   */
+  regenerationCount: int
+}

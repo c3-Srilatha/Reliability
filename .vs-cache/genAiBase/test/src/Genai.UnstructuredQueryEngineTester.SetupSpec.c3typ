@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Parameters for {@link Genai.UnstructuredQueryEngineTester#setupTest}
+ */
+type Genai.UnstructuredQueryEngineTester.SetupSpec {
+  /** The name of the file containing the test cases */
+  filename: !string
+
+  /** The names of the functions on {@link TestApi} that should be called to set up llm keys */
+  apiKeySetupFuncNames: ![string]
+
+  /** If the test should use a retriever other than the default "c3DocumentationV6" */
+  retrieverName: string = "c3DocumentationV6"
+
+  /** The suffix used to set the REA configs via {@link Genai.UnstructuredQuery.Engine.Config#setReaConfigsBySuffix} */
+  suffix: !string
+
+  /** If specified, the extraction step will be enabled and performed with the specified config */
+  extractionConfigName: string
+
+  /** If the test should use Genai.Retriever.PgVector */
+  usePgVectorRetriever: boolean
+
+  /** If the test should use the given retriever instead of preconfigured one */
+  retrieverOverride: Genai.Retriever
+
+  /** For when we want to preserve text already written to the call log, do not truncate any existing file. */
+  doNotTruncateCallLog: boolean
+
+  /** If the extractor should add metadata */
+  extractorMetadataFormat: string
+
+  /** If the contextual question answerer should add metadata */
+  contextualQAMetadataFormat: string
+
+  /** If specified, reranking will be enabled and performed with the specified config */
+  rerankerConfigName: string
+
+  /** If the attribution framework should be used. */
+  useAttribution: boolean
+
+  /** If the attribution with corroboration framework should be used. */
+  useAttributionWithCorroboration: boolean
+
+  /** The Retriever config {@link Genai.UnstructuredQuery.Engine.REA.RetrieverConfig} name. */
+  retrieverConfigName: string
+
+  /** Don't enable LLM mocking for this call */
+  doNotUseMocking: boolean
+}

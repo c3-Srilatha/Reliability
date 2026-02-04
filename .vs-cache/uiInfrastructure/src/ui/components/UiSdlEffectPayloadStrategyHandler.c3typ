@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type that provides methods to construct a new payload and merge objects or replace non objects within the payload.
+ */
+@typeScript
+type UiSdlEffectPayloadStrategyHandler {
+
+  /**
+   * Helper function to handle the `payloadStrategy` on {@link UiSdlEffectActionSpec} and {@link UiSdlEffectTrigger} to
+   * construct a new payload to pass to the receiving effect.
+   *
+   * NOTE: If the payloadStrategy is 'MERGE', and the originalAction.payload is an error, then just the {@link UiSdlEffectPayloadForwarder}'s payload will be passed through.
+   *
+   * @param actionType
+   *         The action that triggered the function, i.e. `My.ComponentId.DO_SOME_ACTION`.
+   * @param originalAction
+   *         The action object returned from the trigger function, and ultimately passed into the actionStream.
+   * @param payloadForwarder
+   *         The payload that was specified in metadata file
+   * @return The new payload to be passed to the receiving effect.
+   */
+  handlePayloadStrategy: function(actionType: string,
+                                  originalAction: UiSdlReduxAction,
+                                  payloadForwarder: UiSdlEffectPayloadForwarder): map<string, any> ts-client
+
+  /**
+   * The `mergeDeep` function does index level replacement for arrays.
+   * e.g. [1, 2, 3] mergeDeep [5, 6] => [5, 6, 3]
+   * A custom merge function is used here so we can replace the whole array during merge.
+   * The custom merge function replaces the old value with the new value if neither is an object.
+   * Otherwise, it merges each field of the objects recursively.
+   */
+  mergeDeepAndReplaceNonObjects: function(a: map<string, any>, b: map<string, any>): map<string, any> ts-client
+}

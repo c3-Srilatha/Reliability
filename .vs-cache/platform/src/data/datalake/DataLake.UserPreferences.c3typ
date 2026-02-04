@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * User preferences for DataLake tables, including favorite status.
+ */
+@db(unique=["userId, tableId"], index=["userId", "tableId"])
+entity type DataLake.UserPreferences schema name 'LAKE_TABLE_USER_PREFERENCES' {
+
+  /**
+   * User ID foreign key
+   */
+  userId: !string
+
+  /**
+   * Table ID foreign key
+   */
+  tableId: !string
+
+  /**
+   * Whether the table is favorited by the user
+   */
+  isFavorite: boolean = false
+
+  /**
+   * Sets the favorite status for a user and table combination.
+   * Creates a new record if one doesn't exist, or updates existing record.
+   */
+  @action(group='write')
+  setFavoriteStatus: function(userId: !string, tableId: !string, isFavorite: boolean): DataLake.UserPreferences
+}

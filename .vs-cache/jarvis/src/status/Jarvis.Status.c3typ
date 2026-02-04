@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Basic result status for {@link Jarvis.Step.Result} and {@link JarvisService.Build.Result}.
+ *
+ * The order of the enum value indicates the precedence in rollup calculation. For example, if a build has multiple steps that have
+ * different status results, the highest indexed status takes precedence in determing that status of the build.
+ */
+enum type Jarvis.Status {
+
+  /**
+   * The execution was successful
+   */
+  SUCCESS
+
+  /**
+   * The execution completed, but has non fatal errors.
+   */
+  NON_FATAL_ERROR
+
+  /**
+   * An error was thrown in the execution.
+   */
+  ERROR
+
+  /**
+   * None retryable error thrown in the execution.
+   */
+  NON_RETRYABLE_ERROR
+
+  /**
+   * The execution did not complete in allocated time so it was canceled by Jarvis.
+   */
+  TIMED_OUT
+
+  /**
+   * The execution did not complete because it was aborted.
+   */
+  ABORTED
+}

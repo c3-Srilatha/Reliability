@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized workflow vertex {@link Workflow.Conditional} whose next vertex to be executed will be determined
+ * by the evaluation of a given condition.
+ * Every {@link Workflow.Conditional} has one default input port: "$start".
+ *
+ * Every {@link Workflow.Conditional} has three output ports: "$true", "$false" and "error".
+ * NOTE: this vertex type has no other output. If execution of the vertex fails port "error" will record related
+ * information. Otherwise, the workflow execution will continue through either port "$true" or port
+ * "$false", depending on whether the condition evaluates to true or false, respectively.
+ * ```
+ * -------------------                         ---------------------------                     -------------------
+ * | Workflow.Action | $success -----> $start  |                         | $true -----> $start | Workflow.Action |
+ * -------------------                         |                         |                     -------------------
+ *                                             |  Workflow.Conditional   |                     -------------------
+ * -------------------                         |                         | $false ----> $start | Workflow.Action |
+ * | Workflow.Action | out ----------->   args |                         |                     -------------------
+ * -------------------                         |                         | error -----> ...
+ *                                             ---------------------------
+ * ```
+ */
+type Workflow.Conditional mixes Workflow.Vertex {
+
+  /**
+   * Condition to be executed
+   */
+  condition: !lambda(args: map<string, any>): boolean
+
+  /**
+   * Default args to provide as input to the condition that can be overwritten by any input args (if available).
+   */
+  defaultArgs: map<string, any>
+
+  /**
+   * By default, the condition will be evaluated one time and then move to either the "$true" or "$false" step,
+   * depending on the result.  Set this to true to wait for the result to return `true` before proceeding.  In this case
+   * the "$false" port will never be used.  Instead the "error" port will used.  If there is an edge between the "error"
+   * port and the "$start" port of another `Workflow.Vertex`, the the workflow will progress to that vertex without
+   * failing the workflow.  Otherwise the workflow will fail.
+   *
+   * Note that if this is set to true, a `timeout` must be specified to avoid the workflow from becoming permanently
+   * stuck.
+   */
+  waitForTrue: boolean
+
+  /**
+   * Helper constructor for vertex.
+   * @param condition
+   *           function to be evaluated.
+   * @param args
+   *           optional arguments to pass as input to function.
+   * @param inNames
+   *           optional individual arguments that will be added to the function's "args" map for evaluation.
+   * @param name
+   *           name for this vertex.
+   * @param waitForTrue
+   *           `true` indicates that the vertex will wait until the condition evaluates to `true`
+   * @param timeout
+   *           Only relevant when `waitForTrue` is specified.  The duration that the vertex will wait until the
+   *           condition evaluates to true before failing.
+   * @return new vertex.
+   */
+  fromCondition: function(condition: !lambda(args: map<string, any>): boolean,
+                          args: map<string, any>,
+                          inNames: [string],
+                          name: string,
+                          waitForTrue: boolean,
+                          timeout: Duration): !mixing Workflow.Conditional
+}

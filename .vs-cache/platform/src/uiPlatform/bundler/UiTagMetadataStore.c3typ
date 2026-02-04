@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A wrapper on top of {@link TagMetadataStore} to make v7->v8 migration smoother.
+ * this type abstracts the following methods from {@link TagMetadataStore}.
+ */
+type UiTagMetadataStore mixes Value {
+
+  /**
+   * A function to return all files accessible by this MetadataStore based on the {@link Pkg.FilesSpec}.
+   *
+   * @param spec The {@link Pkg.FilesSpec} that will be used to retrive the {@link Pkg.File}.
+   */
+  files: function(spec: Pkg.FilesSpec): [File] js-server
+
+  allFiles: cached function(): [File] js-server
+
+  /**
+   * Get all types that mixin a specified type.
+   *
+   * @param mixin The mixin to search for.
+   * @param deep  If true, return types that mixin other types that mixin the specified type.
+   */
+  typeMetasThatMixin: function(mixinType: !string, deep: boolean): [TypeMeta] js-server
+
+  /**
+   *  Get all types that specify a given annotation.
+   *
+   *  @param annName       Name of the annotation to search for on the type. E.g. If the annotation is {@link Ann.Deprecated},
+   * just provide "deprecated" as the annName (as it would appear on the type definition).
+   *  @param annField      Name of the field on the annotation that is set while searching for types. E.g. If annotation is
+   * {@link Ann.Deprecated}, and you want types that have the field {@link Ann.Deprecated#finalVersion} set,
+   * then use this field. If not set, then filtering based on annField is not applied.
+   *  @param declaredOnly  If true, return types where the given annotation has been declared on the type itself. If false (default),
+   * it returns types even if the annotation occurs on the mixin types.
+   */
+  typesWithAnnotation: function(annName: !string, annField: string, declaredOnly: boolean): [Type] js-server
+
+  /**
+   * @return root package in this metadata store.
+   */
+  rootPackage: function(): Pkg.Decl js-server
+
+  /**
+   * Updates metadata in this store.
+   *
+   * @param upsert
+   *           Map of metadata file path to a single metadata instance (e.g. type of single object seed data), list of
+   *           metadata objects, or encoded binary content of the metadata file.
+   * @param remove
+   *           List of metedata file urls to remove.
+   *
+   * @return Any potential metadata issues after this update.
+   */
+  updateMetadata: function(upsert: map<string, Obj | [Obj] | binary>,
+                           remove: [string],
+                           doNotRevertStateOnError: boolean): !Pkg.ResultWithIssues js-server
+
+  /**
+   * Clears the file cache for this metadata store.
+   */
+  emptyFileCache: function() js-server
+
+  /**
+   * With current {@link Pkg}, returns a {@link Pkg.File} made using root package and given category and subPath.
+   *
+   * @param category
+   *           Category for this metadata.
+   * @param subPath
+   *           The sub path of the file excluding repository, package and category information. Note this should not
+   *           be URL encoded. {@see Pkg.Path.subPath}.
+   * @param isTest
+   *           If true, will make test file with given category subPath.
+   *
+   * @return File made in root package for current Pkg.
+   */
+  makeMetadataFile: function(category: !string enum Pkg.Category,
+                             subPath: !string,
+                             isTest: boolean): !Pkg.File js-server
+
+  /**
+   * Get all types from a specified package.
+   *
+   * @param package Name of the existing package.
+   * @param declaredOrMixes If true will also return types that mixin a type declared in the provided package.
+   *
+   * @return An array of {@link TypeRef} from the specified package.
+   */
+  typesByPackage: function(package: !?string, declaredOrMixes: boolean): [Type] js-server
+}

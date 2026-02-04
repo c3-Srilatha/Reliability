@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Simple chart rendering. These charts which can be used in a variety of circumstances, but without interactive
+ * behavior such as would be provided via a client-side charting package.
+ */
+type ChartBuilder mixes Value {
+
+  /**
+   * Produce a line chart from the series of values. If a plain array of numbers is used, the unit should be specified
+   * in the spec if tooltips are to be generated.
+   *
+   * @param data two or more data points, either as bare numbers or as ChartPoint instances
+   * @return chart or null if there is not enough data
+   */
+  line: optional function(data: !([double] | [ChartPoint]), spec: ChartSpec): Content
+
+  /**
+   * Produce a simple line chart with no ornamentation from a simple series of values. Only the width and height should
+   * be provided in the spec.
+   *
+   * @param data two or more data points, either as bare numbers or as ChartPoint instances
+   * @return chart or null if there is not enough data
+   */
+  sparkline: optional function(data: ![double], spec: ChartSpec): Content
+
+  /**
+   * Produce a column chart (vertical bars) from the series of values.
+   *
+   * @param data one or more data points, either as bare numbers or as ChartPoint instances
+   * @return chart or null if there is not enough data
+   */
+  column: optional function(data: [double] | [ChartPoint], spec: ChartSpec): Content
+
+  /**
+   * Produce a horizontal bar chart from the series of values.
+   *
+   * @param data one or more data points, either as bare numbers or as ChartPoint instances
+   * @return chart or null if there is not enough data
+   */
+  bar: optional function(data: [double] | [ChartPoint], spec: ChartSpec): Content
+
+  /**
+   * Produce a scatter plot from a series of values.
+   *
+   * @see LogProfiler
+   */
+  scatter: optional function(data: [double] | [ChartPoint] | [ChartPoint2d], spec: ChartSpec): Content
+
+  /**
+   * Produce a pie chart from the series of values.
+   *
+   * @param data one or more data points, either as bare numbers or as ChartPoint instances
+   * @return chart or null if there is not enough data
+   */
+  pie: optional function(data: [double] | [ChartPoint], spec: ChartSpec): Content
+
+  /**
+   * Produce a flame/icicle graph from a set of stack trees.
+   *
+   * @see LogProfiler
+   */
+  stacks: optional function(trees: ![StackTree], spec: ProfileChartSpec): Content
+
+  /**
+   * Extract a value from the data array, which should be either a number or a ChartPoint.
+   */
+  value: inline function(data: !?([double] | [ChartPoint] | [ChartPoint2d]), i: !int): double js
+
+  /**
+   * Get the X index from the data array. If the value is a {@link ChartPoint2d} this will be the explicit `x` value,
+   * otherwise the specified index.
+   */
+  valueX: inline function(data: !?([double] | [ChartPoint] | [ChartPoint2d]), i: !int): double js
+
+  /**
+   * Format a numeric value with an optional unit as a plain string.
+   */
+  formatValue: inline function(n: !?double, unit: Unit): string js
+
+  /**
+   * Fit a simple linear regression to the values to be charted.
+   */
+  fitLine: function(data: !?([double] | [ChartPoint] | [ChartPoint2d])): LeastSquaresResult js
+
+  /**
+   * Format a slope as a trend (percentage change) as a plain string.
+   */
+  formatTrend: inline function(m: !double): string js
+}

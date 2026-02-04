@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type defines a continuous parameter space, specifying a [min, max] bound on one continuous interval.
+ *
+ * Usage Examples:
+ * Setting fields as {minBound: 5.0, maxBound: 20.0} would sample values in the range [5.0, 20.0].
+ * An example of defining a {@link Hp.ParamSpace.Continuous}:
+ * ```py
+ * continuous_space = c3.Hp.ParamSpace.Continuous.fromBounds(minBound=5.0, maxBound=20.0)
+ * ```
+ */
+type Hp.ParamSpace.Continuous mixes Hp.ParamSpace {
+
+  /**
+   * Minimum value of a continuous interval is equal to this value (inclusive).
+   */
+  minBound: !double
+
+  /**
+   * Maximum value of a continuous interval is strictly less than this value (inclusive).
+   */
+  maxBound: !double
+
+  /**
+   * Make an instance of a continuous parameter space from given [min, max] bounds.
+   */
+  fromBounds: function(minBound: !double, maxBound: !double): !Hp.ParamSpace.Continuous py
+
+  isValidParam: ~ py
+
+  /**
+   * NOTE: This method currently returns a NotImplementedError.
+   *
+   * @inheritdoc
+   */
+  // TODO: PLAT-72211 Implement this method, not throw an error
+  @beta
+  sample: ~ py
+
+  // TODO PLAT-45197: Remove inline claim
+  numCandidates: inline ~ py
+}

@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component to renderthe muti tool response tab panel.
+ */
+@typeScript
+type GenAiUiMultiToolResponseTabPanel mixes UiSdlComponent<BasicDataSpec> {
+
+  /**
+   * Results for which to render tabs in the component. One tab will be render per result
+   */
+  childResults: [Genai.Query.Result.GetForUiResult]
+
+  /**
+   * Function to set the active tab
+   */
+  setActiveTab: lambda(activeTabId: string)
+
+  /**
+   * Active tab on the component
+   */
+  activeTab: string
+
+  /**
+   * Set of tools that will produce an answer and for which the component should render a tab by default
+   * If this is not provided, tabs will be lazily rendered as the tool's answers are recevied
+   */
+  initialToolIds: [string]
+
+  /**
+   * UI configurations for the tools that can be rendered in the tabs
+   */
+  queryToolOptions: [Genai.Agent.Tool.Config.UiOptions];
+}

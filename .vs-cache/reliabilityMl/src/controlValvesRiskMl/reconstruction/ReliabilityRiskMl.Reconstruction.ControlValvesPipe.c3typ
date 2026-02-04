@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A template {@link ReliabilityRiskMl.ReconstructionPipeline#reconstructionPipe} that is used to model Control Valves.
+ * This pipe performs the reconstruction of the target variable, which in the case of control valves, is typically
+ * the PERCENT_OPEN sensor value that represents the control valve's operational state.
+ *
+ * The {@link doTrain} and {@link doProcess} APIs of this pipe rely on the {@link #controlValvesModelable #controlValvesModelable#doTrainReconstruction}
+ * and {@link #controlValvesModelable #controlValvesModelable#doProcessReconstruction} APIs to provide concrete implementations for the
+ * training and processing of this reconstruction pipe.
+ *
+ * **Usage:**
+ * - This template pipe is used for reconstructing missing or inaccurate sensor data related to control valves.
+ * - The modelable control valve methods are used for training the model (`doTrain`) and applying it during inference (`doProcess`).
+ * - The reconstruction task focuses on predicting the PERCENT_OPEN value for control valves based on the available data.
+ * - The pipe is flexible, supporting different types of regression models for reconstruction depending on the setup (tree-based, linear models, etc.).
+ *
+ * **Main Components:**
+ * - **controlValvesModelable**: A private method for linking the modelable methods for training and processing the reconstruction pipeline.
+ * - **regressor**: A required regressor (e.g., tree-based or linear model) used to model the PERCENT_OPEN sensor readings from control valves.
+ * - **hasTrainedModel**: An internal field indicating whether the model has been trained for the input data.
+ *
+ * The reconstruction pipe is configured for a LightGBM-based regressor (`py-data-science-lightgbm`), which is a high-performance
+ * tree-based model suitable for regression tasks such as this one.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Reconstruction.ControlValvesPipe extends MlTemplate.AtomicPipe<Data, void, {reconstructions: Data, residuals: Data}> mixes ReliabilityMlDatasetPreparationRunResolvable type key 'CVRP'{
+
+  /**
+   * Do not set this field manually, this is set from the {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline} to
+   * point its corresponding {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#controlValvesModelable}.
+   *
+   * This method references the modelable object responsible for the training and processing of the control valves reconstruction.
+   */
+  controlValvesModelable: private ControlValvesModelableMethods
+
+  /**
+   * The regressor that must be used for reconstructing the target variable.
+   * For the {@link ControlValvesModelableBase} and {@link ControlValvesModelable} types, this is used to reconstruct
+   * the PERCENT_OPEN expected sensor value from control valve data.
+   *
+   * **Model Requirements:**
+   * - This field must use a tree-based or linear model (e.g., LightGBM or linear regression) to generate feature contributions.
+   * - The regressor will be responsible for modeling the PERCENT_OPEN sensor reading.
+   *
+   * This field must be set to a model capable of fitting the regression task for control valve data.
+   */
+  regressor: !MlAtomicPipe
+
+  /**
+   * Used internally by the pipe to determine whether a regressor model has been trained on the input data.
+   * This field should not be set manually, it is managed automatically by the system.
+   */
+  @db(systemUpdateOnly=true)
+  hasTrainedModel: private boolean
+
+  /**
+   * Action requirement that specifies the necessary dependency for running the model.
+   * This field enforces the use of `py-data-science-lightgbm` for training and inference.
+   */
+  actionRequirement: string = 'py-data-science-lightgbm'
+
+  /**
+   * This method will generate the pipe for the reconstruction process using the specified regressor.
+   * This step is necessary for configuring the pipeline with the correct regressor and data preparation.
+   */
+  generatePipe: ~ py-data-science-lightgbm
+
+  /**
+   * This method invokes the training process on the native model (e.g., LightGBM).
+   * It fits the model to the input training data in order to learn how to predict the PERCENT_OPEN value.
+   */
+  doTrain: ~ py-data-science-lightgbm
+
+  /**
+   * This method invokes the inference process using the trained model.
+   * It applies the trained model to new input data and generates reconstructed predictions for the PERCENT_OPEN value.
+   */
+  doProcess: ~ py-data-science-lightgbm
+}

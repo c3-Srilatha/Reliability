@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for FieldType and Method
+ */
+abstract type FieldTypeAndMethodBase mixes NameableType, WithToString, WithRef {
+
+  /**
+   * Declaration of this field or method in the parent type.
+   */
+  declared: member function(): [DeclaredFieldType]
+
+  /**
+   * @return true if this field or method is inherited form one of mixin types. Note that it will be `true` even for
+   *         overrides.
+   *
+   * @see isOverridden
+   */
+  isInherited: member function(): boolean
+
+  /**
+   * @return true if this field or method is inherited form one of mixin types and also this type is overriding it by
+   *         some means e.g. implementing abstract method or specializing value type of the data field.
+   *
+   * @see isOverridden
+   */
+  isOverridden: member function(): boolean
+
+  /**
+   * @return true if this field or method is inherited form more then one of different mixin types.
+   *
+   * @see isInherited
+   * @see isOverridden
+   */
+  isMultiBase: member function(): boolean
+
+  /**
+   * Parent type this field type or method belongs to.
+   */
+  parentType: abstract member function(): !Type
+
+  /**
+   * Parent type this field type or method belongs to.
+   */
+  parentTypeMeta: private cached property(): !TypeMeta
+
+  /**
+   * @return serialization name of this field type.
+   *
+   * @see Amm.Ser#name
+   */
+  serName: cached member function(): !string java | js
+
+  /**
+   * @return a string key in the format of '<type proto name>#<field or method name>'
+   */
+  callStackKey: cached property(): !string
+
+  /**
+   * @return sufficiently built field or method or `null`
+   */
+  build: private member function(): mixing FieldTypeAndMethodBase
+
+  mergedAnnotationsJson: abstract ~
+  toRef:                 ~ java | js | py
+}

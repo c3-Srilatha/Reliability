@@ -1,0 +1,106 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link BaseCodeAnalysis.VersionDiff.Metric}s must deliver messages in multiple contexts
+ * (e.g., changelogs and pull requests). The messaging for these contexts can differ, so this
+ * Type should be used to store the different messages that should be displayed in each context.
+ *
+ * Each message can either be a fully-formed message or a template that can be formatted with
+ * #formatMessages (e.g., `'Message with ${binding}'`).
+ *
+ * _This Type should not be confused with_ {@link BaseCodeAnalysis.Metric.Message}, _which is
+ * the primary Type for storing code analysis messages_.
+ */
+type BaseCodeAnalysis.VersionDiff.Metric.MessageTemplate mixes Metadata, Identified {
+
+  /**
+   * The severity that should be assigned to this message. Should never be higher than
+   * [warning](BaseCodeAnalysis.Metric.Message.Severity#WARNING) when #guessedMessage is used.
+   */
+  severity: string enum BaseCodeAnalysis.Metric.Message.Severity
+
+  /**
+   * The message to use in all cases except when a change could have been incorrectly detected
+   * as a result of using {@link BaseCodeAnalysis.VersionDiff#detectStructuralChanges} with
+   * [guessRevisions](BaseCodeAnalysis.VersionDiff.DetectChangesOptions#guessRevisions) enabled.
+   */
+  primaryMessage: string
+
+  /**
+   * The message to use when a change could have been incorrectly detected as a result of using
+   * {@link BaseCodeAnalysis.VersionDiff#detectStructuralChanges} with [guessRevisions](BaseCodeAnalysis.VersionDiff.DetectChangesOptions#guessRevisions) enabled.
+   */
+  guessedMessage: string
+
+  /**
+   * If this change should be included in the changelog, the message to display.
+   *
+   * @see typeChangelogMessage
+   * @see fieldChangelogMessage
+   * @see paramChangelogMessage
+   */
+  changelogMessage: string
+
+  /**
+   * If there are multiple messages associated with a particular Type, this message
+   * should be used to describe the change at the Type level to avoid redundant messaging.
+   *
+   * @see changelogMessage
+   * @see fieldChangelogMessage
+   * @see paramChangelogMessage
+   */
+  typeChangelogMessage: string
+
+  /**
+   * If there are multiple messages associated with a particular field or method, this
+   * message should be used to describe the change at the field or method level to avoid
+   * redundant messaging.
+   *
+   * @see changelogMessage
+   * @see typeChangelogMessage
+   * @see paramChangelogMessage
+   */
+  fieldChangelogMessage: string
+
+  /**
+   * If there are multiple messages associated with a particular method parameter, this
+   * message should be used to describe the change at the method parameter level to avoid
+   * redundant messaging.
+   *
+   * @see changelogMessage
+   * @see typeChangelogMessage
+   * @see fieldChangelogMessage
+   */
+  paramChangelogMessage: string
+
+  /**
+   * Helper function to format and select the appropriate messages for a specific metric.
+   *
+   * @param bindings
+   *           Any bindings that should be filled in to the message templates.
+   * @param isGuessed
+   *           If true, #guessedMessage will be used instead of #primaryMessage and the
+   *           severity will be at most a [warning](BaseCodeAnalysis.Metric.Message.Severity#WARNING).
+   * @return A partial version of {@link BaseCodeAnalysis.Metric.Message} containing:
+   *
+   *           - [severity](BaseCodeAnalysis.Metric.Message#severity)
+   *           - [message](BaseCodeAnalysis.Metric.Message#message)
+   *           - [changelogMessage](BaseCodeAnalysis.Metric.Message#changelogMessage)
+   *           - [typeChangelogMessage](BaseCodeAnalysis.Metric.Message#typeChangelogMessage)
+   *           - [fieldChangelogMessage](BaseCodeAnalysis.Metric.Message#fieldChangelogMessage)
+   *           - [paramChangelogMessage](BaseCodeAnalysis.Metric.Message#paramChangelogMessage)
+   *
+   * @see Str#format
+   */
+  formatMessages: final inline member function(
+    bindings: map<string, any>,
+    isGuessed: boolean = false
+  ): map<string, string> js-rhino
+}

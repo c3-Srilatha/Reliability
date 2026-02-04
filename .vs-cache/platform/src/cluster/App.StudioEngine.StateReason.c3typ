@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the node state reason as a complementary information for Studio to determine
+ * the actual state and indicators exposed to the users.
+ * It contains the node state reason inferred from {@link App.StudioEngine}
+ */
+enum type App.StudioEngine.StateReason {
+
+  /**
+   * The schema is being upgraded corresponding to {@link App.StudioEngine.State#BOOTSTRAPPING}
+   */
+  UPGRADING_SCHEMA
+
+  /**
+   * The seed data is being upserted corresponding to {@link App.StudioEngine.State#BOOTSTRAPPING}
+   */
+  UPSERTING_SEED_DATA
+
+  /**
+   * The {@link LocalJvm#readiness} returns false corresponding to {@link App.StudioEngine.State#BOOTSTRAPPING}
+   */
+  SERVER_NOT_READY
+
+  /**
+   * There is a critical pkg issue corresponding to {@link App.StudioEngine.State#ERROR}
+   */
+  FATAL_PKG_ISSUE
+
+  /**
+   * There is a critical seed data issue corresponding to {@link App.StudioEngine.State#DEGRADED}
+   */
+  FATAL_SEED_ISSUE
+
+  /**
+   * There is missing artifact from {@link Pkg.Store#validateConfiguredArtifactsExist}, corresponding to {@link App.StudioEngine.State#DEGRADED}
+   */
+  MISSING_ARTIFACT
+}

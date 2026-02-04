@@ -1,0 +1,197 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract type for Meter which holds metadata of specific meters {@link App.Meter.Counter},
+ * {@link App.Meter.Gauge} and {@link App.Meter.Histogram}
+ *
+ * Example usage of a counter meter.
+ * Define a meter metadata, QueueCounter.json
+ * {
+ *   "name" : "QueueCounter",
+ *   "description" : "Counts the type of processed queue",
+ *   "tags": {
+ *     "QueueType": null
+ *   }
+ * }
+ *
+ * App.Meter.Counter.forName("QueueCounter").increment(1.0, Map.ofStrToStr("QueueType", "ActionQueue"));
+ * App.Meter.Counter.forName("QueueCounter").increment(1.0, Map.ofStrToStr("QueueType", "BatchQueue"));
+ * ```js
+ * recorder = App.Meter.Counter.forName("QueueCounter").bind(Map.ofStrToStr("QueueType", "ActionQueue"));
+ * recorder.accept(1.0);
+ * ```
+ * Metric persistence layer will collect and store time series metric for each of these queue types.
+ */
+// TODO: PLAT-61143 code-gen produces invalid java code for `DataGen.Profile.Type`
+@beta
+abstract private type App.Meter mixes Named, Metadata, Configurable<App.Meter.Config> {
+
+  /**
+   * Name of a meter which may contains ASCII letters, numbers, as well as underscores (_).
+   * A meter name is not allowed to start with underscore (_).
+   * Every meter name will be prefixed by package name.
+   * Example, vertx_http_server_responseTime, mlpipeline_model_predictionTime, invalidation_queue_processed
+   */
+  name: ~
+
+  /**
+   * Whether or not the instance just represents the metadata of an external Meter (ie one collected from exporters)
+   * If true, no Application code should actually interact with it. All attempts to alter it or push to it will be rejected.
+   * The {@link #name} of the instance must align directly with the exported meter name.
+   */
+  isExternal: boolean
+
+  /**
+   * Unique identifier for a metric series that is constructed based on
+   * package name in which metric is defined, {@link App.Meter#tags} and {@link App.Meter#name}
+   */
+  metricName: private cached inline property(): !string
+
+  /**
+   * The actual metric name for the {@link App.Meter} and {@link App.Meter.AggregateKind}
+   * as known to by {@link App.MeterRegistry#registry}.
+   */
+  registryMetricName: private member function(aggregateKind: !string enum App.Meter.AggregateKind = NONE): !string
+
+  /**
+   * Aggregation kinds that are supported by the {@link App.Meter}. Specifying the {@link App.Meter.AggregateKind} is
+   * required when referencing a {@link App.Meter} that supports multiple {@link App.Meter.AggregateKind}s in an
+   * {@link App.Metric}.
+   */
+  aggregateKinds: function(): ![string enum App.Meter.AggregateKind]
+
+  /**
+   * The meter type as defined by the underlying {@link App.MeterRegistry#registry}.
+   */
+  meterType: private abstract function(): string
+
+  forName: cached ~
+
+  /**
+   * This distinguishes meter scope between node and app.
+   * For example, Invalidation queue size is in app scope whereas directory size of a particular directory is node scope.
+   */
+  scope: !string enum App.Meter.Scope = NODE
+
+  /**
+   * Description to a meter, that will be visible by metric collection system.
+   */
+  description: !string
+
+  /**
+   * User defined tags for this {@link App.Meter}.
+   * Do not use {@link App#name}, {@link Env#name}, {@link Cluster#id} and {@link Server#serverId} as these has been already added by default.
+   * Do not overuse {@link App.Meter#tags}.
+   * Tag value can be `null` if tag value has to be supplied when metric value is recorded.
+   */
+  tags: !map<string, string>
+
+  /**
+   * Default tags for a meter
+   */
+  defaultTags: private inline property(): !MapBuilder<string, string>
+
+  /**
+   * Joins default and custom tags.
+   *
+   * Throws validation error if there are no matching tag in {@link #tags} or required value of tag from {@link #tags} not supplied.
+   *
+   * @param customTags
+   *        custom tags for a metric name
+   * Returns array of key-values for joined tags
+   */
+  joinTags: private inline member function(customTags: map<string, string>): @java(class="java.lang.String[]") !native
+
+  /**
+   * Builds double-consumer lambda from {@link App.Meter} using provided set of tags.
+   *
+   * This can be used for performing multiple metric recording with same set of tags very efficiently.
+   *
+   * Example:
+   * ```js
+   * successCounter = App.Meter.TimeHistogram.forName("app_node_threadpool_queue_time")
+   *                                         .bind(Map.ofStrToStr("state", "success",
+   *                                                              "threadpool", name,
+   *                                                              "engine", engine == null ? "-" : engine.name()));
+   * // ...
+   * successCounter.accept(duration);  // highly efficient - about 10 nanoseconds
+   * ```
+   *
+   * @param customTags
+   *        custom tags for building the metric.
+   * @return consumer lambda that can be used to record metric value.
+   */
+  bind: abstract inline member function(customTags: map<string, string>)
+                                 : @java(class="java.util.function.Consumer<Double>") !native
+
+  /**
+   * Builds double-consumer lambda from {@link App.Meter} using provides string in which tags are encoded.
+   *
+   * Method is very efficient and allow calling `App.Meter.fromEncodedString(..).accept(...)` within 120 nanoseconds.
+   *
+   * Format: `type|name?tag1=v1&tag2=v2`
+   * For example: `App.Meter.Counter|QueueCounter?QueueType=ActionQueue`
+   *
+   * This method is cached, so it's faster than `.forName().record(..., Map.ofStrToStr(...))`.
+   *
+   * @param encodedString
+   *        Encoded string in format `type|name?tag1=v1&tag2=v2`
+   * @return consumer lambda that can be used to record metric value.
+   */
+  fromEncodedString: cached inline function(encodedString: !string)
+                                     : @java(class="java.util.function.Consumer<Double>") !native
+
+  /**
+   * Cleanup for a set of matching tags to stop collecting and reporting metrics. This should contain required tags
+   * from {@link tags}, it throws error if non-matching {@link #tags} is supplied.
+   *
+   * @param tags
+   *        The matching {@link #tags} to remove.
+   * @return true if a metric series gets cleaned up for supplied {@link #tags}
+   */
+  cleanupMetric: inline member function(tags: map<string, string>): boolean
+
+  /**
+   * Cleanup meter/s for metric name and a set of tags as a filter. If no tags are supplied, all metrics
+   * associated with the meter are removed.
+   *
+   * @param tagsFilter
+   *        filters the matching metric series to cleanup, if null it matches all {@link #tags}
+   * @return number of any metric series that gets cleaned up
+   */
+  cleanupMetrics: inline member function(tagsFilter: map<string, string>): int
+
+  /**
+   * List all {@link App.Meter} meters for current {@link App}.
+   */
+  list: inline function(): Array<mixing App.Meter>
+
+  /**
+   * Enables the {@link App.Meter} to start collecting metrics.
+   * Throws an exception if the {@link App} is not enabled for monitoring.
+   */
+  @action(group='app-admin')
+  enable: member function()
+
+  /**
+   * Disables the {@link App.Meter} to start collecting metrics.
+   */
+  @action(group='app-admin')
+  disable: member function()
+
+  /**
+   * Check if {@link App.Meter} is enabled in {@link App.Monitoring.Config}
+   */
+  isEnabled: inline member function(): boolean
+
+  /**
+   * Returns true if the metric can be registered to collect more data.
+   */
+  canRegister: private inline member function(): boolean
+}

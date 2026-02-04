@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Python AST Call node.
+ *
+ * @see PyAst
+ * @see https://docs.python.org/3/library/ast.html
+ */
+type PyAst.Call mixes PyAst.Expr2, PyAst.Ast {
+
+  nodeTyp:  const string = "Call"
+  func:     !PyAst.Expr2
+  args:     ![PyAst.Expr2]
+  keywords: ![PyAst.Keyword]
+
+  /**
+   * creates a PyAst.Call object from values passed into the function.
+   *
+   * @param caller_name
+   *        The object that is calling the method. Ex. 'm'
+   * @param method_name
+   *        The name of the method that is being called from callerName. Ex `foo`
+   * @param args
+   *        A list of positional parameters to pass into the method. Ex: `arg1, arg2`
+   * @param keywords
+   *        A map that connects the name of the keyword and the value being passed into the method. Ex:  `key1=value1, key2=value2`
+   * @return corresponding PyAst.Call, corresponding to `m.foo(arg1, arg2, key1=value1, key2=value2)`
+   */
+  fromValues: function(callerName: !string, methodName: !string, args: [any], keywords: map<string, any>): !PyAst.Call
+}

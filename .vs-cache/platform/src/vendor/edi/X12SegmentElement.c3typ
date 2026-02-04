@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This c3typ represents configuration for element - a single data block of x12 document segment.
+ * Segment elements configuration required to parse segment details properly
+ * and describes how to populate c3typ-ed objects'  values using the x12 document, including
+ * data integrity checks and data fields naming inside the c3typ-ed objects themselves.
+ *
+ * @see X12Segment
+ */
+entity type X12SegmentElement type key 'X12SE' schema name 'X12_SEGMENT_ELEMENT' {
+
+  /**
+   * the element reference in the documentation.
+   */
+  ref: !string
+
+  /**
+   * the data element number in the documentation.
+   */
+  dataElement: string
+
+  /**
+   * the data element name.
+   */
+  elementName: !string
+
+  /**
+   * name for the field in case multiple values with the same name occurs and different name should be applied.
+   */
+  label: string
+
+  /**
+   * element usage in segment.
+   */
+  usage: string enum X12ElementUsage
+
+  /**
+   * element usage attribute.
+   */
+  attrUsage: !string enum X12ElementAttributeUsage
+
+  /**
+   * element max usage number attribute.
+   */
+  attrUsageNm: !int
+
+  /**
+   * element's value may be of a specific type, data integrity tests are based on the type.
+   * type is null if there are no specific limitations for the value.
+   */
+  attrType: string enum X12ElementType
+
+  /**
+   * element's value is represented as a string, this field defines min length for the string.
+   */
+  attrMinSize: int
+
+  /**
+   * element's value is represented as a string, this field defines max length for the string.
+   */
+  attrMaxSize: int
+}

@@ -1,0 +1,113 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Processes Cron jobs
+ */
+type Cron.Processor {
+
+  /**
+   * Db.Engine that owns this processor
+   */
+  dbe: Db.Engine
+
+  /**
+   * Generates next time to schedule a cron job
+   */
+  triggerTimeGenerator: @java(class="c3.platform.cron.TriggerTimeGenerator") !native
+
+  /**
+   * Time between invalidation sweeps
+   */
+  pollDelayInSeconds: inline member function(): !int
+
+  /**
+   * Starts processing
+   */
+  start: inline member function()
+
+  /**
+   * @return the current status of the various functions/states of the processor
+   */
+  status: function(): !Cron.Processor.Status
+
+  getStatus: private member function(): !Cron.Processor.Status
+
+  /**
+   * Makes new instance of InvalidationQueue.Processor
+   */
+  makeInitial: function(dbe: !Db.Engine): !Cron.Processor
+
+  /**
+   * Gets the list of active cron jobs
+   *
+   * @param clearCache
+   *        if true, the cache will be cleared before fetching the active jobs.
+   *
+   * @return all cron jobs that are active
+   */
+  activeJobs: member function(clearCache: boolean): [CronJob]
+
+  /**
+   * @return all cron jobs that active and are to be run  in a leader node, rather than a task node.
+   */
+  runOnLeaderJobs: member function(): [CronJob]
+
+  /**
+   * Called in monitor loop to synchronize cron jobs with the CronQueue.
+   */
+  syncJobs: private member function()
+
+  /**
+   * Called in main processing loop to set CronQueue entries that are past their scheduled time to "pending" to trigger
+   * processing
+   */
+  doProcess: private member function()
+
+  /**
+   * Causes thread to sleep for the configured polling interval for cron jobs.
+   */
+  idleSleep: private inline member function()
+
+  /**
+   * Timestamp when main processing loop was started
+   */
+  processingStarted: inline member function(): datetime
+
+  /**
+   * Timestamp when processing loop terminated
+   */
+  processingTerminated: inline member function(): datetime
+
+  processingTerminatedCause: inline member function(): string
+  setProcessingTerminated:   private inline member function(cause: !string)
+
+  /**
+   * Timestamp of last pass through the main processing loop
+   */
+  lastProcessed: inline member function(): datetime
+
+  setLastProcessed: private inline member function(lastProcessed: !datetime)
+
+  /**
+   * The last error encountered during processing
+   */
+  lastError: inline member function(): @java(class="java.lang.Throwable") native
+
+  lastErrorReportedAt:        inline member function(): datetime
+  setLastError:               private inline member function(lastError: @java(class="java.lang.Throwable") !native)
+  _shouldProcess:             private @java(class="java.util.concurrent.atomic.AtomicBoolean") native
+  _isProcessing:              private @java(class="java.util.concurrent.atomic.AtomicBoolean") native
+  _processingStarted:         private @java(class="java.util.concurrent.atomic.AtomicReference<c3.platform.typesys.value.datetime.DateTime>") native
+  _processingTerminated:      private @java(class="java.util.concurrent.atomic.AtomicReference<c3.platform.typesys.value.datetime.DateTime>") native
+  _processingTerminatedCause: private @java(class="java.util.concurrent.atomic.AtomicReference<java.lang.String>") native
+  _lastProcessed:             private @java(class="java.util.concurrent.atomic.AtomicReference<c3.platform.typesys.value.datetime.DateTime>") native
+  _lastError:                 private @java(class="java.util.concurrent.atomic.AtomicReference<java.lang.Throwable>") native
+  _lastErrorReportedAt:       private @java(class="java.util.concurrent.atomic.AtomicReference<c3.platform.typesys.value.datetime.DateTime>") native
+  _pollDelayInSeconds:        private @java(class="java.util.concurrent.atomic.AtomicLong") native
+}

@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to define access to a specific action or group of actions.
+ * If no permissions apply to a type#action, access is **denied** by default.
+ *
+ * Permission string format (4 tokens, colon-delimited):
+ *   `access:typeName:actionGroup:action`
+ * @see access-control.c3doc.md
+ * - `*` matches any value in that token position.
+ * - Permissions are **not recursive**: a permission on a Type does not imply the same on its inner types.
+ * Use `Type.Inner` for a specific inner type or `Type.*` for all inner types.
+ *
+ * Examples:
+ * | Permission             | Explanation                                                |
+ * |------------------------|------------------------------------------------------------|
+ * |"allow:*::*"            | allow all actions on all Types (admin)                     |
+ * |"deny:*:write:"         | deny all actions in actionGroup=write on all Types         |
+ * |"allow:User::upsert"    | allow User.upsert()                                        |
+ * |"allow:Type.Inner:*:"   | allow all actions on Type.Inner                            |
+ * |"allow:Type.*:*:"       | allow all actions on all inner types of Type               |
+ *
+ * Relationships between roles and permissions:
+ * - Permissions are inherited. A permission granted to a nested role is automatically granted to parent roles of that role.
+ * - The order of permissions in a role does not matter. All permissions are evaluated to determine access.
+ * - Permissions are OR-ed across roles. If a user has multiple roles, access is allowed if any role allows it.
+ * - Permissions are AND-ed within a role. If a role has both allow and deny permissions that apply to a type#action, deny takes precedence.
+ */
+type Permission mixes AccessControl {
+
+  /**
+   * Access Type for this Permission (allow or deny)
+   */
+  access: string enum PermissionAccess
+
+  /**
+   * To see if the permission is applied to an action in the given type.
+   *
+   * @param typeName
+   *            type name the action belongs to.
+   * @param action
+   *            name of the action (or method).
+   * @return {@link PermissionAccess} result, allow or deny.
+   */
+  applyTo: member function(typeName: !string, action: !string): string enum PermissionAccess
+
+  /**
+   * Get the security level of the permission by finding the max value (min security level) among all the roles which
+   * have this permission. All permissions from the role {@link includes} this permission or is included by this
+   * permission are taken into consideration except for permission that applies to all types.
+   *
+   * @return security level if applicable, otherwise returns null.
+   */
+  securityLevel: inline member function(): int
+
+  /**
+   * Security level for a particular Type#action
+   */
+  securityLevelForTypeAction: cached function(action: !string): int
+
+  /**
+   * Check whether 'other' Permission is included (covered by) this Permission
+   *
+   * @param other
+   *           Permission to check 'this' against
+   * @return
+   *       TRUE iff 'other' is included by this, FALSE otherwise
+   */
+  includes: member function(other: !Permission): boolean
+
+  /**
+   * @return String serialized representation of this Permission with format: `access:typeName:actionGroup:action`
+   */
+  toString: inline ~
+
+  /**
+   * @return Permission from string representation. if the string is invalid, return null or throw error based on failIfInvalid
+   */
+  fromString: inline ~
+
+  fromString: inline function(s: !?string, failIfInvalid: boolean): mixing Permission
+}

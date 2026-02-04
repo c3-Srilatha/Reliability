@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Components of a duration.  Can be used to go to/from {@link Duration} instances for apis that require components
+ * (e.g. Native DB persistence as INTERVAL values)
+ */
+type DurationComponents {
+
+  /**
+   * Combines seconds, milliseconds and microseconds
+   */
+  secondsWithMicroseconds: property(): !double
+
+  days:         !int
+  hours:        !int
+  minutes:      !int
+  seconds:      !int
+  milliseconds: !int
+  microseconds: !int
+
+  /**
+   * Create a new instance from the individual component values
+   */
+  fromValues: inline function(days: !int,
+                              hours: !int,
+                              minutes: !int,
+                              seconds: !int,
+                              milliseconds: !int,
+                              microseconds: !int): !DurationComponents
+
+  /**
+   * Create a new instance from an instance of {@link Duration}
+   */
+  fromDuration: inline function(duration: !Duration): DurationComponents
+
+  /**
+   * Create a new instance from an instance of {@link Duration}
+   */
+  toDuration: inline member function(): Duration
+}

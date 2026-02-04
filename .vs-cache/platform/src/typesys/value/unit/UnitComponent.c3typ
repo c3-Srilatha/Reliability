@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Edge in the unit graph
+ */
+type UnitComponent {
+
+  /**
+   * the node pointed to by this edge
+   */
+  unit: !Unit
+
+  /**
+   * the order which applies as an exponent to the node at the tail of this edge
+   */
+  order: !int32 = 1
+
+  /**
+   * the factor which applies as a multiplier to the node at the tail of this edge
+   */
+  multiplier: !double = 1.0
+
+  /**
+   * Raise this edge to a power. This applies to both the factor and the order of this edge to raise them to the given
+   * power. This applies exactly as in basic math - the factor will be raised to the power, and the order will be added
+   * to the power
+   *
+   * @param power
+   *        the exponent to raise this edge to
+   * @return a copy of this edge raised to the power.
+   */
+  pow: member function(power: !int32): UnitComponent
+
+  /**
+   * Invert this edge. This is equivalent to {@link #pow}(-1);
+   *
+   * @return a copy of this edge inverted
+   */
+  invert: member function(): UnitComponent
+}

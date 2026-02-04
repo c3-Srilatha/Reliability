@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single run of reliability asset {@link ReliabilityAssetSensorAssociationJob} performed on one {@link ReliabilityAsset}.
+ */
+@beta
+extendable entity type ReliabilityAssetSensorAssociationRun mixes TimedValueHistory<ReliabilityAsset>, FilterableByFacility schema name 'RASRR' {
+
+  /**
+   * The {@link ReliabilityAssetSensorAssociationJob} that created this sensor relation run.
+   * The job is recommended to be started by calling
+   * {@link ReliabilityAsset#runSensorAssociationBatch}.
+   */
+  job: !ReliabilityAssetSensorAssociationJob
+
+  /**
+   * The {@link User} that was responsible for the creation of this sensor association run.
+   * If the run was created by a {@link job}, then this field will show the name of the
+   * {@link User} that started the {@link job}.
+   */
+  owner: string stored calc exists(job) ? job.meta.createdBy : meta.createdBy
+
+  /**
+   * The number of {@link Sensor}s which are selected based on the latest {@link ReliabilityAssetSensorSelectionSpec}
+   *  that is passed in to the {@link #selectTopSensorsForAsset} API.
+   */
+  numSensors: int
+
+  /**
+   * The status of the {@link ReliabilityAssetSensorAssociationRun} that is being executed.
+   */
+  status: ReliabilityOrchestrator.RunStatus
+
+  /**
+   * If the {@link #status} field is FAILED, this field will point to an {@link File} that
+   * contains the error stack.
+   */
+  errorFile: File
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["parent.facility"]
+
+  /**
+   * This method returns a map of asset {@link Feature}s' names to {@link Data}s.
+   * Each {@link Data} shows the sensor association results for the corresponding feature in a data frame format.
+   * The columns of the data frame are `sensor`, `lag`, `associationStrength` and
+   * `associationStrengthDirectional`, where `associationStrength` is simply the magnitude of
+   * `associationStrengthDirectional` and association may sometimes be negative. For example,
+   * pearson correlation coefficient can be negative. Notice that `lag`, `associationStrength`, and
+   * `associationStrengthDirectional` will be NaNs if the sensor and asset feature do not have overlapping
+   * timestamps to compute the association.
+   * @return A map from feature names to data frames containing sensor association results.
+   */
+  getAssociationResults: member function(): map<string, Data> py
+
+  /**
+   * For a given {@link ReliabilityAsset} and a {@link Feature}, choose the top {@link Sensor}s
+   * that are associated with it.
+   *
+   * Please refer to {@link ReliabilityAssetSensorSelectionSpec} to understand how to configure the
+   * parameters for how sensors should be selected.
+   * @param spec
+   *           The sensor selection specification to use.
+   * @return A map from sensor ID to association strength value.
+   */
+  selectTopSensorsForAsset: member function(
+    spec: !ReliabilityAssetSensorSelectionSpec
+  ): map<string, double>  py
+
+  /**
+   * Helper method to fetch correlation values for "excluded" sensors, i.e. sensors that are not mapped to
+   * the asset in {@link ReliabilityAssetSensorRelation}, or their {@link ReliabilityAssetSensorRelation#sensorAssociationJob}
+   * are set to null. For a given sensor of
+   * {@link ReliabilityAssetSensorSelectionSpec#featureName}, returns an instance of {@link FetchResultWithTotalCount}
+   * where `objs` are a list of pairs whose first value is the associated "excluded" sensor id and the second value is the correlation.
+   *
+   * @param sensorSelectionSpec
+   *           The sensor selection specification to use.
+   * @param fetchSpec
+   *           Its `order` value must be one of `magnitude`, `raw`, `sensorId`,
+   *           `descending(magnitude)`, `descending(raw)`, or `descending(sensorId)`.
+   *           Also note that the choice between `magnitude` and `raw` must be consistent with the value of
+   *           `sensorSelectionSpec.associationType`. By default, this parameter is set to:
+   *           ```py
+   *           c3.FetchSpec(
+   *             offset=0,
+   *             limit=2000,
+   *             order="descending(magnitude)",
+   *             filter="1 == 1"
+   *           )
+   *           ```
+   * @return A {@link FetchResultWithTotalCount} containing pairs of sensor ID and correlation values.
+   */
+  getExcludedCorrelationValues: member function(
+    sensorSelectionSpec: !ReliabilityAssetSensorSelectionSpec,
+    fetchSpec: FetchSpec
+  ): FetchResultWithTotalCount<Pair<string, double>> py
+}

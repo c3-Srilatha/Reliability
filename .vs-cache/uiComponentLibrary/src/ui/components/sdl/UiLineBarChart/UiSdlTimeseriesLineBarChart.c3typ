@@ -1,0 +1,353 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to represent a timeseries line bar chart.  We will use this type if the user selects to configure
+ * a timeseries line bar chart rather than a categorical line bar chart.
+ */
+@uiSdlDesignerComponent(designable=true,
+                        category='UiSdlTimeseriesLineBarChart.CategoryName',
+                        name='UiSdlTimeseriesLineBarChart.ComponentName',
+                        icon='chart-line')
+@uiComponentCategorizer(name='Timeseries line bar chart', category='Data Visualization')
+@typeScript
+type UiSdlTimeseriesLineBarChart mixes UiSdlLineBarChart<UiSdlTimeseriesLineBarChartDataSpec>, UiSdlTimeZoneLabel {
+
+  /**
+   * The specification used to retrieve event data displayed by this chart.
+   */
+  @uiSdlDataSpec(dataDestinationField='eventData')
+  eventDataSpec: UiSdlTimeseriesLineBarChartEventDataSpec
+
+  /**
+   * Stores the FetchResults retrieved by {@link #eventDataSpec}.
+   */
+  eventData: Obj
+
+  @uiSdlDataSpec(dataDestinationField='data')
+  dataSpec:~
+
+  /**
+   * The specification used to retrieve data displayed by this chart.
+   * Note: evalDataSpec takes priviledge over dataSpec. Developer cannot combine both.
+   * If `evalDataSpec` and `dataSpec` are both defined, `evalDataSpec` will be used and `dataSpec` will be ignored.
+   */
+  @beta
+  @uiSdlDataSpec(dataDestinationField='data')
+  evalDataSpec: UiSdlTimeseriesLineBarChartEvalDataSpec
+
+  /**
+   * Whether or not to show crosshairs on hovering the chart, these will snap to the nearest point based on both X and Y axis.
+   * It will also have a tooltip on the axes to show the date and value.
+   */
+  showCrosshair: boolean = false
+
+  /**
+   * Only timeseries chart will have xAxis component configuration.  Categorical charts will define their
+   * X-axis configuration in the dataSpec types.
+   */
+  xAxis: UiSdlTimeseriesLineBarChartXAxisConfig | UiSdlTimeseriesLineBarChartXAxisStaticConfig = { "type": "UiSdlTimeseriesLineBarChartXAxisConfig" }
+
+  /**
+   * Whether or not to display the "now" line on the chart.
+   */
+  showNowLine: boolean = false
+
+  /**
+   * Whether or not to enable collapsible xAxis feature.
+   * Warning - This is a private, unreleased feature. Use it at your own risk.
+   */
+  collapseXAxis: private boolean = false
+
+  /**
+   * Style configurations of vertical line at the "now" point of time according to the interval of data being plotted.
+   */
+  nowLineConfig: UiSdlTimeseriesLineBarChartNowLineConfig = {}
+
+  /**
+   * Configuration to add vertical line at any date on the graph.
+   */
+  dateLines: [UiSdlTimeseriesLineBarChartDateLineConfig]
+
+  /**
+   * Configurations to add vertical line at any date on the graph requiring a fetch call.
+   */
+  @uiSdlDataSpec(dataDestinationField='dateLinesData')
+  dateLinesDataSpec: UiSdlTimeseriesLineBarChartDateLineDataSpec
+
+  /**
+   * Whether or not to plot and show data at timestamps where there are 100% missing values.
+   */
+  hideMissingDataPoints: boolean = false
+
+  /**
+   * Timezone configuration for displayed data.
+   * E.g. if an event happened at 1am EST, we will show the event as happened at 1am to browsers in any timezone.
+   */
+  noTimeZoneConversion: boolean = false
+
+  /**
+   * Whether to show all information of timestamp on tooltip when hovering over on a chart.
+   * This configuration will show all information of a timestamp regardless of the
+   * display interval.
+   *
+   * E.g. if INTERVAL = 'YEAR' and timestamp = 2023-01-01T00:00:00
+   * if `false`, tooltip will show 2023
+   * if `true`, tooltip will show Jan 1, 2023 12:00:00 AM
+   */
+  showAllTimestampInfoOnTooltip: boolean = false
+
+  /**
+   * Whether or not to show the start date of the chart.
+   */
+  showStartAndEndDate: boolean = true
+
+  /**
+   * Start date displayed in the chart shown only when dataSelection is enabled.
+   */
+  displayStartDate: string = ''
+
+  /**
+   * End date displayed in the chart shown only when dataSelection is enabled.
+   */
+  displayEndDate: string = ''
+
+  markerIdentifiersToCollapse: [string]
+
+  /**
+   * Interval display value in the chart shown only when dataSelection is enabled.
+   * Internal use only.
+   */
+  displayInterval: string enum Interval = DAY
+
+  /**
+   * Interval display options in the chart shown only when dataSelection is enabled.
+   */
+  displayIntervalOptions: [string enum Interval]
+
+  /**
+   * Whether or not to override user config ID with data generated ID.
+   */
+  shouldOverrideUserConfigIdWithDataGeneratedId: boolean = false
+
+  /**
+   * Whether or not to show the data selector. For example, the date range and interval selectors.
+   */
+  dataSelection: boolean
+
+  /**
+   * when this boolean turns true, it means we use the data selection inputs to control the data zoom
+   * it changes the chart range but does not make a new API call.
+   */
+  dataSelectionControlsDataZoom: boolean = false
+
+  /**
+   * Start value used in the datazoom to filter a certain range of chart.
+   */
+  dataZoomStartValue: string = ''
+
+  /**
+   * End value used in the datazoom to filter a certain range of chart.
+   */
+  dataZoomEndValue: string = ''
+
+  /**
+   * If true, displays each chart series on a separate chart grid, while sychronizing the ability to view
+   * information such as x-axis value and tooltip across series.
+   */
+  synchronized: boolean
+
+  /**
+   * If true, order the series in whatever order they are returned from the server. By default, the series
+   * will be ordered alphanumerically by ID.
+   */
+  suppressOrderSeriesById: boolean
+
+  doDataMerge: ~ ts-client
+
+  /**
+   * Creates a mapping from event specification indices in {@link #eventDataSpec}
+   * to data source ids. Used by {@link #doDataMerge} to merge data into the props
+   * in a way that's easy to match with the corresponding configuration.
+   */
+  getIndexedEventDataSourceIds: private function(componentId: string,
+                                                 state: UiSdlReduxState): map<int, string> ts-client
+
+  /**
+   * Given a data source id, return the index of the corresponding {@link UiSdlTimeseriesLineBarChartEventSeriesDataSpec}
+   * in {@link UiSdlTimeseriesLineBarChartEventDataSpec#events}.
+   * If the data source id is not for an event, returns `null`.
+   */
+  getEventDataSourceIndex: private function(dataSourceId: string): int
+
+  generateSpec: ~ ts-client
+
+  /**
+   * Triggered to update the filter for the time series.
+   *
+   * @param id
+   *           Id of the component.
+   * @param start
+   *           Start date for the filter spec {@link EvalMetricSpec}.
+   * @param end
+   *           End date for the filter spec.
+   * @param interval
+   *           interval for the filter spec.
+   *
+   * @return A `HIDDEN_SERIES_UPDATE` action for this instance with the following properties:
+   * - payload {string} The name of the series.
+   */
+  @uiSdlActionCreator(actionType='DATA_FILTER_UPDATE')
+  updateDataFilterAction: function(id: string,
+                                   start: string,
+                                   end: string,
+                                   interval: string): UiSdlDataFilterUpdateAction ts-client
+
+  /**
+   * Triggers `ARGUMENTS_MERGE` and `DATA_REQUEST` actions when users update the filter and index of the data source is null.
+   * Otherwise triggers `DATA_CONFIG_UPDATE` and `DATA_REQUEST` actions.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='DATA_FILTER_UPDATE')
+  dataFilterUpdateEpic: private function(actionStream: UiSdlActionsObservable,
+                                         stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggered to update the dataZoom start value.
+   *
+   * @param id
+   *           Id of the component.
+   * @param newDateString
+   *           Start date for the dataZoom.
+   */
+  @uiSdlActionCreator(actionType='DATA_ZOOM_START_VALUE_UPDATE')
+  updateDataZoomStartValueAction: function(id: string, newDateString: string): UiSdlDisplayDateUpdateAction ts-client
+
+  /**
+   * Updates the dataZoomStartValue from redux state of the component.
+   */
+  @uiSdlReducer(actionType='DATA_ZOOM_START_VALUE_UPDATE')
+  dataZoomStartValueUpdateReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlDataSourcesClearAction): UiSdlReduxState ts-client
+
+  /**
+   * Triggered to update the synchronized value.
+   *
+   * @param id
+   *           Id of the component.
+   * @param synchronized
+   *           New synchronized value.
+   */
+  @uiSdlActionCreator(actionType='SYNCHRONIZED_MODE_CHANGE')
+  changeSynchronizedModeAction: function(id: string, synchronized: boolean): UiSdlChartSynchronizedModeChangeAction ts-client
+
+  /**
+   * Updates the synchronized from redux state of the component.
+   */
+  @uiSdlReducer(actionType='SYNCHRONIZED_MODE_CHANGE')
+  synchronizedModeChangeReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlChartSynchronizedModeChangeAction): UiSdlReduxState ts-client
+
+  /**
+   * Triggered to collapse certain xAxis areas.
+   *
+   * @param id
+   *           Id of the component.
+   * @param markerIdentifiersToCollapse
+   *           marker areas to get collapsed
+   */
+  @uiSdlActionCreator(actionType='X_AXIS_AREA_COLLAPSE')
+  collapseXAxisAreaAction: function(id: string, markerIdentifiersToCollapse: any): UiSdlChartXAxisAreaCollapseAction ts-client
+
+  /**
+   * Updates the collapsed xaxis area from redux state of the component.
+   */
+  @uiSdlReducer(actionType='X_AXIS_AREA_COLLAPSE')
+  xAxisAreaCollapseReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlChartXAxisAreaCollapseAction): UiSdlReduxState ts-client
+
+  /**
+   *Triggered to update the dataZoom end value.
+   *
+   * @param id
+   *           Id of the component.
+  * @param newDateString
+   *           Start date for the dataZoom.
+   */
+  @uiSdlActionCreator(actionType='DATA_ZOOM_END_VALUE_UPDATE')
+  updateDataZoomEndValueAction: function(id: string, newDateString: string): UiSdlDisplayDateUpdateAction ts-client
+
+  /**
+   * Updates the dataZoomEndValue from redux state of the component.
+   */
+  @uiSdlReducer(actionType='DATA_ZOOM_END_VALUE_UPDATE')
+  dataZoomEndValueUpdateReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlDataSourcesClearAction): UiSdlReduxState ts-client
+
+  /**
+   * Triggered to update the date range and interval selector in the chart.
+   *
+   * @param id
+   *           Id of the component.
+   * @param start
+   *           Start date for the filter spec {@link EvalMetricSpec}.
+   * @param end
+   *           End date for the filter spec.
+   * @param interval
+   *           interval for the filter spec.
+   */
+  @uiSdlActionCreator(actionType='DISPLAY_DATE_UPDATE')
+  updateDisplayDateAction: function(id: string,
+                                    start: string,
+                                    end: string,
+                                    interval: string): UiSdlDisplayDateUpdateAction ts-client
+
+  /**
+   * Updates the date selector and interval values in the redux state of the component.
+   */
+  @uiSdlReducer(actionType='DISPLAY_DATE_UPDATE')
+  displayDateUpdateReducer: private inline function(state: UiSdlReduxState,
+                                                    action: UiSdlDisplayDateUpdateAction): UiSdlReduxState ts-client
+
+  filterSubmitEpic: ~ ts-client
+
+  /**
+   * Triggers `DISPLAY_DATE_UPDATE` action when the chart renders the first time.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='INITIAL_RENDER')
+  lineBarChartInitialRenderEpic: private function(actionStream: UiSdlActionsObservable,
+                                                  stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggered to clear all data sources associated with this chart.
+   * @param id
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='DATA_SOURCES_CLEAR')
+  clearDataSourcesAction: function(id: string): UiSdlDataSourcesClearAction ts-client
+
+  /**
+   * Clears all data sources associated with this chart.
+   */
+  @uiSdlReducer(actionType='DATA_SOURCES_CLEAR')
+  dataSourcesClearReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlDataSourcesClearAction): UiSdlReduxState ts-client
+}

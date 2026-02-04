@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents the validation contributions related to a risk score prediction in a machine learning model.
+ * The validation contribution provides an assessment of how much each factor (or feature) contributes to the
+ * overall prediction, and it is used to assess the model’s accuracy and reliability.
+ *
+ * The entity is designed to capture and store the contribution of specific features or factors in the model's
+ * prediction, including their associated uncertainty ranges (lower and upper bounds).
+ * This type can be used in the context of model validation, where you want to understand the impact of each feature
+ * on the predicted risk score, providing a more transparent and interpretable machine learning model.
+ */
+@db(datastore='cassandra',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    compactType=true,
+    shortIdReservationRange=100000,
+    columnarStorage=false)
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskScoreMlValidationContribution mixes TimedDataPoint<ReliabilityRiskScoreMlValidationContributionHeader> schema name 'REL_RRMVC' {
+
+  /**
+   * The numerical value for the contribution of the feature or factor to the overall risk score prediction.
+   * This value represents the impact that the given feature has on the final prediction, based on the model's
+   * learned parameters. The contribution can be positive (indicating an increase in the risk score) or negative
+   * (indicating a decrease in the risk score).
+   */
+  @ts(treatmentPath='parent.treatment')
+  contribution: !double
+
+  /**
+   * The numerical value of the lower bound for the contribution of the feature to the risk score prediction.
+   * This represents the lower end of the confidence interval or the uncertainty in the contribution's value.
+   * It provides insight into the potential variability of the contribution and helps quantify the confidence
+   * in the model's prediction for this feature.
+   */
+  contributionLowerBound: double
+
+  /**
+   * The numerical value of the upper bound for the contribution of the feature to the risk score prediction.
+   * This represents the upper end of the confidence interval or the uncertainty in the contribution's value.
+   * It provides insight into the potential variability of the contribution and helps quantify the confidence
+   * in the model's prediction for this feature.
+   */
+  contributionUpperBound: double
+}

@@ -1,0 +1,345 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A filter pills component where users add filters from a popup.
+ */
+@beta
+@typeScript
+type PopupFilter mixes UiSdlComponent<any> {
+
+  /**
+   * Whether the filter component is open
+   */
+  open: boolean
+
+  /**
+   * Whether the `currentFilterData` is invalid
+   */
+  invalid: boolean
+
+  /**
+   * The options/fields to apply filters on
+   */
+  filterOptions: [PopupFilterOption]
+
+  /**
+   * The currently selected filter option/field
+   */
+  selectedFilterOption: PopupFilterOption
+
+  /**
+   * The placeholder for the filter option dropdown
+   */
+  filterOptionPlaceholder: string
+
+  /**
+   * The current filter data that is being modified in a {@link UiSdlFormDataGrid}
+   */
+  currentFilterData: [PopupFilterDataItem]
+
+
+  /**
+   * Data for displaying the filter pills.
+   */
+  filtersData: [[PopupFilterDataItem]]
+
+
+  /**
+   * Action to set `invalid` when the currentFilterData is validated.
+   *
+   * @param id
+   *           the id of the component.
+   * @param invalid
+   *           Whether the `currentFilterData` is invalid.
+   *
+   * @returns a `SET_FILTER_INVALID` action
+   */
+  @uiSdlActionCreator(actionType='SET_FILTER_INVALID')
+  setFilterInvalidAction: private function(id: !string, invalid: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FILTER_INVALID` and sets internal field `invalid`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SET_FILTER_INVALID')
+  setFilterInvalidReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Epic to reset the `currentFilterData` and pre-populate it with an empty row. This epic is ran when
+   * we first render the component and when the user re-selects a filter option.
+   */
+  @uiSdlEpic(actionType=['INITIAL_RENDER', 'SET_SELECTED_FILTER_OPTION'])
+  resetFilterDataEpic: private inline function(state: !UiSdlReduxState,
+                                                         action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action to set the `selectedFilterOption` when users change the option/field to apply filters on.
+   *
+   * @param id
+   *           the id of the component.
+   * @param filterOption
+   *           The {@link PopupFilterOption} to be set.
+   *
+   * @returns a `CLEAR_FILTER` action
+   */
+  @uiSdlActionCreator(actionType='SET_SELECTED_FILTER_OPTION')
+  setSelectedFilterOptionAction: private function(id: !string, filterOption: !PopupFilterOption): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_SELECTED_FILTER_OPTION` and sets `selectedFilterOption`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SET_SELECTED_FILTER_OPTION')
+  setSelectedFilterOptionReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action triggered when user updates a row in the filter data {@link UiSdlFormDataGrid}
+   *
+   * @param id
+   *           the id of the component.
+   * @param itemId
+   *           The id of the dataItem row
+   * @param dataItem
+   *           The value of the dataItem to be updated
+   *
+   * @returns a `CLEAR_FILTER` action
+   */
+  @uiSdlActionCreator(actionType='UPDATE_CURRENT_FILTER_DATA')
+  updateCurrentFilterDataAction: private function(id: !string, itemId: string, dataItem: PopupFilterDataItem): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `UPDATE_CURRENT_FILTER_DATA` and updates a row in `currentFilterData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='UPDATE_CURRENT_FILTER_DATA')
+  updateCurrentFilterDataReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+
+  /**
+   * Action triggered when user adds a new row in the filter data {@link UiSdlFormDataGrid}
+   *
+   * @param id
+   *           the id of the component.
+   *
+   * @returns a `ADD_CURRENT_FILTER_DATA` action
+   */
+  @uiSdlActionCreator(actionType='ADD_CURRENT_FILTER_DATA')
+  addCurrentFilterDataAction: private function(id: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `ADD_CURRENT_FILTER_DATA` adds an entry to `currentFilterData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='ADD_CURRENT_FILTER_DATA')
+  addCurrentFilterDataReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+
+  /**
+   * Action triggered when user removes a row in the filter data {@link UiSdlFormDataGrid}
+   *
+   * @param id
+   *           the id of the component.
+   * @param itemId
+   *           The dataItem id of the row removed
+   *
+   * @returns a `CLEAR_FILTER` action
+   */
+  @uiSdlActionCreator(actionType='REMOVE_CURRENT_FILTER_DATA')
+  removeCurrentFilterDataAction: private function(id: !string, itemId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `REMOVE_CURRENT_FILTER_DATA` and removes an entry in `currentFilterData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='REMOVE_CURRENT_FILTER_DATA')
+  removeCurrentFilterDataReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action triggered user wants to clear/reset the `currentFilterData`.
+   *
+   * @param id
+   *           the id of the component.
+   *
+   * @returns a `CLEAR_CURRENT_FILTER_DATA` action
+   */
+  @uiSdlActionCreator(actionType='CLEAR_CURRENT_FILTER_DATA')
+  clearCurrentFilterDataAction: private function(id: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_CURRENT_FILTER_DATA` and resets the `currentFilterData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CLEAR_CURRENT_FILTER_DATA')
+  clearCurrentFilterDataReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action triggered when user submits its `currentFilterData` by clicking on apply filter button.
+   *
+   * @param id
+   *           the id of the component.
+   * @param filterItems
+   *           The filter items to be added and display as a filter pill.
+   *
+   * @returns a `CLEAR_FILTER` action
+   */
+  @uiSdlActionCreator(actionType='ADD_FILTER')
+  addFilterAction: private function(id: !string, filterItems: [PopupFilterDataItem]): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `ADD_FILTER` and adds to `filtersData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='ADD_FILTER')
+  addFilterReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Epic triggered when user applies a filter, which resets the popup filter and closes the popup.
+   */
+  @uiSdlEpic(actionType='ADD_FILTER')
+  addFilterEpic: private inline function(state: !UiSdlReduxState,
+                                                        action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action triggered when the clear filters button is clicked.
+   *
+   * @param id
+   *           the id of the component
+   *
+   * @returns a `CLEAR_ALL_FILTERS` action
+   */
+  @uiSdlActionCreator(actionType='CLEAR_ALL_FILTERS')
+  clearAllFiltersAction: private function(id: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_ALL_FILTERS` and resets `filtersData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CLEAR_ALL_FILTERS')
+  clearAllFiltersReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action triggered when the close button is clicked for a filter pill.
+   *
+   * @param id
+   *           the id of the component.
+   * @param filterIndex
+   *           The index of that filter condition
+   *
+   * @returns a `CLEAR_FILTER` action
+   */
+  @uiSdlActionCreator(actionType='CLEAR_FILTER')
+  clearFilterAction: private function(id: !string, filterIndex: !int): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_FILTER` and removes an entry in `filtersData`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CLEAR_FILTER')
+  clearFilterReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when the filter is opened or closed.
+   *
+   * @param id
+   *          Id of the component.
+   * @param open
+   *          If true the filter was opened.  If false the filter was closed.
+   *
+   * @returns A `(OPEN|CLOSE)_FILTER` action for this instance.
+   *   - payload {boolean} The status to set the {@link open} field to.
+   */
+  @uiSdlActionCreator(actionType='(OPEN|CLOSE)_FILTER')
+  openCloseFilterAction: function(id: !string, open: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `OPEN_FILTER` and sets internal field {@link open} to true.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='OPEN_FILTER')
+  openFilterReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `CLOSE_FILTER` and sets internal field {@link open} to false.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CLOSE_FILTER')
+  closeFilterReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Epic triggered when the user closes the popup filter which resets the popup filter.
+   */
+  @uiSdlEpic(actionType=['CLOSE_FILTER'])
+  closeFilterEpic: private inline function(state: !UiSdlReduxState,
+                                                         action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

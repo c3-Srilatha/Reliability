@@ -1,0 +1,140 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A test component for the select data connector tab
+ */
+type LukeTestSelectDataConnectorStep mixes LukeTestComponent {
+
+  /**
+   * The error inline notification component in the schema tab
+   */
+  errorInlineNotification: LukeTestUiSdlInlineNotification
+
+  /**
+   * The selfServiceDIPage associated with this step
+   */
+  selfServiceDIPage: LukeTestSelfServiceDIPage
+
+  /**
+   * The search bar in the select data connector tab
+   */
+  searchBar: LukeTestUiSdlForm
+
+  /**
+   * The information card list
+   */
+  informationCardList: LukeTestInformationCardList
+
+  /**
+   * The add data source step
+   */
+  addDataSourceStep: LukeTestAddDataSourceStep
+
+  /**
+   * The selector for the clear search button
+   */
+  clearSearchButtonSelector: string = '.c3-button-link[aria-label="Clear search"]'
+
+  /**
+   * A function to search for connectors
+   * @param query
+   *           The query to search for
+   */
+  searchConnectors: inline member function(query: string) js
+
+  /**
+   * A function to verify the title and subtitle of an information card
+   * @param connector
+   *           The connector to verify
+   */
+  verifyInformationCardTitleAndSubtitle: inline member function(connector: any) js
+
+  /**
+   * A function to verify the color of an information card
+   * @param expectedColor
+   *           The expected color of the information card
+   */
+  verifyInformationCardColor: inline member function(expectedColor: string) js
+
+  /**
+   * A function to verify the search for a connector
+   * @param connector
+   *           The connector to search for
+   */
+  verifyConnectorSearch: inline member function(connector: any) js
+
+  /**
+   * A function to clear the search and verify
+   */
+  clearSearchAndVerify: inline member function() js
+
+  /**
+   * A function to get the data connectors
+   *
+   * @return an array of {@link SelfServiceDI.Ui.DataConnector}
+   */
+  getDataConnectors: inline member function(): [SelfServiceDI.Ui.DataConnector] js
+
+  /**
+   * A function to get the information card for a connector
+   * @param connectorId
+   *           The connectorId to search for
+   * @return the information card selector for the connector
+   */
+  getInformationCardforConnector: inline member function(connectorId: string): string js
+
+  /**
+   * A function to verify the data connectors
+   */
+  verifyDataConnectors: inline member function() js
+
+  /**
+   * A function to verify that there are no data connectors selected
+   */
+  verifyNoDataConnectorSelected: inline member function() js
+
+  /**
+   * A function to verify the selection of a connector
+   */
+  verifyConnectorSelection: inline member function() js
+
+  /**
+   * A function to verify proceeding without selecting a connector
+   */
+  verifyProceedWithoutConnector: inline member function() js
+
+  /**
+   * Select a data connector and verify that the data connector is selected
+   * @param connectors
+   *           The connectors to search for
+   *
+   * Steps:
+   * 1. Run addDataSourceFlow
+   * 2. Assert that the Multistep Component step 1 is blue
+   * 3. Assert that the Multistep Component step 2 is grey
+   * 4. For each connector in the connectors array:
+   *    a. Set the search bar to the connector name
+   *    b. Assert that the information card title contains the connector name
+   *    c. Assert that the information card subtitle contains the connector provider
+   * 5. Set the search bar to an invalid name
+   * 6. Assert that the clear search button exists
+   * 7. Click the clear search button
+   * 8. Assert that the number of information cards is the length of the available connectors
+   * 9. assert that the information card border color is grey
+   * 10. Click an information card
+   * 11. Assert that the selected information card border color is blue
+   * 12. Click the cancel button
+   * 13. Run addDataSource
+   * 14. Assert that the information card border color is grey
+   * 15. Click the proceed button
+   * 16. Assert that the current step is still step 1
+   * 17. Assert that the error notification is displayed
+   */
+  selectDataConnector: inline member function() js
+}

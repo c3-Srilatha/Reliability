@@ -1,0 +1,181 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * What type of Markdown structure the block represents. These are basically HTML elements, since Markdown is generally
+ * translated into HTML for rendering.
+ *
+ * @see DocumentationBlock
+ */
+enum type DocumentationBlockKind {
+
+  /**
+   * A whole document (list of outermost blocks).
+   */
+  DOC
+
+  /**
+   * Top-level heading.
+   *
+   * @see DocumentationHeading
+   */
+  H1
+
+  /**
+   * 2nd-level heading.
+   *
+   * @see DocumentationHeading
+   */
+  H2
+
+  /**
+   * 3rd-level heading.
+   *
+   * @see DocumentationHeading
+   */
+  H3
+
+  /**
+   * 4th-level heading.
+   *
+   * @see DocumentationHeading
+   */
+  H4
+
+  /**
+   * 5th-level heading.
+   *
+   * @see DocumentationHeading
+   */
+  H5
+
+  /**
+   * 6th-level heading.
+   *
+   * @see DocumentationHeading
+   */
+  H6
+
+  /**
+   * Ordinary paragraph.
+   */
+  P
+
+  /**
+   * Quoted paragraph.
+   */
+  QUOTE
+
+  /**
+   * Fenced code block (source code).
+   */
+  CODE
+
+  /**
+   * Ordered list (numbers).
+   */
+  OL
+
+  /**
+   * Unordered list (bullets).
+   */
+  UL
+
+  /**
+   * Item in a list.
+   */
+  LI
+
+  /**
+   * Horizontal rule.
+   */
+  HR
+
+  /**
+   * Table.
+   *
+   * @see DocumentationTable
+   */
+  TABLE
+
+  /**
+   * Row of a table.
+   */
+  TR
+
+  /**
+   * Cell of a table (header or body).
+   */
+  TD
+
+  /**
+   * Display math equation.
+   */
+  MATH
+
+  /**
+   * Outer structure for one or more tabs made from sections using `=` as the leader. Contains `TAB` blocks.
+   *
+   * @see DocumentationTabSet
+   */
+  TABSET
+
+  /**
+   * Inner structure for each tab made from sections using `=` as the leader (inside a `TABSET`).
+   *
+   * @see DocumentationTab
+   */
+  TAB
+
+  /**
+   * A collapsible section using `+` as the leader.
+   */
+  COLLAPSE
+
+  /**
+   * The body of a footnote at the bottom of the page.
+   */
+  FOOTNOTE
+
+  /**
+   * A bordered section in a grid layout, delimited by multiple open and close brackets.
+   */
+  CARD
+
+  /**
+   * Extract the block kind from a block object. If the obj is null or has no kind, null is returned.
+   * If failIfInvalid is true, a missing or invalid kind throws an appropriate error.
+   *
+   * @param obj DocumentationBlock obj to extract kind from
+   * @param failIfInvalid if true, error is thrown if obj is null, has no kind, or the kind is invalid
+   *
+   * @see DocumentationBlock
+   * @see #toValue
+   */
+  fromObj: inline function(obj: Obj, failIfInvalid: boolean): string
+
+  /**
+   * Whether or not this is a heading element (H1 through H6).
+   */
+  isHeading: inline function(kind: string enum DocumentationBlockKind): boolean
+
+  /**
+   * Whether or not this is a paragraph.
+   */
+  isParagraph: inline function(kind: string enum DocumentationBlockKind): boolean
+
+  /**
+   * Whether or not this is a code block.
+   */
+  isCode: inline function(kind: string enum DocumentationBlockKind): boolean
+
+  /**
+   * Get the depth of the heading; zero-based. If this is not a heading (H1 through H6), return null.
+   */
+  headingDepth: inline function(kind: string enum DocumentationBlockKind): int
+}

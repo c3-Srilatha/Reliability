@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This link builder produces logical URI-style targets for links which will be processed later. Basically the kind
+ * and path are concatenated and separated by colons so a link that started out as `@link DocumentationRenderer`,
+ * parsed as the {@link DocumentationRenderer} with kind "TYPE" and path: "DocumentationRenderer", would return
+ * "doc:type:DocumentationReference".
+ *
+ * Logical URIs are not supported for images, so null is always returned for relative image references.
+ *
+ * @see DocumentationRenderer
+ * @see DocumentationRenderSpec
+ */
+type DocumentationUriLinkBuilder mixes DocumentationLinkBuilder, DefaultInstance {
+
+  /**
+   * Return a logical URI composed of "doc:", the kind and the path for references to structure kinds. Full URLs remain
+   * as-is and relative URLs return null.
+   *
+   * | Kind         | path            | URI                     |
+   * |--------------|-----------------|-------------------------|
+   * | TYPE         | User            | doc:type:User           |
+   * | DATA_FIELD   | User#groups     | doc:field:User#groups   |
+   * | METHOD_FIELD | User#fetch      | doc:method:User#fetch   |
+   * | TOPIC        | typesys.c3doc   | doc:topic:typesys.c3doc |
+   * | URL          | http://c3iot.ai | http://c3iot.ai         |
+   * | URL          | img/diagram.png |                         |
+   *
+   * @see DocumentationKind
+   */
+  href: ~
+
+  inst: ~ java | js
+}

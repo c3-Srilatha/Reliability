@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An implementation of the abstract type {@link AlgorithmicallyComputedTrainingMaskTechnique}, that implements
+ * a Principal Component Analysis algorithm to compute anomalous periods to mask out training data, and can be used in
+ * {@link ReliabilityMlDatasetPreparationHelper#prepareAlgorithmicallyComputedTrainingMask}.
+ */
+type PcaTrainingMaskTechnique mixes AlgorithmicallyComputedTrainingMaskTechnique {
+
+ /**
+  * Arguments, as a map, to be passed to the PCA. The PCA is implemented using the sklearn.decomposition PCA library.
+  * Refer to {@link https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html}.
+  * By default, if no parameters are passed, PCA is instantiated with `{"n_components": 0.95}`.
+  */
+  pcaArguments: map<string, any> = {'n_components': 0.95}
+
+  /**
+  * Two methods are implemented to aggregate p values after they've been calculated on each dimension of the latent post-PCA space:
+  * - `fisher` is the default method to combine p values. It is stable for low `anomalyScoreThreshold` values.
+  * - `stouffer` method should output similar results to fisher for low values of `anomalyScoreThreshold`, but it is more sensitive to varying threshold values.
+  */
+  combinePValuesMethod: string enum('fisher', 'stouffer') = 'fisher'
+
+  /**
+  * Threshold to detect anomalies, should be between 0 and 1. An anomaly threshold between 0.005 and 0.05 is likely to be a sensible input.
+  * The higher the threshold, the more masked data.
+  */
+  anomalyScoreThreshold: float = 0.05
+
+  doPrepareMask: ~ py-sklearn
+}

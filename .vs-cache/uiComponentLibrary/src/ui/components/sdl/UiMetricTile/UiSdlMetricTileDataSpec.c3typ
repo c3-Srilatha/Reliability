@@ -1,0 +1,151 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Data spec for  data retrieval for instances of the {@link UiSdlMetricTile} component type.
+ */
+@typeScript
+type UiSdlMetricTileDataSpec mixes UiSdlMetricBasedDataSpec, UiSdlWithTimeZone {
+
+  /**
+   * Spec describing the notation style of the {@link UiSdlMetricTile}.
+   * This value will be used in {@link UiSdlNumberParamKindFormatSpec}
+   */
+  notation: string enum('standard', 'scientific', 'engineering', 'compact')
+
+  /**
+   * Spec describing how to evaluate the main value of the {@link UiSdlMetricTile}
+   */
+  mainValue: UiSdlMetricTileDataSpecMainValueSetting = {}
+
+  /**
+   * Spec describing how to evaluate the KPI trend comparison section of the {@link UiSdlMetricTile}
+   */
+  kpiTrendComparison: UiSdlMetricTileDataSpecKPITrendComparisonSetting
+
+  /**
+   * Spec describing how to evaluate the historic sparkline plot for the {@link UiSdlMetricTile}.
+   */
+  historicSparkline: UiSdlMetricTileDataSpecHistoricalSparklineSetting
+
+  /**
+   * Spec describing how to evaluate the forecast sparkline plot for the {@link UiSdlMetricTile}.
+   */
+  forecastSparkline: UiSdlMetricTileDataSpecForecastSparklineSetting
+
+  /**
+   * Spec describing how to evaluate the plan sparkline plot for the {@link UiSdlMetricTile}.
+   */
+  planSparkline: UiSdlMetricTileDataSpecPlanSparklineSetting
+
+  /**
+   * The transform functions to use for this data spec.
+   * Functions that are available are {@link UiSdlTransformUiSdlChartDataToEChartConfig}
+   * and {@link UiSdlTransformEvalMetricsResultToUiSdlChartData}.
+   */
+  dataTransforms: ~ = ['UiSdlTransformEvalMetricsResultToUiSdlChartData', 'UiSdlTransformUiSdlChartDataToEChartConfig']
+
+  dataSpecDependence: ~ = [{configField: 'noTimeZoneConversion', argumentSpecField: 'timeZone', transformFunction: 'geTimeZoneConversion'}]
+
+  /**
+   * Converts the data spec to an array of partially applied actions.
+   */
+  toPartiallyAppliedActions: ~ ts-client
+
+  /**
+   * Converts the advanced data spec data to an array of partially applied advanced actions.
+   */
+  toPartiallyAppliedAdvancedActions: ~ ts-client
+
+  /**
+   * Builds a partially applied action from the given dataType and spec.
+   *
+   * @param defaultDataType
+   *          Default dataType on which the metric is defined. Used if spec.dataType is null.
+   * @param spec
+   *          Used to construct the evalMetric/rollupMetric spec for the {@link UiSdlPartiallyAppliedActionInfo}.
+   * @param isFuture
+   *          Whether the metric is evaluated in a future period.
+   * @param actionId
+   *          Action id for this {@link UiSdlPartiallyAppliedActionInfo}.
+   *
+   * @return {@link UiSdlPartiallyAppliedActionInfo} to evaluate a metric.
+   */
+  buildPartiallyAppliedAction: private function(dataType: Type,
+                                                spec: json,
+                                                isFuture: boolean,
+                                                actionId: string): UiSdlPartiallyAppliedActionInfo ts-client
+
+  /**
+   * Returns a date which is {@link UiSdlMetricTileDataSpecSparklineSetting#timeHorizon} in the past or future from
+   * the given "date". Used in {@link UiSdlMetricTileDataSpec#getStartDate} and {@link UiSdlMetricTileDataSpec#getEndDate}.
+   *
+   * @param date
+   *          Date we want to modify.
+   * @param timeHorizon
+   *          Time horizon for sparkline plot.
+   * @param isFuture
+   *          Whether the return date is in the future.
+   *
+   * @return Modified date.
+   */
+  shiftByTimeHorizon: private function(date: datetime, timeHorizon: !string, isFuture: boolean): datetime ts-client
+
+  /**
+   * Returns a date which is shifted to the beginning of the next interval. Eg, if interval is MONTH and date
+   * is 2019-01-03, this function will return 2019-02-01. Similarly if interval is YEAR and date is 2019-03-07,
+   * this function will return 2020-01-01.
+   *
+   * @param date
+   *          Date we want to shift.
+   * @param interval
+   *          Interval by which the date has to be shifted.
+   *
+   * @return Date shifted to the start of next interval.
+   */
+  shiftToStartOfNextInterval: private function(date: !datetime, interval: !string): datetime ts-client
+
+  /**
+   * Helper function to return current date so we can use it to calculate start or end date in {@link EvalMetricSpec}.
+   *
+   * @param endpoint
+   *          {@link UiSdlMetricTileDataSpecSetting#endpoint} to determine what time the end and start timestamp should get calculated.
+   *          Endpoint config will only apply for 'HOUR' and 'DAY' intervals.
+   * @param interval
+   *          {@link UiSdlMetricTileDataSpecSetting#interval} by which the date has to be shifted.
+   *
+   * @return Today's date.
+   */
+  getCurrentDate: private function(endpoint: !string, interval: !string): datetime ts-client
+
+  /**
+   * Helper function to calculate start date for trend indicator, and various sparkline plots. Used as start date in
+   * {@link EvalMetricsSpec}.
+   *
+   * @param spec
+   *          Spec describing how to construct the start date.
+   * @param isFuture
+   *          Whether the return date is in the future.
+   *
+   * @return Start date.
+   */
+  getStartDate: private function(spec: json, isFuture: boolean): datetime ts-client
+
+  /**
+   * Helper function to calculate end date for trend indicator, and various sparkline plots. Used as end date in
+   * {@link EvalMetricsSpec}.
+   *
+   * @param spec
+   *          Spec describing how to construct the end date.
+   * @param isFuture
+   *          Whether the return date is in the future.
+   *
+   * @return End date.
+   */
+  getEndDate: private function(spec: json, isFuture: boolean): datetime ts-client
+}

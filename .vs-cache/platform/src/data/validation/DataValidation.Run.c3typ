@@ -1,0 +1,288 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+@dependency(include="ruleObj")
+@db(index=["rule", "rule, descending(meta.created, true)"])
+@restful(endpoint='DataValidation.Run')
+entity type DataValidation.Run {
+
+  /**
+   * The default name all {@link DataValidation.Run.Details} will be given if {@link #addDetails} is called without
+   * specifying the name parameter.
+   */
+  DEFAULT_SCHEMA_NAME: const string = 'result'
+
+  /**
+   * targetType of the associated **DataValidation.Rule**
+   */
+  targetType: !Type
+
+  /**
+   * Associated **DataValidation.Rule** for this run.
+   */
+  rule: !DataValidation.RuleBase
+
+  /**
+   * Record of which name partitions exist for this run's {@link DataValidation.Run.Details} which can be accessed from
+   * {@link #fetchDetails}.
+   */
+  detailsSchemas: @indexed map<string, TupleType>
+
+  /**
+   * Field to retain all the information set by the rule. This will help us in:
+   * 1. Keeping the state of the rule at the time of creating the run.
+   * 2. Using the "snapshot" information to render the UX. (E.g ruleObj.detailsType)
+   */
+  @db(persistAllFields=true)
+  ruleObj: !DataValidation.RuleBase
+
+  /**
+   * Any args to be passed for this run which will override (or add to) the existing arguments used in the rule. These
+   * are passed during {@link DataValidation.Rule#initRun rule initialization}
+   */
+  argsOverride: !?map<string, any>
+
+  /**
+   * All the args for the run which is based on the {@link DataValidation.Rule#args} with the {@link #argsOverride} applied.
+   */
+  args: !?map<string, any>
+
+  /**
+   * Id denoting a runGroup (e.g a TimeWindow) as determined by {@link #rule} and {@link #args}. This group is very
+   * important in determining if the run (or rule) has validation failure or not. (via {@link #status})
+   */
+  runGroup: !string
+
+  /**
+   * Switch on the debug mode for this run. This will be enabled when "debugEnabled" = true is passed in the
+   * {@link #argsOverride} during {@link DataValidation.Rule#initRun rule initialization}. A {@link #debug} can be
+   * used to add debug messages to the rule.
+   */
+  debugEnabled: boolean
+
+  /**
+   * status of the run indicating whether it's in progress, finished or had an error.
+   */
+  status: !DataValidation.Status
+
+  /**
+   * Start time of the run.
+   */
+  start: datetime
+
+  /**
+   * End time of the run.
+   */
+  end: datetime
+
+  /**
+   * Duration for which this run went on
+   */
+  duration: Duration calc Duration.delta(start, end)
+
+  /**
+   * The trigger that resulted in the current run.
+   */
+  trigger: DataValidation.Trigger
+
+  /**
+   * This contains the information about the action, job run, or workflow run that executed the Rule. Please
+   * Note: It may be empty if the rule was triggered by any anomaly identified by platform during its
+   * normal execution,which may be unrelated.
+   */
+  implRunId: string
+
+  /**
+   * Kind of the event / execution associated with the rule run. Please note that when the kind is an `ANOMALY`, there
+   * may not be any "actual run" associated with this.
+   */
+  implRunKind: string enum('JOB', 'WORKFLOW', 'ANOMALY')
+
+  /**
+   * {@link DataValidation.Rule#detailsType} associated with the rule and added as a separate field to make it easier to use.
+   */
+  detailsType: cached property(): TupleType
+
+  /**
+   * Helper function for maintaining the run's {@link #detailsSchemas}. Will simplify the schema as needed and try to
+   * atomicity when commiting the schema to name. If a schema is already commited to the name, will check if the input
+   * schema is compatible with the committed schema.
+   */
+  checkOrCommitDetailsSchema: private member function(name: string = 'result', schema: TupleType): TupleType
+
+  /**
+   * Wait for the rule to finish execution. The rule has to be backed by a {@link MapReduce} job.
+   */
+  @dependency(include="implRunId, implRunKind")
+  waitForCompletion: private member function(timeout: Duration, dontFailOnError: boolean)
+
+  /**
+   * Aborts the current run.
+   */
+  @dependency(include="implRunId")
+  abort: member function()
+
+  /**
+   * Add details to the {@link DataValidation.Run} so that they can be accessed post factum for analysis.
+   * @param details
+   *        In Java should be [Tuple].
+   *        In Python should be [Tuple] or a Pandas DataFrame.
+   *        In JavaScript should be [Tuple].
+   */
+  @call(stayInEngine=true)
+  addDetails: member function(details: !?native, name: string = 'result') java | js | py
+
+  /**
+   * This is the Javascript implementation of the {@link #addDetails}. Since when {@link #addDetails} is called
+   * in js-server, it will go to the java implementation instead of staying in js. We add this api to be called when
+   * addDetails is called from js-client and js-server.
+   */
+  addJsDetails: private member function(details: !native, name: string = 'result') js
+
+  /**
+   * Helper method to serialize a DataFrame in a manner that {@link #_addDetails} can de-serialize. Will perform
+   * validation to ensure the DataFrame can be serialized into {@link #detailsType}.
+   */
+  @call(stayInEngine=true)
+  dataFrameToTuple: private member function(details: native, name: string = 'result'): Tuple py
+
+  /**
+   * Check the validity of the input details and return true if the details is empty or not. It is only valid if the
+   * details is a pandas dataframe or a list of python dicts, otherwise an exception will raise.
+   * Examples
+   * ```python
+   * ## valid details
+   * details=[{'name': 'TURBINE-1', 'country': 'US'}, {'name': 'TURBINE-2', 'country': 'EN'}]
+   * details=pd.DataFrame(data={'name': ['TURBINE-1', 'TURBINE-2'], 'count': [2000, 1590]})
+   * ## invalid details
+   * details=[(1, 2), (10, 20)] # tuple is not allowed
+   * ## empty details
+   * details=[]
+   * details=pd.DataFrame([])
+   * details=[{}, {}]
+   * ```
+   * @param details
+   *        The details to be persisted for this run. This details can be in the form of a pandas dataframe (python), an array
+   *        of dictionaries (python), an array of native objects (javascript). Note that if the input details is empty, i.e.
+   *        empty dataframe, empty list or a collection of null values (including None, null, undefined, pd.nan, etc), no details
+   *        will be persisted and no table will be created.
+   */
+  @call(stayInEngine=true)
+  detailsSanityCheck: private function(details: native): boolean py
+
+  /**
+   * Check the validity of the input details and return true if the details is empty or not for JavaScript. It is only
+   * valid if the details is an array of objects that have at least one non empty object, otherwise an exception will raise.
+   */
+  @call(stayInEngine=true)
+  detailsSanityCheckJs: private function(details: native): boolean js
+
+  /**
+   * Helper method to serialize an array of json objects in a manner that {@link #_addDetails} can de-serialize. Will
+   * perform validation to ensure the json objects can be serialized into {@link #detailsType}.
+   */
+  @call(stayInEngine=true)
+  arrayToTuple: private member function(details: native, name: string = 'result'): [Tuple] js
+
+  /**
+   * Implementation of public API {@link #addDetails}. The public facing API can modify the details for serialization
+   * compatibility. E.g. Serializing a Pandas DataFrame in a manner where this API can deserialize it. This API is
+   * responsible for being able to, in the java runtime, de-serialize and upsert all the different type of details that
+   * {@link #addDetails} can pass in.
+   * @param details
+   *        The details to be persisted for this run. This details can be in the form of a pandas dataframe (python), an array
+   *        of dictionaries (python), an array of native objects (javascript). Note that if the input details is empty, i.e.
+   *        empty dataframe, empty list or a collection of null values (including None, null, undefined, pd.nan, etc), no details
+   *        will be persisted and no table will be created.
+   */
+  _addDetails: private member function(details: !?any, name: string = 'result')
+
+  /**
+   * Information generated as part of the {@link DataValidation.Rule#map } execution and streamed using this API
+   * call. Please note that there is a high possibility that the data may not fit in memory, that's why, should be
+   * processed while its being streamed.
+   */
+  fetchDetailsStream: member function(spec: FetchStreamSpec, name: string = 'result'): stream<Tuple>
+
+  /**
+   * Fetch the details generated by the rule execution.
+   */
+  fetchDetails: member function(spec: FetchSpec, name: string = 'result'): FetchResult<Tuple>
+
+  /**
+   * Passes details of {@link #fetchDetails} and serializes it into a DataFrame through arrow.
+   */
+  fetchDetailsDf: member function(spec: FetchSpec, name: string = 'result'): native py
+
+  /**
+   * Private API that generates an arrow file for {@link #fetchDetailsDf}.
+   */
+  _fetchDetailsArrow: member function(spec: FetchSpec, name: string = 'result'): ArrowIterator
+
+  /**
+   * Download the details for the run of the given run id as a file.
+   */
+  @restful(subPath='download/:runId/:name')
+  downloadDetails: function(runId: !string, name: string): !Content
+
+  /**
+   * Alternative to {@link #fetchDetails} used obtain a subset of all the details but with an accurate total count.
+   */
+  fetchDetailsWithTotalCount: member function(spec: FetchSpec, name: string = 'result'): Pair<int, FetchResult<Tuple>>
+
+  /**
+   * @return single value as a result of processing all values from {@link #fetchDetailsStream} by executing the
+   * provided lambda for each value. Please note that the stream will be consumed after executing this method.
+   */
+  @call(stayInEngine=true)
+  foldDetails: member function<T>(initial: !?T,
+                                  folder: !lambda(value: Tuple, accumulator: T): T,
+                                  name: string = 'result'): T java | js | py
+
+  /**
+   * Add errors to the {@link DataValidation.Run} so that they can be accessed post factum for analysis.
+   */
+  addErrors: member function(errors: ![DataValidation.Run.Error])
+
+  /**
+   * Add error to the {@link DataValidation.Run} so that they can be accessed post factum for analysis.
+   */
+  addError: member function(error: !DataValidation.Run.Error)
+
+  /**
+   * Fetch the errors generated by the rule execution.
+   */
+  fetchErrors: member function(spec: FetchSpec): FetchResult<DataValidation.Run.Error>
+
+  /**
+   * Add debug logs to the rule. Please note that this will be added only when the run is {@link #debugEnabled} and
+   * will be a no-op otherwise.
+   */
+  @call(stayInEngine=true)
+  @dependency(include="debugEnabled")
+  debug: member function(log: !?native) java | js | py
+
+  /**
+   * Actual implementation of debug. This is what gets called from SDKs after checking for {@link #debugEnabled}
+   */
+  @dependency(include="debugEnabled")
+  _debug: member function(log: !?native)
+
+  /**
+   * Fetch debug logs added as part of this run by the rule. Please note that this will give empty if the run is not
+   * {@link #debugEnabled}.
+   */
+  fetchDebugLogs: member function(spec: FetchSpec): FetchResult<string>
+}

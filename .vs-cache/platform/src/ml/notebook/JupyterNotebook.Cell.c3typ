@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 type type that represents Jupyter cell with code, expected and actual output.
+ * Output data formats is defined at https://nbformat.readthedocs.io/en/latest/format_description.html
+ */
+private type JupyterNotebook.Cell {
+
+  /**
+   * Source code of this cell
+   */
+  source: string
+
+  /**
+   * 1-based sequential cell number.
+   * Used to display cell name using {@link #displayName}. Usually set by {@link #fromNbFormat}.
+   */
+  number: int = 0
+
+  /**
+   * Type of the cell
+   */
+  cellType: string enum('code', 'markdown', 'raw') = 'code'
+
+  executionCount: int
+  metadata:       json
+
+  /**
+   * Return time when this cell started execution {@link #metadata}.ExecuteTime.start_time.
+   * See {@link #endTime}, {@link #duration}.
+   */
+  startTime: property(): datetime py
+
+  /**
+   * Return time when this cell completed execution {@link #metadata}.ExecuteTime.end_time
+   * See {@link #startTime}, {@link #duration}.
+   */
+  endTime: property(): datetime py
+
+  /**
+   * Return notebook cell execution duration in seconds based on {@link #startTime} and {@link #endTime}.
+   */
+  duration: property(): double py
+
+  /**
+   * Holds information about how to test this cell. Stored in {@link #metadata}.testSpec field.
+   */
+  testSpec: JupyterNotebook.Cell.TestSpec
+
+  /**
+   * Holds information about how to run this cell when running using {@link JupyterLab}. Stored in {@link #metadata}.execSpec field.
+   */
+  execSpec: JupyterNotebook.Cell.ExecSpec
+
+  /**
+   * Returns name of the cell in format:
+   * `Cell 0001 - First line of the cell code`
+   */
+  displayName: property(): !string py
+
+  /**
+   * Map content type (e.g `text/plain` or `text/html`) to its string representation.
+   */
+  executionResults: map<string, json>
+
+  stdout:         [string]
+  stderr:         [string]
+  errorName:      string
+  errorValue:     string
+  errorTraceback: [string]
+
+  /**
+   * Return human-readable {@link #errorTraceback} by removing '\u001b[0;31m' and '\u001b[0m' from
+   * {@link #errorTraceback} and clean line endings.
+   *
+   * If there is no {@link #errorTraceback}, return None.
+   */
+  cleanedTracebackString: property(): string py
+
+  /**
+   * Map content type (e.g `text/plain` or `text/html`) to its string representation.
+   */
+  displayData: map<string, json>
+
+  attachments:  map<string, map<string, string>>
+  fromNbFormat: function(json: !json, number: !int): !JupyterNotebook.Cell py
+  toNbFormat:   member function(): !json py
+
+  /**
+   * Creates copy of the {@link JupyterNotebook.Cell cell} with updated start and end time and filled outputs.
+   * See {@link #executionResults}, {@link #stdout}, {@link #stderr}, {@link #errorName}, {@link #errorValue},
+   * {@link #errorTraceback}, {@link #displayData}, {@link #attachments}.
+   */
+  withExecutionResult: member function(startTime: !datetime,
+                                       endTime: !datetime,
+                                       outputs: [json]): !JupyterNotebook.Cell py
+}

@@ -1,0 +1,185 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * **WithHttpHeaders** handles HTTP headers for both requests and responses according to the http specification.
+ * Most notably this type ensures headers are case-insensitive and handles other special cases (such as `Set-Cookie`).
+ *
+ * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+ */
+inline type WithHttpHeaders {
+
+  /**
+   * Returns the header value for a header containing a single value.
+   *
+   * @param @required name
+   *           The header name, case insensitive
+   * @param dflt
+   *           The default value to return if the header does not exist
+   * @return The header value, or values concatenated together by ', ' if multiple, or dflt if not found.
+   */
+  header: member function(name: !string, dflt: string): string java | js | py
+
+  /**
+   * Returns the header values for a header containing potentially multiple values.
+   *
+   * @param @required name
+   *           the header name, case insensitive
+   * @return The header values array if header is found, else empty array.
+   */
+  headers: member function(name: !string): [string] java | js | py
+
+  /**
+   * Returns the headers map with the lower-case header and list of values
+   */
+  allHeaders: member function(): map<string, [string]> java | js | py
+
+  /**
+   * Returns headers map with keys of the lower-case header and value the result of the predicate. If predicate is not
+   * provided, it will combine all headers with a ", " except it will skip the set-cookie header if its present.
+   *
+   * @param merger
+   *           the optional function used to turn the array of header values to a string value. If the predicate returns
+   *           an empty value, it will not be added to the output.
+   * @return The headers map with keys of the lower-case header and value the result of the predicate
+   */
+  allHeadersMerged: member function(merger: lambda(header: string, values: [string]): string): map<string, string> java | js | py
+
+  /**
+   * Returns the first header value satisfied by the given predicate.
+   *
+   * @param name
+   *           the header name (case-insensitive)
+   * @param predicate
+   *           the condition used to find the header value. If null the first header value found will be used
+   * @return The first matching header value for name or null if not found.
+   */
+  findFirstHeaderValue: member function(name: !string, predicate: lambda(v: !string): boolean): string
+
+  /**
+   * Returns the header values satisfied by the given predicate.
+   *
+   * @param name
+   *           the header name (case-insensitive)
+   * @param predicate
+   *           the condition used to find the header values. If null the all header values for name will be returned
+   * @return All matching header values for name or null if not found.
+   */
+  findAllHeaderValues: member function(name: !string, predicate: lambda(v: !string): boolean): [string]
+
+  /**
+   * The content type for these headers.
+   */
+  contentType: member function(): string
+
+  /**
+   * The content encoding for these headers.
+   */
+  contentEncoding: member function(): string
+
+  /**
+   * Gets the cookie value from Http headers by a given cookie key.
+   *
+   * @param key
+   *           cookie key
+   * @return The cookie value or null if not found.
+   */
+  cookieValue: member function(key: !string): string
+
+  /**
+   * Sets the header to (only) the specified value. This will wipe out any prior setting of this header, replacing it
+   * with just this value. This is useful to _change_ a header value, instead of adding another value.
+   *
+   * @param name
+   *           header name (case-insensitive)
+   * @param value
+   *           replacement header value
+   * @return The new {@link WithHttpHeaders} object with name and value applied
+   *
+   * @see #withHeader
+   * @see #withoutHeader
+   */
+  replaceHeader: member function(name: !string, value: !string): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Adds a header value into the existing headers. If called multiple times with the same header name, all values
+   * will be added in the order they were called with duplicates removed.
+   *
+   * @param name
+   *           header name (case-insensitive)
+   * @param value
+   *           additional header value
+   * @return The new {@link WithHttpHeaders} object with name and value applied
+   *
+   * @see #replaceHeader
+   * @see #withoutHeader
+   */
+  withHeader: member function(name: !string, value: !string): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Removes all values from the existing header.
+   *
+   * @param name
+   *           header name (case-insensitive)
+   * @return The new {@link WithHttpHeaders} object with header removed
+   *
+   * @see #withHeader
+   * @see #replaceHeader
+   */
+  withoutHeader: member function(name: !string): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Puts multiple header values into the existing headers. If the map has keys that collide in a case-insensitive way,
+   * the order of the values may not be preserved, but duplicate values will be removed.
+   *
+   * @param headers
+   *           a map where the key is a header and value is one or many string values for that header.
+   * @return A modified {@link WithHttpHeaders} object with the headers applied
+   */
+  withHeaders: member function(headers: map<!string, string | [string]>): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Adds "Accept" and "ContentType" headers as "application/json".
+   */
+  withJsonHeaders: member function(): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Add a "X-C3-Action-Engine" header appropriate to the current execution environment.
+   */
+  withActionEngineHeader: member function(): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Add Authorization header to this HTTP header.
+   */
+  withAuthHeader: member function(auth: !?string serialized Authorization): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Adds a content type to this HTTP header. Will silently not add contentType if it is empty.
+   */
+  withContentType: member function(contentType: !?string serialized ContentType): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * Adds a content encoding type to this HTTP header. Will silently not add contentEncoding if it is empty.
+   */
+  withContentEncoding: member function(contentEncoding: !string serialized ContentEncoding): !mixing WithHttpHeaders java | js | py
+
+  /**
+   * This method ensures that the chunked Transfer-Encoding will NOT be applied to the {@link HttpRequest} body.
+   */
+  withoutChunkedTransferEncoding: member function(): !mixing WithHttpHeaders
+
+  /**
+   * private field to keep track whether to avoid using chunked Transfer-Encoding for the {@link HttpRequest}
+   */
+  _notChunked: private boolean
+
+  /**
+   * The internally used case-insensitive HTTP headers.
+   */
+  _headers: private map<string, [string]> schema suffix 'HDRS'
+}

@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlPipe} template which outputs an `alert` based on a dataset riskScores as input.
+ */
+@beta
+type Reconstruction.Post.PercentileDurationAlertingPipe extends Reconstruction.Post.AlertingPipe<{riskScore: Data}> type key 'RPPDAP' {
+
+  /**
+   * The name of the column in the {@link Data} input. Default is "riskScore" but will throw an error if the column
+   * does not exist.
+   */
+  riskScoreColumnName: string = "riskScore"
+
+  /**
+   * Parameter to compute risk scores percentile that will be used as alert threshold.
+   * The computed alert threshold is stored on the field alertThreshold.
+   * alphaPercentile must be between [0, 100]. If alertThreshold is set, overrides alphaPercentile.
+   */
+  @ML(hyperparameter=true)
+  alertPercentile: double = 95
+
+  /**
+   * Risk score threshold above which a risk score is considered "high" and could raise an alert.
+   * If alertThreshold is set, overrides alphaPercentile.
+   */
+  @ML(hyperparameter=true)
+  alertThreshold: double
+
+  /**
+   * The duration of time, in seconds, that `riskScore` should be continuously
+   * above the {@link alertThreshold} before being considered as a candidate for
+   * raising an alert.
+   */
+  @ML(hyperparameter=true)
+  ignoreSpan: int = 86400
+
+  /**
+   * If an alert has already been raised in the last {@link mergeSpan} seconds,
+   * then no alert will be raised now, even if the `riskScore` is above the
+   * {@link alertThreshold} and has consistently remained over the
+   * {@link alertThreshold} for beyond {@link ignoreSpan} seconds.
+   */
+  @ML(hyperparameter=true)
+  mergeSpan: int = 86400
+
+  doTrain: ~ py-data
+  doProcess: ~ py-data
+  beforeCreate: ~ py
+}

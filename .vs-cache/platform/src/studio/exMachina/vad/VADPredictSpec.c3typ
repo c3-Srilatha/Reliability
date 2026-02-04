@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type VADPredictSpec {
+
+  projectName:        !string
+  predictionNodeName: !string
+
+  /**
+   * parameters for invoking fetch(). all optional.
+   */
+  filter: string
+
+  limit: int = 100
+
+  /**
+   * For cases where we already have FetchResult on which we want to predict, we allow providing
+   * that data directly in the invocation. If this field is set, we predict on the specified input,
+   * thereby not making any calls to C3.
+   */
+  input: FetchResult
+}

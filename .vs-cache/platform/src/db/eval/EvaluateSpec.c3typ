@@ -1,0 +1,124 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification of which Objs to evaluate and what expressions to evaluate on them for a {@link Persistable#evaluate} call.
+ */
+type EvaluateSpec mixes EvaluateSpecBase, FetchFilterSpec {
+
+  projection: !~
+
+  /**
+   * Comma separated list of projections to order the results by.  Each order spec must exactly match a projection
+   * spec (or a projection spec as the argument to the descending function) and only projections that will be handled
+   * by the db engine are allowed.
+   */
+  order: string
+
+  /**
+   * Offset to use for paged evaluation.  Indicates the first computed result to return. Default is 0 (first).
+   */
+  offset: int = 0
+
+  /**
+   * Maximum number of results to return (starting from {@link offset}).  If there are results than were requested,
+   * only those will be returned.  If there are additional results beyond what was requested, then
+   * {@link EvaluateResult.hasMore} will be set to true.
+   *
+   * Default is to evaluate 2000 Objs. -1 evaluates all all.
+   */
+  limit: int = 2000
+
+  /**
+   * Numeric id of hardcoded sql registered with the system for special purpose evaluation that couldn't be handled
+   * generically.
+   * This should ONLY NEVER BE USED unless you have David's and Tom's permission and if you are either the
+   * author of the hardcoded sql or know exactly what it is.  If you don't know, DON'T USE IT.
+   */
+  sqlId: private int = -1
+
+  /**
+   * Disables authorization (both Acl and expression based authorization) for the request.  In general, the same
+   * authorization that would be applied for a {@link Persistable#fetch} call will be applied unless this is set to
+   * true.
+   */
+  disableAuthz: boolean
+
+  /**
+   * In general, projections are processed by the db engine when they can be, and by the expression engine when they
+   * can't.  However, under certain rare circumstances, a projection may be sent to the db engine that can't be
+   * handled properly there (most likely due to a bug so please report if you encounter one).  In those cases, set
+   * this flag to true to indicate that the expression engine should handle all projections (though with possible
+   * reduced performance).
+   */
+  forceExprEval: boolean
+
+  /**
+   * In general, projections are processed by the db engine when they can be, and by the expression engine when they
+   *  can't.  However, under certain rare circumstances, a projection may be sent to the expression engine that can
+   * be handled properly by the db engine.  This can cause undesired results when the behavior of the 2 may be
+   * different (that is really a bug but requires a rewrite of the expression engine to address).  In this situation
+   * set this flag to force the db engine to perform the evaluation.
+   */
+  forceDbEngineEval: boolean
+
+  /**
+   * Start of time range for timeseries based evaluation.  Support for timeseries based evaluation is deprecated.
+   * Moving forward {@link Evaluatable#tsEval} should be used
+   * instead.
+   *
+   * @see MetricEvaluatable
+   */
+  @deprecated(finalVersion="8.8",
+              details="Support for timeseries based evaluation is deprecated. Moving forward {@link Evaluatable#tsEval} should be used instead.")
+  timeRangeStart: datetime
+
+  /**
+   * End of time range for timeseries based evaluation.  Support for timeseries based evaluation is deprecated.
+   * Moving forward {@link Evaluatable#tsEval} should be used
+   * instead.
+   *
+   * @see MetricEvaluatable
+   */
+  @deprecated(finalVersion="8.8",
+              details="Support for timeseries based evaluation is deprecated. Moving forward {@link Evaluatable#tsEval} should be used instead.")
+  timeRangeEnd: datetime
+
+  /**
+   * Grain for timeseries based evaluation.  Support for timeseries based evaluation is deprecated.  Moving forward
+   * {@link Evaluatable#tsEval} should be used instead.
+   *
+   * @see MetricEvaluatable
+   */
+  @deprecated(finalVersion='7.5',
+              details='Support for timeseries based evaluation is deprecated. Moving forward {@link Evaluatable#tsEval} should be used instead.')
+  grain: string enum Interval
+
+  /**
+   * Interval for timeseries based evaluation.  Support for timeseries based evaluation is deprecated.  Moving forward
+   * {@link Evaluatable#tsEval} should be used instead.
+   */
+  @deprecated(finalVersion="8.8",
+              details="Support for timeseries based evaluation is deprecated. Moving forward {@link Evaluatable#tsEval} should be used instead.")
+  interval: string enum Interval
+
+  /**
+   * Time zone handling for timeseries based evaluation.  Support for timeseries based evaluation is deprecated.
+   * Moving forward {@link MetricEvaluatable.evalMetric} or {@link MetricEvaluatable.evalMetrics} should be used
+   * instead.
+   *
+   * @see MetricEvaluatable
+   */
+  timeZone: string serialized TimeZone = 'NONE'
+
+  /**
+   * Flag to request generation of the query plan in addition to returning the data.  Can be used for performance
+   * analysis, etc.
+   */
+  explain: boolean
+}

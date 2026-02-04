@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type for inferring the return type of Data APIs in the case where return type is ambiguous. This
+ * allows to to avoid pre-execution of Data APIs and preserve laziness. To enable return type inference for a
+ * particular Data API, create a method with the following naming
+ * scheme: <name of method><name of type method is on>. These methods must all have the same arguments:
+ * the method being called as a string, the parent object we are calling this method on, and all arguments being
+ * passed into the method as a map. This method will return the inferred type, or `null` if the type cannot be
+ * inferred (in which case the API will be pre-executed to determine return type)
+ */
+abstract private type Data.ReturnTypeInferer {
+
+  /**
+   * Helper function that dispatches to the corresponding return type inference method based on the provided Action
+   */
+  getReturnType: private function(action: !Action): Type
+
+  // Dataframe
+  maxData: private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  meanData:      private function(methodName: string, parent: any, args: map<string, any>): Type
+  medianData:    private function(methodName: string, parent: any, args: map<string, any>): Type
+  aggData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  aggregateData: private function(methodName: string, parent: any, args: map<string, any>): Type
+  allData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  anyData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  dotData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  kurtData:      private function(methodName: string, parent: any, args: map<string, any>): Type
+  kurtosisData:  private function(methodName: string, parent: any, args: map<string, any>): Type
+  madData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  minData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  prodData:      private function(methodName: string, parent: any, args: map<string, any>): Type
+  productData:   private function(methodName: string, parent: any, args: map<string, any>): Type
+  quantileData:  private function(methodName: string, parent: any, args: map<string, any>): Type
+  semData:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  skewData:      private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  /*
+   * TODO: PLAT-67402 : Implementing returnType Inference for Pandas Dataframe SUM, STD
+   * stdData: private function(methodName: string, parent: any, args: map<string, any>): Type
+   * sumData: private function(methodName: string, parent: any, args: map<string, any>): Type
+   */
+  varData: private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  // Data.c3typ
+  getItemData: private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  getIlocData: private function(methodName: string, parent: any, args: map<string, any>): Type
+  getLocData:  private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  // Data.Series
+  reset_indexDataSeries: private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  compareDataSeries:      private function(methodName: string, parent: any, args: map<string, any>): Type
+  searchsortedDataSeries: private function(methodName: string, parent: any, args: map<string, any>): Type
+  aggDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  aggregateDataSeries:    private function(methodName: string, parent: any, args: map<string, any>): Type
+  allDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  anyDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  asofDataSeries:         private function(methodName: string, parent: any, args: map<string, any>): Type
+  countDataSeries:        private function(methodName: string, parent: any, args: map<string, any>): Type
+  modDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  kurtDataSeries:         private function(methodName: string, parent: any, args: map<string, any>): Type
+  kurtosisDataSeries:     private function(methodName: string, parent: any, args: map<string, any>): Type
+  madDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  maxDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  meanDataSeries:         private function(methodName: string, parent: any, args: map<string, any>): Type
+  medianDataSeries:       private function(methodName: string, parent: any, args: map<string, any>): Type
+  minDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  prodDataSeries:         private function(methodName: string, parent: any, args: map<string, any>): Type
+  productDataSeries:      private function(methodName: string, parent: any, args: map<string, any>): Type
+  semDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  skewDataSeries:         private function(methodName: string, parent: any, args: map<string, any>): Type
+  stdDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  sumDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+  varDataSeries:          private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  // Data.Series.c3typ
+  getItemDataSeries: private function(methodName: string, parent: any, args: map<string, any>): Type
+
+  getIlocDataSeries: private function(methodName: string, parent: any, args: map<string, any>): Type
+  getLocDataSeries:  private function(methodName: string, parent: any, args: map<string, any>): Type
+}

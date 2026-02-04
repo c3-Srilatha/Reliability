@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that allows us to go from an entity (most commonly, alert or case) to the {@link FailureModeLineItem}s associated with it.
+ */
+entity extendable type FailureModeRelation schema name 'PHYAST_ALERAT_REL' {
+
+  /**
+   * The {@link FailureModeLineItem} related to by this relation.
+   */
+  to: !FailureModeLineItem
+
+  /**
+   * The name of the entity in the from field. Should be implemented as a stored calc in any type extending this type.
+   */
+  fromName: string
+
+  /**
+   * If true, the {@link FailureModeLineItem} is recommended by user.
+   * Otherwise, it is recommended by the failure mode reommendation engine.
+   */
+  userRecommended: boolean
+
+  /**
+   * User feedback for the recommendation
+   */
+  @db(order='descending(timestamp)')
+  feedbacks: [FailureModeFeedback](parent)
+
+  /**
+   * Most recent feedback for the failure mode
+   */
+  @db(timedValueHistoryField='feedbacks')
+  latestFeedback: FailureModeFeedbackTimedValue
+
+  /**
+   * How significant the {@link FailureModeLineItem} is to the {@link FailureModeRelation#fromName} instance.
+   */
+  significance: double
+
+  /**
+   * Displayed text of significance field. Round to 2 decimal precision.
+   */
+  displaySignificance: double calc round(significance, 2)
+
+  /**
+   * Only used to show the icon on the UI.
+   * Ranges from -1 to 2.
+   * -1: no feedback
+   * 0: bad
+   * 1: so-so
+   * 2: good
+   */
+  feedbackIcon: private int stored calc exists(latestFeedback) ? latestFeedback.feedback : -1
+
+  /**
+   * Text of latest feedback to be displayed in UI. 0 - "Not Helpful", 2 - "Helpful"
+   */
+  latestFeedbackText: string stored calc latestFeedback ? (latestFeedback.feedback == 0 ? "Not Helpful" : "Helpful") : "-"
+}

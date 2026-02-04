@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Etl coordinator.  Every entry is for a specific type that incremental etl is being performed for (e.g. types that
+ * specify a secondary datastore.
+ */
+@db(systemType=true, unique=['typeName'])
+entity type EtlCoordinator schema name 'ETL_COORD' {
+
+  /**
+   * Type that the entry is for.
+   */
+  typeName: string
+
+  /**
+   * Workflow that performs incremental etl operation.
+   */
+  workflow: Workflow
+
+  /**
+   * All etl logs for the type.
+   */
+  @db(order='descending(end), descending(start)')
+  logs: [EtlLog](coordinator)
+
+  /**
+   * Performs incremental etl for all types that support it.
+   */
+  synchronizeAll: function()
+
+  /**
+   * Called by {@link synchronizeAll} to perform incremental etl for a specific type/entry.
+   */
+  synchronize: private member function()
+}

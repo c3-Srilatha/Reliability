@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the conceptual level of any {@link ReliabilityAsset} in the hierarchy.
+ */
+@cache(all=true)
+@seed(userUpdatable=true, userRemovable=true)
+entity type AssetLevel mixes SeedData, ExemptFromFacilityFilter {
+
+  /**
+   * The label for this asset level. E.g Facility, System, Equipment etc.
+   */
+  name: !~
+
+  /**
+   * **DISPLAY USE ONLY**
+   *
+   * The translated value of #name.
+   */
+  translatedName: string translate by name
+
+  /**
+   * An integer representing this level's place in the hierarchy. A lower number
+   * indicates a higher level, with 0 being the top of the hierarchy. This does not necessarily
+   * correspond to {@link ReliabilityAsset#depth}. Take the following hierarchy
+   * for example:
+   *
+   * ```
+   *                 A0 (Facility)
+   *                /             \
+   *          A1 (System)    A2 (Equipment)
+   *         /
+   * A3 (Equipment)
+   * ```
+   *
+   * In this example, `A2` has a depth of 1, but its asset level is 2.
+   */
+  level: !int
+}

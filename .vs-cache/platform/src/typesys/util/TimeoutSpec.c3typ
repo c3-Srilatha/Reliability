@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for action timeout.
+ */
+type TimeoutSpec mixes Spec {
+
+  /**
+   * Number of seconds to wait before interrupting the action.
+   */
+  interruptInSec: !double = 3300
+
+  /**
+   * Additional number of seconds to wait on calling server before interrupting
+   */
+  @beta
+  gracePeriodInSec: double = 180
+
+  /**
+   * Duration to wait before interrupting the action.
+   */
+  interruptIn: member function(): !Duration
+
+  /**
+   * @return spec for 60 second interrupt and 10 min stop.
+   */
+  shortWait: inline function(): !TimeoutSpec
+
+  /**
+   * @return spec for 1 hour interrupt and 2 hour stop.
+   */
+  longWait: inline function(): !TimeoutSpec
+
+  /**
+   * @return returns a valid TimeoutSpec where, interruptInSec > 0
+   */
+  validate: member function(): TimeoutSpec
+
+  /**
+   * @returns a TimeoutSpec for the specified action interrupt duration
+   */
+  fromInterruptIn: function(interruptIn: string serialized Duration): TimeoutSpec
+}

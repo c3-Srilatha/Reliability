@@ -1,0 +1,174 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Indicates that the data can be partitioned by a particular field (or fields). Types mixin in this type must set
+ * the @db(partitionKeyField="your_partition_key_field") annotation. For most common case {@see ParentPartitionable}
+ *
+ * If type does not have the above annotation, a metadata error will be thrown
+ */
+abstract type Partitionable<P> {
+
+  /**
+   * Partition key Bin separator used to separate partition key from bin id
+   */
+  PK_BIN_SEPARATOR: private const string = "__internalbin__"
+
+  /**
+   * Extract the partition key from the given obj
+   */
+  partitionKey: inline member function(failIfMissing: boolean): P
+
+  /**
+   * @return compiled partition key bin expression for binning within a partition for {@link Partitionable} type
+   * Type is passed in so that not all Persistable or external types need to mixes Partitionable
+   */
+  compiledPartitionKeyBin: cached function(type: !Type): !Expr.Compiled
+
+  /**
+   * Extract the partition key from the given object and convert it to a string (E.g. if the partition key results in a reference object,
+   * it will return the id field of that object. All other value types will be attempted to be converted to string
+   */
+  partitionKeyAsString: inline member function(failIfMissing: boolean): string
+
+  /**
+   * Extract the partition key from the given object and convert it to a string (E.g. if the partition key results in a reference object,
+   * it will return the id field of that object. All other value types will be attempted to be converted to string
+   */
+  partitionKeyFromInstAsString: private inline function(o: Obj, failIfMissing: boolean): string
+
+  /**
+   * Extract the partition key + bin info from the given object and convert it to a string (E.g. if the partition key results in a reference object,
+   * it will return the id field of that object. All other value types will be attempted to be converted to string
+   * This will also look at {@link Ann.Db#partitionKeyBin} and append it to the partition key
+   */
+  partitionKeyWithBinFromInst: private inline function(o: Obj): !string
+
+  /**
+   * Returns the partition key value type as per field defined on @db(partitionKeyField)
+   */
+  partitionKeyType: inline function(): !ValueType
+
+  /**
+   * Returns the partition key field type as per field defined on @db(partitionKeyField)
+   */
+  partitionKeyFieldType: function(): !FieldType
+
+  /**
+   * Return partitions as a map grouped by {@link partitionKey}
+   * @param objs
+   *        Stream of partitionable objects that need to be grouped by partition key & persistence order
+   * @return map where key is partitionKey -> DataPartition
+   */
+  // TODO: Needs to move to PersistedPartitionable
+  partition: function(objs: stream<mixing Partitionable<P>>,
+                      spec: PartitionBucketStrategy): map<string, KvDataPartition>
+
+  /**
+   * Obtain stream of {@link Partitionable} objects from the various partitions
+   * @param partitions
+   *            Partitions that need to be converted to stream<Partitionable>
+   * @return stream of partitionable objects from the given partitions
+   */
+  fromPartitions: private function(partitions: stream<KvDataPartition>): stream<mixing Partitionable<P>>
+
+  /**
+   * Compaction is the process of graduating hot buckets to the cold ones if it satisfies the criteria given by the spec.
+   * Hot buckets typically live in {@link KvStore} & cold buckets would live in cheaper stores (but not limited to) e.g.
+   * {@link FileSystem}
+   * This api compacts the given partition only based on the spec.
+   * {@see DataPartition#compact}
+   */
+  compact: private member function(spec: PartitionBucketStrategy)
+
+  /**
+   * Compaction is the process of graduating hot buckets to the cold ones if it satisfies the criteria given by the spec.
+   * Hot buckets typically live in {@link KvStore} & cold buckets would live in cheaper stores (but not limited to) e.g.
+   * {@link FileSystem}
+   * This api compacts the given partition only based on the spec.
+   * {@see DataPartition#compact}
+   */
+  compactFromInst: private function(o: !Obj, spec: PartitionBucketStrategy)
+
+  /**
+   * FillBuckets is the process of packing and bucketing of raw persisted data into existing hot buckets.
+   * If there are both hot and cold buckets, the given objs will only be bucketed in the hot buckets and cold buckets
+   * will be left untouched during this operation
+   * This api fills buckets for the given partition only based on the spec
+   * {@see DataPartition#fillBuckets}
+   */
+  fillBuckets: private member function(spec: PartitionBucketStrategy)
+
+  /**
+   * FillBuckets is the process of packing and bucketing of raw persisted data into existing hot buckets.
+   * If there are both hot and cold buckets, the given objs will only be bucketed in the hot buckets and cold buckets
+   * will be left untouched during this operation
+   * This api fills buckets for the given partition only based on the spec
+   * {@see DataPartition#fillBuckets}
+   */
+  fillBucketsFromInst: private function(o: !Obj, spec: PartitionBucketStrategy)
+
+  /**
+   * End point where cold data gets persisted
+   * @param unencodedPartitionKey
+   *        Unencoded Partition key for which the end point is desired
+   * @return the end point where the cold data will be persisted
+   */
+  coldDataEndpoint: private inline function(unencodedPartitionKey: string): !string
+
+  /**
+   * Trigger c3 packing synchronously and probabilistically. Packing started through this method will always
+   * pack incrementally and skip throwing any errors.
+   *
+   * @return pair where fst is true if packing completed successfully and snd true if there was a cassandra error
+   */
+  syncPackPartition: private function(t: Type,
+                                      unencodedPartitionKey: string,
+                                      bs: PartitionBucketStrategy,
+                                      compact: boolean): Pair<boolean, boolean>
+
+  /**
+   * Updates the stored cold data endpoint for all buckets for a row
+   *
+   * @param typeName - the name of the type
+   * @param tableName - the name of the table, including the keyspace name
+   * @param coldEndpoint - the new cold data endpoint for the type
+   * @param rowId - the unencoded id of the row
+   */
+  @action(authz='always', group+='cluster-admin')
+  updateColdDataEndpoint: private function(typeName: !string,
+                                           tableName: !string,
+                                           coldEndpoint: !string,
+                                           rowId: !string)
+
+  /**
+   * Moves the cold data files for all rows for a type and updates the stored cold data endpoints
+   *
+   * @param type - the type of the row
+   * @param partitionKey - the unencoded partition key of the row
+   */
+  @action(authz='always', group+='cluster-admin')
+  migrateColdData: private function(type: !string, partitionKey: !string, spec: MigrateColdDataSpec)
+
+  /**
+   * Moves a batch of V7 rows to V8, as is
+   * Returns a list of ids corresponding to any failed rows
+   *
+   * @param v8TableName - the name of the V8 table, including the keyspace name
+   * @param v7TableName - the name of the V7 table, including the keyspace name
+   * @param v7Endpoint - the endpoint of the V7 application
+   * @param authToken - the auth token for the V7 application
+   * @param partitionKeys - the unencoded partition keys for the rows to be migrated
+   */
+  @action(authz='always', group+='cluster-admin')
+  migrateV7RowBatch: private function(v8TableNamee: !string,
+                                      v7TableName: !string,
+                                      v7Endpoint: !string,
+                                      authToken: !string,
+                                      partitionKeys: ![string]): [string]
+}

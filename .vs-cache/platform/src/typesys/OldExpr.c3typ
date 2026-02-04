@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * R : expression result type (PrimitiveType/Arry/Mapp)
+ * readOnly ==> readOnly for app. its platform generated.
+ * expr can be mixed-in - but that would limit the type to support only
+ * one type.
+ */
+@deprecated(finalVersion='v7.9', details='use Expr')
+type OldExpr<R> {
+
+  @deprecated
+  expr: string
+
+  @deprecated
+  bindings: map<string, Obj> not persistable
+
+  @deprecated
+  useBindings: boolean
+
+  @deprecated
+  result: R schema suffix 'R'
+
+  @deprecated
+  eval: function(expression: OldExpr<R>, obj: Obj): R
+
+  @deprecated
+  getVariables: function(expression: OldExpr<R>): [string]
+
+  @deprecated
+  parse: function(expression: OldExpr<R>): boolean
+}

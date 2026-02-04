@@ -1,0 +1,24 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+type LegacyMetricAdvancedSpec {
+
+  /**
+   * Indicates expression compiler options to be used during evaluation of metrics. Typically used for debugging
+   * When using {@link EvalMetricsSpec#explain}, be sure to provide this field and set {@link ExprCompileOptions#evalPlanInclude}
+   * to indicate what debugging information is required. Here are the options:
+   * expr - Expression provided by the end user (not so interesting)
+   * rewrittenExpr - How the metric engine rewrote the expression to optimize it and remove common sub expressions
+   * srcTypeFetchSpec - Fetch spec generated to evaluate objects at the end of the path (in simple metrics). If you feel data is present, but metric engine returns missing values, be sure to generate the fetch spec using this approach
+   * hierarchies - Objects obtained at the end of the {@link SimpleMetric#path} on the source objects
+   * simpleMetrics - Results of simple metrics in the given expressions (If you are evaluating a simple metric, the result will be the same)
+   * evalInstrumentation, tsEvalInstrumentation - Profiled view of within the metric expression where exactly the time was spent. This is crucial in understanding which sub metric / expression took the most amount of time during evaluation
+   */
+  options: EvalMetricsOptions
+}

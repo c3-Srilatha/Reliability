@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for a result object returned from a method. Result objects have additional validation when returned by
+ * method call, see {@link ValidateObjSpec}.
+ *
+ * Result-specific validation requires all mandatory fields to have values. If an object embedded within a result
+ * object is also a result, it is also verified. This allows the caller of a method that results a result to know
+ * that the result will be "complete".
+ *
+ * This means that code which receives an instance of a **Result** knows that all fields will have values as
+ * specified by the type (required fields will be non-null, etc), so it can avoid extra checks and just use
+ * the fields as one would expect.
+ *
+ * In other words: result-specific validation ensures that all mandatory fields in a Result object have values. If a
+ * Result object contains another Result object, the embedded object is also validated. This guarantees that the entire
+ * Result object is complete, meaning all required fields are populated.
+ *
+ * Note that non-Result instances are not guaranteed to be complete, because they need to be passed around while being
+ * set up.
+ *
+ * For example, {@link Obj#make make} must be able return an Obj that is incomplete or invalid because the caller may
+ * want to build it up in stages.
+ *
+ * @see Spec
+ * @see Obj#validateObj
+ *
+ * @see Config
+ * @see SeedData
+ * @see Metadata
+ */
+abstract type Result {
+
+  afterMake: ~
+}

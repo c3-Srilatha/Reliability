@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for cloud stream resources (AzureEventHub, AwsKinesis etc.), providing fields and interfaces
+ */
+abstract type CloudStream<M: CloudStreamMessage> mixes CloudMessageBroker<M, CloudStreamReceiveMessagesSpec> {
+
+  /**
+   * @return The number of partitions this cloud stream has
+   */
+  numPartitions: abstract member function(): !int
+
+  /**
+   * @return The identifiers of all the partitions in this cloud stream
+   */
+  partitions: abstract member function(): [string]
+
+  /**
+   * Peek an array of CloudMessage from the cloud stream
+   * If sequence number is provided, this method is the same as {@link CloudMessageBroker#receiveMessages}
+   * Otherwise, it returns messages within window [lastSequenceNumber-bathSize+1, lastSequenceNumber] (inclusive on both end)
+   */
+  peekMessages: abstract member function(spec: CloudStreamReceiveMessagesSpec): [M]
+
+  processor: ~
+}

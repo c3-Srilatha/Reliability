@@ -1,0 +1,199 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generates fake visualizations by simulating how Python generates a visualization in a
+ * {@link Genai.Query.Result}.
+ */
+type MockVisualizationGenerator {
+
+  /**
+   * Based on the given query, returns a visualization kind to render in the AI Summary. This is only used when the
+   * {@link Genai.ChatBot.Config} is set to `Genai.MockUnstructuredQueryEngine` and can be leveraged to consistently get back a specific chart
+   * type. If the query does not match one of the visualization keywords, a random visualization type will be returned.
+   */
+  getMockVisualizationKind: inline function(query: string): string enum MockVisualizationKind js-rhino
+
+  /**
+   * Helper method to be populated in upstream packages to provide package-specific visualization kinds. This is
+   * called within #getMockVisualizationKind.
+   */
+  getPackageSpecificMockVisualizationKind: private inline function(query: string): string enum MockVisualizationKind js-rhino
+
+  /**
+   * Used within each `generate{Foo}` helper below to fetch the json file from `test/resource/testVisualizationData`
+   * for use in generating the visualization.
+   */
+  visualizationDataFromResourceFile: function(fileName: string): json js-rhino
+
+  /**
+   * Generate a visualization of the given type.
+   */
+  generateVisualization: function(
+    chartType: string enum MockVisualizationKind = RANDOM
+  ): GenAiVisualizationBase js-rhino
+
+  /**
+   * Helper method to be populated in upstream packages to provide package-specific mappings from a
+   * {@link MockVisualizationKind} to a method on {@link MockVisualizationGenerator}. This is
+   * called within #generateVisualization.
+   */
+  packageSpecificVizTypeMethods: private inline function(): Map<string enum MockVisualizationKind, string> js-rhino
+
+  /**
+   * Generates a basic bar chart with a single series.
+   */
+  generateBarChart: function(): GenAiVisualizationBarChart js-rhino
+
+  /**
+   * Generates a bar chart with multiple y-axes, which splits the data into multiple series.
+   */
+  generateBarChartWithMultipleAxes: function(): GenAiVisualizationBarChart js-rhino
+
+  /**
+   * Generates a basic line chart with a single series.
+   */
+  generateLineChart: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart with multiple y-axes, which splits the data into multiple series.
+   */
+  generateLineChartWithMultipleAxes: function(): GenAiVisualizationLineChart js-rhino
+  /**
+   * Generates a line chart with multiple series, where each series is represented by columns in the data frame.
+   */
+  generateLineChartWithGroups: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart with multiple series, where each series is represented by matching values in a column in
+   * the data frame.
+   */
+  generateLineChartWithGroupBy: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart grouped by a column that has some null values, which we convert to a series with an empty
+   * string.
+   */
+  generateLineChartNullGroupBy: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a grid visualization for the data frame.
+   */
+  generateGrid: function(): GenAiVisualizationGrid js-rhino
+
+  /**
+   * Generates a grid visualization for a data frame with a single row of data.
+   */
+  generateGridOneRowOfData: function(): GenAiVisualizationGrid js-rhino
+
+  /**
+   * Generates a map visualization for the data frame.
+   */
+  generateMap: function(): GenAiVisualizationMap js-rhino
+
+  /**
+   * Generates a basic scatter plot with a single series and no bubble size scaling.
+   */
+  generateScatterPlotBasic: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a scatter plot with multiple y-axes, which splits the data into multiple series.
+   */
+  generateScatterPlotWithMultipleAxes: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a scatter plot with a single series and bubble size scaling.
+   */
+  generateScatterPlotBubbleSizeBy: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a scatter plot with multiple series and no bubble size scaling.
+   */
+  generateScatterPlotGroupBy: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a scatter plot with multiple series and bubble size scaling on large values.
+   */
+  generateScatterPlotLarge: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a scatter plot with multiple series and bubble size scaling on small values.
+   */
+  generateScatterPlotSmall: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a scatter plot grouped by a column that has some null values, which we convert to a series with an empty
+   * string.
+   */
+  generateScatterPlotNullGroupBy: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a grid visualization from an `eval` call.
+   */
+  generateGridFromEval: function(): GenAiVisualizationGrid js-rhino
+
+  /**
+   * Generates a grid visualization from an `evaluate` call.
+   */
+  generateGridFromEvaluate: function(): GenAiVisualizationGrid js-rhino
+
+  /**
+   * Generates a bar chart from an `eval` call.
+   */
+  generateBarChartFromEval: function(): GenAiVisualizationBarChart js-rhino
+
+  /**
+   * Generates a line chart from an `eval` call.
+   */
+  generateLineChartFromEval: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart from an `evalMetrics` call with a single metric.
+   */
+  generateLineChartFromEvalMetric: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart from an `evalMetrics` call.
+   */
+  generateLineChartFromEvalMetrics: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart from an `evalMetrics` call, where the {@link EvalMetricsResult} includes two series that
+   * both have all `missing` data.
+   */
+  generateLineChartFromEvalMetricsWithAllMissing: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart from an `evalMetrics` call, where the {@link EvalMetricsResult} includes two series, and
+   * one of them has all `missing` data.
+   */
+  generateLineChartFromEvalMetricsWithSomeMissing: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a line chart from an `evalMetrics` call, where the {@link EvalMetricsResult} includes two series with
+   * different units, which results in multiple y-axes.
+   */
+  generateLineChartFromEvalMetricsWithMultipleYAxes: function(): GenAiVisualizationLineChart js-rhino
+
+  /**
+   * Generates a scatter plot from an `eval` call.
+   */
+  generateScatterPlotFromEval: function(): GenAiVisualizationScatterPlot js-rhino
+
+  /**
+   * Generates a map visualization from an `eval` call.
+   */
+  generateMapFromEval: function(): GenAiVisualizationMap js-rhino
+
+  /**
+   * Generates a map visualization from an `eval` call that leverages aggregations and groups by a column. This is
+   * useful for testing the eval spec popover.
+   */
+  generateMapFromGroupEval: function(): GenAiVisualizationMap js-rhino
+}

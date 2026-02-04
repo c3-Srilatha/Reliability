@@ -1,0 +1,166 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used to keep track of a list of known files.  It should be used to avoid relying on calling
+ * {@link FileSystem.listFiles} to process a set of known files as listFiles is only eventually consistent on S3, for
+ * example
+ */
+type FileList {
+
+  /**
+   * List of file urls.
+   */
+  urls: ![string] schema suffix 'URL'
+
+  /**
+   * De-serializes content from file into a list of C3 Type instances. The api will wait for files to show up in the file system and eventually fail if it doesn't after {@link RetryableSpec} thresholds are reached. E.g. did not show up within a given time out
+   *
+   * @see FileObjsOperSpec.targetType
+   *
+   * @return list of objects
+   */
+  readObjs: member function(spec: FileObjsOperSpec): stream<Obj>
+
+  /**
+   * Serializes content from a stream of c3 objects to several files as per the defined spec. Will return empty list
+   * if stream does not produce any objects
+   * @param objs
+   *           objs that need to be written
+   * @param spec
+   *           file operation spec giving more information about how objs should be written
+   * @return list of files written
+   */
+  writeObjs: function(objs: stream<Obj>, spec: FileListWriteObjsSpec): [string]
+
+  /**
+   * Reads objs from all the {@link urls} and performs a sort merge operation. At any point in time, the number of
+   * objects in memory will be 2x the total number of files to read from to keep the current object and the previous
+   * object in memory from each file (to compare that the data is still ordered)
+   *
+   * Use with caution: Expects individual files to be sorted already by default. If sorting needs to be performed on
+   * individual files, be sure to set {@link FileListOrderSpec#filesAreNotOrdered}. Note that, this is an extremely
+   * memory intensive operation as individual files will be sorted and kept in memory and there is a chance of running
+   * OutOfMemory. Use for only small data sets.
+   *
+   * @param order
+   *           Order spec.  For ordering objs, this must be valid syntax for a {@link FetchSpec#order}
+   * @param spec
+   *           Indicates how data needs to be ordered. When ordering individual files via {@link FileListOrderSpec#filesAreNotOrdered}
+   *           be sure to provide the {@link FileListOrderSpec#serType} to indicate the type on which the order expression
+   *           is for
+   * @return a sorted stream of objects
+   */
+  orderObjs: member function(order: string, spec: FileListOrderSpec): stream<Obj>
+
+  /**
+   * construct FileList from a list of Urls
+   */
+  fromUrlsOrEncodedPaths: inline function(urls: ![string]): !FileList
+
+  /**
+   * @return the list of files stored in the FileList
+   */
+  files: member function(readMetadata: boolean): [File]
+
+  /**
+   * @return true if any files exists in the FileList
+   */
+  anyExist: member function(spec: FileOperationSpec): boolean
+
+  /**
+   * delete all the files in the FileList
+   */
+  deleteAll: member function(spec: DeleteFileOperationSpec)
+
+  /**
+   * @return true if all files in the FileList exist
+   */
+  allExist: member function(spec: FileOperationSpec): boolean
+
+  /**
+   * API to execute the lambda function for the files in the fileList.
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the files.
+   *            E.g. (file) -> S3.copyFile("s3://bucket/some/other/location/file.name()) Checkout {@link Lambda} on how to create a lambda
+   *            If you want to pass any arguments to it they should match the underlying lambda function
+   */
+  eachFile: inline member function(action: !lambda(file: !File))
+
+  /**
+   * API to execute the lambda function using the encoded Streams from files in the fileList.
+   * @param action
+   *           The lambda function can be anything piece of code that needs to be applied to the encoded Streams
+   *           If you want to pass any arguments to it they should match the underlying lambda function
+   * @param spec
+   *           Spec for the operation
+   */
+  eachEncodedStream: inline member function(action: !lambda(encodedStream: !ByteStream), spec: FileOperationSpec)
+
+  /**
+   * API to execute the lambda function using from files in the fileList.
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the Streams
+   *            If you want to pass any arguments to it they should match the underlying lambda function
+   * @param spec
+   *           Spec for the operation
+   */
+  eachStream: inline member function(action: !lambda(stream: !ByteStream), spec: FileOperationSpec)
+
+  /**
+   * API to execute the lambda function using CharStreams from files in the fileList.
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the CharStreams
+   *            If you want to pass any arguments to it they should match the underlying lambda function
+   * @param spec
+   *           Spec for the operation
+   */
+  eachCharStream: inline member function(action: !lambda(charStream: !CharStream), spec: FileOperationSpec)
+
+  /**
+   * API to execute the lambda function using encoded PushStreams from files in the fileList.
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the encoded PushStreams
+   *            If you want to pass any arguments to it they should match the underlying lambda function
+   * @param spec
+   *           Spec for the operation
+   */
+  eachEncodedPushStream: inline member function(action: !lambda(encodedPushStream: !BytePushStream),
+                                                spec: FileOperationSpec)
+
+  /**
+   * API to execute the lambda function using PushStreams from files in the fileList.
+   * @param action
+   *            The lambda function can be anything piece of code that needs to be applied to the PushStreams
+   *            If you want to pass any arguments to it they should match the underlying lambda function
+   * @param spec
+   *           Spec for the operation
+   */
+  eachPushStream: inline member function(action: !lambda(pushStream: !BytePushStream), spec: FileOperationSpec)
+
+  /**
+   * API to generate the fileList based on the FileListSpec
+   * The no. of urls generated will depend on the numFile field of the input spec
+   * @param spec
+   *           Spec for the operation
+   * @return the new fileList
+   */
+  fromSpec: inline function(spec: !FileListSpec): FileList
+
+  /**
+   * API to schedule the Import job
+   * @returns number of files imported
+   */
+  doStartImport: private member function(job: !Import): int
+
+  /**
+   * API to schedule Export job batches
+   * @returns the fileList of the Export job
+   */
+  doStartExport: private function(job: !Export, maxArraySize: !int): FileList
+}

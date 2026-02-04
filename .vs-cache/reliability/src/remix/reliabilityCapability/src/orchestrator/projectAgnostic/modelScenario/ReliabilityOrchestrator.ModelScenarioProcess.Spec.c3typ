@@ -1,0 +1,111 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Orchestrator interface for creating a {@link Workflow} that will run a {@link ReliabilityMlModelScenario}.
+ * An scenario is a process where the user can emulate the {@link Feature} data for a {@link ReliabilityMlModel}
+ * (See field {@link ReliabilityOrchestrator.ModelScenarioProcess.Spec#featureOutputData}), over a {@link TimeRange}
+ * (See fields {@link ReliabilityOrchestrator.ModelScenarioProcess.Spec#timeRange}).
+ *
+ * General steps are:
+ * - Convert {@link ReliabilityOrchestrator.ModelScenarioProcess.Spec#featureOutputData} into {@link Data}.
+ * - For any missing {@link Feature}, retrieve their data for the given time range, and merge it with the generated
+ *   {@link Data}.
+ * - Use the {@link ReliabilityMlModel#pipeline} and the {@link Data} generated to execute:
+ *   - {@link MlPipeline#process}: To generate the algorithm outputs (alerts, risk score, feature outputs, etc).
+ *   - {@link MlPipeline#interpret}: To generate the feature contribution (alert feature contribution).
+ * - Transform the {@link MlOperationRun}s outputs into the structured defined at {@link ReliabilityMlModelScenario} and
+ *   store them as {@link Data.Persisted}.
+ *
+ * Workflow Diagram:
+ * ```mermaid
+ * flowchart LR
+ *   subgraph Workflow
+ *     direction TB
+ *     A[\Start/] --> B1["BaseModel#process"]
+ *     A --> B2["Convert Mock Features to Data"]
+ *     B1 --> C["Build Pipeline xFeatures"]
+ *     B2 --> C
+ *     C --> D1["Pipeline Process"]
+ *     C --> D2["Pipeline Interpret"]
+ *     D1 --> E["Parse pipeline results"]
+ *     D2 --> E
+ *     B1 --> E
+ *     E --> F["Store the scenario data"]
+ *     F --> z[\End/]
+ *   end
+ *   Workflow --> h["finallyVertex: handle workflow run status (cancelled/failed/completed)"]
+ * ```
+ *
+ * @see ReliabilityMlModelScenario
+ * @see ReliabilityOrchestrator.Utils#parseProcessAndInterpretOutputs
+ */
+remix type ReliabilityOrchestrator.ModelScenarioProcess.Spec {
+
+  /**
+   * Builds the UI Data for the given scenario.
+   *
+   * @param scenario The {@link ReliabilityMlModelScenario} for which the UI data is being built.
+   */
+  buildAndPersistScenarioUIData: function(
+    scenario: !ReliabilityMlModelScenario
+  ) py-data
+
+  /**
+   * Using the provided `pandas.DataFrame` objects, this function builds a list of alert objects
+   * that can be used to display alerts in the UI.
+   *
+   * The schema for each `alert` is:
+   * - `id`: UUID generated for the alert, this is required because even though the alerts are not persisted, the UI
+   *         needs a unique identifier for each alert to render them correctly.
+   * - `timestamp`: The {@link DateTime} when the alert was generated.
+   * - `name`: The {@link ReliabilityMl.Project#alertOutputs} name for the alert.
+   * - `primaryModelOutput`: A `number` representing the {@link ReliabilityMl.Project#algorithmOutputs} for the alert.
+   * - `featureContributions`: An array of objects representing the feature contributions for the alert.
+   *                           Each object has the following fields:
+   *   - `featureName`: The {@link Feature#id} of the feature.
+   *   - `contribution`: Normalized (`0-1`) value of the feature contribution for the alert.
+   *   - `sensorId`: If found, it will contain the related {@link Sensor#id}.
+   *   - `actualValue`: The numerical value of the feature at the time of the alert.
+   *
+   * @param project The {@link ReliabilityMl.Project} for which the alerts are being built, used to retrieve the
+   *                {@link ReliabilityMl.Project#alertOutputs}.
+   * @param alertData The `pandas.DataFrame` containing the alert data.
+   * @param algorithmData The `pandas.DataFrame` containing the algorithm data.
+   * @param featuresData The `pandas.DataFrame` containing the features data.
+   *
+   * @returns A {@link FetchResultWithTotalCount} containing the list of alerts and the total count.
+   */
+  // c3-analysis-disable c3-excessive-method-params -- must be refactored to use specs where possible
+  buildAlertObjsFromScenario: function(
+    project: !ReliabilityMl.Project,
+    alertData: @py(class='pandas.DataFrame') !native,
+    algorithmData: @py(class='pandas.DataFrame') !native,
+    featuresData: @py(class='pandas.DataFrame') !native): FetchResultWithTotalCount<json> py-data
+
+  /**
+   * Builds the {@link UiApTimeseriesChartDataConfig} for the given scenario data.
+   * This function processes the algorithm data, original algorithm data, and features data to create a
+   * {@link UiApTimeseriesChartDataConfig} that can be used to render a timeseries chart.
+   *
+   * @param algorithmData The `pandas.DataFrame` containing the algorithm data.
+   * @param originalAlgorithmData The `pandas.DataFrame` containing the original algorithm data
+   * @param featuresData The `pandas.DataFrame` containing the features data.
+   * @param alertData The {@link FetchResultWithTotalCount} containing the alert data used to build
+   *                  the {@link UiApTimeseriesChartEventDataset}
+   *
+   * @returns A {@link UiApTimeseriesChartDataConfig} containing the timeseries data.
+   */
+  // c3-analysis-disable c3-excessive-method-params -- must be refactored to use specs where possible
+  buildChartDataFromScenario: function(
+    algorithmData: @py(class='pandas.DataFrame') !native,
+    originalAlgorithmData: @py(class='pandas.DataFrame') !native,
+    featuresData: @py(class='pandas.DataFrame') !native,
+    alertData: FetchResultWithTotalCount<json>): UiApTimeseriesChartDataConfig py-data
+}

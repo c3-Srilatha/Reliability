@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@config(minOverride='CLUSTER', authz='cluster-admin')
+type SqlThrottlingOptions mixes Config, Singleton {
+
+  /**
+   * target for maximum concurrent active sql sessions; -1 disables throttling
+   */
+  maxActiveStmts: int = 8
+
+  /**
+   * only throttle SELECT statements
+   */
+  throttleOnlySelects: boolean = false
+
+  /**
+   * minimum expected latency to start statement throttling
+   */
+  throttleStmtMinLatency: int = 500
+
+  /**
+   * minimum sql statement latency in ms that is considered an active session
+   */
+  sampleStmtMinLatency: int = 10
+
+  /**
+   * period to check my sql active sessions in ms
+   */
+  samplingPeriod: int = 50
+
+  /**
+   * period to notify others about cluster sql active sessions in ms
+   */
+  broadcastPeriod: int = 500
+
+  /**
+   * if db active sessions is high then sleep for this interval in ms
+   */
+  busySleep: int = 50
+
+  /**
+   * even if db active sessions is high do not sleep more then this many
+   * minutes
+   */
+  maxBusyWaitMinute: int = 15
+}

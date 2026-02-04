@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ACTrigger mixes Value {
+
+  /**
+   * When new meter readings arrive through the data loader or other external process, the
+   * dependency graph of DFEs needs to be evaluated to invoke any affected downstream analytics.
+   * First and last represent (inclusive) affected data point times for optimization of
+   * what gets recalculated.
+   */
+  invalidateMetric: function(source: Ref,
+                             metric: !string,
+                             start: datetime,
+                             end: datetime,
+                             options: TriggerAnalyticsOptions): InvocationStats
+
+  /**
+   * When new meter readings arrive through the data loader or other external process, the
+   * dependency graph of DFEs needs to be evaluated to invoke any affected downstream analytics.
+   * First and last represent (inclusive) affected data point times for optimization of
+   * what gets recalculated.
+   *
+   * Instead of calling this directly, apps code should call AnalyticsQueue.invalidateSources
+   * so any duplicate calls may be consolidated before execution.
+   */
+  invalidateMetrics: function(sources: [Obj],
+                              metrics: [string],
+                              start: datetime,
+                              end: datetime,
+                              options: TriggerAnalyticsOptions): InvocationStats
+
+  /**
+   * When new event conditions arise due to data changes or the passage of time, the
+   * dependency graph of DFEs needs to be evaluated to invoke any affected downstream analytics.
+   */
+  eventsOccurred: function(source: Ref,
+                           start: datetime,
+                           end: datetime,
+                           options: TriggerAnalyticsOptions): InvocationStats
+
+  /**
+   * A single DFE may be explicitly triggered for development purposes, or for specific event DFE
+   * evaluation.  This method fires the specified DFE a set of sources for the specified
+   * time range.
+   */
+  triggerDFE: function(dfeType: Type,
+                       sources: [Obj],
+                       start: datetime,
+                       end: datetime,
+                       options: TriggerAnalyticsOptions): InvocationStats
+
+  /**
+   * Construct a DFE instance from data for the specified source object.
+   * The DFE type qualified name must be specified, as well as the source and start time.
+   * If the data available does not meet the normal threshold, null is returned,
+   * unless the force flag is specified.
+   */
+  loadDFE: function(typeName: string, source: Ref, start: datetime, options: TriggerAnalyticsOptions): Obj
+}

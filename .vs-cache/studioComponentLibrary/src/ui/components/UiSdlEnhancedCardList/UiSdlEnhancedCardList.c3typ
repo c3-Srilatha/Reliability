@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that displays data in a list of cards. It also supports the sub cards
+ * under the top-level principal card.
+ */
+@typeScript
+type UiSdlEnhancedCardList mixes UiSdlComponent<UiSdlEnhancedCardListDataSpec> {
+  /**
+   * The specification used for retrieving data displayed by the card list.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataCollection')
+  dataSpec: ~
+
+
+  className: private string
+
+  /**
+   * Shows the cards in compact mode (without space between the cards)
+   */
+  compact: private boolean
+
+  /**
+   * Limit the total number of principle cards in the list.
+   */
+  cardLimit: private int
+
+  /**
+   * Holds the data to display in the card list.
+   */
+  dataCollection: private [Obj]
+
+  /**
+   * Action group configuration for sub cards.
+   */
+  subCardActionGroupSetting: private UiSdlActionGroup
+
+  /**
+   * Action group configuration for principal cards.
+   */
+  principalCardActionGroupSetting: private UiSdlActionGroup
+
+  /**
+   * The action that gets triggered when you click an action within the action group
+   */
+  @uiSdlActionCreator(actionType='${cardTypePrefix}_CARD_ACTION_CLICK_${actionSuffix}')
+  triggerCardAction: function(id: string,
+                              cardTypePrefix: string enum('PRINCIPAL', 'SUB'),
+                              actionSuffix: string,
+                              args: json,
+                              item: json): UiSdlEnhancedCardListCardActionClickAction ts-client
+
+  /**
+   * Triggers an action when footer, title or text portion of subtitle is clicked. Needs configuration of actionSuffix in
+   * {@link UiSdlEnhancedCardTitleDataSpecSetting} or {@link UiSdlEnhancedCardFooterFieldBasedDataSpecSetting} to
+   * trigger this action.
+   *
+   * @param id
+   *            Id of the component.
+   * @returns a `{actionSuffix}` action.
+   */
+  @uiSdlActionCreator(actionType='TEXT_CLICK_${actionSuffix}')
+  clickTextAction: function(id: string,
+                            actionSuffix: string,
+                            item: json): UiSdlEnhancedCardListClickTextAction ts-client
+}

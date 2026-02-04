@@ -1,0 +1,102 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type describes an interface to a modelable object that can be used to train and process the
+ * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline}. Any type that implements this interface should
+ * implement the following methods:
+ *
+ * `doTrainReconstruction` and `doProcessReconstruction`: these methods should be implemented to specify how to train and
+ * process the {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#reconstructionPipe}.
+ *
+ * `doTrainRiskScore` and `doProcessRiskScore`: these methods should be implemented to specify how to train and
+ * process the {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#riskScorePipe}.
+ *
+ * `doInterpret`: this method should be implemented to specify how to generate feature contributions from the
+ * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#interpreter}.
+ *
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+abstract type ControlValvesModelableMethods mixes ReliabilityMlDatasetPreparationRunResolvable {
+
+  /**
+   * This method should be implemented to specify how to train the
+   * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#reconstructionPipe}, and is a wrapper around
+   * the {@link MlAtomicPipe#doTrain} API for the {@link ReliabilityRiskMl.Reconstruction.ControlValvesPipe}.
+   *
+   * @param pipe
+   *        The {@link ReliabilityRiskMl.Reconstruction.ControlValvesPipe} that calls this method.
+   * @param beforeTrainResults
+   *        Please refer to the {@MlAtomicPipe#doTrain} API for details.
+   * @param spec
+   *        Please refer to the {@MlAtomicPipe#doTrain} API for details.
+   * @return Please refer to the {@MlAtomicPipe#doTrain} API for details.
+   */
+  doTrainReconstruction: abstract private inline member function(pipe: !MlAtomicPipe, beforeTrainResults: !native, spec: MlOperationSpec): !native py
+
+  /**
+   * This method should be implemented to specify how to process the
+   * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#reconstructionPipe}, and is a wrapper around
+   * the {@link MlAtomicPipe#doProcess} API for the {@link ReliabilityRiskMl.Reconstruction.ControlValvesPipe}.
+   *
+   * @param pipe
+   *        The {@link ReliabilityRiskMl.Reconstruction.ControlValvesPipe} that calls this method.
+   * @param beforeProcessOutputs
+   *        Please refer to the {@MlAtomicPipe#doProcess} API for details.
+   * @param spec
+   *        Please refer to the {@MlAtomicPipe#doProcess} API for details.
+   * @return Please refer to the {@MlAtomicPipe#doProcess} API for details.
+   */
+  doProcessReconstruction: abstract private inline member function(pipe: !MlAtomicPipe, beforeProcessOutputs: !native, spec: MlOperationSpec): !native py-data
+
+  /**
+   * This method should be implemented to specify how to train the
+   * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#riskScorePipe}, and is a wrapper around
+   * the {@link MlAtomicPipe#doTrain} API for the {@link ReliabilityRiskMl.RiskScoreComputation.ControlValvesPipe}.
+   *
+   * @param pipe
+   *        The {@link ReliabilityRiskMl.RiskScoreComputation.ControlValvesPipe} that calls this method.
+   * @param beforeTrainResults
+   *        Please refer to the {@MlAtomicPipe#doTrain} API for details.
+   * @param spec
+   *        Please refer to the {@MlAtomicPipe#doTrain} API for details.
+   * @return Please refer to the {@MlAtomicPipe#doTrain} API for details.
+   */
+  doTrainRiskScore: abstract private inline member function(pipe: !MlAtomicPipe, beforeTrainResults: !native, spec: MlOperationSpec): !native py
+
+  /**
+   * This method should be implemented to specify how to process the
+   * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#riskScorePipe}, and is a wrapper around
+   * the {@link MlAtomicPipe#doProcess} API for the {@link ReliabilityRiskMl.RiskScoreComputation.ControlValvesPipe}.
+   *
+   * @param pipe
+   *        The {@link ReliabilityRiskMl.RiskScoreComputation.ControlValvesPipe} that calls this method.
+   * @param beforeProcessOutputs
+   *        Please refer to the {@MlAtomicPipe#doProcess} API for details.
+   * @param spec
+   *        Please refer to the {@MlAtomicPipe#doProcess} API for details.
+   * @return Please refer to the {@MlAtomicPipe#doProcess} API for details.
+   */
+  doProcessRiskScore: abstract private inline member function(pipe: !MlAtomicPipe, beforeProcessOutputs: !native, spec: MlOperationSpec): !native py-data
+
+  /**
+   * This method should be implemented to specify how to generate feature contributions for the
+   * {@link ReliabilityRiskMl.ControlValvesReconstructionPipeline#interpreter}, and is a wrapper around the
+   * {@link ReliabilityRiskMl.Pipeline.Interpreter.ControlValvesInterpreter#doInterpret} API.
+   *
+   * @param pipe
+   *        The trained {@link ReliabilityRiskMl.Reconstruction.ControlValvesPipe} that calls this method.
+   * @param x
+   *        A native pandas dataframe with the features to interpret.
+   * @return A pandas dataframe with the computed feature contributions.
+   */
+  doInterpret: abstract private inline member function(pipe: !MlAtomicPipe, x: !native): !native py-data
+}

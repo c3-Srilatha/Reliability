@@ -1,0 +1,115 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A abstract base type for all input components.
+ * Contains functionality for inputs to be submittable.
+ */
+@typeScript
+abstract type UiSdlInputBase<DataType> mixes UiSdlComponent<DataType> {
+
+  /**
+   * Flag to indicate whether the component should dispatch an INPUT_SUBMIT action upon input change.
+   */
+  submittable: boolean = false
+
+  /**
+   * The value of this input component.
+   */
+  value: any
+
+  /**
+   * Whether this input is invalid.
+   * This is necessary for when the state of the component is not managed by its container.
+   */
+  invalid: boolean
+
+  /**
+   * If {@link UiSdlInputBase#submittable} is true, this action will be triggered upon input change.
+   *
+   * @param id
+   *            Id of the input component.
+   * @param event
+   *           Browser event.
+   * @param value
+   *           Value of the input component upon submission.
+   * @param onChange
+   *           Whether the input was submitted as a result of an input change.
+   * @param autoFill
+   *           The boolean to determine if the component should be auto filled or not.
+   * @returns A `INPUT_SUBMIT` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='INPUT_SUBMIT')
+  submitInputAction: function(id: string,
+                              event: any,
+                              value: any,
+                              onChange: boolean = true,
+                              autoFill: boolean = false): !UiSdlInputSubmitAction ts-client
+
+  /**
+   * An action that is dispatched to set the value of the input component.
+   *
+   * @param id
+   *           Id of the input component.
+   * @param value
+   *           The value of the input component.
+   */
+  @uiSdlActionCreator(actionType='VALUE_SET')
+  setValueAction: function(id: string, value: any): !UiSdlValueSetAction ts-client
+
+  /**
+   * An action dispatched to set the validity value of the input component.
+   *
+   * @param id
+   *           Id of the input component.
+   * @param invalid
+   *           Whether the input component is invalid.
+   */
+  @uiSdlActionCreator(actionType='INVALID_SET')
+  setInvalidAction: function(id: string, invalid: boolean): !UiSdlInvalidSetAction ts-client
+
+  /**
+   * Listens for actions of type `VALUE_SET` and sets the {@link UiSdlInputBase#value} field of the
+   * input component.
+   */
+  @uiSdlReducer(actionType='VALUE_SET')
+  valueSetReducer: private function(state: UiSdlReduxState, action: UiSdlValueSetAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `INVALID_SET` and sets the {@link UiSdlInputBase#invalid} field of the
+   * input component.
+   */
+  @uiSdlReducer(actionType='INVALID_SET')
+  invalidSetReducer: private function(state: UiSdlReduxState, action: UiSdlInvalidSetAction): UiSdlReduxState ts-client
+
+  /**
+   * When the input is submitted, the application should redirect to the same page with a unique query
+   * parameter added to the URL containing the value of this input component.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='INPUT_SUBMIT')
+  inputSubmitEpic: private function(actionStream: UiSdlActionsObservable,
+                                    stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Retrieves the component's value.
+   *
+   * @param id
+   *           Id of the component.
+   * @param state
+   *           Redux state.
+   * @returns Component value.
+   */
+  getValue: private function(id: !string, state: !UiSdlReduxState): string ts-client
+}

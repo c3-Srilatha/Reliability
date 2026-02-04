@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Example flags:
+ *       {
+ *         "output": "json"
+ *       }
+ */
+type LighthouseFlags mixes LighthouseConfigSettings {
+
+  /**
+   * The hostname running chrome
+   */
+  hostname: string
+
+  /**
+   * the port chrome is listening on, e.g. SKywalker report.
+   */
+  port: int
+
+  /**
+   * Lighthouse verbosity.
+   */
+  logLevel: string enum('silent', 'error', 'info', 'verbose')
+
+  /**
+   * The path to the config JSON.
+   */
+  configPath: string
+
+  /**
+   * Run the specified plugins.
+   * A plugin is a node module that implements a set of checks that will be run by Lighthouse and added to the report as a new category
+   * See https://github.com/GoogleChrome/lighthouse/blob/master/docs/plugins.md
+   */
+  plugins: [string]
+}

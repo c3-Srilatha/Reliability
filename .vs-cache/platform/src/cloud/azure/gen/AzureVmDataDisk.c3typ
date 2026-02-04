@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.management.compute.DataDisk', runtimeFieldMapper='JavaC3StyleFieldMapper')
+type AzureVmDataDisk {
+
+  image:                   @java(runtimeClassName='com.microsoft.azure.management.compute.VirtualHardDisk') AzureVirtualHardDisk
+  diskMBpsReadWrite:       @java(runtimeClassName='java.lang.Long') int
+  lun:                     @java(runtimeClassName='int') int
+  toBeDetached:            @java(runtimeClassName='java.lang.Boolean') boolean
+  diskIOPSReadWrite:       @java(runtimeClassName='java.lang.Long') int
+  caching:                 @java(runtimeClassName='com.microsoft.azure.management.compute.CachingTypes') string enum AzureCachingTypes
+  createOption:            @java(runtimeClassName='com.microsoft.azure.management.compute.DiskCreateOptionTypes') string enum AzureDiskCreateOptionTypes
+  vhd:                     @java(runtimeClassName='com.microsoft.azure.management.compute.VirtualHardDisk') AzureVirtualHardDisk
+  managedDisk:             @java(runtimeClassName='com.microsoft.azure.management.compute.ManagedDiskParameters') AzureComputeManagedDiskParameters
+  writeAcceleratorEnabled: @java(runtimeClassName='java.lang.Boolean') boolean
+  name_:                   @java(runtimeClassName='java.lang.String') string
+  diskSizeGB:              @java(runtimeClassName='java.lang.Integer') int32
+  fromJava:                function(javaObj: @java(class="java.lang.Object") !?native): AzureVmDataDisk
+  toJava:                  member function(): native
+}

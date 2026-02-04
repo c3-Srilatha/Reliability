@@ -1,0 +1,169 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * ML Configurations for Reliability application.
+ */
+type ReliabilityMLOutputConfig mixes Config, Singleton {
+
+  /**
+   * Timestamp timezone for model outputs. IF not set, UTC will be used.
+   * If you are using {@link PointMeasurement}s with a non-UTC timezone, you should set this config to match.
+   */
+  outputTimeZone: TimeZone = 'UTC'
+
+  /**
+   * Dataset column name for the risk score.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  riskScoreColumnName: string
+
+  /**
+   * Dataset column name for the feature contributions sum.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  featureContributionsSumColumnName: string
+
+  /**
+   * Dataset column name suffix for the residuals. The residual column names will be constructed by appending this suffix
+   * to the column name of each of the input features.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  residualColumnNameSuffix: string
+
+  /**
+   * Dataset column name suffix for the reconstructed features/signals. The reconstruction column names will be constructed
+   * by appending this suffix to the column name of each of the input features. If not specified, the column
+   * names of the reconstructed features will be the same as those of the input features.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reconstructionColumnNameSuffix: string
+
+  /**
+   * Dataset column name for generated alerts.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  alertColumnName: string
+
+  /**
+   * Dataset column name suffix for the generated normalized risk scores.
+   * The column name will be constructed by appending this suffix to the column name of the risk scores column.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  normalizerColumnNameSuffix: string
+
+  /**
+   * The interpretations {@link Feature.Set} key that maps to the generated feature contributions on the {@link ReliabilityRiskMl.Pipeline}.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  interpretationOutputName: string
+
+  /**
+   * Field name for contributions on {@link ReliabilityRiskScoreMlContribution}
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reliabilityRiskScoreMlContributionField: string
+
+  /**
+   * Field name for contributions on {@link ReliabilityRiskScoreMlValidationContribution}.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reliabilityRiskScoreMlValidationContributionField: string
+
+  /**
+   * Field name for predictions on {@link ReliabilityRiskScoreMlPrediction}
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reliabilityRiskScoreMlPredictionField: string
+
+  /**
+   * Field name for predictions on {@link ReliabilityRiskScoreMlValidationPrediction}.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reliabilityRiskScoreMlValidationPredictionField: string
+
+  /**
+   * Field name for scores on {@link ReliabilityRiskScoreMlScore}
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reliabilityRiskScoreMlScoreField: string
+
+  /**
+   * Default mapping between the columns of the {@link TensorSpec} outputs of the
+   * {@link MlPipeline#process} method of a model's {@link MlPipeline} to the name of the timeSeries
+   * each prediction data point must be to persisted in.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  columnsToPredictionTimeseries: map<string, string> | map<string, Pair<string, Unit>>
+
+  /**
+   * Default mapping between the columns of the {@link MlInterpretResult#processOutput} outputs of the
+   * {@link MlPipeline#interpret} method of a model's {@link MlPipeline} to the name of the timeSeries
+   * each prediction data point along with its associated contributions must be persisted in.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  columnsToContributionTimeseries: map<string, string>
+
+  /**
+   * Dataset column name for the time to event.
+   * This should also be the output port name of the pipeline.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  timeToEventColumnName: string
+
+  /**
+   * Dataset column name for the optional time to event forecast value.
+   * This should also be the output port name of the pipeline.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  timeToEventForecastColumnName: string
+
+  /**
+   * During incremental inference, the start of the inference range is determind by the latest prediction time for
+   * each {@link MlSubject}. This config determines how far back to look for the latest prediction time.
+   *
+   * This is especially useful when there are no prior predictions for a specific subject.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  maximumPredictionLookbackForIncrementalInference: Period
+}

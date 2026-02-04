@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the partition structure for a persistable type's partitioned database table in Postgres.  Details for
+ * Postgres partitioning can be found at:
+ *
+ * `https://www.postgresql.org/docs/12/ddl-partitioning.html`
+ *
+ * Note the following limitations:
+ *
+ * 1. Only `list` and `range` partitioning are supported at this time.
+ * 2. Since a true primary key index can not span multiple tables, it is a requirement in Postgres that the primary key
+ *    defined for a partitioned table must include the partition key column, we will enforce the KV strategy for our
+ *    `id` field (e.g. "<partitionKey>#<unique value in partition>") to facilitate the correct upsert behavior and to
+ *    ensure that there are not "duplicate" ids returned from fetch/get.
+ * 3. No other unique indexes will be supported for partitioned tables.
+ * 4. Since there is no effective way to have matching partitioning for child collection tables for a partitioned table,
+ *    no non-fkey child collections will be allowed.
+ * 5. Changes to the partition key field's value will not be permitted.
+ *
+ *
+ * ALSO NOTE! The above description may change as the POC progresses.
+ */
+type PgPartitionDef {
+
+  /**
+   * Key field to use for partitioning.  Note the following:
+   *
+   * 1. Currently only single field partitioning is supported.
+   * 2. Only fields that store their values in a single column as a "truly" primitive value (e.g. NOT json) are allowed
+   */
+  keyField: !string
+
+  /**
+   * Indicates which type of partitioning will be used (e.g. `range` or `list`).
+   */
+  strategy: !string enum PgPartitionStrategy
+
+  /**
+   * Map of partition values to use, specified as a comma separated list in a single string, keyed by the partition
+   * name.  Note that for `list` partitions, every value will be, explicitly part of the partition.
+   *
+   * For 'range' partitions, The values must contain only 2 entries, the first being the minimum (inclusive) value for
+   * the partition and the second being the maximum (exclusive) value for the partition.  For range partitions, the
+   * partition configurations must be non-overlapping and cover all possible expected values.  Otherwise, errors will
+   * occur when creating the partitions or writing to the database.
+   *
+   * Note the following:
+   *
+   * 1. The values should be specified as strings and must be naturally convertible to the appropriate data type for
+   *    the underlying column for the field (e.g. '2021-12-01' for a date or dateTime field).
+   */
+  partitions: !map<string, string>
+
+  /**
+   * TOMDO: PLAT-39935 - :v8 - Error processing @db(pgPartition = ...) - Remove and fix `partitions` when fixed.
+   */
+  partitionValues: member function(): !map<string, [string]>
+}

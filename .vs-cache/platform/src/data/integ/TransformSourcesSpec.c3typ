@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for DataIntegrator#transformSources action.
+ */
+type TransformSourcesSpec mixes TransformObjsSpec {
+
+  /**
+   * A list of objs uploaded by users, which are usually existing in memory and not persisted yet.
+   */
+  objs: [Obj]
+
+  /**
+   * A list of pairs of {@link SourceCollection} names and {@link ObjsOperSpec}s, used to load source objs from source collections.
+   */
+  sourceCollectionSpecs: [{ name: !string, spec: ObjsOperSpec }]
+
+  /**
+   * A list of {@link Transform} instances to apply to the objects.
+   */
+  transforms: [Transform]
+
+  /**
+   * Specifies which fields to bring back values for in the returned objs of target type in the last transform of
+   * {@link #transforms}. Excluded fields are dropped from the transform/projection evaluation results.
+   * see {@link Include}
+   */
+  include: string serialized Include
+}

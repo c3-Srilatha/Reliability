@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Produce an OpenAPI specification that represents the specified type.
+ *
+ * @see https://spec.openapis.org/oas/v3.0.3
+ */
+type OpenApiGenerator mixes ApiGenerator {
+
+  /**
+   * Version of OpenAPI specification delivered.
+   */
+  OAS_VERSION: const string = "3.0.3"
+
+  /**
+   * Whether to produce the result as YAML rather than JSON.
+   */
+  yaml: boolean
+
+  /**
+   * The prefix URL for this instance of the server. This should not include "/api/n" nor a trailing slash.
+   */
+  origin: string serialized Url
+
+  /**
+   * Produce a path to the server's API endpoint.
+   *
+   * @see #origin
+   */
+  serverPath: member function(): !string
+
+  /**
+   * Produce a path to the server's documentation endpoint for the specified type.
+   *
+   * @see #origin
+   */
+  docPath: member function(typeName: !string): !string
+}

@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This {@link UiModel model} implementation supports types which mixin {@link Persistable} (normal `entity` types).
+ *
+ * @see UiPersistableCollection
+ */
+type UiPersistableModel mixes UiModel {
+
+  /**
+   * The id of the underlying entity. When loaded or saved, this will be set, but may be null for newly created
+   * entities.
+   */
+  id: member function(): string js-client
+
+  /**
+   * Internal method to re-retrieve all fields of an object currently loaded in the client. Note that all changes made
+   * to the object will be ignored and the previous state reloaded. If the object no longer exists, null is returned.
+   * If the object was never saved (has no {@link Persistable#id id}), an error is thrown.
+   *
+   * @see #reload
+   */
+  sendReload: member function(): Promise<mixing UiPersistableModel>
+
+  /**
+   * Internal method to save all changes made to an object currently loaded in the client.
+   *
+   * @see #save
+   */
+  sendSave: member function(): !Promise<mixing UiPersistableModel>
+
+  reload: ~ js-client
+}

@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config for fine-tuning the execution of the {@link K8sWatcher}.
+ * Modification of this config requires a restart of the c3-c3 node.
+ */
+@config(maxOverride=CLUSTER, minOverride=CLUSTER)
+type K8sWatcher.Config mixes Config, Singleton {
+
+  /**
+   * Controls whether {@link K8sWatcher} should run or not
+   */
+  disabled: boolean
+
+  /**
+   * Number of attempts allowed to reconcile from the last stored K8s Resource Version for a given K8s Resource.
+   * This reconciliation can fail when our stored K8s Resource Version is too old for the K8sApiServer.
+   * Subsequently, we are bound to receive a HTTP 410 GONE Response which will look like the following:
+   * {
+   *     "type": "ERROR",
+   *     "object": {
+   *         "status": "Failure",
+   *         "message": "too old resource version: 22063149 (223332634)",
+   *         "reason": "Expired",
+   *         "code": 410
+   *     }
+   * }
+   *
+   * To minimize loss of data, we attempt to reconcile the watch using the suggested (resourceVersion).
+   * However, there's no guarantee that this resourceVersion will not result in a HTTP GONE 410.
+   * Hence, the need of having a limit on the number of attempts before which we send "0" as the resourceVersion, which is
+   * guaranteed to get a 200 response from K8sApiServer. To understand the semantics of how resourceVersions work with
+   * a WATCH call see: https://kubernetes.io/docs/reference/using-api/api-concepts/#semantics-for-watch
+   */
+  maxReconciliationAttempts: int32
+}

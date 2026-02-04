@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Epic to delete an {@link Cached} into an application's package.
+ * Use this epic to ensure that configs are properly deleted when there is a possibility of publishing
+ * an application's contents to source control
+ */
+@typeScript
+type DeleteCachedEpic mixes UiSdlEpic {
+
+  /**
+   * An to persist an {@link Cached} to be seeded as part of an application's package
+   *
+   * @param cachedTypeName
+   *         The kind of {@link Cached} to delete
+   * @param cachedIdentifier
+   *         The identifier for the {@link Cached}
+   * @return an action to delete a {@link Cached}
+   */
+  @uiSdlActionCreator(actionType='DELETE_CACHED')
+  deleteCachedAction: function(cachedTypeName: !string serialized Type,
+                               cachedIdentifier: !string,
+                               cacheType: !string enum('seed', 'config')): !UiSdlReduxAction ts-client
+
+  epic: ~ ts-client
+}

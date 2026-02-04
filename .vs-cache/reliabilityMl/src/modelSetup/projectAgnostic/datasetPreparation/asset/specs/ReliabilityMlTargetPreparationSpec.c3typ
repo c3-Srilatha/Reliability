@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * If training and deploying supervised {@link MlModel}s for any {@link MlProject}s,
+ * then use this spec to define the target variable. There can only be one target variable for an
+ * {@link MlModel}.
+ */
+@beta
+type ReliabilityMlTargetPreparationSpec {
+
+  /**
+   * The default target variable for supervised {@link MlModel} is some time window leading
+   * up to {@link ReliabilityAssetEvent}s. Usually, leading up to a {@link ReliabilityAssetEvent},
+   * there will be signs of degradation. Defining all timestamps leading up to downtime events
+   * as label=1 and all other timestamps as label=0 is one way of training supervised
+   * {@link MlModel}s. This is the default approach to training supervised {@link MlModel}s for
+   * the `reliabilityRisk` {@link MlProject}. Define the number of time steps appropriately,
+   * based on the {@link ReliabilityMlDatasetPreparationSpec#interval}.
+   * For example, the default {@link Interval} is `QUARTER_HOUR`. So, the default number of time
+   * steps here is 288, which translates to 3 days leading up to {@link ReliabilityAssetEvent}s.
+   */
+  preAssetEventsWindow: int = 288
+
+  /**
+   * If the user wishes to train supervised {@link MlModel}s for the `reliabilityRisk` {@link MlProject}
+   * but does not want to employ the usage of the default target variable, use this field to
+   * provide a {@link Feature} that will result in a trained {@link MlModel} that produces risk scores.
+   * Note that the {@link Feature} provided here MUST be upserted and MUST have the `name` field
+   * populated.
+   */
+  targetOverride: Feature
+}

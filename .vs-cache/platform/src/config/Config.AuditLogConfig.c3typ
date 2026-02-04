@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for Config Auditing. Allows for the exclusion of certain types, users, and apps from auditing.
+ * See also: {@link Config.AuditLog}
+ */
+// TODO: PLAT-102819 remove private @beta from Config.AuditLog c3typ
+@config(minOverride=CLUSTER)
+@beta
+private type Config.AuditLogConfig mixes Config, Singleton {
+
+  /**
+   * Name of the directory in filesystem to write the data
+   */
+  DIR_NAME: private const string = "configAudit"
+
+  /**
+   * Name of the {@link KvStore.FileSystem.Config} for this type
+   */
+  KVFS_CONFIG_NAME: private const string = "fs-configAudit"
+
+  /**
+   * The string used to replace secret values in the audit log.
+   */
+  SECRET_REDACTION_REPLACEMENT: private const string = "*****"
+
+  /**
+   * Enable config auditing. Uses the default filesystem of the current app.
+   */
+  enable: member function()
+
+  /**
+   * Disable config auditing
+   */
+  disable: member function()
+
+  /**
+   * Whether Config Auditing is enabled or not
+   */
+  enabled: member function(): boolean
+
+  /**
+   * Set of {@link Type} names to exclude from auditing
+   */
+  excludeTypes: set<string>
+
+  /**
+   * Whether to exclude all non-platform {@link Config}s from auditing
+   */
+  excludeAllNonPlatformTypes: boolean
+
+  /**
+   * Set of {@link User} ids to exempt from auditing. Configs modified by these users will not audited.
+   */
+  excludeUserIds: set<string>
+
+  /**
+   * Set of string serialized {@link App} ids to exclude from auditing
+   */
+  excludeAppIds: set<string>
+
+  /**
+   * Returns whether {@link Config.AuditLog} should be upserted to the database
+   *
+   * @param auditLog
+   *           The {@Config.AuditLog} candidate to potentially upsert
+   * @return
+   *           Returns whether a provided {@Config.AuditLog} should be upserted to the database given the exclusion specified on the current instance of the {@link Config.AuditLog.Config}
+   */
+  shouldExclude: private member function(auditLog: !Config.AuditLog): !boolean
+}

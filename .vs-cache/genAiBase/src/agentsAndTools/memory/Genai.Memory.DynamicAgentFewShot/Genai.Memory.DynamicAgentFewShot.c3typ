@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A memory record set by the user to be retrieved for each query.
+ */
+entity type Genai.Memory.DynamicAgentFewShot mixes Genai.Memory {
+
+  /**
+   * The content shown to the agent when this example is retrieved. Can contain code snippets or
+   * natural language as appropriate, providing flexibility in the format of examples presented to
+   * the agent.
+   */
+  displayText: !string
+
+  /**
+   * The query string that this example corresponds to. When provided, similarity search is conducted
+   * against this field instead of displayText, allowing optimization for retrieval without affecting
+   * the content shown to the agent. Enables alternative phrasings or keywords to improve matching.
+   */
+  query: string
+
+  /**
+   * Internal documentation for the example. Documents the purpose and context of the example,
+   * facilitates example management and organization, and helps track the intended use case for
+   * each example.
+   */
+  description: string
+
+  /**
+   * The specialization of the python agent.
+   * This distinguishes between different agent specializations within the same project. E.g. it is possible to
+   * have a genericAnalysis agent that takes care of plotting graphs and pandas operations.
+   * But we can also have a different agent that specialises in geospatialAnalysis. Which takes care of geospatial
+   * analyses, we use this specialization to distinguish the examples.
+   */
+  specialization: !string = "genericAnalysis"
+
+  /**
+   * The project this example belongs to. This can be used to filter out based on use case.
+   * E.g. We might have few-shots for a reliability related use case and others for a process optimisation
+   * use case. We might need to differentiate between both of these. The {@link Genai.Project}
+   * can be used for this.
+   */
+  project: Genai.Project
+}

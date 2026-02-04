@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options passed to map reduce job for chunking.
+ * Includes chunker spec, batch size, and whether to index files on job completion.
+ */
+type Genai.SourceFile.Job.ChunkMapReduceSpec {
+  /**
+   * Chunker config.
+   */
+  chunkerSpec: Genai.SourceFile.Chunker.UniversalChunker.Spec
+
+  /**
+   * All {@link Genai.SourceFile}s to be chunked
+   */
+  files: ![Genai.SourceFile]
+
+  /**
+   * In certain cases, it may be useful to directly chunk a set of files without actually adding them to the index yet.
+   * When set to true, after chunking, automated metadata tagging and indexing will be skipped.
+   */
+  skipProcessChunkingCompletion: boolean
+
+  /**
+   * If #skipProcessChunkingCompletion is not true, adds metadata with tag categories to source files before indexing.
+   */
+  scanResult: Genai.SourceFile.Metadata.Tagging.ScanResult
+
+  /**
+   * If #skipProcessChunkingCompletion is not true, indexes chunked files in vector store.
+   */
+  vectorStore: Genai.Retriever
+
+  /**
+   * If #skipProcessChunkingCompletion is not true, sets the 'lastProcessedBy' field on source file to specified user.
+   */
+  lastProcessedBy: string
+}

@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type that defines a dependece between fields, meaning that when the value of one field is changed,
+ * we also need to change another field's value. When the updatedField's value is changed using UiDesigner,
+ * we want to also change the value of the relatedField. An example case would be when we change
+ * {@link UiSdlDataGrid#paginationConfig pageSize}, we would want to also reset the {@link UiSdlDataGrid#paginationDataSkipSize}
+ * field to be 0 to reset the page to the first page.
+ *
+ * This is how {@link UiSdlDataGrid#fieldsDependenceMapping} should look like:
+ *
+ *      [
+ *        {
+ *         "updatedField": "paginationConfig.pageSize",
+ *         "relatedField": "paginationDataSkipSize",
+ *         "value": 0
+ *        }
+ *      ]
+ */
+@typeScript
+type UiSdlFieldsDependenceMapping {
+
+  /**
+   * The field that is being updated through UiDesigner
+   */
+  updatedField: string
+
+  /**
+   * The field whose value needs to be changed due to the value change of updatedField
+   */
+  relatedField: string
+
+  /**
+   * The value to be assigned to the relatedField
+   */
+  value: any
+}

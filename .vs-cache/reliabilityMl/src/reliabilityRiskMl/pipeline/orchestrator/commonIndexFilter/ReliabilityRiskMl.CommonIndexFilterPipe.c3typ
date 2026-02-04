@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a machine learning pipe template that filters the input datasets such that all of them have
+ * the exact same length and indices. This ensures that the features being processed have consistent temporal
+ * alignment and size, making them suitable for subsequent operations that require uniformity in input data.
+ *
+ * This pipe can be used as part of a larger machine learning pipeline where the consistency of input data is crucial.
+ * The input datasets are filtered and adjusted to align in terms of length and index values before being processed
+ * further.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.CommonIndexFilterPipe<DX, DO> extends MlTemplate.AtomicPipe<DX, void, DO> type key 'CIFP' {
+
+  /**
+   * A list of the names of the input features that will be processed by this pipe.
+   * All inputs listed here must have the same length and indices for this pipe to function properly.
+   */
+  inputNames: ![string]
+
+  /**
+   * Indicates whether this pipe is trainable.
+   * This pipe does not include any machine learning model training, as it is a data preprocessing step
+   * that ensures the uniformity of the input data. Therefore, it is marked as non-trainable.
+   */
+  isTrainable: ~ py
+
+  /**
+   * The function used to process the input data in this pipe.
+   * This function performs the filtering of the input datasets to ensure that all inputs have the same length
+   * and indices. The processing will be done in a data processing environment (`py-data`), which ensures that
+   * the inputs are aligned correctly.
+   */
+  doProcess: ~ py-data
+
+  /**
+   * A function used to generate the specific pipe for processing data.
+   * This function is responsible for creating the necessary machine learning pipeline that includes this filter step.
+   * It is defined as part of the generation logic, allowing for dynamic creation of processing pipelines.
+   */
+  generatePipe: ~ py
+
+  /**
+   * A function used to generate type bindings for the pipe.
+   * This ensures that the correct types are associated with the input and output of the pipe, maintaining
+   * consistency and ensuring proper data handling during the process.
+   */
+  generateTypeBindings: ~ py
+}

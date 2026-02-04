@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+  * The Config interface for {@link Genai.Memory.DynamicAgentFewShot}.
+  */
+type Genai.Memory.DynamicAgentFewShot.Config extends Genai.Memory.Config mixes Singleton type key "DAFSC" {
+
+  /**
+   * The Type of {@link Genai.Memory} that this config is for.
+   */
+  memoryType: Type<<Genai.Memory>> = Genai.Memory.DynamicAgentFewShot
+
+  /**
+   * Method to upload fewshot examples (memories) for dyanmic agent. Each example must contain the field
+   * {@link Genai.Memory.DynamicAgentFewShot#displayText}. The {@link Genai.Memory.DynamicAgentFewShot#query}
+   * field is optional and can be used to provide an alternative query string for similarity search. The
+   * uploaded memories count is returned.
+   */
+  addMemories: member function(memories: ![json]): int py
+
+  /**
+   * Formats the similarity search results to a string that can be ingested to the prompt.
+   */
+  formatSearchResultsToString: function(searchResult: [GenaiCore.VectorStore.SimilaritySearchResult]): string py
+
+}

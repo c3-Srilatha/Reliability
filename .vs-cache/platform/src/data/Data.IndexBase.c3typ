@@ -1,0 +1,158 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base Index type that all Data.Index subtypes inherit from
+ */
+@beta
+abstract type Data.IndexBase mixes DataImpl, PyReprProtocol, ItemProtocol, LengthProtocol, Iterable, ComparisonProtocol {
+
+  /**
+   * Converts this index to a {@link Data.Series.Pandas}.
+   * If parent dataset is not provided then will use default data set.
+   */
+  toDataPandas: private abstract member function(ds: Dataset): Data.IndexBase.Pandas
+
+  @reClaim(inherit=true)
+  dereference: private ~: !Data.IndexBase
+
+  @reClaim(inherit=true)
+  toDataRef: private ~: !Data.IndexBase.Ref
+
+  cache:    ~: Data.IndexBase
+  isCached: private ~
+
+  @reClaim(inherit=true)
+  _item_: private ~
+
+  @pandas(canReturnData=true)
+  getItem: private abstract member function(fst: any): any
+
+  @reClaim(inherit=true)
+  repr: private member function(): string
+
+  // this will enable calling tolist from Pandas
+  tolist: abstract member function(): ?[any]
+
+  @reClaim(inherit=true)
+  lessThan: private ~
+
+  @reClaim(inherit=true)
+  lessThanEqualTo: private ~
+
+  @reClaim(inherit=true)
+  equalTo: private ~
+
+  @reClaim(inherit=true)
+  notEqualTo: private ~
+
+  @reClaim(inherit=true)
+  greaterThan: private ~
+
+  @reClaim(inherit=true)
+  greaterThanEqualTo: private ~
+
+  /**
+   * Iterate over the indices.
+   */
+  @reClaim(inherit=true)
+  iter: ~
+
+  // TODO: PLAT-51354 Update return types to tuples
+  // This implementation allows shape to go through exec and return the result in Java, ensuring the
+  // deserialization of Data.Index returned within the Collection
+  @reClaim(inherit=true)
+  _shape: private property(): ?[any]
+
+  /**
+   * Return a tuple of the shape of the underlying data.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.shape.html
+   */
+  shape: abstract property(): ?any
+
+  @reClaim(inherit=true)
+  _join: private member function(other: ?any, how: ?any, level: ?any, return_indexers: ?any, sort: ?any): ?any
+
+  /**
+   * Compute join_index and indexers to conform data structures to the new index.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.join.html
+   */
+  @pandas(canReturnData=true)
+  join: abstract member function(other: ?any, how: ?any, level: ?any, return_indexers: ?any, sort: ?any): ?any
+
+  @reClaim(inherit=true)
+  _sort_values: private member function(return_indexer: ?any,
+                                        ascending: ?any,
+                                        na_position: ?any,
+                                        key: ?lambda(x: any ...): any): ?any
+
+  /**
+   * Return a sorted copy of the index, and optionally return the indices that sorted the index itself.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.sort_values.html
+   */
+  @pandas(canReturnData=true)
+  sort_values: abstract member function(return_indexer: ?any,
+                                        ascending: ?any,
+                                        na_position: ?any,
+                                        key: ?lambda(x: any ...): any): ?any
+
+  @reClaim(inherit=true)
+  _factorize: private member function(sort: ?any, na_sentinel: ?int): ?[any]
+
+  /**
+   * Encode the object as an enumerated type or categorical variable.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.factorize.html
+   */
+  factorize: abstract member function(sort: ?any, na_sentinel: ?int): ?any
+
+  @reClaim(inherit=true)
+  _get_indexer_non_unique: private member function(target: ?any): ?[any]
+
+  /**
+   * Compute indexer and mask for new index given the current index.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer_non_unique.html
+   */
+  get_indexer_non_unique: abstract member function(target: ?any): ?any
+
+  @reClaim(inherit=true)
+  @pandas(canReturnData=true)
+  _reindex: private member function(target: ?any, method: ?any, level: ?any, limit: ?any, tolerance: ?any): ?[any]
+
+  /**
+   * Create index with target’s values.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.reindex.html
+   */
+  @pandas(canReturnData=true)
+  reindex: abstract member function(target: ?any, method: ?any, level: ?any, limit: ?any, tolerance: ?any): ?any
+
+  _sortlevel: private member function(level: ?any, ascending: ?any, sort_remaining: ?any): ?any
+
+  /**
+   * Create index with target’s values.
+   *
+   * see: https://pandas.pydata.org/docs/reference/api/pandas.Index.reindex.html
+   */
+  @pandas(canReturnData=True)
+  sortlevel: abstract member function(level: ?any, ascending: ?any, sort_remaining: ?any): ?any
+
+  /**
+   * Compute slice locations for input labels.
+   * see: https://pandas.pydata.org/pandas-docs/version/1.3/reference/api/pandas.Index.slice_locs.html
+   */
+  // TODO PLAT-51354: Update return types to tuples
+  slice_locs: abstract member function(start: ?any, end: ?any, step: ?any, kind: ?any): ?[int]
+
+  @reClaim(inherit=true)
+  _slice_locs: private member function(start: ?any, end: ?any, step: ?any, kind: ?any): ?[int]
+}

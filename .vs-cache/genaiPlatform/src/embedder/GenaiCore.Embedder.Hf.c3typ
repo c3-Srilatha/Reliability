@@ -1,0 +1,102 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The Hugging Face embedder, which uses SentenceTransformers from the Hugging Face Transformers
+ * library to encode text into embeddings.
+ *
+ * NOTE: for production usage, it is recommended to persist the model files for this embedder
+ * using {@link #uploadModelFiles}.
+ *
+ * Example usage:
+ * ```py
+ *  embedder = c3.GenaiCore.Embedder.Hf(id="my_embedder", modelName=model_name, initKwargs=init_kwargs).create()
+ *  if is_intended_for_production:
+ *    embedder = embedder.uploadModelFiles()
+ *  ...
+ *  embedder = c3.GenaiCore.Embedder.Hf(id="my_embedder").get()
+ *  embedder.initialize()
+ *  embedder.encode(text="helloworld")
+ * ```
+ *
+ * NOTE: When selecting embedding models from Hugging Face, avoid Python Pickle (e.g. .pkl) formatted models.
+ * The Pickle format is inherently insecure and it may be possible to create malicious models using that format.
+ * Instead use the Safetensors format, which does not have this issue. Most of the popular embedding models on Hugging Face
+ * are available in the Safetensors format. If you must use a Pickle-formatted model, please ensure that it has been scanned
+ * with a model security tool first. Hugging Face includes a scanning tool, and files they host which have been scanned
+ * are marked with a “Safe” tag.
+ *
+ * @inheritdoc
+ */
+entity type GenaiCore.Embedder.Hf extends GenaiCore.Embedder.Persistable type key 'HFE' {
+
+  /**
+   * The name of the Sentence Transformer embedder supported by Huggingface.
+   * Currently, only sentence-transformer models are supported.
+   * Popular ones include `intfloat/e5-base-v2` and `mixedbread-ai/mxbai-embed-large-v1`.
+   * You can find available ones in {@link https://www.sbert.net/docs/sentence_transformer/pretrained_models.html}.
+   *
+   * NOTE: When selecting embedding models from Hugging Face, avoid Python Pickle (e.g. .pkl) formatted models.
+   * The Pickle format is inherently insecure and it may be possible to create malicious models using that format.
+   * Instead use the Safetensors format, which does not have this issue. Most of the popular embedding models on Hugging Face
+   * are available in the Safetensors format. If you must use a Pickle-formatted model, please ensure that it has been scanned
+   * with a model security tool first. Hugging Face includes a scanning tool, and files they host which have been scanned
+   * are marked with a “Safe” tag.
+   */
+  modelName: !string
+
+  /**
+   * See {@link #uploadModelFiles}. If this field is populated, then {@link #initialize} will instantiate
+   * the model from the files in this directory, instead of from Hugging Face Hub.
+   * NOTE: this field should not be set by users but only by {@link #uploadModelFiles}!
+   */
+  modelDirectory: string
+
+  /**
+   * The kwargs to the initialization of the SentenceTransformer class.
+   * More details in {@link https://sbert.net/docs/package_reference/sentence_transformer/SentenceTransformer.html}.
+   * Note that if you want to use different prefix strings for different purposes, you can refer to the
+   * `SentenceTransformer#prompts`, `encode#prompt_name`, and `encode#prompt` examples in the above link.
+   */
+  initKwargs: json
+
+  initialize: ~ py-sentence_transformers
+  doEncodeBatch: ~ py-sentence_transformers
+
+  /**
+   * @inheritdoc
+   *
+   * reclaimed to remove all files in {@link #modelDirectory} upon object deletion.
+   */
+  beforeRemove: ~ py
+
+  /**
+   * @return the dimension of the embedding defined by the native embedding model.
+   */
+  embeddingDimension: cached member function(): !int py-sentence_transformers
+
+  /**
+   * This function downloads the model with name {@link #modelName} from Hugging Face Hub and
+   * re-uploads the model files to the C3 {@link FileSystem}. This API should be used for
+   * every embedder that is used in a production setting.
+   *
+   * @return newly upserted instance of this, with {@link #modelDirectory} populated
+   *          with the url in the C3 {@link FileSystem} where the model files have
+   *          been uploaded.
+   */
+  uploadModelFiles: member function(): !mixing GenaiCore.Embedder.Hf py-sentence_transformers
+
+  /**
+   * This function downloads the model files located at {@link #modelDirectory} that were uploaded
+   * with {@link uploadModelFiles} to the local filesystem.
+   *
+   * @return the path to the local directory where the model files have been downloaded.
+   */
+  downloadModelFiles: private member function(): !string py
+}

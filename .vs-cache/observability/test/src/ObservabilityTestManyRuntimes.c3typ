@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test type for Observability - Tests tracing across different runtimes
+ * Test invokes `parent()` which has the following functions called internally
+ *   parent ----- child1 ------ grandChild
+ *     |
+ *     |
+ *     ------------ child2 ------- grandChild
+ */
+type ObservabilityTestManyRuntimes {
+
+  /**
+   * Entry point for test.
+   */
+  parent: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parent}.
+   */
+  child1: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-testdillobs
+
+  /**
+   * Action invoked by {@link #parent}.
+   */
+  child2: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-testdillobs
+
+  /**
+   * Action invoked by {@link #child1} and {@link #child2}.
+   */
+  grandChild: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-testspacyobs
+
+  /**
+   * Parent action that does not have opentelemetry dependency but with the Observability instrumentation.
+   * @param childHasOtel
+   *            If true, it calls {@link #child1}. Otherwise, it calls {@link #childWithoutOtel}.
+   */
+  parentWithoutOtel: member function(childHasOtel: boolean): !ObservabilityTestRefActions py-server
+
+  /**
+   * Child action that does not have opentelemetry dependency but with the Observability instrumentation.
+   * This calls {@link #grandChildWithoutOtel}.
+   */
+  childWithoutOtel: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-server
+
+  /**
+   * Grand child action that does not have opentelemetry dependency but with the Observability instrumentation.
+   */
+  grandChildWithoutOtel: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-server
+}

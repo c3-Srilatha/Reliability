@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for batch jobs started from refresh operations for asynchronous processing.
+ */
+@action(group+='data-admin')
+entity type RefreshBatchJob<JT, OT, BT> extends BatchJob<JT, OT, BT> mixes Value type key 'REFRESH' {
+
+  /**
+   * Override to perform custom appropriate refresh operation.
+   *
+   * @param spec
+   *        Spec for the operation
+   *
+   * @return The number of objs refreshed.
+   */
+  refresh: function(spec: !ObjBatch): !int
+
+  /**
+   * Must override if relying on standard {@link refresh}.
+   *
+   * @param type
+   *        Type being refreshed
+   * @param ids
+   *        Ids to refresh
+   *
+   * @return The number of objs refreshed.
+   */
+  refreshIds: optional function(type: !Type, spec: !ObjBatch, ids: [string]): !int
+
+  /**
+   * @return The DataIssue type associated with the batch job, if any.
+   */
+  issueType: optional function(): Type
+
+  /**
+   * Removes all of the issues for the type, ids and fields that are about to be processed. They will get
+   * re-added if the problem persists.
+   *
+   * @param type
+   *        type having calc fields refreshed.
+   * @param issueType
+   *        DataIssueType to clear.
+   * @param ids
+   *        ids being refreshed.
+   * @param fields
+   *        fields being refreshed
+   */
+  clearIssuesForIds: function(type: !Type, issueType: !Type, ids: !?[string], fields: [string])
+
+  /**
+   * Removes all of the issues for the type that is about to be processed. They will get re-added if the
+   * problem persists.
+   *
+   * @param type
+   *        type having calc fields refreshed.
+   * @param issueType
+   *        DataIssueType to clear.
+   */
+  clearIssuesForType: function(type: !Type, issueType: !Type)
+
+  /**
+   * Clears all data issues that the batch job will take care of.  They will get re-added if the problem persists.
+   *
+   * @param spec
+   *        Spec that the job will be run with.
+   */
+  clearIssues: member function(spec: !ObjBatch)
+
+  /**
+   * @return True if all objs in the type are being completely refreshed.  Override if it depends on your
+   *         custom spec.
+   */
+  isRefreshAll: function(spec: !ObjBatch): boolean
+
+  /**
+   * @return true if the refresh should be performed for the specified spec.
+   */
+  shouldHandle: function(spec: !ObjBatch): boolean
+
+  /**
+   * Schedules batches for an owning AppRebuilder batch job.
+   *
+   * @param aooRebuilder
+   *        Owning AppRebuilder.
+   * @param spec
+   *        Spec for batch job.
+   */
+  scheduleBatchesForAppRebuilder: function(appRebuilder: !AppRebuilder, spec: !ObjBatch)
+}

@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base of all scripting language marker annotations.
+ */
+@annotation(appliesTo=['function'])
+type Ann.ImplLanguage mixes Annotation {
+
+  /**
+   * Retry action if failure is a retryable c3 exception such as VersionConflict.
+   */
+  retryable: boolean
+
+  /**
+   * The class name of the native field type, parameter or return value (as marked with the "native" value type).
+   */
+  class: string
+
+  /**
+   * Specific version of the language required for the source code. The supported versions vary by language so for
+   * languages that support multiple versions, this field is overridden with an enumeration. If unspecified, it is
+   * assumed that the source code corresponds to a "base" version which is upward compatible.
+   */
+  @deprecated
+  sourceVersion: string
+}

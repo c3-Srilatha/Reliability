@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A component that renders generic cards and allows the user to select one
+ */
+@typeScript
+type SelfServiceDIInformationCardList mixes UiSdlComponent<UiSdlNoData>, WithNotifications {
+
+  /**
+   * The title of the information card list
+   */
+  title: string
+
+  /**
+   * The {@link InformationCardFields} from the UI Configuration set in application state
+   */
+  informationCardList: [InformationCardFields]
+
+  /**
+   * The selected {@link InformationCardFields} name from application state
+   */
+  selectedInformationCard: InformationCardFields
+
+  /**
+   * Whether the component should show the side panel with information about the selected card.
+   * If true, the side panel will be shown.
+   */
+  showInfoSidePanel: boolean
+
+  // -------------- SET SELECTED INFORMATION CARD --------------
+
+  /**
+   * An action emitted on click of an information card.
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param selectedInformationCardName
+   *            The name of the information card that was selected.
+   */
+  @uiSdlActionCreator(actionType='CLICK_INFORMATION_CARD')
+  clickInformationCardAction: private function(componentId: string,
+                                                 selectedInformationCardName: string): !UiSdlReduxAction ts-client
+
+  /**
+   * An action to set the `selectedInformationCard` state
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param selectedInformationCard
+   *            The name of the information card that was selected.
+   */
+  @uiSdlActionCreator(actionType='SET_SELECTED_INFORMATION_CARD')
+  setSelectedInformationCardAction: function(componentId: string,
+                                                 selectedInformationCard: string): UiSdlReduxAction ts-client
+
+  /**
+   * Updates the `selectedInformationCard` state
+   *
+   * @params action The setSelectedInformationCardAction
+   *         state  The Redux state
+   */
+  @uiSdlReducer(actionType='SET_SELECTED_INFORMATION_CARD')
+  setSelectedInformationCardReducer: function(state: !UiSdlReduxState, action: !UiSdlAction): !UiSdlReduxState ts-client
+
+  /**
+   * Helper method to acquire the value of selectedInformationCard
+   *
+   * @params componentId The ID of the component of which we want the selectedInformationCard state from
+   *         state       The Redux state
+   */
+  getSelectedInformationCard: function(componentId: string, state: UiSdlReduxState): InformationCardFields ts-client
+
+   /**
+   * An action to clear `selectedInformationCard` state
+   *
+   * @param componentId
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='CLEAR_SELECTED_INFORMATION_CARD')
+  clearSelectedInformationCardAction: function(componentId: string): UiSdlReduxAction ts-client
+
+  /**
+   * Clears the `selectedInformationCard` state
+   *
+   * @param componentId
+   *            Id of the component.
+   */
+  @uiSdlReducer(actionType='CLEAR_SELECTED_INFORMATION_CARD')
+  clearSelectedInformationCardReducer: function(state: !UiSdlReduxState, action: !UiSdlAction): !UiSdlReduxState ts-client
+}

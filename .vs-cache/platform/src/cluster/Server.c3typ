@@ -1,0 +1,520 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 Server
+ */
+// TODO: PLAT-65493 remove Server.c3typ
+abstract type Server mixes CloudCluster.Node<Cluster>, DefaultInstance {
+
+  EPHEMERAL_POD_ROOT_DIRECTORY: const string = "/podvolroot"
+
+  /**
+   * ID of this server
+   */
+  serverId: !Server.Id
+
+  /**
+   * State of this server
+   */
+  state: ~: !string enum Server.State
+
+  /**
+   * Last known message reported by the server regarding its status. As an example, in Kubernetes, this could output
+   * the last known message from a pod's status for why it previously crashed.
+   */
+  lastMessage: string
+
+  /**
+   * IP Address of this node
+   */
+  ipAddress: string
+
+  /**
+   * HTTP port for this node
+   */
+  httpPort: int32
+
+  /**
+   * Debug port if this JVM is in debug mode
+   */
+  debugPort: int32
+
+  /**
+   * Profiler port if this JVM is running profiler agent
+   */
+  profilerPort: int32
+
+  /**
+   * POSIX process id of this server
+   */
+  pid: !int32
+
+  /**
+   * Latency of state update / heartbeat requests formatted as duration
+   */
+  latency: !string
+
+  /**
+   * Returns the {@link CloudResource} object for this node.
+   */
+  @action(group+='cluster-admin')
+  cloudResource: property(): CloudResource
+
+  /**
+   * Start time of JVM of this server
+   */
+  startTime: !datetime
+
+  /**
+   * Public ip address if any associated
+   */
+  publicIpAddress: string
+
+  /**
+   * Compute instance type if available
+   */
+  instanceType: string
+
+  /**
+   * Compute instance id if available
+   */
+  instanceId: string
+
+  /**
+   * Start time of cloud compute instance of this server
+   */
+  instanceStartTime: !datetime
+
+  /**
+   * Machine image id
+   */
+  imageId: string
+
+  /**
+   * Time of the last state update / heartbeat request sent to this server by Leader
+   */
+  lastHeartbeatTime: datetime
+
+  /**
+   * Latency in nanoseconds of the last command response from this server
+   */
+  // TODO:
+  // heartbeatLatencyNano: member function(): Timeseries<float>
+
+  /**
+   * Possible error from a last state update / heartbeat request or `null` if last heartbeat succeeded
+   */
+  // TODO:
+  // heartbeatErrors: member function(): Timeseries<Error>
+
+  /**
+   * Creates and returns Server instance from {@link Server.Id}
+   *
+   * @return a created Server instance based on {@link Server.Id} parameter
+   */
+  fromId: function(id: !Server.Id): !mixing Server
+
+  /**
+   * Rate of errors for state update / heartbeat requests for this server
+   */
+  heartbeatErrorPct: member function(): !float
+
+  /**
+   * {@link Server.Role}s that this server can function as.
+   *
+   * @return all {@link Server.Role}s for this server
+   */
+  roles: member function(): ![string enum Server.Role]
+
+  /**
+   * Age of this server formatted as duration
+   *
+   * @return age of this server
+   */
+  age: member function(): !string
+
+  /**
+   * Uptime of this server as % value [0,100]
+   */
+  uptime: member function(): !string
+
+  /**
+   * Parent cluster that this Server belongs to.
+   */
+  @cache(platPkg=true)
+  cluster: cached member function(): !Cluster
+
+  /**
+   * Parent env that this Server belongs to.
+   */
+  @cache(platPkg=true)
+  env: cached member function(): !Env
+
+  /**
+   * Parent app that this Server belongs to.
+   */
+  @cache(platPkg=true)
+  app: cached member function(): !App
+
+  /**
+   * Current telemetry of this node
+   */
+  telemetry: Server.Telemetry
+
+  /**
+   * @return Server (aka C3 Cluster Node) for the current JVM process.
+   */
+  me: inline function(): !Server
+
+  meId: private inline function(): !string
+
+  /**
+   * @return true if this Server is running in current JVM process.
+   */
+  isMe: inline member function(): boolean
+
+  /**
+   * Leader for this Server (aka C3 Cluster Node) if it is not a leader itself
+   */
+  leader: Cluster.Leader
+
+  /**
+   * @return `true` if this server is a RUNNING
+   */
+  isRunning: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is a leader i.e. member of a cluster responsible for managing that env and
+   *         accepting API requests
+   */
+  isLeader: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is a worker i.e. member of a cluster responsible for managing task, data and db
+   *         nodes
+   */
+  isWorker: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is an agent i.e. member of a env responsible for managing 3rd party software
+   */
+  isAgent: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is a task node i.e. member executing actions
+   */
+  isTask: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is a data node i.e. member holding data
+   */
+  isData: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is a proxy node i.e. member responsible for db & external service connection
+   *         pooling
+   */
+  isProxy: inline member function(): boolean
+
+  /**
+   * @return `true` if this server is ready to serve network requests
+   */
+  isReady: inline member function(): boolean
+
+  /**
+   * @return downcast to Cluster.Leader if this is a leader node or `null` or error
+   */
+  asLeader: member function(failIfNot: boolean): Cluster.Leader
+
+  /**
+   * @return downcast to Cluster.Worker if this is a worker node or `null` or error
+   */
+  asWorker: member function(failIfNot: boolean): Cluster.Worker
+
+  /**
+   * @return downcast to Env.Agent if this is an agent node or `null` or error
+   */
+  asAgent: member function(failIfNot: boolean): Env.Agent
+
+  /**
+   * @return downcast to Env.Agent if this is an task node or `null` or error
+   */
+  asTask: member function(failIfNot: boolean): Env.Task
+
+  /**
+   * @return downcast to Env.Agent if this is an data node or `null` or error
+   */
+  asData: member function(failIfNot: boolean): Env.Data
+
+  /**
+   * @return downcast to Env.Proxy if this is an proxy node or `null` or error
+   */
+  asProxy: member function(failIfNot: boolean): Env.Proxy
+
+  /**
+   * @return map of the server metric tags. Basically two tags, metric type and metric to be calculated on.
+   *         For example {"type": "DiskSize", "field": "/user/local/share/c3/server"}
+   */
+  metricTags: private member function(): ![map<string, string>]
+
+  /**
+   * @return double
+   *         metric value for given tags.
+   */
+  @cache(ttr='3m', ttl='5m')
+  metric: private member function(appMeterTags: !map<string, string>): !double
+
+  /**
+   * @return JVM executing this server
+   */
+  jvm: private member function(): !Server.Jvm
+
+  /**
+   * @return connection to this server
+   */
+  connection: private member function(): !ServerConnection
+
+  /**
+   * JSON RPC to this server.
+   *
+   * @param type
+   *         target type
+   * @param action
+   *         target action
+   * @param thisArg
+   *         json representing `this` argument to call
+   * @param args
+   *         json array representing positional arguments
+   * @param kwargs
+   *         json array representing kwarg arguments, typically a Spec
+   * @return json
+   */
+  callJson: member function(type: !string, action: !string, thisArg: json, args: json, kwargs: json): json
+
+  /**
+   * @return result of the call of provided action on this node
+   */
+  call: member function(type: !string, action: !string, thisArg: json, args: [json], spec: TimeoutSpec): json
+
+  /**
+   * @return result of the call of provided lambda on this node
+   */
+  // TODO:
+  // call: member function(action: !lambda(): any, spec: TimeoutSpec): any
+  call: member function(action: !Lambda, spec: TimeoutSpec): any
+
+  /**
+   * @return promise of result of the call of provided action on this node
+   */
+  callAsync: member function(type: !string,
+                             action: !string,
+                             thisArg: json,
+                             args: [json],
+                             spec: TimeoutSpec): Promise<json>
+
+  /**
+   * @return promise of result of the call of provided lambda on this node
+   */
+  // TODO:
+  // callAsync: member function<T>(action: !lambda(): T, spec: TimeoutSpec): Promise<T>
+  callAsync: member function<T>(action: !Lambda, spec: TimeoutSpec): Promise<T>
+
+  /**
+   * Clears cache for the provided type in all local apps on the server.
+   * @param type
+   *         target type
+   * @param cache
+   *         target cache to clear. rawJsonNativeCache or nativeCache
+   */
+  clearLocalAppsCaches: private member function(type: !string, cache: !string)
+
+  /**
+   * Evicts from cache for the provided type and key in all local apps on the server.
+   * @param type
+   *         target type
+   * @param key
+   *         key representing specific instance of the object to evict
+   * @param cache
+   *         target cache to evict cached value. rawJsonNativeCache or nativeCache
+   */
+  evictFromLocalAppsCaches: private member function(type: !string, key: !?string, cache: !string)
+
+  /**
+   * @return result of shell script execution on this node
+   */
+  ssh: member function(script: !string, spec: TimeoutSpec): string
+
+  /**
+   * @return promise of result of shell script execution on this node
+   */
+  sshAsync: member function(script: !string, spec: TimeoutSpec): Promise<string>
+
+  /**
+   * Restarts this node. Issues Jvm process graceful shutdown request (SIGTERM) and waits up to shutdownTimeout
+   * (defaults to 120 seconds) for all pending tasks to complete, then issues SIGKILL.
+   * @param shutdownTimeout
+   *    specifies the duration for which an initial SIGTERM will wait for the jvm to quit, otherwise will initiate a SIGKILL.
+   *    if set to 0, initiates a SIGKILL immediately.
+   */
+  restart: member function(shutdownTimeout: Duration = {"microseconds": 120000000})
+
+  /**
+   * Issues graceful shutdown request to this node
+   */
+  shutdown: member function()
+
+  /**
+   * Abort and terminate this server
+   */
+  terminate: member function(confirm: boolean)
+
+  /**
+   * Upgrade all server nodes in the env to latest stable version
+   */
+  upgrade: private member function()
+
+  /**
+   * Returns endpoint url to connect to for this server.
+   */
+  endpointUrl: private cached member function(public_: boolean): !string
+
+  /**
+   * Return the hardware profile of this server
+   */
+  hardwareProfile: function(): HardwareProfile
+
+  /**
+   * Return the name of hardware profile for this server
+   */
+  hardwareProfileName: function(): string
+
+  /**
+   * Return the nodePool this server belongs to
+   */
+  nodePool: member function(): !App.NodePool
+
+  /**
+   * Return the name of nodePool this server belongs to
+   */
+  nodePoolName: member function(): string
+
+  /**
+   * Membership service that is managing this server node
+   */
+  membership: property(): App.Membership
+
+  /**
+   * Dumps all the active (running or pending) actions for this server in the cluster by thread. (C3 actions)
+   * By default, {#actionDump} will return root actions sorted by elapsed and id in descending order.
+   */
+  @action(group+='monitor')
+  @deprecated(finalVersion='8.3.1', details='Replaced by {@link Server#actions}')
+  actionDump: member function(spec: ActionsSpec): [Action]
+
+  /**
+   * Dumps all the active (running or pending) actions for this server in the cluster by thread. (C3 actions)
+   * By default, {#actions} will return root actions sorted by elapsed and id in descending order.
+   */
+  @action(group+='monitor')
+  actions: member function(spec: ActionsSpec): [Action]
+
+  /**
+   * Empties all of the caches for this Server.
+   */
+  emptyAllCaches: private member function()
+
+  /**
+   * List loggers for this Server
+   * @return a map of logger name to log level
+   */
+  listLoggers: member function(): map<string, !string enum Logger.Level>
+
+  /**
+   * Set logLevel for the given logger for this Server
+   * @param logger
+   *        logger name. If not specified the log level for all the registered loggers will be changed
+   * @param level
+   *        Logger.Level to set
+   * @param timeout
+   *        the amount of time to wait before reverting back to the original log level
+   */
+  setLogLevel: member function(logger: string,
+                               level: !string enum Logger.Level,
+                               timeout: string serialized Duration = "15m")
+
+  /**
+   * Get log level for this logger in this server
+   */
+  logLevel: member function(logger: !string): !string enum Logger.Level
+
+  /**
+   * @param restfulEncodedPath
+   *        path to restful endpoint
+   * @return url to restful endpoint
+   */
+  restfulEndpoint: member function(app: !App, restfulEncodedPath: !string serialized UrlPath): !string serialized Url
+
+  /**
+   * Checks if the given error string indicates that the connection is closed.
+   *
+   * @param err - The error string to check.
+   * @return `true` if the error indicates a closed connection, `false` otherwise.
+   */
+  isConnectionClosedErr: private function(err: !string): boolean
+
+  /**
+   * User can only check the dirs which the java process has access to.
+   * localDir can be a local OS path, either absolute or relative.
+   * If relative, it is interpreted relative to the current working directory, which is typically /home/c3.
+   * @param localDirs
+   *          Directories for which usage need to be computed.
+   * @param timeoutSecs
+   *          After timeoutSecs, if the computation of directory usages is not completed, the du operation for that specific directory will timeout.
+   *          This timeout is applied on a per-directory basis, meaning each directory has its own independent timeoutSecs limit for the computation.
+   *          The default value is 10 seconds.
+   * @return the map between the dir path and the dir size in bytes.
+   */
+  computeDirUsages: member function(localDirs: ![string], timeoutSecs: double = 10.0): map<string, int>
+
+  /**
+   * Retrieves the used size and available size for the mounted storage device which is backing the dir in bytes.
+   * User can only check the dirs which the java process has access to.
+   * @param path
+   *           a dir path on which a volume is mounted.
+   * @param timeoutSecs
+   *        after timeoutSecs, if dir usages computation is not finished yet, the underlying `df` operation will timeout.
+   * @param failIfMissing
+   *           defines whether the function will throw out an error if path does not exist.
+   * @return the used size and available size for the mounted storage device which is backing the dir in bytes, and stores those in {@link StorageStats}.
+   */
+  calculateStorageStatsForMountForDir: member function(path: !string,
+                                                       timeoutSecs: double = 10.0,
+                                                       failIfMissing: boolean): StorageStats
+
+  /**
+   * @returns the readiness of the server as a key-value pair.
+   * The key indicates whether server is ready to serve network requests and the value provides additional details.
+   */
+  readiness: inline member function(): Pair<boolean, string>
+
+  /**
+   * Overrides the readiness probe for the Server.
+   * By default the value is true
+   *
+   * @param value
+   *        the value to be set for the Server's readiness override flag.
+   */
+  @action(group+='cluster-admin')
+  overrideReadiness: member function(value: boolean)
+
+  inst:       ~
+  forId:      ~
+  cluster:    ~
+  fromString: ~ java
+}

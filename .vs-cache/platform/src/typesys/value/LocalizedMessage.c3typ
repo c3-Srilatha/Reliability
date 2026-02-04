@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A parametrized message that may have been localized. These are typically used in error and warnings or similar
+ * formatted strings produced in code.
+ */
+abstract type LocalizedMessage {
+
+  /**
+   * Formatted and localized message.
+   */
+  message: string
+
+  /**
+   * Unlocalized, parameterized error message string.
+   */
+  template: string
+
+  /**
+   * Parameters applied to {@link template} to produce error message.
+   */
+  parameters: [string]
+
+  /**
+   * Format and potentially localize #template with #parameters.
+   */
+  formatMessage: inline member function(): !string
+
+  /**
+   * Fills in the {@link #message} field if unset by using the template and parameters.
+   */
+  withFormattedMessage: inline member function(): !mixing LocalizedMessage
+}

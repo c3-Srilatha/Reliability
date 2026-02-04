@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used for configuring code coverage for a job running in a remote cluster.
+ */
+@config(minOverride=APP, maxOverride=ENV)
+type CodeCoverageConfig mixes Config, Identifiable {
+
+  /**
+   * Whether to enable and collect java coverage data
+   */
+  enableJavaCoverage: boolean = false
+
+  /**
+   * Whether to enable and collect python coverage data except JEP. To enable for JEP also, use
+   * {@link #enableJEPCoverage}.
+   * NOTE: this config is cached in the python interpreter context, so changes to this config will not take effect until
+   * all python interpreters are restarted. See {@link Py#invalidateAndCloseAllInterpreters}.
+   */
+  enablePythonCoverage: boolean = false
+
+  /**
+   *  Whether to enable and collect python coverage data for JEP. Only applicable if {@link #enablePythonCoverage} is
+   * true.
+   * NOTE: Python code coverage is not fully supported for JEP interpreters, meaning there would be test failures
+   * caused by this and the coverage data may not be accurate for failing tests.
+   */
+  enableJEPCoverage: boolean = false
+
+  /**
+   * Whether to enable and collect javascript coverage data
+   */
+  enableJavascriptCoverage: boolean = false
+
+  /**
+   * Whether to enable and collect ui coverage data. More specifically, enabling this configuration will
+   * provide code coverage reports for code that is executed by tests that run in the browser.
+   */
+  enableUiCoverage: boolean
+
+  /**
+   * The prefix for the Jarvis Stash name used to temporarily save the coverage data
+   */
+  jarvisStashPrefix: member function(language: !string serialized ImplLanguage): string
+
+  /**
+   * The folder path in which to save python coverage data
+   */
+  pythonDataDirectory: string
+
+  /**
+   * The folder path in which to save java coverage data
+   */
+  javaDataDirectory: string
+
+  /**
+   * The folder path in which to save javascript coverage data
+   */
+  javascriptDataDirectory: string
+}

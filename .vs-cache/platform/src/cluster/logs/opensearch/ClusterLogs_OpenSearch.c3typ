@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents helper retrieval APIs for:
+ * - ClusterLogs Membership: Opensearch
+ */
+abstract private type ClusterLogs_OpenSearch mixes ClusterLogs {
+
+  /**
+   * JSON that forms the `query` part of an OpenSearch `search` requestBody.
+   * Only Logs compliant to this query are returned
+   * 
+   * @see OpenSearch
+   */
+  query: json
+
+  /**
+   * JSON that forms the `sort` part of an OpenSearch `search` requestBody.
+   * Logs are returned are sorted according to this
+   *
+   * @see OpenSearch
+   */
+  sort: json
+
+  /**
+   * JSON that forms the `size` part of an OpenSearch `search` requestBody.
+   * Controls the number of logs to be returned
+   *
+   * @see OpenSearch
+   */
+  size: int
+
+  /**
+   * Represents the OpenSearch `search` index to be queried
+   *
+   * @see OpenSearch
+   */
+  index: string
+
+  /**
+   * Queries OpenSearch based on the member object's `ClusterLogs_OpenSearch.query`,
+   * `ClusterLogs_OpenSearch.sort`, `ClusterLogs_OpenSearch.size` and `ClusterLogs_OpenSearch.index`
+   *
+   * @see OpenSearch
+   * @see ClusterLogs_OpenSearch#query
+   * @see ClusterLogs_OpenSearch#sort
+   * @see ClusterLogs_OpenSearch#size
+   * @see ClusterLogs_OpenSearch#index
+   */
+  fetch: member function(): ![string]
+
+  /**
+   * Helper function to extract the actual log messages from `openSearchResponse`
+   * which is a json returned by a valid search on an opensearch index
+   *
+   * @param openSearchResponse
+   *            A valid json response from an OpenSearch search query
+    * @return An array of log messages extracted from the OpenSearch response
+   */
+  extract: function(openSearchResponse: !json): ![string]
+
+  /**
+   * Queries the OpensearchDashboard API for this member object's index-pattern id based on the configured index
+   */
+  getIndexPatternId: member function(): string
+}

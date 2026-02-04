@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * NpmLibraryManager is responsible for resolving, merging, and installing {@link Js.Runtime}s
+ * by using "Node Package Manager" under the hood.
+ */
+private type NpmLibraryManager mixes LibraryManager<NpmLibraryManager.Config, Js.Runtime> {
+
+  PACKAGE_LOCK_JSON: private const string = 'package-lock.json'
+  PACKAGE_JSON:      private const string = 'package.json'
+
+  /**
+   * Generate package.json object for the given {@link Js.Runtime}, which includes all libraries based on all its parent runtimes {@link ImplLanguage.Runtime#allLibraries}.
+   * URLs that contain {{HOST_URL}} are modified to include the internal app url.
+   */
+  @call(stayInEngine=true)
+  packageJsonForRuntime: member function(runtime: !Js.Runtime): json java
+
+  /**
+   * Generate package.json object for the given {@link Js.Runtime}, which includes all libraries based on all its parent runtimes {@link ImplLanguage.Runtime#allLibraries}.
+   * It also modifies URLs that contain {{HOST_URL}} with the given url.
+   */
+  @call(stayInEngine=true)
+  packageJsonForRuntime: member function(runtime: !Js.Runtime, hostUrl: string): json java
+
+  /**
+   * Returns a map containing local env variables key-values, and first {@link Js.Runtime#repositories} entry
+   * as "npm_config_registry".
+   */
+  @call(stayInEngine=true)
+  envVarWithNpmConfigRegistry: member function(runtime: !Js.Runtime): map<string, string> java | js-node
+
+  /**
+   * Checks whether the given runtime has been installed, and whether the locally installed runtime matches with the
+   * given runtime. If not, it will install the given runtime.
+   * Returns true if it is installed this time, false otherwise.
+   * {@link LibraryManager#installRuntime}
+   */
+  ensureRuntimeInstalled: member function(runtime: !Js.Runtime, overridePath: string): Promise<boolean> js-node
+
+  /**
+   * @param callFromCluster
+   *        True if method called server-side, else false
+   * Finds all the ImplLanguage.Runtime by name and merges them together.
+   * If there is a Js.Runtime for this this package that has the packageLock associated with the merged runtime,
+   * use the packageLock field so its libraries can be installed with library versions specified from package-lock.json
+   */
+  @deprecated(finalVersion='8.5', details='now the default behavior')
+  mergedRuntime: member function(runtimeName: !string, callFromCluster: boolean): Js.Runtime java
+
+  /**
+   * Removes @c3 library references from package-lock.json.
+   */
+  removeC3ReferencesFromPackageLock: private function(packageLock: json): json java
+
+  installRuntime: ~ java | js-node
+
+  /**
+   * Gets the installed NodeJS version
+   */
+  nodeVersion: function(): string
+
+  /**
+   * Gets the installed NPM version
+   */
+  npmVersion: function(): string
+
+  /**
+   * @param callFromCluster
+   *        True if method called server-side, else false
+   * @return the NPM registry url from NpmLibraryManager config with user credentials
+   */
+  npmRegistryUrl: member function(callFromCluster: boolean): !string serialized Url
+
+  /**
+   * Replaces npm registry url with ArtifactHub host url in package-lock.json.
+   * @param packageLock
+   *        package-lock.json to modify
+   * @param callFromCluster
+   *        True if method called server-side, else false
+   * @param urlToReplace
+   *        registry url in package-lock.json or https://registry.npmjs.org/ if null, to be replaced with ArtifactHub registry url
+   * @returns a new package-lock.json with registry urls replaced
+   */
+  modifiedPackageLock: member function(packageLock: json,
+                                       callFromCluster: boolean,
+                                       urlToReplace: string = 'https://registry.npmjs.org/'): json
+
+  /**
+   * Given an ImplLanguage.Library name, it decomposes it into its parts and returns them as [name, version] or
+   * [alias, name, version] if an alias is specified.
+   *
+   *   e.g. "react@16.3.0" => ["react", "16.3.0"]
+   *        "kendo-grid-6@@progress/kendo-react-grid@6.1.1" => ["kendo-grid-6", "@progress/kendo-react-grid", "6.1.1"]
+   */
+  splitLibraryName: private function(libraryName: string): [string]
+}

@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Job Progress Status for a {@link SparkJob}.
+ */
+type SparkJobStatus {
+
+  /**
+   * Total known number of tasks for current {@link SparkJob}.
+   */
+  numTasks: int
+
+  /**
+   * Known number of active tasks for current {@link SparkJob}.
+   */
+  numActiveTasks: int
+
+  /**
+   * Known number of succeeded tasks for current {@link SparkJob}.
+   */
+  numSucceededTasks: int
+
+  /**
+   * Known number of skipped tasks for current {@link SparkJob}.
+   */
+  numSkippedTasks: int
+
+  /**
+   * Known number of failed tasks for current {@link SparkJob}.
+   */
+  numFailedTasks: int
+
+  /**
+   * State for current {@link SparkJob}.
+   * Could be any of {INITIALIZING,EXPORTING,RUNNING,SUCCEEDED,FAILED,CANCELLED,UNKNOWN}
+   */
+  status: string
+
+  /**
+   * Status for the associated {@link Export} job.
+   */
+  exportStatus: string
+
+  /**
+   * Id for the associated {@link Export} job.
+   */
+  exportId: string
+
+  percentActive:    inline function(obj: SparkJobStatus): double js
+  percentSucceeded: inline function(obj: SparkJobStatus): double js
+  percentSkipped:   inline function(obj: SparkJobStatus): double js
+  percentFailed:    inline function(obj: SparkJobStatus): double js
+  percentDone:      inline function(obj: SparkJobStatus): double js
+}

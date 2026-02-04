@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to define the layout options for {@link UiSdlGraphVisualization}.
+ */
+type UiSdlGraphVisualizationLayout {
+
+  /**
+   * The name of the data property that defines which level a node belongs to in the radial or sequential layout. The
+   * property must contain a numeric value, where the lowest number is the top of the hierarchy.  <br />
+   * This should be the name of the key we want to use from the fetched nodes  <br />
+   * **Required** when the {@link name} property is either radial or sequential. 
+   */
+  level: UiSdlFieldBasedDataSpecSetting 
+
+  /**
+   * The layout name to apply.
+   */
+  name: string enum UiSdlGraphVisualizationLayoutName = ORGANIC
+
+  /**
+   * The orientation of sequential layouts.
+   */
+  orientation: string enum UiSdlGraphVisualizationLayoutSequentialOrientationOption = DOWN
+
+  /**
+   * The packing mode to arrange subgraphs. Not used by 'lens'.
+   */
+  packing: string enum UiSdlGraphVisualizationLayoutPackingOption = CIRCLE
+
+  /**
+   * The spacing between levels in sequential layouts. Values must be positive.
+   */
+  @constraint(condition='stretch > 0')
+  stretch: double = 1
+
+  /**
+   * Controls how close nodes are spaced, with higher values making nodes closer. Ranges from 0-10.
+   */
+  @constraint(condition='tightness >= 0 && tightness <= 10')
+  tightness: int = 5
+  
+  /**
+  * Controls the shape of links.
+  */
+  curvedLinks: boolean = false
+
+  /**
+  * The positioning of nodes that share the same neighbors and level in the sequential layout. 
+  */
+  stacking: UiSdlGraphVisualizationLayoutStackingConfig
+}

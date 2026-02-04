@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides an interface to the AWS *ReservedInstance*
+ * see the [AWS documentation](https://aws.amazon.com/ec2/pricing/reserved-instances/).
+ */
+@cloud(hasResourceArn=false,
+       hasResourceId=true,
+       hasResourceName=false,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='awsec2rsv')
+type AwsEc2Reservation mixes AwsResource, AwsReservation {
+
+  /**
+   * The instance type on which the Reserved Instance can be used.
+   */
+  instanceType: string
+
+  /**
+   * The Availability Zone in which the Reserved Instance can be used.
+   */
+  availabilityZone: string
+
+  /**
+   * The duration of the Reserved Instance, in seconds.
+   */
+  instanceTenancy: string enum AwsReservedInstanceTenancy
+
+  /**
+   * The offering class of the Reserved Instance.
+   */
+  offeringClass: string enum AwsReservedInstanceOfferingClassType
+
+  /**
+   * The scope of the Reserved Instance.
+   */
+  scope: string enum AwsReservedInstanceScope
+}

@@ -1,0 +1,582 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents assets at all levels of the Reliability Asset Hierarchy except Facility. Acts as the node in the hierarchy denorm graph.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+remix type ReliabilityAsset mixes ReliabilityAssetSensorAssociationHelper, ReliabilityReportHelper<ReliabilityAssetReportSpec, ReliabilityAssetReport>{
+
+  /**
+   * The {@link FailureMode}s associated with this asset through its {@link AssetClass}.
+   */
+  failureModes: [FailureMode] calc assetClass.failureModeLibrary.failureModes
+
+  /**
+   * The level of this asset in the hierarchy based on the calculated {@link #depth}.
+   */
+  assetLevel: string calc getAssetLevel(exists(depth) ? depth : 0)
+
+  /**
+   * Alerts from the last 7 days.
+   */
+  recentAlerts: [ReliabilityAssetAlert] calc unique(currentChildrenAndSelf.directAlerts.(timestamp > now() - `period(7, "DAY")))
+
+  /**
+   * Alerts from the last 24 days.
+   */
+  latestAlerts: private [ReliabilityAssetAlert] calc unique(currentChildrenAndSelf.directAlerts.(timestamp > now() - `period(1, "DAY")))
+
+  /**
+   * Count of open {@link ReliabilityAssetAlert}'s on this asset and its descendents.
+   */
+  numOpenAlerts: int stored calc count(unique(currentChildrenAndSelf.directAlerts.(currentState.id != "Closed" && currentState.id != "Muted")))
+
+  /**
+   * Count of open {@link ReliabilityAssetAlert}'s on this asset.
+   */
+  numOpenDirectAlerts: int stored calc count(directAlerts.(currentState.id != "Closed" && currentState.id != "Muted"))
+
+  /**
+   * Count of open {@link ReliabilityAssetAlert}s on the descendents of this asset.
+   */
+  numOpenDescendentAlerts: int calc numOpenAlerts - numOpenDirectAlerts
+
+  /**
+   * Count of open {@link ReliabilityAssetAlert}'s on this asset and its direct children.
+   */
+  numOpenDirectChildrenAlerts: int calc count(unique(currentChildren.directAlerts.(currentState.id != "Closed" && currentState.id != "Muted")))
+
+  /**
+   * Count of open {@link ReliabilityAssetAlert}'s on this asset and its descendents in the last 24 hours
+   */
+  numLatestOpenAlerts: int calc count(unique(currentChildrenAndSelf.directAlerts.(timestamp > now() - `period(1, "DAY") && currentState.id != "Closed" && currentState.id != "Muted")))
+
+  /**
+   * Count of open {@link ReliabilityAssetAlert}'s on this asset in the last 24 hours.
+   */
+  numLatestOpenDirectAlerts: int calc count(unique(directAlerts.(timestamp > now() - `period(1, "DAY") && currentState.id != "Closed" && currentState.id != "Muted")))
+
+  /**
+   * Sensor alerts associated with this asset.
+   */
+  @db(order='descending(timestamp)')
+  sensorAlerts: [SensorHealthAlert](parent)
+
+  /**
+   * Sensor alerts in the last 24 hours.
+   */
+  @db(filter='timestamp >= now() - period(24, "HOUR")')
+  latestSensorAlerts: private [SensorHealthAlert](parent)
+
+  /**
+   * Count of open {@link SensorHealthAlert} on this asset.
+   */
+  numOpenSensorAlerts: int stored calc count(sensorAlerts.(currentState.id != "Closed" && currentState.id != "Muted"))
+
+  /**
+   * Count of open {@link SensorHealthAlert}s on the descendents of this asset.
+   */
+  numOpenDescendentSensorAlerts: int calc count(unique(currentChildrenAndSelf.sensorAlerts.(currentState.id != "Closed" && currentState.id != "Muted"))) - numOpenSensorAlerts
+
+  /**
+   * Count of open {@link SensorHealthAlert}'s on this asset in the last 24 hours.
+   */
+  numLatestOpenSensorAlerts: int calc count(latestSensorAlerts.(currentState.id != "Closed" && currentState.id != "Muted"))
+
+  /**
+   * Count of all latest reliability risk alerts and sensor alerts in the last 24 hours.
+   */
+  numAllLatestAlerts: int calc numLatestOpenAlerts + numLatestOpenSensorAlerts
+
+  /**
+   * Count of all direct latest reliability risk alerts and sensor alerts in the last 24 hours.
+   */
+  numLatestDirectAlerts: int calc numLatestOpenDirectAlerts + numLatestOpenSensorAlerts
+
+  /**
+   * {@link ReliabilityAssetCase}s belonging directly to this asset.
+   */
+  caseRelations: [ReliabilityAssetCaseToAssetRelation](to)
+
+  /**
+   * {@link ReliabilityAssetCase}s directly associated with this asset.
+   */
+  directCases: [ReliabilityAssetCase] stored calc unique(`union(directAlerts.cases, caseRelations.from)) schema name 'DC'
+
+  /**
+   * List of all {@link ReliabilityAssetCase}s belonging to this and all child assets.
+   */
+  cases: private [ReliabilityAssetCase] calc currentChildrenAndSelf.directCases
+
+  /**
+   * Count of OPEN {@link ReliabilityAssetCase}'s on this asset.
+   */
+  numOpenCases: int calc count(currentChildrenAndSelf.directCases.(currentState.id != "Closed"))
+
+  /**
+   * Open {@link ReliabilityAssetCase}s belonging directly to this asset.
+   */
+  numOpenDirectCases: int stored calc count(directCases.(currentState.id != "Closed"))
+
+  /**
+   * List of all {@link WorkOrder} created for this asset in the last 30 days.
+   */
+  @db(order='descending(workDueDate)', filter='workDueDate >= now() - period(30, "DAY") && workDueDate <= now()')
+  pastMaintenance: [WorkOrder](parent)
+
+  /**
+   * List of all {@link WorkOrder} created for this asset in the last 30 days.
+   */
+  @db(order='workDueDate', filter='workDueDate > now()')
+  plannedMaintenance: [WorkOrder](parent)
+
+  /**
+   * The risk score threshold for the asset to be considered as high risk. Used in the UI.
+   */
+  displayedHighRiskThreshold: double = 0.75
+
+  /**
+   * The risk score threshold for the asset to be considered as medium risk. Used in the UI.
+   */
+  displayedMediumRiskThreshold: double = 0.5
+
+  /**
+   * The risk level classification of the asset. Used in the UI.
+   */
+  riskLevel: string calc exists(riskScoreValue) ? (riskScoreValue > displayedHighRiskThreshold ? 'HIGH' : (riskScoreValue > displayedMediumRiskThreshold ? 'MEDIUM' : 'LOW')): null
+
+  /**
+   * Translation of {@link riskLevel}.
+   */
+  riskLevelDisplayName: string translate by riskLevel
+
+  /**
+   * Number of sensors whose raw value can be used as features for this asset.
+   */
+  numSensorFeatures: int calc count(currentSensorRelations)
+
+  /**
+   * This field indicates whether the mapping of {@link Sensor}s to a {@link ReliabilityAsset} has been completed.
+   */
+  isSensorMappingComplete: boolean
+
+  /**
+   * This field indicates the current status of the mapping of {@link Sensor}s to the {@link ReliabilityAsset}.
+   */
+  sensorMappingStatus: string enum SensorMappingStatus stored calc
+    isSensorMappingComplete ? SensorMappingStatus.COMPLETE
+      : exists(currentSensorRelations) ? SensorMappingStatus.SENSOR_MAPPING
+        : SensorMappingStatus.NOT_STARTED
+
+  /**
+   * This field is used by the UI to show the translated value of {@link sensorMappingStatus}.
+   */
+  displaySensorMappingStatus: string calc getTranslationWithPostfix('UserGeneratable.displaySensorMappingStatus.', sensorMappingStatus)
+
+  /**
+   * Risk Score to display in the UI.
+   */
+  displayedRiskScore: int calc exists(riskScoreValue) ? round(riskScoreValue * 100) : 0
+
+  /**
+   * The deployment status of the Reliability Risk model for the {@link ReliabilityAsset}.
+   * This field reflects the current deployment status of the risk model associated with the asset.
+   * - If there is at least one model with a 'CHAMPION' status, it is considered a 'Live Model'.
+   * - If there are no 'CHAMPION' models but at least one risk model exists, it is considered as 'No Live Model'.
+   * - If there are no risk models associated with the asset, the status will be 'No Trained Model'.
+   */
+  reliabilityRiskModelDeploymentStatus: string stored calc count(currentReliabilityRiskModelRelations.(status.label == 'CHAMPION')) > 0 ? 'Live Model' : count(currentReliabilityRiskModelRelations) > 0 ? 'No Live Model' : 'No Trained Model'
+
+  /**
+   * The live model associated with the {@link ReliabilityAsset}, derived from the current
+   * `ReliabilityAssetToModelRelation` with a status label of 'CHAMPION'.
+   *
+   * This retrieves the first (index 0) relation where the status is marked as 'CHAMPION',
+   * indicating the active or leading model for the asset based on its project type.
+   */
+  reliabilityRiskLiveModel: ReliabilityMlModel stored calc currentModelRelations.(status.label == 'CHAMPION')[0].to
+
+  /**
+   * Display name for the current live model
+   */
+  reliabilityRiskLiveModelName: string calc !exists(reliabilityRiskLiveModel) ? '-' : exists(reliabilityRiskLiveModel.name) ? reliabilityRiskLiveModel.name : reliabilityRiskLiveModel.id
+
+  /**
+   * Last Configured Model Date for this {@link ReliabilityAsset}.
+   */
+  lastConfiguredReliabilityRiskModelDate: datetime stored calc exists(reliabilityRiskModelRelations) ? reliabilityRiskModelRelations[0].meta.created : ''
+
+  /**
+   * Model Config Runs for this {@link ReliabilityAsset}.
+   */
+  @db(order='descending(to.meta.created)')
+  modelConfigRunRelations: [ReliabilityAssetToModelConfigRunRelation](from)
+
+  /**
+   * Latest Model Config Status for this {@link ReliabilityAsset}.
+   *
+   * Checks if any of the model config runs are in progress.
+   * If yes, returns 'IN PROGRESS', else returns the status of the latest model config run.
+   */
+  lastModelConfigStatus: string enum ReliabilityOrchestrator.RunStatus stored calc !exists(modelConfigRunRelations)
+    ? 'NOT STARTED'
+      : exists(modelConfigRunRelations.(to.status == 'IN PROGRESS'))
+        ? 'IN PROGRESS'
+          : modelConfigRunRelations[0].to.status
+
+  /**
+   * Date of last model config update
+   */
+  lastModelConfigUpdateDate: datetime stored calc max(modelConfigRunRelations[0].to.meta.created, lastConfiguredReliabilityRiskModelDate)
+
+  /**
+   * Date of last update to model setup.
+   */
+  lastModelSetupUpdateDate: datetime stored calc max(latestDataValidationRun.meta.created, latestDatasetPreparationRun.meta.created, lastModelConfigUpdateDate)
+
+  /**
+   * Date of last update to model setup with correlation.
+   */
+  lastCorrelationModelSetupUpdateDate: datetime calc max(latestSensorAssociationRun.meta.created, lastModelConfigUpdateDate)
+
+  /**
+   * Number of days since the last updated model.
+   */
+  daysSinceLastUpdatedReliabilityRiskModels: int calc exists(lastConfiguredReliabilityRiskModelDate) ? (now() - lastConfiguredReliabilityRiskModelDate) / 86400000 : 0
+
+  /**
+   * Last update date, using `configurationLastUpdated` or fallback to `meta.updated`
+   */
+  configurationLastUpdatedDate: datetime calc exists(configurationLastUpdated) ? configurationLastUpdated : meta.updated
+
+  /**
+   * Number of {@link ReliabilityRiskMlModel}s currently deployed on this asset.
+   */
+  numRiskModels: int calc count(currentReliabilityRiskModelRelations)
+
+  /**
+   * Number of live models for this asset.
+   */
+  numLiveModels: int stored calc count(currentModelRelations.(status.label == 'CHAMPION'))
+
+  /**
+   * Number of challenger models for this asset.
+   */
+  numChallengerModels: int calc count(currentModelRelations.(status.label == 'CHALLENGER'))
+
+  /**
+   * Number of candidate models for this asset.
+   */
+  numCandidateModels: int calc count(currentModelRelations.(status.label == 'CANDIDATE'))
+
+  /**
+   * Number of retired models for this asset.
+   */
+  numRetiredModels: int calc count(currentModelRelations.(status.label == 'RETIRED'))
+
+  /**
+   * Calc for the ID of the most recent risk score (an {@link ReliabilityExpressionEngineFunction#}getLatestRiskScoreId) associated with this asset.
+   */
+  riskScoreIdCalc: string calc getLatestRiskScoreId(id)
+
+  /**
+   * The ID of the most recent risk score
+   * The Value for this field is generated via the {@link FieldStoredMetricCache} type and should
+   * not be overwritten except for by that type.
+   */
+  riskScoreId: string
+
+  /**
+   * Calc for the value of the most recent risk score.
+   */
+  riskScoreValueCalc: double calc getLatestRiskScoreValue(id)
+
+  /**
+   * The value of the most recent risk score
+   * The Value for this field is generated via the {@link FieldStoredMetricCache} type and should
+   * not be overwritten except for by that type.
+   */
+  riskScoreValue: double
+
+  /**
+   * The {@link ReliabilityAssetAnomalousPeriod} to use when configuring a {@link MlModel}.
+   */
+  @db(order='descending(end)')
+  anomalousPeriods: [ReliabilityAssetAnomalousPeriod](parent)
+
+  /**
+   * The {@link ReliabilityAssetRegime} to use when configuring {@link MlModel}.
+   */
+  @db(order='descending(end)')
+  regimes: [ReliabilityAssetRegime](parent)
+
+  /**
+   * The latest {@link ReliabilityAssetRegime}.
+   */
+  latestRegime: ReliabilityAssetRegime calc regimes[0]
+
+  /**
+   * The {@link AlertMutedPeriod}s associated with the {@link ReliabilityAsset}.
+   */
+  @db(order='descending(end)')
+  mutedPeriods: [AlertMutedPeriod](parent)
+
+  /**
+   * Function to modify the sensor mappings for this asset based on the provided spec.
+   *
+   * Modifying the sensor mappings includes creating new {@link Sensor}s, creating new {@link ExpectedSensor}s, and upserting and/or removing
+   * {@link ReliabilityAssetSensorRelation}s. The asset's sensor mapping status can also be marked through the spec.
+   *
+   * **NOTE**: This function wil set {@link Sensor#fallbackUnit} for each sensor with a valid `unitConstraint` field.
+   *
+   * @param spec
+   *        The {@link ModifySensorMappingSpec} to use for modifying the sensor mappings.
+   */
+  @action(group='asset-onboarding-write')
+  modifySensorMappings: member function(spec: ModifySensorMappingSpec) js-rhino
+
+  /**
+   * Function to return all the asset levels in the application.
+   * The asset levels are calculated based on the hierarchy denorm max depth and named based on
+   * {@link ReliabilityUIConfig#assetLevels}.
+   */
+  fetchAssetLevels: function(maxDepthOverride: int): json js-rhino
+
+  /**
+   * Function to create a {@link ReliabilityAssetFlaggedEvent}.
+   */
+  createFlaggedEvent: member function(spec: !ReliabilityAssetFlaggedEventSpec, typeName: !Type): string js-rhino
+
+  /**
+   * Function to create a {@link ReliabilityAssetAnomalousPeriod}.
+   */
+  createAnomalousPeriod: member function(spec: !ReliabilityAssetFlaggedEventSpec): string js-rhino
+
+  /**
+   * Function to create a {@link ReliabilityAssetRegime}.
+   */
+  createRegime: member function(spec: !ReliabilityAssetFlaggedEventSpec): string js-rhino
+
+  /**
+   * The function to create a {@link AlertMutedPeriod}.
+   */
+  @deprecated(finalVersion='21.0.1', details='Use {@link AlertMutedPeriod#mergeMutedPeriods} instead.')
+  createMutedPeriod: member function(alertType: !ReliabilityAlertType,
+                                     start: datetime,
+                                     end: datetime,
+                                     duration: double): !AlertMutedPeriod js-rhino
+
+  /**
+   * The function to update the dates of an {@link AlertMutedPeriod}.
+   *
+   * `timestamp` allows the user to identify which period to update; the first period matches the `alertType` and that contains
+   * `timestamp` within it's start and end interval will be modified. Otherwise, the most recently created period that matches the
+   * `alertType` will be modified.
+   */
+  @deprecated(finalVersion='21.0.1', details='Use {@link AlertMutedPeriod#mergeMutedPeriods} instead.')
+  updateMutedPeriodDates: member function(alertType: !ReliabilityAlertType,
+                                          start: datetime,
+                                          end: datetime,
+                                          duration: double,
+                                          timestamp: datetime): !AlertMutedPeriod js-rhino
+
+  /**
+   * Gets the {@link AlertMutedPeriod} associated with the {@link ReliabilityAsset} for a given {@link ReliabilityAlertType}.
+   *
+   * @param alertType
+   *              The desired {@link ReliabilityAlertType} for the {@link AlertMutedPeriod}
+   * @param timestamp
+   *              Optional parameter used to determine which associated {@link AlertMutedPeriod} to
+   *              return.
+   * @return the most recent {@link AlertMutedPeriod} that matches the `alertType` or the first period
+   * that matches the `alertType` and whose period encompasses the `timestamp` parameter.
+   */
+  @deprecated(finalVersion='21.0.1', details='This method was used by #updateMutedPeriodDates, which is now deprecated.')
+  getMutedPeriodForAlertType: member function(alertType: !ReliabilityAlertType,
+                                              timestamp: datetime): AlertMutedPeriod js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  generateReport: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  generateReportEntity: ~
+
+  /**
+   * Creates a {@link ReliabilityAssetReportJob map reduce job} to generate a report for the given {@link ReliabilityAsset assets}.
+   * @param assets
+   *        The assets for which the report is to be generated.
+   * @param facility
+   *        The {@link Facility} that the Report belongs to.
+   * @param assetReportSpec
+   *        The spec for the report.
+   * @param waitForCompletion
+   *        Whether to wait for the job to complete and return the created report. If false, the method will return the job.
+   */
+  generateMultiReportEntity: function(
+    assets: ![ReliabilityAsset],
+    facility: Facility,
+    assetReportSpec: !ReliabilityAssetReportSpec,
+    waitForCompletion: boolean
+  ): ReliabilityAssetReport | ReliabilityAssetReportJob js-rhino
+
+  /**
+   * This method is used by the {@link ReliabilityAsset#computeAnomalousPeriods} method to get a unique identifier linked to one {@link ReliabilityAnomalousPeriodDetectionDataSourceSpec}, one {@link TadAnomalousPeriodDetectionSpec}
+   * and one {@link ReliabilityAsset}. This unique identifier is also the id of the {@link FlaggedEventType}, parent of the persisted {@ReliabilityAssetAnomalousPeriod}s.
+   * @param dataSourceSpec: data source spec of the `computeAnomalousPeriods` method.
+   * @param anomalousPeriodDetectionSpec: anomaly detection spec of the `computeAnomalousPeriods` method.
+   * @return string identifier, which is also the id of the {@link FlaggedEventType} created by the `computeAnomalousPeriods` method.
+   */
+   // TODO: REL-4313 (Tad does not exist in V8)
+  /*hashSpecsAndAsset: private member function(dataSourceSpec: !ReliabilityAnomalousPeriodDetectionDataSourceSpec,
+                                             anomalousPeriodDetectionSpec: TadAnomalousPeriodDetectionSpec): !string js-rhino*/
+
+  /**
+   * Method to automatically detect periods to be masked on an asset. This method first builds a dataset
+   * defined by a data source spec {@link ReliabilityAnomalousPeriodDetectionDataSourceSpec} and then detect anomalous periods using
+   * the {@link TadDSHelper#detectAnomalousPeriod} method and an anomaly detection spec {@link TadAnomalousPeriodDetectionSpec}.
+   * @param dataSourceSpec
+   *                Spec that defines how the dataset is built.
+   * @param anomalousPeriodDetectionSpec
+   *                Spec that defines how anomalous periods are detected on the dataset.
+   * @param forceRerun
+   *                If the method has already been run with the same anomalousPeriodDetectionSpec and dataSourceSpec on the same asset,
+   *                this method is NOT rerunning the anomaly detection process and is returning the stored anomalous periods. Set parameter
+   *                to `true` to force the rerun. If `doNotPersist` is also set to `false`, rerunning will result in overwriting persisted anomalous periods.
+   * @param doNotPersist
+   *                Set to `true` to NOT persist anomalous periods. Anomalous periods are persisted in type {@link ReliabilityAssetAnomalousPeriod}
+   * @return
+   *          - Returns list of (start, end) tuples defining the start and end of each masked period, `startEndTuples` key of the map output.
+   *          - if `anomalousPeriodDetectionSpec.doNotPersist` is set to `false` or if some anomalous periods have already been persisted for this asset and these specs, returns in addition:
+   *                   * - the {@link FlaggedEventType} to which the persisted {@link ReliabilityAssetAnomalousPeriod}s are attached. `eventType` key of the map output.
+   *                   * - the {@link SimpleMetric} that can be used as the mask metric for the asset. `maskMetric` key of the map output.
+   *          - if `anomalousPeriodDetectionSpec.returnMask` is set to `true`: in addition, returns the mask as a dataset. `mask` key of the map output.
+   */
+   // TODO: REL-4313 (Tad does not exist in V8)
+  /*computeAnomalousPeriods: member function(dataSourceSpec: !ReliabilityAnomalousPeriodDetectionDataSourceSpec,
+                                           anomalousPeriodDetectionSpec: TadAnomalousPeriodDetectionSpec,
+                                           doNotPersist: boolean,
+                                           forceRerun: boolean): !map<string, any> py-sklearn_3_0_0*/
+
+  /**
+   * This method returns the mask metric linked to the hash identifier created when running the computeAnomalousPeriods.
+   * This string is also the id of the {@link FlaggedEventType} parent to the persisted {@link ReliabilityAssetAnomalousPeriod}s.
+   */
+  createMaskMetric: function(hashString: !string): SimpleMetric js-rhino
+
+  /**
+   * Number of cases directly on this Asset
+   */
+  numCases: int calc count(directCases)
+
+  /**
+   * The total number of current models (excluding retired) directly deployed on the asset.
+   */
+  numModels: int stored calc count(currentModelRelations.(status.label != 'RETIRED'))
+
+  /**
+   * The total number of children level models (excluding retired) for the asset.
+   */
+  numChildModels: int calc count(unique(currentRelDenormDescendants.to.currentModelRelations.(status.label != 'RETIRED').to))
+
+  /**
+   * Number of direct work orders for the asset
+   */
+  numWorkOrders: int calc count(directWorkOrders)
+
+  /**
+   * Retrieves an updated inference period for the asset based on the latest prediction timestamps.
+   * Uses {@link ReliabilityMLOutputConfig#maximumPredictionLookbackForIncrementalInference}.
+   *
+   * Only updates the provided {@link TimeRange} if both start and end are within the lookback period.
+   *
+   * @param timeRange
+   *      The time range to consider when determining the inference period.
+   * @param project
+    *      The ML project to consider when determining the inference period.
+   * @param statusLabel
+   *       The status label of the model to consider when determining the inference period.
+   * @return
+   *      The updated inference period for the asset.
+   */
+  getIncrementalInferencePeriod: member function(
+    timeRange: !TimeRange,
+    project: !ReliabilityMl.Project,
+    statusLabel: string enum MlModel.Route.Status.Label
+  ): !TimeRange js-rhino
+
+  /**
+   * Typically, asset-specific customizations of the spec may be done in this function.
+   * For example, different assets may have different (start, end) customizations depending
+   * on how much data is available for each of them. Such customizations may be done to the
+   * {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference} inside this function.
+   * The default implementation does not customize the spec in any way.
+   */
+  beforeRunReliabilityRiskModelInference: member function(
+    spec: !ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference
+  ): ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference py-data-science
+
+  /**
+   * Contains the core logic of model inference for a {@link ReliabilityAsset}:
+   * 1. {@link ReliabilityMlModel#process}
+   * 2. {@link ReliabilityMlModel#interpret}
+   * 3. {@link ReliabilityRiskScoreMlPredictionHeader#refreshNormalization}
+   * 4. {@link ReliabilityRiskScoreMlContributionHeader#refreshNormalization}
+   * 5. {@link ReliabilityAsset#refreshCalcFields}
+   */
+  doRunReliabilityRiskModelInference: member function(
+    spec: !ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference,
+    subjectModelRelation: !ReliabilityAssetToRiskModelRelation,
+    timeRange: !TimeRange
+  ): ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference py-data-science
+
+  /**
+   * The main function that is run by {@link ReliabilityOrchestrator.ReliabilityRisk.InferenceJob#map}.
+   * It calls the below functions, in sequence:
+   * 1. {@link beforeRunReliabilityRiskModelInference}
+   * 2. {@link doRunReliabilityRiskModelInference}
+   * 3. {@link afterRunReliabilityRiskModelInference}
+   */
+  runReliabilityRiskModelInference: member function(
+    spec: !ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference
+  ) py-data-science
+
+  /**
+   * Any customization to the model inference routine post-{@link doRunReliabilityRiskModelInference}
+   * may be performed in an overridden implementation of this function. The default implementation
+   * does not run any action. However, if there are model inference routines particular to your deployment
+   * that need to be run in addition to the steps detailed in {@link doRunReliabilityRiskModelInference},
+   * then use this hook to provide such an implementation.
+   */
+  afterRunReliabilityRiskModelInference: member function(
+    spec: !ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference
+  ): ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference py-data-science
+
+  /**
+   * Same as {@link ReliabilityAsset#evalFeatures} but only evaluates over the time range that overlaps
+   * the default default time horizon configured in {@link Feature.Store.Config#defaultTimeHorizon}.
+   *
+   * @param features
+   *        The names of the features to evaluate.
+   * @param spec
+   *        The {@link EvalFeaturesSpec} to use for the evaluation.
+   *        `start` and `end` will be overridden to be within the default time horizon bounds.
+   */
+  evalFeaturesWithinTimeHorizon: member function(features: ![string], spec: !EvalFeaturesSpec): Data py-data-science
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

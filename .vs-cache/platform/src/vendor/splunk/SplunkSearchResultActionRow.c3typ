@@ -1,0 +1,116 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Data available in Splunk searches that group "action" log events. Specifically, Search (most likely) starts with "search a_t ...".
+ * Note that any particular result row is expected to be populated with only subset of fields, based on the fields in search.
+ */
+type SplunkSearchResultActionRow mixes SplunkSearchResultRow {
+
+  /**
+   * environment information
+   *
+   * The tenant of the action
+   * Search sample:  "search a_t a_st!="Complete" | stats count as a_count by t_tenant, t_tag, a_st | sort - a_count"
+   */
+  t_tenant: string
+
+  /**
+   * The tag of the action
+   * Search sample:  "search a_t a_st!="Complete" | stats count as a_count by t_tenant, t_tag, a_st | sort - a_count"
+   */
+  t_tag: string
+
+  /**
+   * action information
+   *
+   * The module of the action
+   * Search sample:  "search a_t | stats count as a_count by t_module, t_type, t_action | search a_count>1000 | sort - a_count"
+   */
+  t_module: string
+
+  /**
+   * The type invoking the action
+   * Search sample:  "search a_t | stats count as a_count by host, t_type, t_action | search a_count>1000 | sort - a_count"
+   */
+  t_type: string
+
+  /**
+   * The action function
+   * Search sample:  "search a_t | stats count as a_count by host, t_type, t_action | search a_count>1000 | sort - a_count"
+   */
+  t_action: string
+
+  /**
+   * The exit status of the action
+   * Search sample:  "search a_t a_st!="Complete" | stats count as a_count by host, t_type, t_action, a_st | sort - a_count"
+   */
+  a_st: string
+
+  /**
+   * The function pointers of the action.  Analogous to a compact, masked call-stack.
+   * Search sample:  "search a_t | stats avg(a_t) as a_t_avg by host, t_type, t_action, a_pfuncs | search a_t_avg>100 | sort - a_t_avg"
+   */
+  a_pfuncs: string
+
+  /**
+   * stats
+   *
+   * The count of action event logs
+   * Search sample:  "search a_t | stats count as a_count by host, t_type, t_action | search a_count>1000 | sort - a_count"
+   */
+  a_count: int
+
+  /**
+   * The time the action took to execute
+   * Search sample:  "search a_t>100 | table t_type, t_action, a_t | sort - a_t"
+   */
+  a_t: double
+
+  /**
+   * The average of a_t of actions
+   * Search sample:  "search a_t | stats avg(a_t) as a_t_avg by t_type, t_action | search a_t_avg>60 | sort - a_t_avg"
+   */
+  a_t_avg: double
+
+  /**
+   * The 95th percentile of a_t of actions
+   * Search sample:  "search a_t | stats p95(a_t) as a_t_p95 by t_type, t_action | sort - a_t_p95"
+   */
+  a_t_p95: double
+
+  /**
+   * The 99th percentile of a_t of actions
+   * Search sample:  "search a_t | stats p99(a_t) as a_t_p99 by t_type, t_action | sort - a_t_p99"
+   */
+  a_t_p99: double
+
+  /**
+   * The minimum a_t of actions
+   * Search sample:  "search a_t | stats min(a_t) as a_t_min, count as a_count by host, t_type, t_action | search a_count>100 a_t_min<0.01 | sort + a_t_min"
+   */
+  a_t_min: double
+
+  /**
+   * The maximum a_t of actions
+   * Search sample:  "search a_t>600 | stats max(a_t) as a_t_max by t_type, t_action | sort - a_t_max"
+   */
+  a_t_max: double
+
+  /**
+   * The stdev a_t of actions
+   * Search sample:  "search a_t | stats stdev(a_t) as a_t_stdev by t_type, t_action | sort - a_t_stdev"
+   */
+  a_t_stdev: double
+
+  /**
+   * maximum( a_t ) / average( a_t ).  Meant to identify actions that have highly variant execution patterns
+   * Splunk search sample:  "search a_t | stats avg(a_t) as a_t_avg, max(a_t) as a_t_max by t_type, t_action, a_pfuncs | eval a_t_max_div_avg=(a_t_max/a_t_avg) | search (a_t_max>30 OR a_t_max_div_avg>100) | sort - a_t_max_div_avg"
+   */
+  a_t_max_div_avg: double
+}

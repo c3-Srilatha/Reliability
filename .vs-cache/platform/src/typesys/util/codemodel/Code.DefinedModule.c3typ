@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "module" represents a set of compilation units (Java source file, Python/JavaScript script file) of code.
+ * This will be packaged as an artifact in various ways depending on the language being generated:
+ *  - Python: [module](https://docs.python.org/3/tutorial/modules.html)
+ *  - Java: [JAR file](https://en.wikipedia.org/wiki/JAR_(file_format))
+ *  - JavaScript: [module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+ */
+type Code.DefinedModule mixes Code.Node, Code.WithName {
+
+  /**
+   * A set of related compilation units (source files) make up the module.
+   */
+  compileUnits: member function(): [Code.CompileUnit]
+
+  /**
+   * The top-level classes defined in all compilation units.
+   */
+  classes: member function(): [Code.DefinedClass]
+
+  _compileUnits: private [Code.CompileUnit]
+}

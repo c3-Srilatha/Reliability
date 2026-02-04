@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * @see https://developer.atlassian.com/cloud/jira/software/rest/ for reference
+ * {@link JiraSoftware} is a different api with a different endpoint from {@link Jira}.
+ * {@link JiraSoftware} provides flexibility to edit sprints and epics that {@link Jira} does not provide
+ * Updated for Jira API v3 compatibility
+ */
+type JiraSoftwareMethods mixes Value {
+
+  /**
+   * Get Sprint for given id
+   * Sprint will only be returned if the user can view the board that the sprint was created on or
+   * view at least one of the issues in the sprint
+   *
+   * @param sprintId
+   *          id of sprint.
+   * @returns JiraSprint
+   */
+  sprint: abstract function(sprintId: !int): JiraSprint
+
+  /**
+   * Move an array of issues to a sprint for a given sprint Id.
+   * Maximum number of issues that can be moved in one operation is 50.
+   *
+   * Use this function to assign sprints to issues
+   *
+   * @param sprintId
+   *          the given sprint id you want to assign issues to
+   *          https://docs.atlassian.com/jira-software/REST/cloud/#agile/1.0/sprint-updateSprint
+   * @param issues
+   *          Array of strings of Issue id or key
+   */
+  updateIssueSprint: abstract function(sprintId: !int, issues: ![string])
+
+  /**
+   * Get all sprints from a board for a given board id
+   *
+   * @param boardId
+   *          id of board
+   * @param state
+   *          state of the sprint. (active, closed, future); can also define multiple states separated by commas,
+   *          eg: state=active,closed; default is `active,future`
+   * @param startAt
+   *          the starting index of returned sprints. Base index: 0
+   * @param maxResults
+   *          Maximum number of sprints to return per page. Default: 50
+   * @returns all sprints from a board for a given board id
+   */
+  allSprints: abstract function(boardId: !int,
+                                state: string = 'active,future',
+                                startAt: int = 0,
+                                maxResults: int = 50): JiraQueryBase<JiraSprint>
+
+  /**
+   * Returns epic for a given epic id. This will only be returned if the user has permission to view it.
+   *
+   * @param epicIdOrKey
+   *          id or key of epic
+   * @returns JiraEpic
+   */
+  epic: abstract function(epicIdOrKey: !string): JiraEpic
+
+  /**
+   * Move an array of issues to an epic for a given epic Id.
+   * Maximum number of issues that can be moved in one operation is 50.
+   *
+   * Use this function to assign epics to issues
+   *
+   * @param epicIdOrKey
+   *          the given epic id or key you want to assign issues to
+   *          https://docs.atlassian.com/jira-software/REST/cloud/#agile/1.0/epic-moveIssuesToEpic
+   * @param issues
+   *          Array of strings of Issue id or key
+   */
+  updateIssueEpic: abstract function(epicIdOrKey: !string, issues: ![string])
+
+  /**
+   * Get all epics from a board for a given board id
+   *
+   * @param boardId
+   *          id of a board
+   * @returns all epics from the board for a given board id
+   */
+  allEpics: abstract function(boardId: !int): JiraQueryBase<JiraEpic>
+
+  /**
+   * Get all Boards. Only includes boards user has permission to view
+   *
+   * @param scrumKanbanType
+   *          Filters results to boards of specified type. valid values: scrum, kanban
+   * @param name
+   *          Filters results to boards that match or partially match the specified name
+   * @param projectKeyOrId
+   *          Filters results to boards that are relevant to a project.
+   *          Relevance means that jql filter defined in board contains a reference to a project
+   * @param startAt
+   *          starting index of returned boards. base index 0
+   * @param maxResults
+   *          maximum number of boards to return per page. Default: 50
+   * @returns JiraBoards
+   */
+  allBoards: abstract function(scrumKanbanType: string,
+                               name: string,
+                               projectKeyOrId: string,
+                               startAt: int = 0,
+                               maxResults: int = 50): JiraQueryBase<JiraBoard>
+
+  /**
+   * Given id get information about Jira Board
+   *
+   * @param boardId
+   *          id of board
+   * @returns JiraBoard
+   */
+  board: abstract function(boardId: !int): JiraBoard
+}

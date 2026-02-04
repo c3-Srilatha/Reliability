@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification type for creating {@link AlertMutedPeriod}s.
+ * This type holds all the fields applicable for muting alerts.
+ */
+type AlertMutedPeriodSpec mixes TimedIntervalValue {
+
+  /**
+   * Start timestamp for the muted period.
+   * If null, defaults to now.
+   */
+  start: ~
+
+  /**
+   * End timestamp for the muted period.
+   */
+  end: !~
+
+  /**
+   * The primary {@link ReliabilityAsset} for this muted period.
+   */
+  parent: ReliabilityAsset
+
+  /**
+   * The target entities to mute alerts for. Must be one of the following {@link Persistable} types.
+   * - {@link ReliabilityMlModel} - champion models only. If specified, {@link ReliabilityAssetAlert}s from these models
+   *                                will be muted.
+   * - {@link Sensor} - If specified, {@link SensorHealthAlert}s for these sensors will be muted.
+   */
+  targets: ![Persistable]
+
+  /**
+   * The action to perform: either 'MUTE' or 'UNMUTE' alerts for the specified #targets.
+   * When unmuting, any active muted periods for the specified #targets will be ended immediately by setting their
+   * end time to now. {@link AlertMutedPeriod}s are not deleted to preserve historical data.
+   */
+  action: !string enum('MUTE', 'UNMUTE') = 'MUTE'
+
+  /**
+   * Validation method to ensure the spec is valid before creating muted periods.
+   */
+  validate: member function(): boolean js-rhino
+
+  /**
+   * Validates that the specified models are valid for muting alerts.
+   * If a non-champion model is specified, an error is thrown.
+   * Called within the `validate` method to ensure that only champion models are used for muting alerts.
+   */
+  validateChampionModels: member function() js-rhino
+}

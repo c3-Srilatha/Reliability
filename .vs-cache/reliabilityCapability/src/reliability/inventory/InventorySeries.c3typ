@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link TimedDataHeader} for {@link InventoryMeasurement}
+ * This header file is used to track parts tied to {@link WorkOrder}s and items tied to {@link PurchaseOrder}s.
+ * Type which introduces various statistics related fields and their calculation capability into {@link InventorySeries}.
+ */
+remix type InventorySeries mixes InventoryStats, WorkOrderStats, PurchaseOrderStats {
+  /**
+    * Refreshes and updates the following for the parts resolved through passed in spec:
+    * - {#daysOnHand}, {#currentStock}, {#avgDailyUsage} calculated via {@link InventoryStats#calculateInventoryStats}.
+    * - {#workOrdersImpacted}, {#workOrdersReserved} calculated via {@link WorkOrderStats#calculateWorkOrderStats}.
+    * - {#numberOfReorders} calculated via {@link PurchaseOrderStats#calculatePurchaseOrderStats}.
+    *
+    * @param spec
+    *       The {@link InventorySeriesFetchSpec} will be executed on the {@link InventorySeries} type to retrieve parts whose stats will be refreshed.
+    *       The `spec` passed should be compatible with {@link InventorySeries}.
+    * @param partsToRefresh
+    *       The list of {@link InventorySeries} objects that needs to be refreshed.
+    */
+    refreshStats: function(spec: InventorySeriesFetchSpec, partsToRefresh: [InventorySeries] = []) js-rhino
+
+  /**
+    * function that starts a {@link InventorySeriesRefreshStatsBatchJob} to refresh parts' stats.
+    */
+  triggerRefreshStatsBatchJob: function(options: InventorySeriesRefreshStatsBatchJobOptions) js-rhino
+}

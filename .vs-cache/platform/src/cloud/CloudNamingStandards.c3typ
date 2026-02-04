@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for assisting with validating strings against Cloud Naming Standards and Conventions
+ * @see https://www.rfc-editor.org/rfc/rfc921
+ * @see https://www.rfc-editor.org/rfc/rfc952
+ * @see https://www.rfc-editor.org/rfc/rfc1123
+ */
+inline type CloudNamingStandards {
+
+  /**
+   * Maximum allowed length of the string
+   */
+  maxLength: int32 = -1
+
+  /**
+   * Minimum required length of the string
+   */
+  minLength: int32 = -1
+
+  /**
+   * Regex character set for the inner characters of the string
+   */
+  allowedCharset: string = "."
+
+  /**
+   * Regex character set for the first letter of the string
+   */
+  firstLetterCharset: string = "."
+
+  /**
+   * Regex character set for the last letter of the string
+   */
+  lastLetterCharset: string = "."
+
+  /**
+   * Helper methods that act as constructors for preconfigured {@link CloudNamingStandards} objects
+   */
+  rfc921: cached function(): !CloudNamingStandards
+
+  rfc952:            cached function(): !CloudNamingStandards
+  rfc1035:           cached function(): !CloudNamingStandards
+  rfc1123:           cached function(allowUnderscores: boolean): !CloudNamingStandards
+  k8sLabelKeyPrefix: cached function(): !CloudNamingStandards
+  k8sLabelKeyName:   cached function(): !CloudNamingStandards
+  k8sLabelKeyValue:  cached function(): !CloudNamingStandards
+
+  /**
+   * @return boolean indicating the result of validation of RFC naming standard rules on the given input string
+   */
+  validate: inline member function(s: string, failIfInvalid: boolean): boolean
+}

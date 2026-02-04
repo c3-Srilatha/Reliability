@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type implements MurmurHash 3 X64-128 bit with seed = 0.
+ *
+ * @see https://en.wikipedia.org/wiki/MurmurHash
+ */
+type Murmur mixes HashFunction {
+
+  /**
+   * Implementation of MurmurHash3 32-bit. This is provided in each language so that it can be efficienlty used in
+   * the client. A null value is treated as a zero-length string (hashing to 0). The string is hashed using its
+   * UTF-8 encoding.
+   *
+   * @param value string to hash
+   * @param seed a means to randomize the hash function (default 0)
+   * @return 32-bit integer value (in 64-bit int so will always be positive)
+   */
+  hash32: function(value: !?string, seed: int32 = 0): !int java | js | py
+
+  /**
+   * Implementation of MurmurHash3 32-bit. This is provided in each language so that it can be efficienlty used in
+   * the client. A null value is treated as a zero-length binary (hashing to 0).
+   *
+   * @param value binary data to hash
+   * @param seed a means to randomize the hash function (default 0)
+   * @return 32-bit integer value (in 64-bit int so will always be positive)
+   */
+  hash32: function(value: !?binary, seed: int32 = 0): !int java | js | py
+
+  algorithm:                ~ java | js | py
+  isCryptograhicallySecure: ~ java | js | py
+}

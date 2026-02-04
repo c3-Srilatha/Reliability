@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Zookeeper metrics exposed by four-letter mntr command.
+ */
+private type ZkServerMetrics mixes StringSerializable {
+
+  /**
+   * ZooKeeper version and build string reported
+   */
+  @ser(name='zk_version')
+  version: string
+
+  /**
+   * The approximate size in bytes of the data being handled by Zookeeper.
+   */
+  @ser(name='zk_approximate_data_size')
+  approximateDataSize: int = 0
+
+  /**
+   * The average latency measured by Zookeeper in millisecs.
+   */
+  @ser(name='zk_avg_latency')
+  avgLatency: int
+
+  /**
+   * The minimum latency measured by Zookeeper in millisecs.
+   */
+  @ser(name='zk_min_latency')
+  minLatency: int
+
+  /**
+   * The maximum latency measured by Zookeeper in millisecs.
+   */
+  @ser(name='zk_max_latency')
+  maxLatency: int
+
+  /**
+   * The total amount of ephemerals in Zookeeper.
+   */
+  @ser(name='zk_ephemerals_count')
+  ephemeralsCount: int = 0
+
+  /**
+   * The number of servers using this Zookeeper node as a leader.
+   */
+  @ser(name='zk_followers')
+  followers: int = 0
+
+  /**
+   * Maximum number of file descriptors allowed for the ZooKeeper process.
+   */
+  @ser(name='zk_max_file_descriptor_count')
+  maxFileDescriptorCount: int
+
+  /**
+   * Number of active connections in Zookeeper.
+   */
+  @ser(name='zk_num_alive_connections')
+  aliveConnections: int = 0
+
+  /**
+   * Total amount of file descriptors open in the system reported by zookeeper.
+   */
+  @ser(name='zk_open_file_descriptor_count')
+  openFileDescriptorCount: int = 0
+
+  /**
+   * Total number of requests waiting to be processed by Zookeeper
+   */
+  @ser(name='zk_outstanding_requests')
+  outstandingRequests: int = 0
+
+  /**
+   * Total number of packets received in Zookeeper.
+   */
+  @ser(name='zk_packets_received')
+  packetsReceived: int = 0
+
+  /**
+   * Total number of packets sent from Zookeeper.
+   */
+  @ser(name='zk_packets_sent')
+  packetsSent: int = 0
+
+  /**
+   * Number of pending syncs to carry out to ZooKeeper ensemble followers.
+   */
+  @ser(name='zk_pending_syncs')
+  pendingSyncs: int = 0
+
+  /**
+   * Whether the server is currently a leader or a follower in the cluster.
+   */
+  @ser(name='zk_server_state')
+  serverState: string
+
+  /**
+   * The number of servers using this Zookeeper node as a leader that are synchronized with this node.
+   */
+  @ser(name='zk_synced_followers')
+  syncedFollowers: int = 0
+
+  /**
+   * Total amount of watches in zookeeper.
+   */
+  @ser(name='zk_watch_count')
+  watchCount: int = 0
+
+  /**
+   * Total number of data registers in Zookeeper.
+   */
+  @ser(name='zk_znode_count')
+  znodeCount: int = 0
+
+  fromSerMap: function(kv: map<string, string>): ZkServerMetrics
+}

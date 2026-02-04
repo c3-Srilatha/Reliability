@@ -1,0 +1,165 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Display an Inline notification component that has 3 states: success, error and warning.
+ */
+ @uiComponentCategorizer(name='Inline notification', category='Components')
+type UiSdlInlineNotification mixes UiSdlComponent<UiSdlNoData>, UiSdlFormStatus {
+
+  /**
+   * Whether or not to show an icon relating to the status.
+   */
+  icon: boolean = false
+
+  /**
+   * The configuration for the first button to be displayed related to the notification
+   */
+  firstButtonConfig: UiSdlButton
+
+  /**
+   * The configuration for the second button to be displayed related to the notification
+   */
+  secondButtonConfig: UiSdlButton
+
+  /**
+   * Whether or not the inline notification would be hidden.
+   */
+  hidden: boolean = false
+
+  /**
+   * Whether or not the user can close the notification through the UI. When set to true, a close button will be displayed.
+   */
+  closable: boolean = false
+
+  /**
+   * Action for when a user clicks on the button associated with `firstButtonConfig`
+   *
+   * @param id
+   *            Id of the component.
+   * @returns A `FIRST_BUTTON_CLICK` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='FIRST_BUTTON_CLICK')
+  firstButtonClickAction: function(id: !string): !UiSdlInlineNotificationButtonClickAction ts-client
+
+  /**
+  * Action for when a user clicks on the button associated with `secondButtonConfig`
+  *
+  * @param id
+  *            Id of the component.
+  * @returns A `SECOND_BUTTON_CLICK` action for this instance.
+  */
+  @uiSdlActionCreator(actionType='SECOND_BUTTON_CLICK')
+  secondButtonClickAction: function(id: !string): !UiSdlInlineNotificationButtonClickAction ts-client
+
+  /**
+  * Action to set the hidden configuration of the inline notification.
+  *
+  * @param id
+  *            Id of the component.
+  * @param hidden
+  *            Whether or not the inline notification would be hidden.
+  * @returns A `NOTIFICATION_HIDDEN_SET` action for this instance.
+  */
+  @uiSdlActionCreator(actionType='NOTIFICATION_HIDDEN_SET')
+  notificationSetHiddenAction: function(id: !string, hidden: boolean): !UiSdlInlineNotificationSetHiddenAction ts-client
+
+  /**
+   * Listens for actions of type `NOTIFICATION_HIDDEN_SET` and sets the {@link #hidden} state
+   * to the payload values.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='NOTIFICATION_HIDDEN_SET')
+  notificationHiddenSetEffect: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlInlineNotificationSetHiddenAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action for setting the title of the notification box.
+   *
+   * @param id
+   *            Id of the component.
+   * @param content
+   *            The DynamicValueSpec for the title.
+   * @returns A `TITLE_SET` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='TITLE_SET')
+  setTitleAction: function(id: !string, content: !UiSdlDynamicValueSpec): !UiSdlInlineNotificationTitleSetAction ts-client
+
+  /**
+   * Listens for actions of type `TITLE_SET` and sets the {@link #title} state
+   * to the payload values.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='TITLE_SET')
+  titleSetEffect: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlInlineNotificationTitleSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action for setting the subtitle of the notification box.
+   *
+   * @param id
+   *            Id of the component.
+   * @param content
+   *            The DynamicValueSpec for the content.
+   * @returns A `SUBTITLE_SET` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SUBTITLE_SET')
+  setSubtitleAction: function(id: !string, content: !UiSdlDynamicValueSpec): !UiSdlInlineNotificationSubtitleSetAction ts-client
+
+  /**
+   * Listens for actions of type `SUBTITLE_SET` and sets the {@link #subtitle} state
+   * to the payload values.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SUBTITLE_SET')
+  subtitleSetEffect: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlInlineNotificationSubtitleSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action for setting the status of the notification box.
+   *
+   * @param id
+   *            Id of the component.
+   * @param status
+   *            The enum string for the status.
+   * @returns A `STATUS_SET` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='STATUS_SET')
+  setStatusAction: function(id: !string, status: !string enum('ERROR', 'SUCCESS', 'WARNING')): !UiSdlInlineNotificationStatusSetAction ts-client
+
+  /**
+   * Listens for actions of type `STATUS_SET` and sets the {@link #status} state
+   * to the payload values.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='STATUS_SET')
+  statusSetEffect: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlInlineNotificationStatusSetAction): !UiSdlReduxState ts-client
+}

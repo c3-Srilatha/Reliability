@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Document meta contains control number, data that indicates transaction set start and end, count of the transmitted segments,
+ * details on business hierarchial structure of the transaction set and business application purpose,
+ * and reference data.
+ * Including segments BHT and ST. Values from SR segment are not included, only validated.
+ */
+type X12DocumentMeta {
+
+  /**
+   * Code uniquely identifying a Transaction Set.
+   */
+  idCode: string
+
+  /**
+   * Identifying control number that must be unique within the transaction set functional group
+   * assigned by the originator for a transaction set.
+   */
+  controlNumber: string
+
+  /**
+   * Reference assigned to identify Implementation convention.
+   */
+  implConventionReference: !string
+
+  /**
+   * Code indicating the hierarchial application structure of a transaction set that utilizes
+   * the HL segment to define the structure of the transaction set.
+   */
+  hierarchStructCd: string
+
+  /**
+   * Code identifying purpose of transaction set.
+   */
+  tsPurposeCd: string
+
+  /**
+   * Reference information as defined for a particular Transaction Set or
+   * as specified by the Reference Identification Qualifier.
+   */
+  referenceIdentification: string
+
+  /**
+   * Date expressed as CCYYMMDD where CC represents the first two digits of the calendar year.
+   */
+  date: datetime
+
+  /**
+   * Code specifying the type of transaction.
+   */
+  transactionTypeCd: string
+}

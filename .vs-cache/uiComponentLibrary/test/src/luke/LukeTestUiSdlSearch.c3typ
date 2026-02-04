@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlSearch} component for testing purposes.
+ */
+type LukeTestUiSdlSearch mixes LukeTestComponent {
+
+  parentSelector: ~ = '.c3-sdl-search'
+
+  /**
+   * Generic selector a search result element
+   */
+  searchResultSelector: string = '.result'
+
+  /**
+   * The input field inside search bar container
+   */
+  inputField: string = 'input.c3-form-field.c3-search-default'
+
+  /**
+   * @return LukeAsyncQueueNode which will resolve to the the search string
+   */
+  getSearchText: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Enters the given search text into the input field
+   * @param searchText
+   *            The text to enter
+   * @param timeout
+   *            The timeout for the search ajax call
+   * @ereturns LukeWebElement for search bar
+   */
+  enterSearchText: inline member function(searchText: string, timeout: int): LukeWebElement js
+
+  /**
+   * Clicks on the given index search result
+   * @param resultIndex 1-indexed
+   * @return LukeAsyncQueueNode resolved when click is complete
+   */
+  clickResult: inline member function(resultIndex: int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks on the given value search result
+   * @param value value to be clicked
+   * @return LukeAsyncQueueNode resolved when click is complete
+   */
+  clickResultWithValue: inline member function(value: string, timeout: int): LukeAsyncQueueNode js-server
+}

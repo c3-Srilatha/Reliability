@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A base trait for all streamable types. Types that mix in this trait can be streamed to and from nodes in a
+ * distributed system. E.g. a streamable type can be sent over a network connection or stored in a database without
+ * materializing it's instance value(s) in memory.
+ *
+ * @see Stream
+ * @see Content
+ */
+@beta
+abstract type Streamable.Arg mixes Value {
+
+  /**
+   * Constructs instance from given HTTP request. Expectation is that the request in not immediately consumed, and
+   * content will eventually be read in a streaming manner by the instance.
+   */
+  fromHttpRequest: abstract inline function(req: !HttpRequest): !mixing Streamable.Arg
+}

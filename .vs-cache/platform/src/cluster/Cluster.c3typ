@@ -1,0 +1,327 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents C3 Cluster.
+ *
+ * C3 Cluster consistent of Environments that can be running same or a different [ but compatible ] server software.
+ *
+ * @see Env
+ * @see App
+ * @see Server
+ */
+type Cluster mixes CloudCluster<Server>, DefaultInstance {
+
+  /**
+   * Name of the very special Env for this cluster
+   *
+   * @see #c3Env
+   */
+  C3_ENV_NAME: const string = 'c3'
+
+  /**
+   * Reserved name for a special Cluster for local C3 deployment
+   */
+  LOCAL_CLUSTER_ID: const string = 'local'
+
+  /**
+   * Reserved name for a special Cluster for C3 CLI
+   */
+  CLI_CLUSTER_ID: const string = 'cli'
+
+  /**
+   * Reserved name for a special Cluster for testing
+   */
+  TEST_CLUSTER_ID: const string = 'test'
+
+  /**
+   * If true then this cluster will only have a single node that will serve requests and execute jobs for every Env and
+   * App in this Cluster
+   */
+  singleNode: boolean
+
+  /**
+   * @return all C3 envs that this cluster consists of; if `refresh` parameter is set then ensures that cluster
+   *         membership is up to date, otherwise last known state is returned.
+   */
+  envs: member function(refresh: boolean): ![Env]
+
+  /**
+   * Broadcasts the given action (from the current App context) to all nodes in the given Cluster.
+   */
+  @action(group+='cluster-admin')
+  callInAllEnvs: member function(type: !string,
+                                 action: !string,
+                                 thisArg: !?json,
+                                 args: json,
+                                 retrySpec: RetrySpec,
+                                 timeoutSpec: TimeoutSpec): BatchError
+
+  /**
+   * @return C3 env for a given name or id; on cache-miss refreshes membership and tries again
+   */
+  env: member function(envNameOrId: !?string, failIfMissing: boolean): Env
+
+  /**
+   * @return all apps in all environments that this cluster is serving
+   */
+  apps: member function(refresh: boolean): [App]
+
+  /**
+   * A very special env in this cluster that is providing management APIs and load balancing requests to other envs etc.
+   */
+  c3Env: property(): !Env
+
+  /**
+   * A very special app in this cluster that is providing management APIs and load balancing requests to other envs etc.
+   */
+  c3App: property(): !App
+
+  /**
+   * @return default / first cluster aka canonical AppUrl for this cluster; any environment and app in this cluster is
+   *         accessible via this url
+   */
+  @cache(platPkg=true)
+  url: cached property(): !AppUrl
+
+  /**
+   * @return all {@link AppUrl}s under this Cluster
+   */
+  urls: property(): ![AppUrl]
+
+  /**
+   * @return all cluster urls in this Cluster;
+   *         any {@link Env} and {@link App} in the cluster is accessible via this url
+   */
+  clusterUrls: property(): ![AppUrl]
+
+  /**
+   * @return all environment urls in this Cluster;
+   *         any {@link App} belonging to the respective {@link Env} this url is for is accessible via this url;
+   *         the single Env this url is for is accessible via this url;
+   */
+  envUrls: property(): ![AppUrl]
+
+  /**
+   * @return all vanity urls in this Cluster;
+   *         the single {@link App} this url is for is accessible via this url
+   */
+  vanityUrls: property(): ![AppUrl]
+
+  /**
+   * Summary of this {@link Cluster}
+   */
+  @action(group+='cluster-admin')
+  summary: member function(spec: Cluster.SummarySpec): Cluster.Summary
+
+  /**
+   * @return true if this Cluster is a local C3 deployment
+   */
+  isLocal: member function(): boolean
+
+  /**
+   * @return true if this Cluster is for C3 CLIs
+   */
+  isCli: member function(): boolean
+
+  /**
+   * @return true if this Cluster is for testing
+   */
+  isTest: member function(): boolean
+
+  /**
+   * @return true if it is a local cluster configured with access to a K8s control plane that
+   * can be used for a {@link CloudService}
+   */
+  isLocalK8s: member function(): boolean
+
+  /**
+   * Create the Env instance if it does not exist
+   *
+   * @param spec
+   *           Specifications for an Env.
+   * @return created or restarted Env instance
+   *
+   * @see Cluster.StartEnvSpec#minimalInfra
+   * @see Cluster.StartEnvSpec#singleNode
+   */
+  @action(group+='cluster-admin')
+  startEnv: member function(spec: !Cluster.StartEnvSpec): !Env
+
+  /**
+   * Stop Environment by shutting down underlying infrastructure to bare minimum with expectation that on call to
+   * #startEnv Environment can be brought back to fully operation state.
+   *
+   * @param env
+   *         Env to be stopped.
+   * @return updated Env state
+   */
+  @deprecated(finalVersion='8.4', details="Use Cluster#stopEnvById(envId: !string) instead")
+  @action(group+='env-admin')
+  stopEnv: member function(env: !Env): !Env
+
+  /**
+   * Stop Environment by shutting down underlying infrastructure to bare minimum with expectation that on call to
+   * #startEnv Environment can be brought back to fully operation state.
+   *
+   * @param envId
+   *         Id of the Env to be stopped.
+   * @return updated Env state
+   */
+  @action(group+='env-admin')
+  stopEnvById: member function(envId: !string): !Env
+
+  /**
+   * Restarts the environment if it exists and brings it into an operational state as defined by spec.
+   *
+   * @param env
+   *         Env to be restarted.
+   * @return updated Env state
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion='8.4', details="Use Cluster#resumeEnvById(envId: !string) instead")
+  resumeEnv: member function(env: !Env): !Env
+
+  /**
+   * Restarts the environment if it exists and brings it into an operational state as defined by spec.
+   *
+   * @param envId
+   *         Id of the Env to be restarted.
+   * @return updated Env state
+   */
+  @action(group+='cluster-admin')
+  resumeEnvById: member function(envId: !string): !Env
+
+  /**
+   * Hibernates the whole cluster except the {@link env}s and {@link app}s present in the exclusion list.
+   * The call can only be made from the c3 {@link env}'s c3 {@link app}
+   *
+   * @return {@link BatchError} object with any errors that may have occurred
+   */
+  @deprecated(finalVersion="8.5")
+  @action(group+='cluster-admin')
+  stop: member function(): !BatchError
+
+  /**
+   * Wakes up all the hibernated {@link env}s and {@link app}s except those present in the exclusion list.
+   * The call can only be made from the c3 {@link env}'s c3 {@link app}
+   *
+   * @return {@link BatchError} object with any errors that may have occurred
+   */
+  @deprecated(finalVersion="8.5")
+  @action(group+='cluster-admin')
+  resume: member function(): !BatchError
+
+  /**
+   * Abort and terminate Environment.
+   *
+   * @param env
+   *         Env to be terminated.
+   * @param confirm
+   *         Confirmation from user that they understand and confirm deletion of this Env and all of its Apps.
+   * @return updated Env state
+   */
+  @action(group+='env-admin')
+  @deprecated(finalVersion='8.4', details="Use Cluster#terminateEnvById(envId: !string, confirm: boolean) instead")
+  terminateEnv: member function(env: !Env, confirm: boolean): !Env
+
+  /**
+   * Abort and terminate Environment.
+   *
+   * @param envId
+   *         Id of the Env to be terminated.
+   * @param confirm
+   *         Confirmation from user that they understand and confirm deletion of this Env and all of its Apps.
+   * @return updated Env state
+   */
+  @action(group+='env-admin')
+  terminateEnvById: member function(envId: !string, confirm: boolean): !Env
+
+  /**
+   * Forcefully Abort and terminate Env and delete all the app's data on a best effort basis
+   *
+   * @param env
+   *         Env to be force terminated.
+   * @param confirm
+   *         Confirmation from user that they understand and confirm force deletion of this Env and all of its Apps.
+   * @return {@link BatchError} object with any errors that may have occurred
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion='8.4',
+              details="Use Cluster#forceTerminateEnvById(envId: !string, confirm: boolean) instead")
+  forceTerminateEnv: member function(env: !Env, confirm: boolean): BatchError
+
+  /**
+   * Forcefully Abort and terminate Env and delete all the app's data on a best effort basis
+   *
+   * @param envId
+   *         Id of the Env to be force terminated.
+   * @param confirm
+   *         Confirmation from user that they understand and confirm force deletion of this Env and all of its Apps.
+   * @return {@link BatchError} object with any errors that may have occurred
+   */
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion='8.13', details="ForceTerminateEnvById is merged to terminateEnvById")
+  forceTerminateEnvById: member function(envId: !string, confirm: boolean): BatchError
+
+  /**
+   * Resets all configs & secrets for the specified env at the {@link ConfigOverride#ENV} level or lower.
+   *
+   * @param envId
+   *         The env ID for which to reset configs
+   * @param confirm
+   *         Confirmation from user that they understand and confirm deletion of configs and secrets.
+   * @return 'true' if deletion was successful
+   */
+  @action(group+="cluster-admin")
+  clearAllEnvAppAndUserConfig: function(envId: !string serialized AppId, confirm: boolean): boolean
+
+  /**
+   * Clears config keys for an env.
+   */
+  @action(group+='cluster-admin')
+  clearEnvConfigKey: function(envId: !string serialized AppId)
+
+  /**
+   * Restart all envs in this Cluster
+   *
+   * @param skipSelf
+   *        A boolean flag. Set to true to skip restarting self: the node the command runs on.
+   * @return {@link BatchError} object with any errors occurred during the restart
+   */
+  @action(group+='cluster-admin')
+  restartEnvs: member function(skipSelf: boolean): BatchError
+
+  /**
+   * @return cloud provider this cluster is running in
+   */
+  @action(group+='cluster-admin')
+  cloudProvider: property(): !CloudProvider
+
+  /**
+   * @return Cluster.Membership service for this Cluster
+   */
+  @cache(platPkg=true)
+  membership: private cached member function(): !Cluster.Membership
+
+  /**
+   * Fetches and returns {@link CloudResource}s belonging to this {@link Cluster}, but not belonging to any currently running {@link App} within it.
+   * @param parentCloudResourceType
+   *         Parent C3 Type whose subtypes are listed. It will need to be {@link CloudResource} or any of its subtypes.
+   *         If none is provided, then {@link K8sResource}s are returned.
+   * @param externalResources
+   *         If true, then {@link CloudResource}s that do not have the base {@link CloudTagKey.CLUSTER},
+   *         {@link CloudTagKey.ENV_ID} and {@link CloudTagKey.APP_ID} tags are also taken into consideration.
+   * @return orphaned {@link CloudResource}s
+   */
+  @action(group+='cluster-admin')
+  orphanResources: member function(parentCloudResourceType: Type,
+                                   externalResources: boolean): !map<string, [CloudResource]>
+
+  inst: ~
+}

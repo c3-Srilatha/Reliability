@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type forecasts the expected part inventory for a specific {@link WorkOrder} or {@link PurchaseOrder}
+ * At a future date.
+ */
+entity type WorkOrderPartsForecast schema name 'WOPF' {
+
+  /**
+   * The {@link WorkOrder} or {@link PurchaseOrderLine} that impacts the forecasted quantiy of the {@link #part}.
+   * A Work Order subtracts from the inventory whereas a PurchaseOrder adds to the inventory.
+   */
+  workOrderOrPurchaseOrderDelta: WorkOrderPartsDenormalized | PurchaseOrderLine
+
+  /**
+   * Flag indicating whether the current forecast made based on a {@link WorkOrder} or {@link PurchaseOrderLine} .
+   *  - `True` indicates forecast was based on {@link WorkOrder}
+   * - `False` indicates forecast was based on {@link PurchaseOrderLine}
+   */
+  isWorkOrder: boolean
+
+  /**
+   * The quantity of the {@link #part} after the {@link WorkOrder} has been deducted or the {@link PurchaseOrder}
+   * has been added for the part. This can be a negative number and is used to show part shortages on this specific date,
+   * tied to a specific {@link WorkOrder} or {@link PurchaseOrder}.
+   */
+  inventoryDelta: int
+
+  /**
+   * The actual quantity of the part available on the {@link #forecastDate}.
+   */
+  inventoryActual: int stored calc inventoryDelta < 0 ? 0 : inventoryDelta
+
+  /**
+   * The quantity of the #part requested to be added or subtracted
+   * from the {@link PurchaseOrder} or {@link WorkOrder}.  This can be a
+   * negative number if the `inventory` is being deducted from the `workOrder`
+   */
+  inventoryRequested: int
+
+  /**
+   * Forecase date is always a date in the future (from the current date) use to
+   * predict the quantity of the {@link #part} available/quantity.
+   */
+  forecastDate: datetime
+
+  /**
+   * The {@link InventorySeries} that is forecasted to quantify how much `inventory`
+   * will be available on the #forecastDate.
+   */
+  part: InventorySeries
+
+  /**
+   * Represents the {@link WorkOrder} ID if forecast was based on {@link WorkOrder}.
+   * `Empty` indicates that the forecast was based on {@link PurchaseOrder}.
+   * It is used to identify the number of unique {@link WorkOrder}s that are impacted due to a missing part.
+   */
+  workOrderId: string
+
+  /**
+   * This function will update the part forecast for a specific part, based on the current datetime.
+   * It will remove all historic forecasts for the part, since we are just concerned with forecasting
+   * a part in the future.  This function is called by the {@link WorkOrderPartsDenormalized#afterCreate}
+   * and {@link PurchaseOrder#afterCreate} to update the forecast for a part.
+   *
+   * @param partId
+   *        Represents the unique part ID from {@link InventorySeries}
+   * @param doNotPersistWorkOrderUpdateLog
+   *        A boolean flag to indicate whether to persist / not persist the generated {@link WorkOrderUpdateLog}s
+   */
+  updatePartsForecast: function(partId: string, doNotPersistWorkOrderUpdateLog: boolean = true) py
+}

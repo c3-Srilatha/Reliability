@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract Syntax Tree for a C3 Expression.
+ */
+inline type Expr.Ast {
+
+  /**
+   * Expression source
+   */
+  src: !string
+
+  /**
+   * @return the parent expression
+   */
+  parent: !(Expr | Expr.Compiled)
+
+  /**
+   * @return input value type
+   */
+  inType: property(): !ValueType
+
+  /**
+   * @return variable types
+   */
+  varTypes: property(): map<string, ValueType>
+
+  /**
+   * List of variable names in the given expression ast
+   */
+  varNames: property(): set<string>
+
+  /**
+   * @return output value type
+   */
+  outType: property(): !ValueType
+
+  /**
+   * @return C3 package this expression belongs to
+   */
+  pkg: property(): !Pkg
+
+  /**
+   * List of `.` separated field paths in the context of root C3 type used in this expression.
+   */
+  dependingFieldPaths: property(): set<string>
+
+  /**
+   * Return the ExprNode corresponding to the given parsed expression on the input type
+   */
+  exprNode: private property(): @java(class="c3.platform.expr.ast.ExprNode") native
+}

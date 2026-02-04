@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Basic test data for Reliability.
+ *
+ * As with other C3 applications, it is recommended to
+ * increase java memory and cassandra heap size on your
+ * local server when loading this data:
+ * ```
+ * export VM_MIN_MEM=15G
+ * export VM_MAX_MEM=20G
+ * export MAX_HEAP_SIZE=5G
+ * export HEAP_NEWSIZE=5G
+ * ```
+ */
+type ReliabilityTestData {
+
+  /**
+   * The default queues to be cleared when #clearFailedQueueEntries is called.
+   */
+  DEFAULT_QUEUES_TO_CLEAR: const [string] = [
+    'CronQueue',
+    'ActionQueue',
+    'MapReduceQueue',
+    'BatchQueue',
+    'WorkflowQueue',
+    'CalcFieldsQueue',
+    'HierDenormQueue'
+  ]
+
+  /**
+   * Function to clear failed queue entries for the following {@link InvalidationQueue}.
+   * @param queueNames
+   *           the names of queues as strings whose failures are to be cleared.
+   * @param overrideDefaults
+   *           flag which determines if `queueNames` are expected to override #DEFAULT_QUEUES_TO_CLEAR.
+   *           By default, set to false
+   *
+   * All the expected queues will be cleared of failed entries.
+   */
+  clearFailedQueueEntries: function(queueNames: [string], overrideDefaults: boolean = false) js-rhino
+
+  /**
+   * Helper method to invalidate normalized timeseries of a type that mixes {@link TimedDataHeader}
+   *
+   * @param typeName
+   *        The name of the type to invalidate timeseries for.
+   */
+  invalidateNormalizedTimeseries: function(typeName: string) js-rhino
+
+  /**
+   * Function to normalize the timeseries data
+   * @param typeName
+   *          should be a valid type that mixes TimeseriesHeader or TimedDataHeader or FileTimeseriesHeader or FileTimedDataHeader in order for the normalization to work.
+   * @param forceNormalization
+   *          force normalization even if the series has been previously normalized and valid.
+   */
+  normalizeTimeseriesData: function(typeName: !string, forceNormalization: boolean = true) js-rhino
+
+}

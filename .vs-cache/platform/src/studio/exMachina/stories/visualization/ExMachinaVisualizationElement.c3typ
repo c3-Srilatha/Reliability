@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+entity type ExMachinaVisualizationElement extends ExMachinaStoryChapterElement type key 'VE' {
+
+  /**
+   * The asset that the chapter element refers to
+   */
+  asset: ExMachinaVisualizationAsset
+
+  /**
+   * The name of the visualization for rendering in the UI.
+   */
+  renderName: ~ calc exists(name) ? name : asset.name
+
+  /**
+   * A description of the visualization for rendering in the UI.
+   */
+  renderDescription: ~ calc exists(description) ? description : asset.description
+
+  /**
+   * Read the visualization result as a string
+   */
+  readString: member function(): string js-server
+
+  /**
+   * Returns information about the visualization.
+   *
+   * @param asOfDate
+   *          If provided, the information returned will be associated with the most recent version of the
+   *          visualization as of (up to and including) the given date.
+   */
+  @action(group+='read')
+  getInfo: member function(asOfDate: datetime): ExMachinaVisualizationElementInfo js-server
+}

@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Provides a way to serve content through {@link ArtifactHub.RestfulContentHandler} for a given path.
+ * If {@link #shouldServe} returns true for a given path, then this content provider will be used to serve the content.
+ */
+type ArtifactHub.ContentProvider {
+
+  /**
+   * Whether or not this subtype should handle serving the content for the given path.
+   * @param path
+   *           The path that comes after "/artifact/""
+   * @return true if this content provider should serve the content for the given path
+   */
+  shouldServe: function(path: !string): !boolean
+
+  contentFor:   function(path: !string): !Content
+  artifactFor:  function(path: !string): !ArtifactHub.Artifact
+  pullAndCache: function(path: !string): !ArtifactHub.Artifact
+}

@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A hierarchy branch describes how a type relates to another type by providing a path between them.
+ * This type is used in {@link Hierarchy.levels} to indicate how a given node can branch out to the
+ * next level in the tree.
+ */
+@seed(userUpdatable=true, userRemovable=true)
+entity type HierarchyBranch mixes SeedData schema name 'HIER_HRB' {
+
+  id: !string
+
+  /**
+   * Changes the retrieval mechanism of values for the nodes in the hierarchy.
+   *
+   * 'DenormHierarchyBranch' - Indicates that the fetchTableType is a {@link HierarchyDenorm} and uses
+   *                           {@link HierarchyDenorm.getDescendants}
+   * 'MetadataTestFileHierarchyBranch' - Uses the TagMetadataStore to retrieve files using the file system hierarchy.
+   * 'FetchHierarchyBranch' - Will use {@link Persistable#fetch} (this is the default behavior)
+   */
+  levelType: string enum HierarchyBranchType
+
+  childType:      !Type
+  parentType:     !Type
+  fetchTableType: !Type
+
+  /**
+   * The relationship path. Required for child branches with 'FetchHierarchyBranch' as {@link levelType}.
+   *
+   * This value must be a valid path from {@link HierarchyBranch.fetchTableType} to a record of type
+   * {@link HierarchyBranch.childType}.
+   */
+  path: string
+
+  /**
+   * Which ancestor to goto to use ancestorContext (eg: 1 - parent, 2 - grandparent, 3, ...)
+   */
+  ancestorDepth: int
+
+  /**
+   * context path to ancestor
+   */
+  ancestorContext: string
+
+  /**
+   * relationship within denorm hierarchy
+   */
+  relationship: string
+
+  /**
+   * additional filter applied to fetchTableType.
+   */
+  fetchTableFilter: string
+
+  /**
+   * additional include applied to fetchTableType.
+   */
+  fetchTableInclude: string
+}

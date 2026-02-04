@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Annotation for specifying the file system configuration for dynamically reading from it
+ */
+@annotation(appliesTo=['type'])
+type Ann.KvFs mixes Annotation {
+
+  /**
+   * name of the KvStore.FileSystem.Config to look up for rootUrl & other properties
+   */
+  name: string
+
+  /**
+   * name of the table field in the type which will be used to append table name to rootUrl. If specified will be
+   * appended to the rootUrl before partitionKey & after {@link KvStore.FileSystem.Config#rootUrl}
+   */
+  tableField: string
+
+  /**
+   * name of the partition key field in the type which will be used to append partition key to rootUrl
+   */
+  partitionKeyField: !string
+
+  /**
+   * File operation specification to use for reading from the file system
+   */
+  fileSpec: FileObjsOperSpec
+}

@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A filter bar UI component for filtering data in asset performance applications.
+ */
+@typeScript
+type UiApFilterBar mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * The path to store the filter value in the data store.
+   */
+  filterValuePath: string
+
+  /**
+   * The path to store the current search value of each filter in the data store.
+   *
+   * This will be used to store a map of filter keys to their current search value and search filter.
+   */
+  searchValuePath: string
+
+  /**
+   * The id of the grid that this filter bar is directly connected to. If this property is set,
+   * the filter bar will assume it is right above the grid, and will add the ability to show and hide columns.
+   * In addition, saved views will also save the column visibility.
+   */
+  gridId: ?string serialized UiSdlDataGrid
+
+  /**
+   * Configuration for the filter inputs to display in the filter bar.
+   * The key is the filter key, and the value is the filter configuration.
+   */
+  filterConfigs: map<string, UiApFilterBar.FilterConfig>
+
+  /**
+   * Ordered list of filter keys from {@link #filterConfigs} to display in the filter bar.
+   */
+  displayedFilters: [string]
+
+  /**
+   * Specifies how the add filters modal is laid out.
+   *
+   * {@link #filterConfigs} without a section will be displayed in the "Other Filters" section.
+   */
+  allFiltersLayout: [UiApFilterBar.AllFiltersLayoutSection]
+
+  /**
+   * The data store id to use for the filter bar. This the data store the {@link #filterConfigs}
+   * will retrieve data from.
+   *
+   * Note that single select or multi select filters with pagination need their own
+   * actions that cannot be reused. This is because the data will be updated as users
+   * scroll through the options.
+   */
+  dataStoreId: string serialized UiApDataStore
+
+  /**
+   * Additional icon actions to display in the filter bar. Only the `name`, `iconSuffix`, and `actionSuffix` are used.
+   */
+  additionalActions: [UiSdlAction]
+}

@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+private type MlPipe.Bindings {
+
+  /**
+   * The string representing the bound mimo pipe.
+   */
+  typeStr: string
+
+  /**
+   * The type bound to DX for {@link MlAtomicPipe}.
+   */
+  dx: !ValueType
+
+  /**
+   * The type bound to DY for {@link MlAtomicPipe}.
+   */
+  dy: !ValueType
+
+  /**
+   * The type bound to DO for {@link MlAtomicPipe}.
+   */
+  do: !ValueType
+
+  /**
+   * The type bound to DS for {@link MlPipeline}.
+   */
+  ds: ValueType
+
+  /**
+   * The type bound to DI for {@link MlPipeline}.
+   */
+  di: ValueType
+
+  /**
+   * Checks if the input {@link ValueType} is a {@link ReferenceType} and not a subclass of {@link Data}.
+   * @param bindVar
+   *    Variable binding.
+   * @return True if the bindVar satisfies the above conditions.
+   */
+  isNonDataReferenceType: function(bindVar: ValueType): !boolean py
+
+  /**
+   * Checks if the input {@link ValueType} is a named {@link TupleType}.
+   * @param bindVar
+   *    Variable binding.
+   * @return True if the bindVar satisfies the above condition.
+   */
+  isNamedTupleType: function(bindVar: ValueType): !boolean py
+
+  /**
+   * Extract the input/output names from the pipe's bindings.
+   * @param pipe
+   *           The pipe to get input/output names for.
+   * @param binding
+   *           The specific {@link MlPipe} binding to get names for.
+   * @param name
+   *           The input/output (default) name
+   * @param addPrefix
+   *           If True, prefix the input/output names with `name`
+   * @return a set of input/output names for the `pipe` and `binding`.
+   */
+  namesForBinding: private function(pipe: !MlPipe, binding: !string, name: !string, addPrefix: boolean): [string] py
+}

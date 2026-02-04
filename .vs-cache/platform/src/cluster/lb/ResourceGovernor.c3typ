@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type monitors and takes self-healing actions in the clusters
+ */
+type ResourceGovernor mixes Singleton, Configurable<ResourceGovernorConfig> {
+
+  /**
+   * If the resource governor feature is enabled as configured in {@link ResourceGovernorConfig}
+   */
+  isEnabled: inline member function(): boolean
+
+  /**
+   * Enable the resource governor feature
+   */
+  enable: inline member function()
+
+  /**
+   * Disable the resource governor feature
+   */
+  disable: inline member function()
+
+  /**
+   * Average CPU load of in [0,100] range for a given time window in millis.
+   * Default is `#config().cpuWindowMillis` if not given
+   */
+  avgCpu: inline member function(timeWindowMs: int): !int
+
+  /**
+   * Returns total gc count range for a given time window in millis.
+   * Default is `#config().fullGcWindowMillis` if not given
+   */
+  fullGcCount: inline member function(timeWindowMs: int): !int
+
+  /**
+   * Returns total gc time range for a given time window in millis.
+   * Default is `#config().fullGcWindowMillis` if not given
+   */
+  fullGcTimeMs: inline member function(timeWindowMs: int): !int
+
+  /**
+   * Returns current minimum free disk space percentage in the range [0, 100] across all storage nodes
+   */
+  minFreeDatastoreDiskSpacePct: inline member function(): !int
+
+  /**
+   * Returns current maximum fragmentation int the range [0, 100] across all storage nodes
+   */
+  maxDatastoreFragmentationPct: inline member function(): !int
+
+  /**
+   * Returns current maximum number of queued query statements across all storage nodes
+   */
+  maxDatastoreQueuedTaskCount: inline member function(): !int
+
+  /**
+   * Returns if the queue is ready to compute tasks based on the thresholds set in {@link ResourceGovernorConfig}
+   */
+  canComputeQueues: inline member function(): !boolean
+
+  /**
+   * Resource governor queue configuration {@link QueuesResourceGovernorConfig} for a node's {@link App.NodePool.Config}
+   */
+  queues: private member function(): !QueuesResourceGovernorConfig
+}

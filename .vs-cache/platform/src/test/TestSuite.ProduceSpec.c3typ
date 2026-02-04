@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for TestSuite#produce.
+ */
+type TestSuite.ProduceSpec mixes Spec {
+
+  /**
+   * {@link Pkg} in which the {@link TestSuite} should be produced.
+   */
+  pkg: !Pkg
+
+  /**
+   * Language to build test for.
+   */
+  language: !string serialized ImplLanguage
+
+  /**
+   * If true, throw an error if the language is unsupported.
+   */
+  failIfUnsupported: boolean
+
+  /**
+   * If true, return an empty file if there are no test cases
+   */
+  emptyFile: boolean
+
+  /**
+   * Destination package name if needed.
+   */
+  javaPackage: string
+
+  /**
+   * Test class name, if not extracted from the source file name.
+   */
+  className: string
+
+  /**
+   * Target {@link Action.Requirement}.
+   */
+  actionRequirement: string serialized Action.Requirement
+
+  /**
+   * Prefer most direct calling path to dispatching. This is mostly for Java; specifying this will use the
+   * code-generated interface, even for generated types.
+   */
+  fastCalls: boolean
+
+  /**
+   * Skip validation of unknown global variables. This is useful for display, but may lead to the generation of
+   * incorrect code.
+   */
+  ignoreGlobals: boolean
+
+  /**
+   * If true, generate JUnit wrappers for script tests. These are useful for running the generated JavaScript and
+   * Python test artifacts from a Java IDE. Native Java poly test artifacts are already JUnit files.
+   *
+   * @see TestRunner
+   */
+  junitWrappers: boolean
+}

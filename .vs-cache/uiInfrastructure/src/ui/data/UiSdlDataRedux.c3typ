@@ -1,0 +1,549 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Data Source for redux store.
+ */
+@typeScript
+type UiSdlDataRedux mixes UiSdlReduxMetadata, WithContextVars, WithDataTransforms, WithTunnelConfiguration {
+
+  /**
+   * The data Redux namespace that indicates where the data is stored in the Redux state.
+   */
+  REDUX_METADATA_NAMESPACE: string = 'dataSources'
+
+  /**
+   * The arguments to be provided with the data request.
+   */
+  c3arguments: json = {}
+
+  /**
+   * Used when c3function in the `dataSource` is `fetch`.
+   * The filter in the `dataSource` is combined with the values of the map when making the fetch request.
+   * The key is the metadataId of the component updating the filter; the value is the filter.
+   */
+  additionalFilters: private map<string, string>
+
+  /**
+   * Mark the effect type to use when the corresponding trigger action is triggered.
+   * Overwrite effectType if want to use different async effect.
+   */
+  effectTriggers: [UiSdlEffectTrigger] = [
+    {
+      "trigger": "DATA_SAVE",
+      "effectType": "UiSdlPersistChangesEpic"
+    },
+    {
+      "trigger": "ID_CREATE",
+      "effectType": "UiSdlUniqueIdCreateEpic"
+    },
+    {
+      "trigger": ["DATA_REQUEST", "CANCEL_DATA_REQUEST"],
+      "effectType": "UiSdlDataRequestEpic"
+    }
+  ]
+
+  /**
+   * The changes that are made to the data source. This key is `id`; value is an array of fields modified .
+   */
+  edits: private map<string, [string]>
+
+  /**
+   * The deleted record ids
+   */
+  deletions: private [string]
+
+  /**
+   * Newly added record
+   */
+  additions: private [string]
+
+  /**
+   * Record persist change error messages.
+   */
+  persistChangeErrors: private [string]
+
+  /**
+   * UI Trigger. Update persist change error action will replace new error messages to {@link persistChangeErrors} and
+   * update the state
+   * @param id
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='PERSIST_CHANGE_ERROR_UPDATE')
+  updatePersistChangeErrorAction: function(id: string,
+                                           errors: [string]): UiSdlPersistChangeErrorUpdateAction ts-client
+
+  /**
+   * UI Trigger. Creates a Merge Arguments action that will deeply merge
+   * the passed object into this data source's arguments
+   * When c3function in the `dataSource` is `fetch`, and `sourceMetadataId` is provided,
+   * filter updates will be saved in {@link additionalFilters}, and the original filter in the arguments is not changed.
+   * @param id
+   *            Id of the component.
+   * @params args:
+   *              New arguments for the data source.
+   * @params sourceMetadataId:
+   *              metadataId of the component calling this function.
+   * @return {@link UiSdlArgumentsMergeAction} with payload = `{args: args, sourceMetadataId: sourceMetadataId}`
+   */
+  @uiSdlActionCreator(actionType='ARGUMENTS_MERGE')
+  mergeArgumentsAction: function(id: !string,
+                                 args: !map<string, any>,
+                                 sourceMetadataId: string): !UiSdlArgumentsMergeAction ts-client
+
+  /**
+   * UI Trigger. Creates a Update Data Type action that will set the new data type into the dataSource.
+   * @param id
+   *            Id of the component.
+   * @params newType:
+   *              New type for the data source.
+   * @return {@link UiSdlDataTypeUpdateAction} with payload = `newType`
+   */
+  @uiSdlActionCreator(actionType='DATA_TYPE_UPDATE')
+  updateDataTypeAction: member function(id: string, newType: !string): !UiSdlDataTypeUpdateAction ts-client
+
+  /**
+   * UI Trigger. Creates a Update Data config action that will set the new data config
+   * including c3type, c3function, and args for the dataSource.
+   * @param id
+   *            Id of the component.
+   * @params newConfig:
+   *              New config for the data source.
+   *              {
+   *                typeName: 'Building',  // c3 type name
+   *                actionName: 'fetch', // c3 action name
+   *                args: {   // c3 spec
+   *                  spec: {
+   *                    filter: '1 == 1'
+   *                  }
+   *                },
+   *              }
+   * @params contextVars:
+   *              An object that holds context variable information.
+   * @return {@link UiSdlDataConfigUpdateAction} with payload = `newConfig`
+   */
+  @uiSdlActionCreator(actionType='DATA_CONFIG_UPDATE')
+  updateDataConfigAction: member function(id: string,
+                                          newConfig: !map<string, any>,
+                                          contextVars: map<string, any>,
+                                          metadataId: string): !UiSdlDataConfigUpdateAction ts-client
+
+  /**
+   * Triggered when the user saves data and updates the count of the data grid
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `UPDATE_DATA_COUNT` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_DATA_COUNT')
+  updateCountDataAction: private function(id: string): UiSdlUpdateDataCountAction ts-client
+
+  /**
+   * UI Trigger. Creates a Request Data action that starts a remote request
+   * to receive this data source's data.
+   * @param id
+   *            Id of the component.
+   * @param actionTransforms
+   *            The names of the transforms to apply.  Transforms must mix {@link UiSdlDataTransform}
+   * @param mode
+   *            The mode to insert the received data.
+   * @param args
+   *            The arguments to be provided with the data request.
+   * @param dataSourceComponentId
+   *            The id of the component that is requesting data.
+   *            Note: developer manually triggering this action should set this parameter to the id of the component that is requesting data.
+   */
+  @uiSdlActionCreator(actionType='DATA_REQUEST')
+  requestDataAction: member function(id: string,
+                                     actionTransforms: [string],
+                                     mode: UiSdlDataReceiveMode,
+                                     args: json,
+                                     dataSourceComponentId: string
+                                     ): !UiSdlDataRequestAction ts-client
+
+  /**
+   * UI Trigger. Creates a Cancel Request Data action that cancels a remote
+   * request to receive this data source's data. Any pending ajax calls will
+   * be cancelled.@param id
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='CANCEL_DATA_REQUEST')
+  cancelRequestDataAction: member function(id: string): !UiSdlCancelDataRequestAction ts-client
+
+  /**
+   * Trigger when an API request has finished, regardless if the request
+   * was successful or not.
+   *
+   * @param id
+   *            Id of the component.
+   * @param response
+   *           The API response data
+   * @param isError
+   *           `false` if the request was successful, `true` otherwise
+   * @param dataSourceComponentId
+  *           The id of the component that is receiving data.
+   *
+   * @returns a `DATA_RECEIVE` action for this instance with the following properties:
+   * - payload: {any} The API response data
+   * - meta.dataSourceId {string} The `id` of this data source
+   * - error {boolean} `false` if the request was successful, `true` otherwise
+   */
+  @uiSdlActionCreator(actionType='DATA_RECEIVE')
+  receiveDataAction: function(id: string, response: any, isError: boolean, dataSourceComponentId: string): !UiSdlDataReceiveAction ts-client
+
+  /**
+   * Trigger when an API request has finished and the request failed with error.
+   *
+   * @param id
+   *            Id of the component.
+   * @param errorMessage
+   *            The API response error message
+   *
+   * @returns a `ERROR_RECEIVE` action for this instance with the following properties:
+   * - payload: {string} The API response error message
+   * - meta.dataSourceId {string} The `id` of this data source
+   */
+  @uiSdlActionCreator(actionType='ERROR_RECEIVE')
+  receiveErrorAction: function(id: string, errorMessage: string): !UiSdlErrorReceiveAction ts-client
+
+  /**
+   * Trigger to set data in a data source manually.
+   * @param id
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='DATA_SET')
+  setDataAction: function(id: string, originalData: any, modifiedData: any): !UiSdlDataSetAction ts-client
+
+  /**
+   * Trigger to notify that data has loaded
+   * @param id
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='DATA_LOADED')
+  loadedDataAction: function(id: string, response: any, isError: boolean): !UiSdlDataLoadedAction ts-client
+
+  /**
+   * Trigger a handle loaded data action after receiving new data.
+   * @param id
+   *            Id of the component.
+   * @returns an `LOADED_DATA_HANDLE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='LOADED_DATA_HANDLE')
+  handleLoadedDataAction: member function(id: string): UiSdlLoadedDataHandleAction ts-client
+
+  /**
+   * Trigger to save and persit change to the data source
+   *
+   * @param id
+   *            Id of the component.
+   * @param dataSourceComponentId
+   *            The id of the component that is saving data.
+   * @returns a `DATA_SAVE` action for this instance with the following properties:
+   * - meta: { dataSourceId: string } The id of data source.
+   */
+  @uiSdlActionCreator(actionType='DATA_SAVE')
+  saveDataAction: member function(id: string, dataSourceComponentId: string): !UiSdlDataSaveAction ts-client
+
+  /**
+   * Trigger to delete records from the data source
+   *
+   * @param id
+   *            Id of the component's datasource.
+   * @param ids
+   *        An array of ids of the records to delete
+   *
+   * @returns a `DATA_DELETE` action for this instance with the following properties:
+   * - payload: {[string]} The ids of the record to delete
+   */
+  @uiSdlActionCreator(actionType='DATA_DELETE')
+  deleteDataAction: member function(id: string, ids: ![string]): !UiSdlDataDeleteAction ts-client
+
+  /**
+   * Trigger to add a new record to the data source
+   *
+   * @param id
+   *            Id of the component's datasource.
+   * @param itemId
+   *        The id of the record to add
+   * @param isError
+   *        Whether the record added is an error
+   * @param insertLocation
+   *        The location to insert the new record in the existing object array.  If `PREPEND` row will be added to
+   *         the beginning of array, `APPEND` will be added to end of array
+   *
+   * @returns a `DATA_ADD` action for this instance with the following properties:
+   * - payload: {id: string} The id of the record to add
+   */
+  @uiSdlActionCreator(actionType='DATA_ADD')
+  addDataAction: function(id: string,
+                          itemId: string,
+                          isError: boolean,
+                          insertLocation: string): !UiSdlDataAddAction ts-client
+
+  /**
+   * Trigger to create an unique id
+   *
+   * @param id
+   *            Id of the component.
+   * @returns a `ID_CREATE` action for this instance
+   */
+  @uiSdlActionCreator(actionType='ID_CREATE')
+  createUniqueIdAction: member function(id: string): !UiSdlIdCreateAction ts-client
+
+  /**
+   * Trigger to modify a record from the data source
+   *
+   * @param id
+   *            Id of the component's datasource.
+   * @param itemId
+   *        The id of the record to modify
+   *
+   * @param fieldName
+   *        The field name of the record to modify
+   *
+   * @param newValue
+   *        New value of given field
+   *
+   * @returns a `DATA_MODIFY` action for this instance with the following properties:
+   * - payload: {id: string, field: string, newValue: string}
+   */
+  @uiSdlActionCreator(actionType='DATA_MODIFY')
+  modifyDataAction: function(id: string,
+                             itemId: string,
+                             fieldName: !string,
+                             newValue: !string): !UiSdlDataModifyAction ts-client
+
+  /**
+   * Trigger to cancel change of records from the data source
+   *
+   * @param id
+   *            Id of the component.
+   * @param loadOriginalData
+   *        Whether to load original data into modified data.
+   * @returns a `CHANGE_CANCEL` action
+   */
+  @uiSdlActionCreator(actionType='CHANGE_CANCEL')
+  cancelChangeAction: member function(id: string, loadOriginalData: boolean): !UiSdlChangeCancelAction ts-client
+
+  /**
+   * Returns an object containing this data source's data plus any modifications.
+   * It will be merged into the props of React components that
+   * include a reference to this data source in their `data` config
+   * @param id
+   *        Id of the component.
+   * @param state
+   *        current redux state
+   * @return an object for the metadata of the dataSource
+   */
+  mapStateToData: private member function(id: string, state: !UiSdlReduxState): !UiSdlReduxState ts-client
+
+  /**
+   * Returns an object containing this data source's data without any modifications.
+   * It will be merged into the props of React components that
+   * include a reference to this data source in their `dataOriginal` config
+   * @param id
+   *           Id of the data source.
+   * @param state
+   *        current redux state
+   * @return an object for the metadata of the dataSource
+   */
+  mapStateToOriginalData: private member function(id: !string, state: !UiSdlReduxState): !UiSdlReduxState ts-client
+
+  /**
+   * Returns an object containing this data source's metadata.
+   * It will be merged into the props of React components that
+   * include a reference to this data source in their `dataSourceMetadata` config
+   * @param id
+   *           Id of the data source.
+   * @param state
+   *        current redux state
+   * @return an object for the metadata of the dataSource
+   */
+  mapStateToMetadata: private member function(id: !string, state: !UiSdlReduxState): !UiSdlReduxState ts-client
+
+  /**
+   * Returns an array containing data items that have been added during the page lifecycle.
+   * It will be merged into the props of React components that
+   * include a reference to this data source in their `dataSourceMetadata` config
+   * @param state
+   *        current redux state
+   * @return an object for the metadata of the dataSource
+   */
+  mapStateToDataAdditions: private member function(state: !UiSdlReduxState): any ts-client
+
+  /**
+   * Sets data in the state.  Depending on the action sets it in modified or original slice of redux state
+   */
+  @uiSdlReducer(actionType='DATA_SET')
+  dataSetEffect: private member function(state: !UiSdlReduxState,
+                                         action: !UiSdlDataSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Set new error message to state
+   */
+  @uiSdlReducer(actionType='PERSIST_CHANGE_ERROR_UPDATE')
+  persistChangeErrorUpdateEffect: private member function(state: !UiSdlReduxState,
+                                                          action: !UiSdlPersistChangeErrorUpdateAction)
+                                                   : !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `LOADED_DATA_HANDLE` and performs side effect on new loaded data.
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='LOADED_DATA_HANDLE')
+  loadedDataHandleReducer: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlLoadedDataHandleAction): UiSdlReduxState ts-client
+
+  /**
+   * Sets the received data into the data source state
+   */
+  @uiSdlReducer(actionType='DATA_RECEIVE')
+  dataReceiveEffect: private member function(state: !UiSdlReduxState,
+                                             action: !UiSdlDataReceiveAction): !UiSdlReduxState ts-client
+
+
+  /**
+   * Sets the received error into the data source state
+   */
+  @uiSdlReducer(actionType='ERROR_RECEIVE')
+  errorReceiveEffect: private member function(state: !UiSdlReduxState,
+                                             action: !UiSdlErrorReceiveAction): !UiSdlReduxState ts-client
+
+  /**
+   * Deeply merges the passed arguments.
+   */
+  @uiSdlReducer(actionType='ARGUMENTS_MERGE')
+  argumentsMergeEffect: private member function(state: !UiSdlReduxState,
+                                                action: !UiSdlArgumentsMergeAction): !UiSdlReduxState ts-client
+
+  /**
+   * Update dataSource data type.
+   */
+  @uiSdlReducer(actionType='DATA_TYPE_UPDATE')
+  dataTypeUpdateEffect: private member function(state: !UiSdlReduxState,
+                                                action: !UiSdlDataTypeUpdateAction): !UiSdlReduxState ts-client
+
+  /**
+   * Update dataSource data config.
+   */
+  @uiSdlReducer(actionType='DATA_CONFIG_UPDATE')
+  dataConfigUpdateEffect: private member function(state: !UiSdlReduxState,
+                                                  action: !UiSdlDataConfigUpdateAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `DATA_DELETE` and updates modified data and {@link deletions}
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='DATA_DELETE')
+  dataDeleteReducer: private member function(state: !UiSdlReduxState,
+                                             action: !UiSdlDataDeleteAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `DATA_ADD` and updates modified data and {@link additions}
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='DATA_ADD')
+  dataAddEffect: private member function(state: !UiSdlReduxState,
+                                         action: !UiSdlDataAddAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `DATA_MODIFY` and updates modified data and {@link edits}
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='DATA_MODIFY')
+  dataModifyEffect: private member function(state: !UiSdlReduxState,
+                                            action: !UiSdlDataModifyAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `CHANGE_CANCEL` and reset modified data and {@link edits} and {@link deletions}
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='CHANGE_CANCEL')
+  changeCancelEffect: private member function(state: !UiSdlReduxState,
+                                              action: !UiSdlChangeCancelAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns an RxJS ajax observable for a particular server side API.
+   * @param siteId
+   *           The site id for which to retrieve the tunnel configuration.
+   * @param state
+   *           Redux state
+   * @param typeName
+   *           the action type
+   * @param actionName
+   *           the action name
+   * @param actionArguments
+   *           the action arguments
+   * @param timeoutSecs
+   *            the number of seconds before the tunneled request will timeout
+   * @param tunnelConfiguration
+   *           The optional tunnel configuration to provide.  If provided this will take precedence over the one found
+   *            from the {@link UiSdlSite} matching the {#siteId} param
+   *
+   * @return an ajax UiSdlObservable that resolves to the request response
+   * @see https://github.com/Reactive-Extensions/RxJS-DOM/blob/master/doc/operators/ajax.md#returns
+   */
+  tunneledAjax: member function(siteId: string,
+                                state: !UiSdlReduxState,
+                                typeName: string,
+                                actionName: string,
+                                actionArguments: map<string, any>,
+                                timeoutSecs: int,
+                                tunnelConfiguration: UiSdlTunnelConfiguration): !UiSdlObservable<any> ts-client
+
+  /**
+   * Returns an RxJS ajax observable for a particular server side API.
+   * @param typeName the action type
+   * @param actionName the action name
+   * @param actionArguments the action arguments
+   * @param tunnelConfiguration the optional tunnelConfiguration
+   *
+   * @return an ajax UiSdlObservable that resolves to the request response
+   * @see https://github.com/Reactive-Extensions/RxJS-DOM/blob/master/doc/operators/ajax.md#returns
+   */
+  ajax: private function(typeName: string,
+                         actionName: string,
+                         actionArguments: map<string, any>,
+                         tunnelConfiguration: UiSdlTunnelConfiguration): !UiSdlObservable<any> ts-client
+
+  /**
+   * Listens for actions of type 'DATA_RECEIVE' and triggers an action with type "DATA_LOADED".
+   *
+   * @param actionStream A stream of actions of this AsyncEffect actionType
+   * @param stateStream An observable that emits the application state
+   * @return an action stream
+   */
+  @uiSdlEpic(actionType='DATA_RECEIVE')
+  dataReceiveEpic: private member function(actionStream: !UiSdlActionsObservable,
+                                           stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+}

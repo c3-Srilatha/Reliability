@@ -1,0 +1,196 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to access GitHub through REST.
+ */
+type GitHubRestApi mixes SourceControlRestApi<GitHub> {
+
+  sourceControlType: ~ = GITHUB
+
+  /**
+   * Name of organization.
+   */
+  organizationName: string
+
+  /**
+   * Name of organization and sourceControlRepoName joined by a slash (e.g c3-e/c3server)
+   */
+  orgWithSrcCtrlRepoName: string
+
+  /**
+   * Sets repoUrl, sourceControlRepoName, organizationName, and orgWithSrcCtrlRepoName and returns the updated instance.
+   */
+  configureWithRepoUrl: ~ js-server
+
+  /**
+   * Use the GitHub token to generate the basic authentication string for REST calls
+   */
+  getAuthFromToken: ~ js-server
+
+  /**
+   * Get the GitHub token from the basic authentication string for REST calls
+   */
+  getTokenFromAuth: ~ js-server | java
+
+  /**
+   * Validate `token` for appropriate permissions to function well in C3 IDS.
+   * Will throw exception on failure.
+   */
+  validateToken: ~ js-server
+
+  /**
+   * Return the content of the file.
+   */
+  getFileContent: ~ js-server
+
+  /**
+   * Gets all the items (files and folders that are direct children) of the specified folder path.
+   */
+  getItemsInFolder: ~ js-server
+
+  /**
+   * Checks if branch name already exists.
+   */
+  isBranchPresent: ~ js-server
+
+  /**
+   * Creates a branch off the given branch.
+   */
+  createBranchFromSrcBranch: ~ js-server
+
+  /**
+   * Creates a branch from the given sha.
+   */
+  createBranchFromSha: ~ js-server
+
+  /**
+   * Create a pull request
+   */
+  createPullRequest: ~ js-server
+
+  /**
+   * Decline a pull request
+   */
+  declinePullRequest: ~ js-server
+
+  /**
+   * Delete the branch.
+   */
+  deleteBranch: ~ js-server
+
+  /**
+   * Returns the https url to the UI of the source control system for the specified branch name.
+   */
+  getBranchUrl: ~ js-server
+
+  /**
+   * Returns all commit information under the queried repository.
+   */
+  getCommits: ~ js-server
+
+  /**
+   * Returns information for a single commit in the queried repository for the specified SHA.
+   */
+  getCommitDetails: ~ js-server
+
+  /**
+   * Returns the url for a single commit for the specified SHA.
+   */
+  getCommitUrl: ~ js-server
+
+  /**
+   * Returns the number of commits the head branch is ahead of the base branch, or compares the two SHAs
+   */
+  getCommitsAheadCount: ~ js-server
+
+  /**
+   * Posts a status to a commit.
+   */
+  postCommitStatus: ~ js-server
+
+  /**
+   * This function creates content on a branch
+   */
+  createContent: ~ js-server
+
+  /**
+   * This function updates content on a branch
+   */
+  updateContent: ~ js-server
+
+  /**
+   * This function compares the HEAD of the head branch against the base branch, or compares two SHAs.
+   */
+  compare: ~ js-server
+
+  /**
+   * This function performs a merge of one branch into another without creating a pull request.
+   */
+  merge: ~ js-server
+
+  /**
+   * Reset target branch to same sha as source branch.
+   */
+  reset: ~ js-server
+
+  /**
+   * Returns the source control system username for the user invoking this function
+   */
+  getMyUsername: ~ js-server
+
+  /**
+   * Checks the status of a pull request
+   */
+  getPullRequest: ~ js-server
+
+  /**
+   * Get all the open pull requests with their head commit
+   */
+  getOpenPullRequests: ~ js-server
+
+  /**
+   * Updates a given reference to the provided sha.
+   */
+  updateReferenceToSha: ~ js-server
+
+  /**
+   * Gets the correct rest url endpoint for the given source system
+   */
+  getRestUrl: ~ js-server
+
+  /**
+   * Gets the {@link SourceControlBranch} for the provided branch name
+   */
+  branch: ~ js-server
+
+  /**
+   * Gets all the {@link SourceControlBranch}s
+   */
+  branches: ~ js-server
+
+  /**
+   * Get all commit statuses for a ref
+   */
+  commitStatuses: member function(ref: !string): [GitHubCommitStatus] js-server
+
+  /**
+   * Download a repository to the C3 File System.
+   */
+  downloadRepository: ~ js-server
+
+  /**
+   * get list of {@link SourceControlRepository}s
+   */
+  repositories: ~ js-server
+
+  /**
+   * check if the token and url on {@link SourceControlRestApi#restInst} are valid, throws otherwise
+   */
+  validateConfigTokenAndUrl: ~ js-server
+}

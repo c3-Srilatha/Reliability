@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Context for {@link MlModel.HealthCalc.Job} execution and consequently {@link MlModel.HealthCalc.Operation}.
+ * By default, this type only exposes a {@link #calcTime} that specifies the reference time for which the model health is to
+ * be calculated.
+ * If a developer wishes to add additional application-specific context, then they can extend this type and add additional
+ * fields. After that, they need only pass this to their job and use the fields from within their implementation of
+ * {@link MlModel.HealthCalc.Operation#calculateHealth}.
+ */
+@beta
+type MlModel.HealthCalc.Context {
+
+  /**
+   * Represents the start time of an execution of a {@link MlModel.HealthCalc.Job}. It is the reference time for which
+   * the model health is to be calculated.
+   * This field is dynamically populated during execution of {@link MlModel.HealthCalc.Job}.
+   * If user needs to provide a `calcTime` for use cases such as reproducing results of prior execution,
+   * it is recommended that users provide {@link MlModel.HealthCalc.Context} for {@link MlModel.HealthCalc.Job#start}
+   * with appropriate `calcTime`.
+   */
+  calcTime: !datetime
+}

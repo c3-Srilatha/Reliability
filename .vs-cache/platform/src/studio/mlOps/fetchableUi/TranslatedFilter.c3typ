@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A representation of a translated filter string - used when needing to translate between a {@link FetchSpec#filter} that targets a
+ * UI data model and one that targets the true backend data model (ex: MlModelUi.fetch vs MlModel.fetch)
+ * {@see TranslatedFetchSpec}
+ * {@see TranslatedInclude}
+ */
+type TranslatedFilter {
+
+  /**
+   * The translated filter that can be applied to the backend data model (ex: MlModel)
+   */
+  filter: string
+
+  /**
+   * Additional filtering information that needs to be applied AFTER the true fetch has been applied.
+   * This generally comes into consideration when the UI supports a filtering that is not immediately
+   * appliable through the DB engine (ex: needs to be called as member functions on the instance)
+   */
+  additionalFilter: map<string, json>
+
+  /**
+   * Additional include strings that need to be included to satisfy any post fetch filtering.
+   */
+  additionalInclude: [string]
+}

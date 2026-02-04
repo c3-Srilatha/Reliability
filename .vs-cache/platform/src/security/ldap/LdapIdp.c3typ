@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type implements the authentication request and login and logout redirect endpoints for LDAP
+ * authentication flow.
+ */
+type LdapIdp mixes IdentityProvider<LdapIdp.Config> {
+
+  /**
+   * All the groups found for the user on the ldap server
+   * @param userId - id of user whose groups will be found
+   * @param configId - {@link LdapIdp.Config} id for server information
+   * @return list of Ldap group ids
+   */
+  groupIds: private function(userId: !string, userPath: !string, configId: !string): [string]
+
+  /**
+   * Clears ldap server connections and trustStore associated with the specified {@link LdapIdp.Config} id.
+   */
+  resetConnectionPool: function(configId: !string)
+}

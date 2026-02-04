@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single logical human being.
+ *
+ * Human persons
+ */
+entity type Person extends Party type key 'PER' {
+
+  /**
+   * Given name.
+   */
+  firstName: string
+
+  /**
+   * Surname.
+   */
+  lastName: string
+
+  /**
+   * Country where the person was born.
+   */
+  countryOfBirth: Country
+
+  /**
+   * Person's nationalities.
+   */
+  nationalities: [Country] schema suffix 'NA'
+
+  /**
+   * Person's current address.
+   */
+  currentAddress: InlineAddress schema suffix 'CA'
+
+  /**
+   * The list of {@link PersonOrganizationRelation}s.
+   */
+  organizationRelations: [PersonOrganizationRelation](from)
+
+  /**
+   * All contacts for the person.
+   *
+   * FK references FROM parents
+   */
+  contact: Contact(party)
+
+  /**
+   * Date person registered on the C3 Portal (and created User row).
+   */
+  registrationDate: datetime
+
+  /**
+   * Related login user accounts for this person
+   */
+  userMapping: [PersonUser](person)
+
+  /**
+   * The member.
+   */
+  member: Member
+
+  /**
+   * Full name: "<first> <last>"
+   */
+  name: ~ = concat(firstName , ' ' , lastName)
+}

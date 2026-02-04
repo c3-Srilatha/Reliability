@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Code analysis metric that identifies FIXMEs and TODOs that haven't been removed from code
+ * when analyzing a PR with those tickets in the title.
+ */
+type BaseCodeAnalysis.Metric.TicketMentionCount mixes BaseCodeAnalysis.Metric {
+
+  calculateResults: ~
+
+  /**
+   * Function that search js comment string for ticket mentions.
+   *
+   * @param line
+   *           The line to search for unticketed FIXMEs/TODOs in.
+   * @param lineNumber
+   *           The line number associated with this line.
+   * @param includeCommentIdentifier
+   *           Boolean to indicate whether the regex should check for comment string identifiers.
+   * @param ticketIds
+   *           The list of ticket IDs to find mentions for.
+   * @return A message is this line includes a FIXME or unticketed TODO. Null otherwise.
+   */
+  searchJsDocForTicketMentions: inline function(line: string,
+                                                lineNumber: int,
+                                                includeCommentIdentifier: boolean,
+                                                ticketIds: [string]): BaseCodeAnalysis.Metric.Message js-codeanalysis-node
+
+  /**
+   * Function that traverses ECMAScript files to search for ticket mentions in the comment strings.
+   *
+   * @param fileSpecs
+   *           The file specs to search for ticket mentions in.
+   * @param ticketIds
+   *           The list of ticket IDs to find mentions for.
+   * @return The results of the metric computation.
+   */
+  searchJsFileTicketMentions: inline function(fileSpecs: [BaseCodeAnalysis.FileSpec], ticketIds: [string]): [BaseCodeAnalysis.Metric.Result] js-codeanalysis-node
+
+  /**
+   * Function that traverses c3 Type files to search for ticket mentions in the comment strings.
+   *
+   * @param fileSpecs
+   *           The file specs to search for ticket mentions in.
+   * @param ticketIds
+   *           The list of ticket IDs to find mentions for.
+   * @return The results of the metric computation.
+   */
+  searchTypeFileTicketMentions: inline function(fileSpecs: [BaseCodeAnalysis.FileSpec], ticketIds: [string]): [BaseCodeAnalysis.Metric.Result] js-codeanalysis-node
+
+  /**
+   * Function that traverses Python files to search for ticket mentions in the comment strings.
+   *
+   * @param fileSpecs
+   *           The file specs to search for ticket mentions in.
+   * @param ticketIds
+   *           The list of ticket IDs to find mentions for.
+   * @return The results of the metric computation.
+   */
+  searchPyFileTicketMentions: inline function(fileSpecs: [BaseCodeAnalysis.FileSpec], ticketIds: [string]): [BaseCodeAnalysis.Metric.Result] py-codeanalysis
+}

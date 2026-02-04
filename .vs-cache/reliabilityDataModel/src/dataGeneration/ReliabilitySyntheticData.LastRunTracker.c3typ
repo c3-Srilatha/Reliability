@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Basic tracker for incremental data loading / data science {@link Workflow}s to indicate
+ * how recently something was successfully run. This does not necessarily correspond to when
+ * a job was started / completed. It indicates the last aligned {@link Interval} during which
+ * a job was started and subsequently succeeded.
+ */
+@db(unique=['name'])
+extendable entity type ReliabilitySyntheticData.LastRunTracker {
+
+  name: !~
+
+  /**
+   * The timestamp of the last successful run of a given job.
+   */
+  lastRun: utc datetime
+
+  /**
+   * Retrieve the tracker with the given `name`.
+   *
+   * @param name
+   *        The name of the tracker to retrieve.
+   * @param failIfInvalid
+   *        If true, throw an error if a tracker doesn't exist. If false, create a new
+   *        tracker with the given `name` and no `lastRun` timestamp if one doesn't exist.
+   * @return The tracker with the given `name`.
+   */
+  forName: function(name: !string, failIfInvalid: boolean): !mixing ReliabilitySyntheticData.LastRunTracker js-rhino
+
+  /**
+   * Persist the `lastRun` timestamp on the current tracker and return the updated instance.
+   *
+   * @param lastRun
+   *        The timestamp to set as the last run time.
+   * @return The updated tracker instance.
+   */
+  setLastRun: member function(lastRun: !datetime): !mixing ReliabilitySyntheticData.LastRunTracker js-rhino
+
+  /**
+   * Calls #forName but returns just the #lastRun, not the entire tracker.
+   *
+   * @param name
+   *        The name of the tracker to retrieve.
+   * @param failIfInvalid
+   *        If true, throw an error if a tracker doesn't exist. If false, create a new
+   *        tracker with the given `name` and no `lastRun` timestamp if one doesn't exist.
+   * @return The last run timestamp for the tracker.
+   */
+  lastRunForName: function(name: !string, failIfInvalid: boolean): datetime js-rhino
+
+  /**
+   * Calls #forName, then updates the #lastRun timestamp and returns the updated tracker.
+   *
+   * @param name
+   *        The name of the tracker to retrieve.
+   * @param lastRun
+   *        The timestamp to set as the last run time.
+   * @param failIfInvalid
+   *        If true, throw an error if a tracker doesn't exist. If false, create a new
+   *        tracker with the given `name` and no `lastRun` timestamp if one doesn't exist.
+   * @return The updated tracker instance.
+   */
+  setLastRunForName: function(
+    name: !string,
+    lastRun: !datetime,
+    failIfInvalid: boolean
+  ): !mixing ReliabilitySyntheticData.LastRunTracker js-rhino
+}

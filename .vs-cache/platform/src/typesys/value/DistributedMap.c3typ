@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is a base type that every type of Distributed Map will mix, such as Redis, EhCache, and so on. It provides functions
+ * and fields common to every type of Distributed Map.
+ */
+type DistributedMap<K, V> {
+
+  /**
+   * Get a value from the map.
+   *
+   * @param key
+   *            the name of the key
+   */
+  get: abstract member function(key: !K): V
+
+  /**
+   * Put a value in the map for the given key
+   *
+   * @param key
+   *            the name of the key
+   * @param value
+   *            the value associated with the key
+   */
+  put: abstract member function(key: !K, value: !V)
+
+  /**
+   * Remove the value for a given key from the map.
+   *
+   * @param key
+   *            the name of the key
+   */
+  remove: abstract member function(key: !K)
+
+  /**
+   * Get the number of key-value pairs in the map.
+   */
+  size: abstract member function(): !int
+
+  /**
+   * Iterate through the map to find a set of keys matching the filter pattern.
+   *
+   * @param filter
+   *            filter expression to apply to qualify matching objs.
+   * @param offset
+   *            the index to start with when iterating entries in the map.
+   * @param limit
+   *            the number of elements returned at every SCAN call
+   */
+  scan: abstract member function(filter: string, offset: !int, limit: int = 10): !stream<K>
+}

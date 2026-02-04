@@ -1,0 +1,110 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generic helper functions used for {@link BaseCanonicalTester}.
+ */
+private type BaseCanonicalTesterHL mixes Value {
+
+  /**
+   * Get all relevant fields from the provided objects.
+   * - Objects must be all be of the same type
+   * - Returned fields may be serialized as a csv header
+   * - Returned fields are readable from {@link Obj#fieldValueAtPath}
+   * - Only populated values from provided objects are included
+   *
+   * @param type
+   *            The type that you will do the comparison on for relevant fields to compare.
+   * @param objs
+   *            The objects that you will do the comparison on for relevant fields.
+   * @param ignoreFields
+   *            The fields to ignore when comparing the objects.
+   * @return
+   *            The relevant fields to compare.
+   */
+  getAllRelevantFields: function(type: !Type, objs: ![any], ignoreFields: [string]): [string] js-server
+
+  /**
+   * Transform objects to a serialized csv string.
+   */
+  objsToCsvString: function(type: !Type, objs: ![any]): string js-server
+
+  /**
+   * Construct primary key for object based on key fields.
+   *
+   * @param obj
+   *           The object to construct the primary key for.
+   * @param keyFields
+   *           The key fields to use to construct the primary key.
+   */
+  constructObjPrimaryKey: function(obj: !any, keyFields: ![string]): string js-server
+
+  /**
+   * Helper function to check if two values are equal.
+   * Handles edge cases for specific type checks
+   *
+   * @param value1
+   *            The first value to compare.
+   * @param value2
+   *            The second value to compare.
+   * @return
+   *            True if the values are equal, false otherwise.
+   */
+  areValuesEqual: function(value1: any, value2: any): !boolean js-server
+
+  /**
+   * Gets all target Types for the {@link Canonical} mixing {@link Persistable}.
+   * If a {@link Canonical} transforms to another {@link Canonical} Type, we will
+   * BFS the tree of target Types to find all leaf node persistable Types.
+   *
+   * @param canonicalType
+   *           The {@link Canonical} Type to get all persistable target Types for.
+   * @return All target Types for the {@link Canonical} mixing {@link Persistable}.
+   */
+  getAllPersistableTargetTypesForCanonical: function(canonicalType: !Type): [Type] js-server
+
+  /**
+   * Returns a match score for the similarity between two types based on their fields.
+   * This is a private helper function meant to support Source to Canonical mappings for transforms.
+   *
+   * @param objOne
+   *            The first canonical or source type that you want to compare to. Order does not matter.
+   * @param objTwo
+   *            The second canonical or source type that you want to compare to. Order does not matter.
+   * @return
+   *            A double value indicating the total number of matching fields between the two types.
+   */
+  calculateMatchScore: private function(objOne: !any, objTwo: !any): double js-server
+
+  /**
+   * Returns a list of objects and attempts to order them based on a similar matching from {@link #calculateMatchScore}
+   * The index of each array attempts to indicate the most likely match between the two arrays.
+   *
+   * @param arrayOne
+   *            The first object array that you want to compare to. Order does not matter.
+   * @param arrayTwo
+   *            The second object array that you want to compare to. Order does not matter.
+   * @return
+   *            An ordered array of objects - the index of each array attempts to indicate the
+   *            most likely match between the two arrays.
+   */
+  alignArrays: private function(arrayOne: !?[any], arrayTwo: !?[any]): [any] js-server
+
+  /**
+   * Returns a correct JS JSON object from a malformed JSON string.
+   * This is a private function that seeks to correct platform divergences with JSON parsing and
+   * issues with transformation inconsistency.  Reference PLAT-48275
+   *
+   * @param obj
+   *            A JSON object that you want to correct.
+   * @return
+   *            A corrected JSON object suitable for use in making a c3 object.
+   */
+  fixMalformedJsonString: private function(obj: json): json js-server
+}

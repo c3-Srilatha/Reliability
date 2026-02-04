@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Strongly typed access to information about our pod and container exposed via Kubernetes Downward API. This is how
+ * a C3 node get information about its own Kubernetes environment. When individual pieces of information are projected
+ * with the Downward API, we expect that their path relative to the mount point matches the manifest YAML structure.
+ * For example, we expect a pod's name to be projected as a &lt;mountPath>/metadata/name file.
+ * For a full list of exposed items, see the get methods. More can be added.
+ */
+type K8sDownwardApiAccess {
+
+  /**
+   * The name of the root directory used to project Downward API information into the container. It is declared
+   * in the pod metadata as volumeMount.mountPath for the volume projecting the downward API. Conventionally
+   * "/etc/podinfo". No check is performed when the constructor is evaluated, only when the instance is queried.
+   */
+  mountPath: !string
+
+  /**
+   * Gets the pod name or null if the pod information is not projected (file does not exist, cannot be read, etc).
+   * If the information cannot be read, a warning will be issued in the logs.
+   * @return string
+   */
+  podName: member function(): string
+
+  /**
+   * Gets the namespace the pod was deployed into or null if the pod information is not projected (file does not
+   * exist, cannot be read, etc). If the information cannot be read, a warning will be issued in the logs.
+   * @return string
+   */
+  namespace: member function(): string
+
+  /**
+   * Gets the pod memory limit in Gb or null if the pod information is not projected (file does not
+   * exist, cannot be read, etc). If the information cannot be read, a warning will be issued in the logs.
+   * @return double
+   */
+  memoryLimitGb: member function(): double
+
+  /**
+   * Gets the pod cpu number of cores or null if the pod information is not projected (file does not
+   * exist, cannot be read, etc). If the information cannot be read, a warning will be issued in the logs.
+   * @return double
+   */
+  cpuCoreCount: member function(): double
+}

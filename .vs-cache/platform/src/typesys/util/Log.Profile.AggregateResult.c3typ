@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Aggregated result for Log.Profile#aggregateActions.
+ */
+type Log.Profile.AggregateResult {
+
+  /**
+   * Type name for the action.
+   */
+  typeName: !string
+
+  /**
+   * Method name for the action.
+   */
+  actionName: !string
+
+  /**
+   * Number of times the action was called.
+   */
+  count: !int
+
+  /**
+   * Sum of time spent on the action, across all calls, in seconds.
+   */
+  sumTime: !float
+
+  /**
+   * Average time spent on the action, across all calls, in seconds.
+   */
+  avgTime: !float
+
+  /*
+   * 95th percentile time spent on the action, across all calls.
+   * If there are 100 calls, this is the time spent on the 5th-longest call.
+   * If there are 5 calls, this is the time spent on the longest call.
+   */
+  pct95: !float
+
+  // 99th percentile time spent on the action, across all calls.
+  pct99: !float
+
+  // Time spent on the longest call.
+  max: !float
+
+  // Time spent on the shortest call. Note that if an action is faster than 25ms, it will not appear in the logs.
+  min: !float
+}

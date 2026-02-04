@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type DatastoreConfig<CREDS: DatastoreCredentials> mixes Config, Named {
+
+  /**
+   * Physical pool for connections
+   */
+  connectionPool: DatastoreConnectionPoolConfig<DatastoreConfig<CREDS>>
+
+  /**
+   * How to access the data in the datastore.  Override to provide things such as endpoint, username, password,
+   * etc. as appropriate.
+   */
+  credentials: CREDS
+
+  /**
+   * C3 Cloud Identifier for backing infrastructure that hosts the Datastore ex: {@link PostgresDb#id}, {@link CassandraDb#id}
+   */
+  cloudId: string serialized CloudId
+
+  /**
+   * True if the datastore is disabled (e.g. no data access is permitted).
+   */
+  disabled: boolean
+
+  /**
+   * True if the datastore is read only, i.e. can only be queried.
+   */
+  readOnly: boolean
+
+  /**
+   * True if the datastore is external, i.e. its database schema can not be altered.
+   */
+  external: boolean
+
+  /**
+   * True if every environment should have their own {@link Cassandra.Keyspace}. This has no effect for
+   * any database other than Cassandra.
+   */
+  // TODO PLAT-126773: Refactor perTenant to be used for other datastores
+  perTenant: boolean
+
+  /**
+   * Description for the dataStore.
+   */
+  description: string
+
+  validate: ~
+
+  /**
+   * Can be overridden to allow a requested read only connection to be shared by other threads/requests.
+   */
+  canShareReadConnection: optional member function(): boolean
+
+  /**
+   * True if the db is shared with other apps or it is dedicated.
+   */
+  // TODO PLAT-126774: Refactor dedicated to become property
+  @beta
+  dedicated: private boolean
+
+  poolConfigType:  private inline member function(): !Type
+  credentialsType: private inline member function(): !Type
+
+  // The following are unused - Backward compatibility only
+  @deprecated(finalVersion='7', details='Ignored')
+  shareReadConnection: boolean
+
+  @deprecated(finalVersion='7', details='Ignored')
+  sharedReadThreshold: !int
+
+  @deprecated(finalVersion='7', details='Ignored')
+  readConnectionPool: DatastoreConnectionPoolConfig<DatastoreConfig<CREDS>>
+
+  @deprecated(finalVersion='7', details='Ignored')
+  writeConnectionPool: DatastoreConnectionPoolConfig<DatastoreConfig<CREDS>>
+}

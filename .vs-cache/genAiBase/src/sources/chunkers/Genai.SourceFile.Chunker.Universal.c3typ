@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link Genai.SourceFile.Chunker} that can handle:
+ *   * pdfs
+ *   * notebooks (ipynb)
+ *   * c3docs
+ *   * c3typs
+ *   * c3 documentation md files
+ * It also (optionally) performs post-processing on the {@link Genai.SourcePassage}s according to the
+ * configs on {@link Genai.SourceFile.Chunker.UniversalChunker.Config}
+ */
+type Genai.SourceFile.Chunker.Universal mixes Genai.SourceFile.Chunker {
+  doChunkFilesBatch: ~ py-chunker
+
+  /**
+   * Helper to determine what language code the content of a file from `localPath` belongs to.
+   * The input is given as a `localPath` of a file, `fileExt` of a file and `nLinesToRead` to specify how many
+   * lines to read, with a default of 5 lines. The first few lines are passed through the {#readFirstNLines}
+   * method to get the content.
+   * Afterwards, the language code is determined based on the content. If the content is empty, it returns empty string.
+   * If the content is not empty, it returns the language code of the content.
+   *
+   * @param localPath
+   *    The required string path to the file to read.
+   * @param fileExt
+   *    The required string file extension of the file.
+   * @param nLinesToRead
+   *    The number of lines to read from the file.
+   * @return the required string indicating what language code the content belongs to.
+   */
+  detectLanguage: function(localPath: !string, fileExt: !string, nLinesToRead: int = 5): !string py
+}

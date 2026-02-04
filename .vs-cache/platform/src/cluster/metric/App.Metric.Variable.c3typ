@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines a variable in a metric.
+ */
+@typeScript
+@beta
+private extendable entity type App.Metric.Variable {
+
+  /**
+   * The display name of the variable.
+   */
+  name: string
+
+  /**
+   * A description of the variable.
+   */
+  description: string
+
+  /**
+   * Whether the consumer is required to supply a value to the {@link App.Metric.EvaluateSpec#variables}
+   * when using this metric.
+   * If false, a {@link #defaultValue} should be specified.
+   */
+  required: boolean
+
+  /**
+   * An optional value that is used when the user when a value is not specified in {@link App.Metric.EvaluateSpec}
+   */
+  defaultValue: ?string
+
+  /**
+   * Every variable value must be represented as a string.
+   * When true, variable values passed into `toValueString` that represent empty values are set as `""` when set in {@link App.Metric.EvaluateSpec#variables}.
+   * When false, variable values passed into `toValueString` that represent empty values are omitted from {@link App.Metric.EvaluateSpec#variables}.
+   */
+  passthroughEmpty: boolean
+
+  /**
+   * Converts input field value to a string representation that can be used as value in {@link App.Metric.QuerySpec#variables}.
+   * When return value is `undefined`, the value will be omitted.
+   * `inputValue` structure assumes usage of C3 UI Framework.
+   */
+  toValueString: private function(variable: mixing App.Metric.Variable, inputValue: json): string ts-client
+
+  /**
+   * Converts an output of {@link #toValueString} back to its structured value (structure assumes usage of C3 UI Framework).
+   */
+  fromValueString: private function(variable: mixing App.Metric.Variable, stringValue: string): json ts-client
+
+  /**
+   * Basic implementation for `toInputField` that is not specific to any instance. Fills in the common fields. Assumes usage of C3 UI Framework.
+   */
+  _toInputFieldSetting: private function(variable: mixing App.Metric.Variable,
+                                         initialValue: json,
+                                         context: json): json ts-client
+
+  /**
+   * Returns an input field to represent the {@link App.Metric.Variable}. Assumes usage of C3 UI Framework.
+   */
+  toInputFieldSetting: private function(variable: mixing App.Metric.Variable,
+                                        initialValue: json,
+                                        context: json): json ts-client
+}

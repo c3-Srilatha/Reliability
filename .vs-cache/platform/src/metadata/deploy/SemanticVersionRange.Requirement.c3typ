@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of a comparator set as defined in {@link SemanticVersionRange}.
+ * Comparator sets are always represented as a pair of comparators so that version ranges are always represented in
+ * their simplest form.
+ *
+ * For example, `>3 <5 <4` is no different than `>3 < 4`.
+ */
+type SemanticVersionRange.Requirement {
+
+  /**
+   * The lower bound of this comparator set. For example `3.0.0-0` in `>=3.0.0-0 <4.0.0-0`.
+   */
+  lowerBound: SemanticVersion
+
+  /**
+   * The upper bound of this comparator set. For example `4.0.0-0` in `>=3.0.0-0 <4.0.0-0`.
+   */
+  upperBound: SemanticVersion
+
+  /**
+   * False if {@link #lowerBound} uses {@link SemanticVersionRange.Operation#GT}.
+   *
+   * True if {@link #lowerBound} uses {@link SemanticVersionRange.Operation#GTE}.
+   *
+   * Example:
+   * - `>3.0.0 <=4.0.0` -> `false`
+   * - `>=3.0.0-0 <4.0.0-0` -> `true`
+   */
+  lowerInclusive: boolean
+
+  /**
+   * False if {@link #lowerBound} uses {@link SemanticVersionRange.Operation#LT}.
+   *
+   * True if {@link #lowerBound} uses {@link SemanticVersionRange.Operation#LTE}.
+   *
+   * Example:
+   * - `>=3.0.0-0 <4.0.0-0` -> `false`
+   * - `>3.0.0 <=4.0.0` -> `true`
+   */
+  upperInclusive: boolean
+
+  /**
+   * Returns the intersection of this comparator set with another.
+   *
+   * Returns null if there is no intersection, ex `>=3.0.0 <=3.0.0` & `>=4.0.0 <=4.0.0`.
+   */
+  intersectionWith: inline member function(other: !SemanticVersionRange.Requirement): SemanticVersionRange.Requirement
+
+  /**
+   * Returns the union of this comparator set with another.
+   *
+   * If the comparator sets can be combined, will return an array with one entry, else an array with 2. For example:
+   * - `>=3.0.0-0 <=4.0.0 || >=4.0.0-0 <=5.0.0` -> [`>=3.0.0-0 <=5.0.0`]
+   * - `>=3.0.0-0 <=4.0.0 || >=7.0.0-0 <=7.0.0` -> [`>=3.0.0-0 <=4.0.0`, `>=7.0.0-0 <=7.0.0`]
+   */
+  unionWith: inline member function(other: !SemanticVersionRange.Requirement): [SemanticVersionRange.Requirement]
+}

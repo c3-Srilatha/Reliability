@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generic validation result type. This may be specialized by types that need to return additional info or used as-is
+ * by validation functions that simply return a set of issues.
+ */
+type ValidateResult mixes Result {
+
+  /**
+   * All issues discovered during validation. If this is empty, the object is valid (at least according to the checks
+   * performed by the requested validation).
+   */
+  issues: map<string, ValidationIssue>
+
+  /**
+   * Whether or not the object is valid (no issues were discovered).
+   */
+  isValid: inline member function(): boolean
+
+  /**
+   * Build a C3Error object from the validation issues. If there are multiple issues, a BatchError is produced.
+   */
+  toError: member function(): Error
+
+  /**
+   * Build an exception made from the validation issues. If there are no issues, this will throw a generic error.
+   */
+  throw: private member function()
+}

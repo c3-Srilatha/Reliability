@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to capture fields specific to k8s membership layer of App.NodePool in {@link App.NodePool.Config}
+ */
+@beta
+type App.NodePool.Config.K8sFields mixes App.NodePool.Config.K8sFields.AdminFields {
+
+  /**
+   * Specifies the max duration in seconds that the system will wait before forcefully terminating a node in this {@link App.NodePool}.
+   * This allows for graceful shutdown of processes running on the node.
+   * NOTE: The terminationGracePeriodSeconds will affect the time it takes for the node to scale down,
+   *       hence increasing it will slowdown upgrades, nodePool scale downs, restarts and other such operations.
+   * NOTE: For HardwareAvailability.LOW, this value won't be respected by the underline cloud provider.
+   */
+  terminationGracePeriodSeconds: int = 30
+
+  /**
+   * Setting this flag to true prevents eviction of the underlying infrastructure node by the cloud provider cluster autoscalers.
+   * Note: This is a powerful feature and should be used with caution. Setting this to true will incur additional costs
+   * and may lead to under-utilization of resources. This should only be used when the c3 node is required to run critical workloads.
+   */
+  doNotEvict: boolean
+}

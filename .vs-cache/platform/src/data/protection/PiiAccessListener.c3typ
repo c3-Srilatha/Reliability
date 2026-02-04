@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all PII (personally identifiable information) access notification listeners. Note that even of sub-type
+ * exists it is not enabled by default and needs to be explicitly enabled via #enable method.
+ *
+ * @see Ann.PII
+ * @see PiiAccessEvent
+ */
+abstract type PiiAccessListener<C: PiiAccessListenerConfig> mixes Configurable<C> {
+
+  /**
+   * Invoked some time "soon" after PII data is accessed. Note that this method should be idempotent and could be
+   * invoked more then once in case of failures.
+   */
+  notifyAccess: abstract function(piiType: !Type, events: [PiiAccessEvent])
+}

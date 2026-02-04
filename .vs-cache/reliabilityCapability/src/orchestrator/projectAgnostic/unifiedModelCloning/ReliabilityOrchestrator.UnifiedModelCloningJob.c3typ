@@ -1,0 +1,128 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link MlModel.Train.Job} that creates a {@link WorkflowExecutorRun} for cloning a model, based on a previously
+ * trained model, and new parameters, specified in {@link ReliabilityOrchestrator.UnifiedModelCloningJob.Spec}.
+ */
+type ReliabilityOrchestrator.UnifiedModelCloningJob mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  /**
+   * The {@link ReliabilityOrchestrator.UnifiedModelCloningJob.Spec} that contains the UI parameters for
+   * retraining the job.
+   */
+  spec: ReliabilityOrchestrator.UnifiedModelCloningJob.Spec
+
+  /**
+   * Creates a {@link Workflow} to retrain {@link ReliabilityMlModel}s.
+   */
+  createWorkflow: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  createAndStartWorkflow: ~ py
+
+  /**
+   * Helper function that builds a {@link ReliabilityMlDatasetPreparationSpec} based on the
+   * {@link ReliabilityOrchestrator.UnifiedModelCloningJob.Spec} and the {@link ReliabilityMlModel} that
+   * is being cloned.
+   *
+   * If the {@link ReliabilityMl.Project} associated with the {@link ReliabilityMlModel} is `Control Valves` then
+   * it will use #updateDatasetPreparationSpecForControlValves to update the spec.
+   *
+   * Otherwise, it will use #updateDatasetPreparationSpecForAgnostic to update the spec.
+   *
+   * @returns A {@link ReliabilityMlDatasetPreparationSpec} that can be used to run #runDatasetPreparationJob.
+   */
+  buildDatasetPreparationSpec: member function(): ReliabilityMlDatasetPreparationSpec py
+
+  /**
+   * Inner helper function to update the {@link ReliabilityMlDatasetPreparationSpec}.
+   * The mainly updated fields:
+   *
+   * - [featurePreparationSpec](ReliabilityMlFeaturePreparationSpec):
+   *   - [included](ReliabilityMlFeaturePreparationSpec#includeSensors) sensors.
+   *   - [excluded](ReliabilityMlFeaturePreparationSpec#excludeSensors) sensors.
+   * - [materializeStart](ReliabilityMlDatasetPreparationSpec#materializeStart).
+   * - [materializeEnd](ReliabilityMlDatasetPreparationSpec#materializeEnd).
+   * - [maskPreparationSpec](ReliabilityMlMaskPreparationSpec):
+   *   - [excludedTimeRanges](ReliabilityMlMaskPreparationSpec#excludeTimeRanges).
+   *   - [isAssetNotOperationalFeatureOverride](ReliabilityMlMaskPreparationSpec#isAssetNotOperationalFeatureOverride).
+   * - [trainValSplitSpec](ReliabilityMlTrainValSplitSpec):
+   *   - [trainStart](ReliabilityMlTrainValSplitSpec#trainStart).
+   *   - [trainEnd](ReliabilityMlTrainValSplitSpec#trainEnd).
+   *   - [valStart](ReliabilityMlTrainValSplitSpec#valStart).
+   *   - [valEnd](ReliabilityMlTrainValSplitSpec#valEnd).
+   *
+   * @param asset The {@link ReliabilityAsset} that the dataset preparation spec is being built for.
+   * @param previousSpec The previous {@link ReliabilityMlDatasetPreparationSpec} that is used as base.
+   *
+   * @returns A {@link ReliabilityMlDatasetPreparationSpec} that can be used to run #runDatasetPreparationJob.
+   */
+  updateDatasetPreparationSpecForAgnostic: private member function(
+    asset: !ReliabilityAsset,
+    previousSpec: !ReliabilityMlDatasetPreparationSpec): !ReliabilityMlDatasetPreparationSpec py
+
+  /**
+   * Inner helper function to update the {@link ReliabilityMlDatasetPreparationSpec} for the `Control Valves`
+   * {@link ReliabilityMl.Project}. It will update the spec with the following fields:
+   *
+   * - [maskPreparationSpec](ReliabilityMlMaskPreparationSpec):
+   *   - [isAssetNotOperationalFeatureOverride](ReliabilityMlMaskPreparationSpec#isAssetNotOperationalFeatureOverride).
+   *   - [algorithmicallyComputedTrainingMaskTechnique](PcaTrainingMaskTechnique)
+   *
+   * **NOTE**: This method calls #updateDatasetPreparationSpecForAgnostic to setup the general fields and then just
+   *           updates the spec for the remaining changes.
+   *
+   * @param asset The {@link ReliabilityAsset} that the dataset preparation spec is being built for.
+   * @param previousSpec The previous {@link ReliabilityMlDatasetPreparationSpec} that is used as base.
+   *
+   * @return A {@link ReliabilityMlDatasetPreparationSpec} that can be used to run #runDatasetPreparationJob.
+   */
+  updateDatasetPreparationSpecForControlValves: private member function(
+    asset: !ReliabilityAsset,
+    previousSpec: !ReliabilityMlDatasetPreparationSpec): !ReliabilityMlDatasetPreparationSpec py
+
+  /**
+   * Inner helper function to build a {@link ReliabilityAssetSensorAssociationSpec} to be able to
+   * call {@link ReliabilityAssetSensorAssociationSpec#createExclusionMaskFeature} for
+   * `isAssetNotOperationalFeatureOverride` {@link Feature} mask.
+   *
+   * @param asset The {@link ReliabilityAsset} that the dataset preparation spec is being built for.
+   * @param previousSpec The previous {@link ReliabilityMlDatasetPreparationSpec} that is used as base.
+   *
+   * @return A {@link ReliabilityAssetSensorAssociationSpec} with masking information.
+   */
+  buildSensorAssociationSpecForMaskGeneration: private member function(
+    asset: !ReliabilityAsset,
+    previousSpec: !ReliabilityMlDatasetPreparationSpec): !ReliabilityAssetSensorAssociationSpec py
+
+  /**
+   * Helper function to setup and start a {@link ReliabilityOrchestrator.DatasetPreparationJob} and use the
+   * {@link MlOperationRun} as a {@link Workflow.Nested.Action} to wait for.
+   *
+   * @param spec
+   *          The {@link ReliabilityMlDatasetPreparationSpec} to use for the dataset preparation job.
+   * @returns A {@link MlOperationRun} that can be used as a {@link Workflow.Nested.Action} to wait for the dataset
+   *          preparation job to complete.
+   */
+  runDatasetPreparationJob: member function(spec: !ReliabilityMlDatasetPreparationSpec): MlOperationRun<ReliabilityOrchestrator.DatasetPreparationJobRun> py
+
+  /**
+   * Helper function to setup and start a {@link MlModel.Train.Job} for the model training job and use the
+   * {@link MlOperationRun} as a {@link Workflow.Nested.Action} to wait for.
+   *
+   * @param datasetJobRun
+   *        The dataset to use for the model training job.
+   * @returns A {@link Workflow.Run} that can be used as a {@link Workflow.Nested.Action} to wait for the model
+   *         training job to complete.
+   */
+  runModelTrainingJob: member function(datasetJobRun: !ReliabilityOrchestrator.DatasetPreparationJobRun): Workflow.Run py
+}

@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='REQUIRED',
+       cloudFunc='lambda')
+type AwsLambdaFunc mixes AwsResource, AwsSecurityGroupsMember, AwsSubnetsMember, AwsIamRoleMember {
+
+  /**
+   * The runtime environment for the Lambda function.
+   */
+  runtime: string enum AwsLambdaRunTime
+
+  /**
+   * A short, user-defined function description.
+   */
+  description: string
+
+  /**
+   * The amount of memory, in MB, Lambda function is given.
+   */
+  memorySize: int = 128
+
+  /**
+   * The function execution time at which Lambda should terminate the function.
+   */
+  timeout: int = 3
+
+  /**
+   * The name of the function within the code, that AWS Lambda calls to begin execution
+   */
+  handler: string
+
+  /**
+   * The Https URL for downloading the function's .zip package from S3. However, the S3 bucket
+   * and Key information is encrypted in URL. Also, the Https URL contains security token
+   * that would expire in a few minutes. Each call of getResource() will return a different codeDownLoadUrl.
+   */
+  codeDownLoadUrl: string
+
+  /**
+   * The s3 URL that stores the function's .zip package. If provided, the Aws Lambda can directly upload package from
+   * the given url.
+   */
+  codeUrl: string
+
+  /**
+   * The function code to be uploaded from the partially applied action
+   */
+  code: PartiallyAppliedAction
+
+  /**
+   * codeHashVal records the hash value of the content in code. It is used in the upsert to determine whether the
+   * code content for the same function has been changed.
+   */
+  codeHashVal: int
+
+  /**
+   * If true, the code in Aws Lambda will make a restful call to the C3 action; otherwise, the code in the Aws Lambda
+   * will NOT call the C3 action.
+   */
+  c3CallBack: boolean = true
+
+  /**
+   * c3CallBackAuth contains the username and password for making c3CallBack.
+   * c3CallBackAuth = StrPair.make({fst:"user", snd:"pwd"})
+   */
+  c3CallBackAuth: StrPair
+
+  /**
+   * A number of policies allowing different AWS service to push events and invoke Aws Lambda function.
+   */
+  policies: [AwsLambdaPolicy]
+
+  /**
+   * The time stamp of the last time the function got updated.
+   */
+  lastModified: string
+
+  hasTags: ~
+}

@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type defines feedback provided by a user on a {@link ReliabilityMlModel}.
+ */
+entity extendable type ModelUserFeedback mixes UserInformation, TimedValue, FilterableByFacility schema name 'MUF' {
+
+  /**
+   * The (trained) model this feedback is for.
+   */
+  model: !ReliabilityMlModel
+
+  /**
+   * The category of feedback that the user selected.
+   */
+  category: string enum ModelUserFeedbackCategory
+
+  /**
+   * A suggestion as to what to do with the model in response to the feedback.
+   */
+  suggestion: string enum ModelUserFeedbackSuggestion
+
+  /**
+   * The validation status of the {@link ModelUserFeedback#model} at the time this {@link ModelUserFeedback} was created.
+   */
+  validationStatus: string enum ModelValidationStatus
+
+  /**
+   * Additional comments related to this feedback, possibly including a description of what might be the issue.
+   */
+  comment: string
+
+  /**
+   * Whether the feedback is meant specifically for training or not.
+   */
+  isTrainingFeedback: boolean = false
+
+  /**
+   * The method to be invoked after submitting Model Feedback Modal from UI
+   *
+   * @param formObject
+            The form object from the UI
+   * @param isTrainingFeedback
+            Whether the feedback is meant specifically for training or not.
+   *        Setting `isTrainingFeedback` to true will also populate {@link ModelUserFeedback#validationStatus}.
+   */
+  createModelUserFeedbackOnFormSubmit: function(formObject: !SubmitModelUserFeedbackSpec, isTrainingFeedback: boolean): ModelUserFeedback js-rhino
+
+  /**
+   * The method to create {@link ModelUserFeedback} for an alert
+   */
+  createModelUserFeedbackForAlert: function(formObject: json, alertId: string): ModelUserFeedback js-rhino
+
+  /**
+   * Method to create {@link ModelUserFeedback} for multiple alerts
+   *
+   * @param formObject
+   *        Config values to be used
+   *
+   * @param alertIds
+   *        Alert ids to get the model to be used with formObject values
+   *
+   * @return ObjList<ModelUserFeedback> for {@link ModelUserFeedback} objs created
+   */
+  createModelUserFeedbackForAlerts: function(formObject: json, alertIds: [string]): ObjList<ModelUserFeedback> js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["model.currentAssetRelations.from.facility"]
+}

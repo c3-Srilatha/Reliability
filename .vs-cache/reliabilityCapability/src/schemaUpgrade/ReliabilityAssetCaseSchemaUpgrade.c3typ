@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Ensures all the {@link ReliabilityAssetCase} have a {@link Facility} assigned to them.
+ * 1. For cases, which already have a {@link Facility}, keeps it the same.
+ * 2. For cases, whose {@link ReliabilityAssetCase#allAssets} have the same parent {@link Facility}, assigns that facility to the case.
+ * 3. For ambiguous cases which either don't have a {@link ReliabilityAssetCase#allAssets}
+ *    or {@link ReliabilityAssetCase#allAssets} don't have the same parent facility, adds their ids to list of unresolved cases.
+ */
+type ReliabilityAssetCaseSchemaUpgrade mixes SchemaUpgrade {
+  /**
+   * Method to assign a to have a {@link Facility} to {@link ReliabilityAssetCase}.
+   * @returns An object having following keys:
+   *  - `message`: Informing about the status of migration. (#SUCCESS_MESSAGE or #FAILURE_MESSAGE)
+   *  - `ids`: A list of unresolved case 'ids' (only if there are ambiguous cases).
+   */
+  migrateReliabilityAssetCase_1: function(): any js-rhino
+
+  /**
+   * Message used when all the {@link ReliabilityAssetCase}s are successfully migrated.
+   */
+  SUCCESS_MESSAGE: string = 'All Cases have been migrated successfully to have a facility.'
+
+  /**
+   * Message used when all the {@link ReliabilityAssetCase}s aren't successfully migrated.
+   */
+  FAILURE_MESSAGE: string = 'A few Cases could not be migrated because of ambiguities. Kindly assign facility to these cases manually. Failure to do so would potentially lead to those cases not being shown in the UI.'
+}

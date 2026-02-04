@@ -1,0 +1,179 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Colors are fundamentally a subset of the CSS color specification. We support the hex format and the `rgb`, `rgba`,
+ * `hsl` and `hsla` (decimal) formats as well as the basic color keywords (such as "black" and "white") and
+ * "transparent".
+ *
+ * @see https://www.w3.org/TR/2018/REC-css-color-3-20180619/
+ */
+type Color mixes StringSerializable, HtmlRenderable {
+
+  /**
+   * The CSS color specification. Pure red can be specified in all these ways:
+   *  - `#ff0000`
+   *  - `#ff0000ff`
+   *  - `#f00`
+   *  - `#f00f`
+   *  - `rgb(255, 0, 0)`
+   *  - `rgba(255, 0, 0, 1)`
+   *  - `hsl(0, 100%, 50%)`
+   *  - `hsla(0, 100%, 50%, 1)`
+   *  - `red`
+   *
+   * @see https://www.w3.org/TR/2018/REC-css-color-3-20180619/
+   */
+  value: !string
+
+  /**
+   * Return true if the color has an opacity specification. This is true for colors specified with `rgba` and `hsla`
+   * as well as the named color `transparent`. Note that even if hasAlpha returns true, the specified alpha may be 1,
+   * indicating full opacity.
+   */
+  hasAlpha: inline member function(): boolean java | js
+
+  /**
+   * True if this is a color specified in the red/green/blue (sRGB) space using the hex or `rgb`/`rgba` decimal formats.
+   * This does not included named colors or colors using the HSL space.
+   */
+  isRgb: inline member function(): boolean java | js
+
+  /**
+   * True if this is a color specified in the hue/saturation/lightness space.
+   * This does not included named colors or colors using the RGB space (including hex).
+   */
+  isHsl: inline member function(): boolean java | js
+
+  /**
+   * True if this is a recognized color name. This does not include colors using the RGB or HSL spaces.
+   */
+  isNamed: inline member function(): boolean java | js
+
+  /**
+   * Return the reg, green and blue components of the color in sRGB space as real numbers in [0..1] as an array of
+   * three elements. If the color specifies an alpha value, that is returned as the fourth element.
+   *
+   * If the color is named or specified in the HSL space, it is converted to RGB first.
+   *
+   * @see toRgb
+   */
+  rgb: member function(): ![!double] java | js
+
+  /**
+   * Return the red component of the color in sRGB space as a real number in [0..1]. 0 is no contribution from the
+   * red primary color and 1 is full.
+   *
+   * If the color is named or specified in the HSL space, it is converted to RGB first.
+   */
+  r: inline member function(): !double java | js
+
+  /**
+   * Return the green component of the color in sRGB space as a real number in [0..1]. 0 is no contribution from the
+   * green primary color and 1 is full.
+   *
+   * If the color is named or specified in the HSL space, it is converted to RGB first.
+   */
+  g: inline member function(): !double java | js
+
+  /**
+   * Return the blue component of the color in sRGB space as a real number in [0..1]. 0 is no contribution from the
+   * blue primary color and 1 is full.
+   *
+   * If the color is named or specified in the HSL space, it is converted to RGB first.
+   */
+  b: inline member function(): !double java | js
+
+  /**
+   * Return the opacity as a real number in [0..1]. 0 is fully transparent and 1 is fully opaque. If the color does not
+   * specify an alpha value, 1 is returned.
+   */
+  alpha: inline member function(): !double java | js
+
+  /**
+   * Return whether or not the color is fully opaque. This is true for colors which do not specify an alpha value as
+   * well as colors which specify one as fully opaque ("ff", "1" or "100%").
+   */
+  isOpaque: inline member function(): boolean java | js
+
+  /**
+   * Get the value, which should be any supported CSS color specification.
+   *
+   * @see #toRgbString
+   */
+  toString: ~ java | js
+
+  /**
+   * If color is a named color or an HSL specification, convert it to sRGB space and return it as the closest
+   * matching color spec. If the original color had an alpha value, this returns an `rgba` color, otherwise `rgb` or
+   * hex color. If the value cannot be parsed, an error is thrown.
+   *
+   * If the color is already a hex or RGB specification, return this instance.
+   *
+   * @see #toRgbString
+   */
+  toRgb: inline member function(): !Color java | js
+
+  /**
+   * If color is a named color or an HSL specification, convert it to sRGB space and return it as the closest matching
+   * color spec.  If the format is unspecified, the natural RGB value is returned, otherwise the value is reformatted
+   * specified.
+   *
+   * Note that reformatting can be lossy. For example `Color.fromString('transparent').toRgbString('rgb')` will return
+   * "rgb(0,0,0)" which is opaque black.
+   *
+   * @see #toRgb
+   */
+  toRgbString: inline member function(format: string enum('#', 'rgb', 'rgba')): !string java | js
+
+  /**
+   * Determine whether this instance's color value is lighter than average, which means it should be used against a
+   * dark background. Note that this does not consider transparency, only the perceptual weights of the red, green and
+   * blue components.
+   */
+  isLight: member function(): boolean java | js
+
+  /**
+   * Determine whether the specified color value is lighter than average, which means it should be used against a
+   * dark background. Note that this does not consider transparency, only the perceptual weights of the red, green and
+   * blue components.
+   */
+  isLightColor: function(value: !string serialized Color): boolean java | js
+
+  /**
+   * Validate the CSS color specification and return a Color instance with it as the value.
+   */
+  fromString: ~ java | js
+
+  /**
+   * Create a CSS color from the specified values in red/green/blue (sRGB) space. All values are real numbers in [0..1].
+   * If alpha is unspecified, the resulting color does not specify an opacity. This will always produce a color value
+   * using either `rgb` or `rgba` format.
+   */
+  fromRgb: function(r: !double, g: !double, b: !double, alpha: double): !Color java | js
+
+  /**
+   * Create a CSS color from the specified values in hue/saturation/lightness space. All values are real numbers.
+   * Hue (h) is in [0..360] and s (saturation), l (lightness) and alphas are in [0..1]. If alpha is unspecified, the
+   * resulting spec does not specify opacity. This will always produce a color value using either `hsl` or `hsla`
+   * format.
+   */
+  fromHsl: function(h: !double, s: !double, l: !double, alpha: double): !Color java | js
+
+  /**
+   * Create a color value between the two specified colors. This does a linear interpolation of the individual red,
+   * green and blue values. If either color has an alpha component, that is interpolated as well.
+   *
+   * @param low color for 0 end of the range
+   * @param high color for the 1 end of the range
+   * @param v value in [0..1]
+   */
+  interpolate: function(low: !string serialized Color,
+                        high: !string serialized Color,
+                        v: !double): string serialized Color java | js
+}

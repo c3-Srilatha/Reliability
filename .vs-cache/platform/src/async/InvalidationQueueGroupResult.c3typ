@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Results returned from {@link InvalidationQueueStore.count} or various queue report functions.  Any field that is
+ * grouped in a request will be present in the results.  Those that are not will be null.
+ */
+type InvalidationQueueGroupResult {
+
+  /**
+   * Target type id.
+   */
+  targetTypeId: int
+
+  /**
+   * Target type name.  Present in reports when grouped by targetTypeId
+   */
+  targetType: string
+
+  /**
+   * Target obj id.
+   */
+  targetObjId: string
+
+  /**
+   * Entry type.
+   */
+  entryType: string
+
+  /**
+   * Context.
+   */
+  context: any
+
+  /**
+   * Priority.
+   */
+  priority: int
+
+  /**
+   * Node pool.
+   */
+  nodePool: string
+
+  /**
+   * Status.
+   */
+  status: string
+
+  /**
+   * Error code.  Only valid for error reporting.
+   */
+  errorCode: string
+
+  /**
+   * Timestamp of latest error for the group.  Only present in error reports
+   */
+  lastError: !datetime
+
+  /**
+   * If errors reviewed, the id of the review for the group and null otherwise.  Only present in error reports
+   */
+  review: string
+
+  /**
+   * Number of entries in the group.
+   */
+  count: int
+
+  /**
+   * Sets the targetAppId and targetType strings from the associated appCode/typeId.
+   *
+   * @param counts
+   *           Count entries to process.
+   *
+   * @return counts updated with the targetAppId and targetType strings.
+   */
+  setTargetStrings: member function(): !InvalidationQueueGroupResult
+}

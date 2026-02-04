@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Export functions for UiSdlChart components
+ */
+@typeScript
+type UiSdlChartExport {
+
+  /**
+   * Converts a base-64 `data:` URI to a Blob.
+   *
+   * @param dataUri
+   *           The `data:` URI to convert.
+   * @return the Blob of the input data
+   */
+  dataUriToBlob: function(dataUri: string): native ts-client
+
+  /**
+   * Generates a PNG image of the given chart.
+   *
+   * @param echart
+   *          A ReactEChart instance
+   */
+  exportPng: private function(echart: @java native) ts-client
+
+  /**
+   * Generates a JPEG image of the given chart.
+   *
+   * @param echart
+   *          A ReactEChart instance
+   */
+  exportJpeg: private function(echart: @java native) ts-client
+
+  /**
+   * Generates a CSV file of the chart based off the chart components getExportCsvData function.
+   *
+   * @param getExportCsvData
+   *          A function that returns the chart's series data as a string to be converted into CSV
+   */
+  exportCsv: private function(getExportCsvData: lambda(): string) ts-client
+
+  /**
+   * The default Redux actions for chart exports
+   */
+  chartActionsDefault: private [UiSdlAction] = [{name: 'EXPORT_CHART_CSV', actionSuffix: 'EXPORT_CHART_CSV', iconSuffix: 'table'}, {name: 'EXPORT_CHART_JPEG', actionSuffix: 'EXPORT_CHART_JPEG', iconSuffix: 'file-image'}, {name: 'EXPORT_CHART_PNG', actionSuffix: 'EXPORT_CHART_PNG', iconSuffix: 'file-image'}]
+}

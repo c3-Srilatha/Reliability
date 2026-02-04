@@ -1,0 +1,180 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Each formal parameter to a function has a name and value type, and may also have annotations. Parameters have
+ * various options:
+ *  - non empty: must specify a non-null / non-empty argument when calling
+ *  - optional: may be completely omitted
+ *  - default: value used if argument is not specified when calling
+ *  - this: special parameter indicating the instance on which the method is being called
+ *
+ * ```type
+ * type Example {
+ *   nonEmpty:    function(x: !string)
+ *   nonOptional: function(x: !?string)
+ *   optional:    function(x: string)
+ *   default:     function(x: string = 'kittens')
+ * }
+ * ```
+ *
+ * In the example above, `nonEmpty` cannot be called without specifying the argument; nor may the argument be null or
+ * an empty string. This the the strongest constraint and most common modifier.
+ *
+ * `nonOptional` cannot be called without specifying the argument, but the value specified may be null or empty string.
+ *
+ * `optional` can be called with or without specifying the argument and null will be received by the method if not.
+ *
+ * `default` can be called without specifying the argument, in which case the method will receive the default value.
+ *
+ * @see FunctionType
+ */
+type FunctionParam mixes NameableValueType, WithCacheKey, DslCommented {
+
+  /**
+   * Name of the implicit `this` parameter for member functions
+   */
+  THIS: const string = "this"
+
+  /**
+   * Formal parameter name.
+   */
+  name: ~
+
+  /**
+   * Declared parameter type.
+   */
+  valueType: ~
+
+  /**
+   * Whether this parameter allows multiple values.
+   */
+  varArgs: boolean
+
+  /**
+   * The value expression passed if the argument is unspecified by the caller. Use #defaultValue to get the
+   * "evaluated" value.
+   *
+   * If the value type of the parameter is a named enum, the default should be the label (field name) from the enum
+   * type or an expression that evaluates to one.
+   *
+   * @see #defaultValue
+   */
+  default: ?any
+
+  /**
+   * Whether or not the parameter is the member instance.
+   *
+   * @return true if "this"
+   */
+  isThis: member function(): boolean
+
+  /**
+   * Whether or not the parameter must be passed a non-empty argument.
+   * @return true if so
+   */
+  isNonEmpty: member function(): boolean
+
+  /**
+   * Whether or not the parameter may be omitted. Note that this is not quite the inverse of #isRequired because
+   * a parameter may be non-optional, but still specified with a null value (!isRequired and !isOptional).
+   * @return true if optional
+   */
+  isOptional: member function(): boolean
+
+  /**
+   * The function parameter must be passed in the call, but may contain empty value, specified using `!?` modifier:
+   * ```type
+   *   fromString: function(s: !?string): mixing Obj
+   * ```
+   * Note that this is a lesser constraint than #nonEmpty, since the param must only be specified, but it may be
+   * specified with an empty value (null, string of only whitespace, empty collection, etc.).
+   */
+  isNonOptional: member function(): boolean
+
+  /**
+   * Whether or not the parameter is a type mixing Spec.
+   */
+  isSpec: member function(): boolean
+
+  /**
+   * Whether or not the parameter has a default value.
+   * @return true if default value
+   */
+  hasDefault: cached member function(): boolean
+
+  /**
+   * @return default value for this parameter after evaluating against the param {@link #valueType}. e.g
+   * ```js
+   * var mt = ValueType.fromString("myFunc: function(start: datetime = now())").asMethodType(true)
+   * var fp = mt.params().get(0);
+   * fp.default == 'now()'
+   * // Assuming current date to be 10th Oct, 2020 at 12 midnight UTC
+   * fp.defaultValue() == "2020-10-10T00:00:00Z"
+   * ```
+   */
+  defaultValue: member function(): any
+
+  /**
+   * Validates argument value without conversion. This also applies default values if withoutDefault is false and instantiates a {@link Spec}
+   * if missing.
+   *
+   * @see #convertAndValidateArg
+   */
+  @call(stayInEngine=true)
+  validateArg: member function<T>(arg: !?T,
+                                  forJava: boolean,
+                                  failIfInvalid: boolean,
+                                  withoutDefault: boolean): T java | py
+
+  /**
+   * Converts and validates argument value. This also applies default values if withoutDefault is false and instantiates a {@link Spec} if missing.
+   *
+   * @see #validateArg
+   */
+  @call(stayInEngine=true)
+  convertAndValidateArg: member function(arg: !?native,
+                                         forJava: boolean,
+                                         failIfInvalid: boolean,
+                                         withoutDefault: boolean): native java | py
+
+  /**
+   * Whether this parameter is a marker for multiple values to be passed.
+   * @return true if varargs parameter
+   */
+  isVarArgs: member function(): boolean
+
+  /**
+   * Whether the specified instance represents exactly the same object as this instance.
+   */
+  isSame: member function(other: !?FunctionParam, compareValueTypeOnly: boolean, ignoreNonEmpty: boolean): boolean
+
+  /**
+   * Merge other function type into this one by merging params and return type.
+   */
+  mergeFunctionParam: member function(other: !?FunctionParam): !FunctionParam
+
+  /**
+   * @return Java class that can hold instance of this parameter
+   */
+  javaClass: private member function(): @java(class='Class') native
+
+  /**
+   * @return built instance of this parameter. I.e. with a built #valueType
+   *
+   * @see ValueType#build
+   */
+  build: private member function(scope: !TypesysScope, context: !lambda(): !string): !FunctionParam
+
+  /**
+   * @return true if this instance was constructed with #build vs just by parsing DSL.
+   */
+  isBuilt: private member function(): boolean
+
+  toString: ~
+}

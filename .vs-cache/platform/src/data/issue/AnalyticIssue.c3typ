@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Analytic specific data issue type.
+ */
+entity type AnalyticIssue extends DataIssue mixes Value type key 'ANALYTIC' {
+
+  /**
+   * Adds an analytic issue to the list of issues.  Should be called by Analytic.process for any data related issues that arise, rather than throwing exceptions
+   * that would otherwise end up accumulating as errors in the AnalyticsQueue.
+   *
+   * @param input
+   *           Input arg to the Analytic.process function call where the issue arose.  Note that only DataFlowEvent input is supported.
+   * @param errorMsg
+   *           Error message indicating the nature of the issue.
+   * @param metricGroup
+   *           Metric group being processed where the error arose, if not specified, the issue is assumed to be for all analytics for the source obj.
+   */
+  addAnalyticIssue: function(input: !DataFlowEvent, errorMsg: !string, metricGroup: string)
+}

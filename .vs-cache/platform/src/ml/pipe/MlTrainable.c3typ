@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an object that is trainable for machine learning purposes.
+ *
+ * Parametrization:
+ * DX - type for "x"/"input" data for training
+ * DY - type for "y"/"label" data for supervised training
+ * DEVELOPER NOTE: DX and DY should be immutable. This means the types should not mixin {@link Mutable}! In future versions,
+ * this will be strictly enforced as a {@link MetadataIssue}.
+ *
+ * Related Types:
+ *   {@link MlOperationSpec}
+ */
+abstract type MlTrainable<DX, DY> {
+
+  /**
+   * Launch a training. This API by default is non-blocking asynchronous.
+   *
+   * @param x
+   *           Data to use as "x" or "input" to training.
+   * @param y
+   *           Data to use as "y" or "label" to supervised training. If not provided, then training is unsupervised.
+   * @param spec
+   *           Customizations for training execution.
+   * @return a {@link MlOperationRun} object that represents the launched training. The caller should use the APIs on
+   *           the operation run object to query status and to get the final result.
+   */
+  // TODO PLAT-45379: Fix return value types for MlTrainable#train
+  train: abstract member function(x: !?DX, y: DY, spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * Blocking, synchronous version of {@link #train}.
+   */
+  trainSync: private abstract member function(x: !?DX, y: DY, spec: MlOperationSpec): !mixing MlTrainable
+
+  /**
+   * Validates this instance of {@link MlTrainable} to determine whether it is valid to call {@link #train}.
+   * The default implementation is at {@link MlPipe}
+   * @return whether this is trainable.
+   */
+  isTrainable: private abstract member function(): !boolean
+
+  /**
+   * @return whether this {@link MlTrainable} is currently training.
+   */
+  // TODO: PLAT-31026 update as necessary when "Train Progress Tracking" user story is refined
+  isTraining: abstract member function(): !boolean
+
+  /**
+   * NOTE: as best practice, trained objects should be immutable!
+   * @return whether this {@link MlTrainable} has been trained.
+   */
+  isTrained: abstract member function(): !boolean
+
+  /**
+   * @return null if no errors were encountered during training. Otherwise, return the errors
+   *           as a formatted string.
+   */
+  trainErrors: abstract member function(): string
+}

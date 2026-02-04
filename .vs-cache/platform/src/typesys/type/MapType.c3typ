@@ -1,0 +1,197 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A map is an associative array where the keys can be any primitive type.
+ * Null elements are allowed, but null keys are not.
+ *
+ * Maps are declared in DSL using `map<K,E>` notation:
+ *
+ * ```
+ * // a map of string keys to primitive integer elements
+ * counts: map<string, int>
+ *
+ * // a map of integer keys to Cat object elements (or any type that mixes Cat)
+ * herd: map<int, Cat>
+ * ```
+ *
+ * Instances can be created programmatically using these convenience methods:
+ *  - #of
+ *  - #ofAnyTo
+ *  - #ofStrTo
+ *  - #ofStrToStr
+ *  - #ofStrToAny
+ *  - #ofIntTo
+ *  - #ofIntToInt
+ *  - #ofIntToStr
+ *  - #ofIntToAny
+ *  - #ofInt32To
+ *  - #ofInt32ToStr
+ *  - #ofInt32ToAny
+ *  - #ofIdentifiable
+ *  - #ofNameable
+ *
+ * @see Map
+ */
+type MapType mixes CollectionType {
+
+  /**
+   * Whether the map maintains its keys in sorted order. This is false by default for performance reasons, but can be
+   * enabled using the {@link Ann.Sorted @sorted} annotation: `@sorted(keys=true)`.
+   */
+  hasSortedKeys: member function(): boolean
+
+  /**
+   * @return the factory method name for this map type (e.g., "ofStrToInt", "ofIntToStr").
+   */
+  factoryMethodName: ~
+
+  /**
+   * @return a code expression that instantiates this collection type (e.g., "MapType.ofStrToStr()", "Map.ofIntToAny()").
+   */
+  factoryMethodExpr: ~
+
+  /**
+   * @return {@link MapType} of specified key and element types
+   */
+  of: function(keyType: !ValueType, elementType: !ValueType): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `any` as key type and specified element type
+   */
+  ofAnyTo: function(elementType: !ValueType): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `string` as key type and specified element type
+   */
+  ofStrTo: function(elementType: !ValueType): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `string` as both key and element type
+   */
+  ofStrToStr: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `string` key and `any` as element type
+   */
+  ofStrToAny: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int` as key type and specified element type
+   */
+  ofIntTo: function(elementType: !ValueType): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int` as both key and element type
+   */
+  ofIntToInt: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int` as key type and `string` as element type
+   */
+  ofIntToStr: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int` key and `any` as element type
+   */
+  ofIntToAny: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int32` as key type and specified element type
+   */
+  ofInt32To: function(elementType: !ValueType): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int32` as key type and `string` as element type
+   */
+  ofInt32ToStr: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `int32` key and `any` as element type
+   */
+  ofInt32ToAny: cached function(): !MapType java | js | py
+
+  /**
+   * @return {@link MapType} with `string` key and `Identifiable` as element type
+   */
+  ofIdentifiable: cached function(): !MapType
+
+  /**
+   * @return {@link MapType} with `string` key and `Nameable` as element type
+   */
+  ofNameable: cached function(): !MapType
+
+  /**
+   * @return map built by provided lambda
+   */
+  buildMap: member function<K, E>(builder: !lambda(b: !MapBuilder<K, E>)): map<K, E> java | js | py
+
+  /**
+   * @return builder of map of this type.
+   */
+  makeBuilder: member function<K, E>(initial: map<K, E>): !MapBuilder<K, E> java | js | py
+
+  /**
+   * @return builder of map of this type with initial size allocation
+   */
+  makeBuilder: member function<K, E>(size: !int): !MapBuilder<K, E> java | js | py
+
+  /**
+   * @return instance of map of this type from provided key / elements.
+   */
+  makeMap: member function<K, E>(keyElements: any ...): map<K, E> java | py | js
+
+  /**
+   * @return instance of empty array of this type.
+   */
+  emptyMap: member function<K, E>(): map<K, E> java | js | py
+
+  /**
+   * @return {@link #emptyMap}
+   */
+  emptyCollection: ~ java | js | py
+
+  /**
+   * @return specific bound type of Pair for entries of this map type
+   */
+  // TODO: <<Pair<any, any>>>
+  entryType: cached member function(): !Type
+
+  isAnyCollection:      ~ java | js | py
+  isMap:                ~ java | js | py
+  bindAllGenericVars:   ~
+  cacheKey:             ~
+  convertValue:         ~
+  hasDefaultEmptyValue: ~
+  defaultEmptyValue:    ~ java | js | py
+  of:                   ~ java | js | py
+  ofAny:                ~ java
+  ofBinary:             ~ java
+  ofBool:               ~ java
+  ofByte:               ~ java
+  ofDateTime:           ~ java
+  ofDecimal:            ~ java
+  ofDbl:                ~ java
+  ofFloat:              ~ java
+  ofInt:                ~ java
+  ofInt16:              ~ java
+  ofInt32:              ~ java
+  ofJson:               ~ java
+  ofNative:             ~ java
+  ofStr:                ~ java
+
+  /**
+   * @return if value is convertible to a C3 Map with key and element ValueTypes of this MapType
+   */
+  isConvertibleValue: ~
+
+  instanceType:            ~ java | py
+  convertToJavaRuntime:    ~
+  eachReferencedValueType: ~
+  valueFromJson:           ~ java | js | py
+}

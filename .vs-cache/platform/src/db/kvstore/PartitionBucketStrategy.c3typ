@@ -1,0 +1,128 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Strategy to adopt while bucketing data within a partition for {@link Partitionable} types.
+ * Uses {@link Ann.Db#persistenceOrder} to determine what field to bucket by. If not specified then buckets by id
+ *
+ * Spec defines ability to partition data in different underlying storage, viz:
+ *
+ * *Hot* - Low volume / Frequently accessed data. Hot storage is typically more expensive than cold storage, so the amount
+ * of data should be capped in this datastore. Latencies to obtain data from hot store is less (faster) than if obtaining
+ * from the cold data store
+ *
+ * *Cold* - Heavy volume / less frequently accessed data (slow moving - hardly changing). This is typically to park data
+ * that is historical and is needed for some analysis, but is not frequently accessed and is heavy volume. Cold storage
+ * is typically cheaper from a compute/storage costs but comes at higher latencies to access the data.
+ *
+ * By default, if no spec is provided, all objects will be stored in the hot storage & a default hot storage strategy
+ * will be chosen. In order to share objects in between hot and cold storage, following techniques could be adopted:
+ *
+ * 1. Bucket in hot & cold store by size:
+ * e.g. Let's say there is 10MB of data to be partitioned in a bucket. This example keeps only 1MB worth of data in
+ * hot storage and will store all other data in cold storage (in 9 buckets) where each bucket size in cold storage will be ~1MB
+ * (say default is 10x of size in hot bucket, this can be overridden by {@link coldBucketMultiple}
+ * ```js
+ *      {
+ *          "sizeMbPerHotBucket" : 0.100 // ~ 100 kb per hot bucket
+ *          "numHotBuckets" : 10 // will only keep at the max 10 hot buckets i.e. 1MB worth of data in hot storage
+ *      }
+ * ```
+ *
+ * 2. Bucket in hot & cold store by number of objects:
+ * e.g. Let's say there is 10K objects to be partitioned in a bucket. This example keeps only 1K objects in
+ * hot storage and will store all other data in cold storage (in 9 buckets) where each bucket contains 1K objects
+ * (say default is 10x of size in hot bucket, this can be overridden by {@link coldBucketMultiple}
+ * ```js
+ *      {
+ *          "numObjsPerHotBucket" : 100 // ~ 100 objects per hot bucket
+ *          "numHotBuckets" : 10 // will only keep at the max 10 hot buckets i.e. 1K objects in hot storage
+ *      }
+ * ```
+ *
+ * 3. Bucket in hot & cold store by max hot sort key:
+ * e.g. Let's say there is 1M timeseries objects of type {@link IntervalDataPoint} to be partitioned in a bucket. The
+ * data points range from the year 2010 -> 2020 where each year contains 100k points (hypothetical scenario)
+ * Let's say we want to keep only the last years data in the hot storage  store all other data in cold storage.
+ * We can create a configuration as follows:
+ * ```js
+ *      {
+ *          "numObjsPerHotBucket" : 10000 // ~ 10k objects per hot bucket
+ *          "maxHotSortKey" : "start < (now() - period(1,'YEAR'))" // will only keep last 1 year worth of data in hot storage
+ *      }
+ * ```
+ *
+ * Note: The period when data gets compacted in the cold storage may be delayed
+ */
+type PartitionBucketStrategy mixes PartitionBucketNewColSpec, MapReduceOptions {
+
+  /**
+   * If set, only places the specified number of objects per hot bucket
+   */
+  numObjsPerHotBucket: int
+
+  /**
+   * If set, attempts to hold as many objects as can fit in the allowed size in Mbs. The size in every bucket will be close
+   * to the one specified but is not guaranteed to be exactly the same
+   */
+  sizeMbPerHotBucket: double
+
+  /**
+   * If set, buckets objects in the specified number of buckets. Can be used in conjunction with {@link numObjsPerHotBucket}
+   * & {@link numHotBuckets}, and this will limit the max number of hot buckets. If not specified, a default number of
+   * hot buckets will be created
+   */
+  numHotBuckets: int
+
+  /**
+   * Max value across all the buckets in hot storage. E.g. max date until which data should be in hot storage (e.g. "start < (now() - period(6, 'MONTH'))"
+   * Only supports filter on {@link Ann.Db#persisenceOrder} for the given type
+   */
+  maxHotSortKey: string serialized Expr
+
+  /**
+   * Multiplier from each hot bucket size. If hot buckets are partitioned by {@link numObjsPerHotBucket} then this multiplier
+   * will result in max object count in each cold bucket. If it is partitioned by {@link sizeMbPerHotBucket} then
+   * this multiplier will result in max size in mb in each cold bucket. Of course, the number of objects and size could
+   * be less if the total number of objects in cold bucket is fewer than the max capacity.
+   * If set, determines the size of each cold bucket & the total number of cold buckets depending on remaining data from
+   * hot + size of each cold bucket
+   */
+  coldBucketMultiplier: double = 100
+
+  /**
+   * Schedule at which compaction needs to run. {@see DataPartition#compact}. Defaults to 1st every month at 00:00
+   */
+  compactionSchedule: string serialized CronSchedule = '0 0 0 1 * ?'
+
+  /**
+   * If set, no error will be thrown if packing fails and will log an error instead.
+   */
+  doNotThrowOnFailure: boolean
+
+  /**
+   * Determines how long to continuously pack if {@link PartitionBucketNewColSpec#rewriteAllIncremental} is true.
+   * Set to -1 to pack as long as nc columns exist, but use with caution!
+   */
+  maxRetries: private int = 15
+
+  /**
+   * **CAUTION** For Internal Use only
+   * If set, performs full compaction {@see DataPartition#fullCompact}. This operation is costly and reads all the data
+   * (not incremental) and tries to stick to the spec as close as possible. Regular compaction is incremental & tries
+   * to touch as little data as needed but may end up with not perfectly sized buckets
+   */
+  fullCompact: private boolean
+
+  /**
+   * **CAUTION** For Internal Use only
+   * If set, the state column of the partition will be re-written based on the source of truth currently in the row.
+   * This will reconcile orphaned hot buckets and remove references to buckets that no longer exist.
+   */
+  repair: private boolean
+}

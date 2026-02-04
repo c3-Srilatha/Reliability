@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to define how to create {@link Feature}s for {@link MlModel} training and deployment for the
+ * any {@link MlProject}s.
+ * Both the creation of the {@link Feature}s and the preprocessing of those {@link Feature}s can be dictated
+ * by the various fields on this Type.
+ */
+remix type ReliabilityMlFeaturePreparationSpec {
+
+  /**
+   * It is required that this field is populated with all the {@link Sensor} IDs used in the preparation of this
+   * dataset prep run. If this field is not populated, the [faulty sensor job](FaultySensor.ModelImpactMapReduceJob)
+   * may not retrain the correct models. This field also must match
+   * {@link ReliabilityMlDatasetPreparationRun#includeSensors}.
+   */
+  includeSensors: ~
+
+  /**
+   * It is required that this field is populated with all the {@link Sensor} IDs used in the preparation of this
+   * dataset prep run. If this field is not populated, the [faulty sensor job](FaultySensor.ModelImpactMapReduceJob)
+   * may not retrain the correct models. This field also must match
+   * {@link ReliabilityMlDatasetPreparationRun#excludeSensors}.
+   */
+  excludeSensors: ~
+
+  /**
+   * This function identifies if, for an {@link ReliabilityMlDatasetPreparationRun}, the featuer prep spec used
+   * certain {@link Sensor}s. This is useful to help determine the impact of a faulty sensor on the dataset preparation
+   * run. See {@link FaultySensor} for more general details.
+   *
+   * There are three possible states for each spec as specified in the return type:
+   * - impacted: The sensor is used
+   *   - this is the case if #includeSensors uses any of the sensors.
+   * - notImpacted: The sensor is not used
+   *   - this is the case if none of the sensors are in #includeSensors.
+   * - unverifiable: It is not possible to confirm whether the sensor is used or not
+   *   - If #overrideFeatures or #includeFeatures is defined as those can't be consistently parsed.
+   *   - If #includeSensors is empty
+   *   - If the fields #includeSensors and #excludeSensors do not match their counterpart fields on the
+   *     [run](ReliabilityMlDatasetPreparationRun).
+   *   - If the run does not contain a feature preparation spec.
+   *
+   * The list of sensors that impact each run are stored together in an impactedSensors field.
+   * @see FaultySensor.ImpactedBatchResult#impactedSensors
+   *
+   * @param datasetPrepRuns - The list of dataset preparation runs that used the specs. Matches up to the specs list by
+   *              index.
+   * @param sensors - The list of sensors for which to check if each spec uses any of the sensors.
+   * @returns The result of the check for all specs.
+   */
+  wereSensorsUsedInSpecsBatch: inline function(
+    datasetPrepRuns: [!ReliabilityMlDatasetPreparationRun],
+    sensors: [!Sensor]
+  ): !FaultySensor.ImpactedBatchResult<ReliabilityMlDatasetPreparationRun> py-py4j
+
+  /**
+   * Return the intersection the strings in arr1 and arr2.
+   */
+  _intersection: private inline function(arr1: [string], arr2: [string]): [string] py-py4j
+
+  /**
+   * Helper function to implement #wereSensorsUsedInSpecsBatch for a single spec.
+   * Returns the result of that check. The resulting enum will match up to a field on
+   * {@link FaultySensor.ImpactedBatchResult}.
+   * Returns a pair of string enum ('unverifiable', 'impacted', 'not_impacted') and a list of sensor ids.
+   */
+  _wereSensorsUsedInSpec: private inline function(
+    spec: !ReliabilityMlFeaturePreparationSpec,
+    datasetPrepRun: !ReliabilityMlDatasetPreparationRun,
+    sensor: !Sensor
+  ): native py-py4j
+}

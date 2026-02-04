@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for custom schema upgrade during provisioning. To add an upgrade step, add a function
+ * to a type that mixes in this type with the name somethingMeaningful_n , where "n" is the next available schema version
+ * (they start at 1 and the next available schema version is 1 higher than the highest "n" in any already existing
+ * function).  For example:
+ *
+ * ```
+ * type MySchemaUpgrade mixes SchemaUpgrade {
+ *   upgradeFixedAsset_1 : function()
+ *   upgradeServicePoint_2 : function()
+ *
+ *   // Next available is _3
+ * }
+ * ```
+ *
+ * Mark all internal functions used by upgrade functions as private; that will ensure that they will be ignored
+ * when determining the validity of the upgrade function definitions.
+ *
+ * All upgrade functions MUST BE IDEMPOTENT!  In other words, they must work properly if they are applied multiple
+ * times and if earlier attempts failed due to non-logic errors (e.g. server crashes).
+ *
+ * Upgrade functions will be automatically applied, as required, at the end of the deployment process for an app.
+ * This means that the upgrade logic in each upgrade function needs to take into account what the automatic schema
+ * upgrade process would have done as far as column/table creation or table renaming.
+ *
+ * Also, the following rules will be enforced on types that mixin this type.  They are:
+ *
+ * 1. Only functions of the form somethingMeaningful_n will be allowed.
+ *
+ * 2. No gaps in schema versions will be allowed.
+ *
+ * 3. No further mixing of or in any type that mixes in this type will be allowed.
+ *
+ * @see SchemaMigrationVersion for checking the current state debugging
+ */
+type SchemaUpgrade mixes SchemaMigrationCommon

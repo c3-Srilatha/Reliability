@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Color and icon configurations for individual chips in a {@link ChipsCell}.
+ */
+@typeScript
+@constraint(
+  condition='(exists(colorPreset) && empty(customColorSettings)) || (empty(colorPreset) && exists(customColorSettings))',
+  message='Exactly one of colorPreset or customColorSettings should be specified, but not both.')
+type ChipStyle mixes Value {
+
+  /**
+   * The predefined color preset to use for the chip. This shouldn't be specified if
+   * #customColorSettings is provided.
+   */
+  colorPreset: string enum ChipColorPreset
+
+  /**
+   * In case the [color presets](#colorPreset) are insufficient for a desired color scheme,
+   * this can be used to define a custom color of the chip. If {@link ChipsCell#outlined} is
+   * true, this affects the font and border color. Otherwise, this affects the background color.
+   */
+  customColorSettings: UiSdlThemedValue<CustomChipColor>
+
+  /**
+   * If specified, an icon based on the provided Font Awesome suffix will be displayed
+   * before the text in each chip.
+   */
+  icon: string
+}

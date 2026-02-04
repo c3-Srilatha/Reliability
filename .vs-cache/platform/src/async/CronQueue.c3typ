@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue to schedule/process cron jobs.  Each entry indicates the next scheduled execution time for a
+ * specific {@link CronJob}.
+ */
+@invalidationQueueOptions(grouping='targetObjId, context',
+                          defaultReportGrouping='targetTypeId, targetObjId, status',
+                          detailReportGrouping='targetTypeId, targetObjId, status',
+                          defaultErrorReportGrouping='targetTypeId, targetObjId, errorCode, review',
+                          detailErrorReportGrouping='targetTypeId, targetObjId, errorCode, review')
+type CronQueue mixes InvalidationQueue<CronQueueEntry>, Value {
+
+  /**
+   * @return true if cron job invalidation is required (e.g. one or more jobs have hit their scheduled time).  This is
+   *         done separately from {@link invalidateCron} to avoid incurring the cost of the {@link DbLock} mechanism
+   *         more frequently than necessary.
+   */
+  needsInvalidation: function(): boolean
+
+  /**
+   * Invalidates the appropriate cron jobs.
+   */
+  invalidateCron: function()
+
+  /**
+   * Disables cron invalidation for the current app.  When disabled, the {@link CronQueue} entries that have reached
+   * their trigger time will not be invalidated.  They will remain in the "initial" state until {@link enable} is
+   * called.  This differs from {@link CronQueue.pause} in that pausing causes the processing of queue entries to stop
+   * but jobs are still invalidated when their trigger time is reached.  They will then begin processing immediately
+   * once the queue is resumed.
+   */
+  disableInvalidation: function()
+
+  /**
+   * Enables cron invalidation if it has been disabled by {@link disableInvalidation}.
+   */
+  enableInvalidation: function()
+
+  /**
+   * @return true if cron invalidation is disabled for the current app.
+   */
+  isInvalidationDisabled: function(): boolean
+}

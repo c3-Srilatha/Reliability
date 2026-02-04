@@ -1,0 +1,126 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AwsRedshift is a fast, fully managed, petabyte-scale data warehouse.
+ */
+@cloud(hasResourceArn=false,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='rdsft')
+type AwsRedShift mixes AwsResource, AwsSecurityGroupsMember {
+
+  /**
+   * Auto-generated connection endpoint.
+   */
+  endpoint: string
+
+  /**
+   * Specifies the current state of this cluster
+   */
+  status: string enum AwsRedShiftStatus
+
+  /**
+   * By specifying a dbName here, we create another database in addition to the default database named "dev". This name
+   * cannot be modified. Not Modifiable for a existing cluster.
+   */
+  dbName: string
+
+  /**
+   * The port number on which the database accepts connections. Default value is 5439. Not Modifiable for a existing cluster.
+   */
+  dbPort: int
+
+  /**
+   * Name of master user for your cluster. (e.g. awsuser). Not modifiable for a existing cluster.
+   */
+  masterUserName: string = 'redshift'
+
+  /**
+   * If no set here, a random password will be auto-generated and used. Password must contain 8 to 64 printable ASCII characters excluding: /, ", ', \, and @.
+   * It must contain 1 uppercase letter, 1 lowercase letter, and 1 number. Modifiable for a existing cluster.
+   */
+  masterUserPassword: string
+
+  /**
+   * Indicate whether the masterUserPassword is being modified.
+   */
+  updatingMasterUserPassword: ?boolean
+
+  /**
+   * The node type to be provisioned for the cluster. Modifiable for a existing cluster.
+   */
+  instanceType: !string
+
+  /**
+   * The pending modification of instanceType
+   */
+  pendingInstanceType: !string
+
+  /**
+   * The number of nodes in the cluster. Default value is 1 if not set here. For nodeType "DC1_LARGE" or "DS2_XLARGE", 1 <= nodeNumber <= 32.
+   * For nodeType "DC1_8XLARGE" or "DS2_8XLARGE", 1 <= nodeNumber <= 100. Modifiable for a existing cluster.
+   */
+  instanceCount: int
+
+  /**
+   * The pending modification of instanceNumber
+   */
+  pendingInstanceCount: int
+
+  /**
+   * Information of nodes in the cluster.
+   */
+  instances: [AwsRedShiftInstance]
+
+  /**
+   * The name of the subnet group that is associated with the cluster. This parameter is valid only when the cluster is
+   * in a VPC.
+   */
+  subnetGroupName: string
+
+  /**
+   * Specifies the accessibility options for the cluster. The default is False.
+   * True specifies an Internet-facing instance with a publicly resolvable DNS name, which resolves to a public IP address.
+   * False specifies an internal instance with a DNS name that resolves to a private IP address.
+   */
+  isPubliclyAccessible: boolean
+
+  /**
+   * An option that specifies whether to create the cluster with enhanced VPC routing enabled. To create a cluster that
+   * uses enhanced VPC routing, the cluster must be in a VPC.
+   */
+  isEnhancedVpcRouting: ?boolean
+
+  /**
+   * The pending modification of isEnhancedVpcRouting
+   */
+  pendingIsEnhancedVpcRouting: ?boolean
+
+  /**
+   * A Boolean value that, if true , indicates that data in the database is encrypted at rest.
+   */
+  isDbDataEncrypted: boolean
+
+  /**
+   * The EC2 Availability Zone (AZ) in which you want Amazon Redshift to provision the cluster. For example, if you have
+   * several EC2 instances running in a specific Availability Zone, then you might want the cluster to be provisioned
+   * in the same zone in order to decrease network latency.
+   */
+  availabilityZone: string enum AwsAvailabilityZone
+
+  /**
+   * A list of AWS IAM roles that can be used by the cluster to access other AWS services.
+   */
+  iamRoles: [string]
+
+  hasTags: ~
+  isGone:  ~
+}

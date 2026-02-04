@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result C3 Type for StringPattern#match.
+ */
+type StringPatternMatch mixes Result {
+
+  /**
+   * `true` if input string matched the pattern.
+   */
+  isMatch: inline member function(): boolean
+
+  /**
+   * Numeric match score from [0..1]. 0 means no match and 1 means exact match.
+   *
+   * Thus an input of "Open" would have coverage 0.5 for "OpenType" and 0.29 for "OpenTypewriter".
+   */
+  score: !double
+
+  /**
+   * The parts of the input string that were matched explicitly and implicitly by the pattern. Parts that were matched
+   * implicitly are prefixed with an asterisk.
+   * E.g. for an input of "OT" nameMatches will be `["O", "*pen", "T", "*ype"]`;
+   * and an input of "OpenTy" it will be `["OpenTy", "*pe"]`.
+   *
+   * The concatenation of all the parts (minus the asterisks) will be the same as input string.
+   */
+  groups: [string]
+}

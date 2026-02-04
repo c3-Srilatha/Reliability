@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A custom {@link MlModel.Evaluator} for the input {@link ReliabilityRiskMlModel}.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMlModel.Evaluator extends MlModel.Evaluator type key 'RMEL' {
+
+  /**
+   * Specify whether the evaluator is created for the training or validation period of the {@link ReliabilityRiskMlModel}s.
+   */
+  isValidation: boolean = false
+
+  /**
+   * If the evaluator should be created for a custom period that does not correspond to training or validation, use this field
+   * to specify the period for which model evaluation should be run. If specified, the {@link isValidation} field will be ignored.
+   */
+  customTimeRange: TimeRange
+
+  /**
+   * Customizes this evaluator for the input {@link ReliabilityRiskMlModel}, if needed, and creates an instance of {@link ReliabilityRiskMlModel.Evaluator}.
+   * The following steps are involved in creating the custom evaluator:
+   * 1. Set {@link ReliabilityRiskMlModel.Evaluator#scope}. The subjectFilter for the scope is set directly from the provided model.
+   * The logic to set the start and end for the scope is as follows:
+   *
+   * - If the {@link customTimeRange} field is specified, the start and end will be set to customTimeRange.start and customTimeRange.end respectively.
+   * - If it is not specified, the start and end fields will be set from the @link ReliabilityMlDatasetPreparationRun} corresponding to the model.
+   * If {@link #isValidation} is False, start and end are set from model.datasetPreparationRun.trainFeatureTimeRanges["features"].
+   * If {@link #isValidation} is True, start and end are set from model.datasetPreparationRun.valFeatureTimeRanges["features"].
+   *
+   * 2. Set {@link ReliabilityRiskMlModel.Evaluator#operationFeatures} using labels as {@link ReliabilityMlDatasetPreparationRunCommon#xFeatures}.
+   *
+   * @param model
+   *           {@link ReliabilityRiskMlModel} for customizing this evaluator.
+   * @returns an instance of {@link ReliabilityRiskMlModel.Evaluator}.
+   */
+  evaluatorForModel: ~ py-data-science
+}

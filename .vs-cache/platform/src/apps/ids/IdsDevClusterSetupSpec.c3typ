@@ -1,0 +1,104 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for deploying IDS to an environment
+ */
+type IdsDevClusterSetupSpec mixes IdsSetupSpec {
+
+  /**
+   * The {@link VanityUrl} to be used for the IDS control tag
+   */
+  controlVanityUrl: string
+
+  /**
+   * The {@link VanityUrl} of Marketplace (ex. https://repository.c3-e.com)
+   */
+  marketplaceVanityUrl: string
+
+  /**
+   * The desired {@link PlatformOrganization} name to be used for the IDS control tag
+   */
+  idsOrgName: string
+
+  /**
+   * The desired id of the {@link User} that will represent the IDS control tag in Marketplace
+   */
+  idsPmUserId: string
+
+  /**
+   * The desired password for {@link #idsPmUserId}.
+   */
+  idsPmUserPass: string
+
+  /**
+   * The desired email for {@link #idsPmUserId}.
+   */
+  idsPmUserEmail: string
+
+  /**
+   * The domain that IDS should use when creating VanityUrls. If this is not supplied,
+   * it will fallback on the domain of {@link #controlVanityUrl}.
+   */
+  idsDesiredVanityUrlDomain: string
+
+  /**
+   * Whether or not artifacts should be obtained through Marketplace packages
+   */
+  useMarketplace: boolean = true
+
+  /**
+   * Whether or not the IDS control tag should trigger builds through C3's Jenkins Apps Pipeline
+   */
+  useJenkins: boolean = true
+
+  /**
+   * The Jenkins instance that should be used to run builds for the IDS control tag
+   */
+  jenkinsInstance: string = 'apps'
+
+  /**
+   * The url to {@link #jenkinsInstance}
+   */
+  jenkinsUrl: string = 'https://jenkins.c3iot.io/apps/'
+
+  /**
+   * The authorization to use when triggering builds for {@link #jenkinsUrl}
+   */
+  jenkinsAuth: string
+
+  /**
+   * What type of cloud storage file system the IDS control tag uses to store build artifacts.
+   */
+  idsCloudStorageBuildArtifactFsScheme: string enum FileSystemScheme
+
+  /**
+   * The {@link FileSystem} mount that should be used to store build artifacts
+   */
+  idsCloudStorageBuildArtifactMount: string
+
+  /**
+   * Whether or not to use pre-signed urls when deploying using deployment pipelines
+   */
+  usePresignedUrlInRemoteDeployments: boolean = true
+
+  /**
+   * Twilio account configuration.
+   * See https://www.twilio.com/docs/sms/api/message-resource#create-a-message-resource for more info.
+   */
+  twilioSid: string
+
+  twilioFrom:  string
+  twilioToken: string
+  twilioUrl:   string = 'https://api.twilio.com/2010-04-01'
+
+  /**
+   * What setup steps should cause an error to be thrown rather than returned in the final {@link IdsSetupResult}
+   */
+  criticalFunctions: [string] = ['createControlTenantTag', 'deployIdsControlTag', 'createIdsControlVanityUrl']
+}

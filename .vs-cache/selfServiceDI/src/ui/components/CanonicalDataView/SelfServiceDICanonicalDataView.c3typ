@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Custom component to display details of the selected Canonical in the Integrated Source
+ */
+@typeScript
+type SelfServiceDICanonicalDataView mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Array that contains the list of all canonicals
+   */
+  canonicalDetails: TypeMeta
+
+  /**
+   * Array that contains the list of sourceNode details
+   */
+  sourceNodeDetails: UiSdlDynamicValueSpecParam
+
+  /**
+   * The text to display on the button
+   */
+  buttonText: string | UiSdlDynamicValueSpec
+
+  /**
+   * Flag for displaying integrate sources graph or transformer within in the container
+   */
+  transformerContainer: boolean | UiSdlDynamicValueSpec
+
+  /**
+   * Updates the target node in the graph with the selected canonical
+   */
+  @uiSdlActionCreator(actionType='SELECT_CANONICAL_ACTION')
+  selectCanonicalAction: function(id: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Closes the sidePanel that displays the selectedCanonical custom component
+   */
+  @uiSdlActionCreator(actionType='CANONICAL_SIDE_PANEL_BACK_BUTTON')
+  closeCanonicalSidePanelButtonAction: function(id: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Action to update the canonicalDetails for the component
+   */
+  @uiSdlActionCreator(actionType='SET_CANONICAL_DETAILS')
+  setCanonicalDetailsAction: function(id: string,
+                                      canonicalDetails: TypeMeta): !UiSdlReduxAction ts-client
+
+  /**
+   * Updates the canonicalDetails for the component
+   */
+  @uiSdlReducer(actionType='SET_CANONICAL_DETAILS')
+  setCanonicalDetailsReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

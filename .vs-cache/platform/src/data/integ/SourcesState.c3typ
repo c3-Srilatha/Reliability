@@ -1,0 +1,135 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * State of the Data Integration step
+ * state transition:
+ * initial ->  (rejected | validated)
+ * validated -> scheduled -> processing -> (completed | (failing -> failed))
+ * (scheduled | processing) -> stopping -> stopped
+ */
+enum type SourcesState {
+
+  /**
+   * Sources is synced with the file or the queue to determine source of truth.
+   */
+  INITIAL = 'initial'
+
+  /**
+   * Sources are chunked
+   */
+  CHUNKED = 'chunked'
+
+  /**
+   * Sources metadata has been validated. For example, {@see SourceFile#validated}
+   */
+  VALIDATED = 'validated'
+
+  /**
+   * Sources cannot be processed because of original file parsing errors, or metadata issues.
+   */
+  REJECTED = 'rejected'
+
+  /**
+   * Sources cannot be processed because of original file parsing errors, or metadata issues
+   */
+  REJECTING = 'rejecting'
+
+  /**
+   * Sources is marked and placed in the queue for processing.
+   */
+  SCHEDULED = 'scheduled'
+
+  /**
+   * Sources is picked from a file or a queue for data load
+   */
+  PROCESSING = 'processing'
+
+  /**
+   * Sources has been successfully transformed and loaded into target types
+   */
+  COMPLETED = 'completed'
+
+  /**
+   * Some source objects have failed and other objects are still being processed
+   */
+  FAILING = 'failing'
+
+  /**
+   * Sources have completed processing and at least some sources have failed
+   */
+  FAILED = 'failed'
+
+  /**
+   * Sources is marked for stopping will remain in this state till all the sources(chunk) is drained from the queues.
+   */
+  STOPPING = 'stopping'
+
+  /**
+   * Sources is marked as stopped only after being in stopping state and all the sources(chunks) are drained from
+   * the queues.
+   */
+  STOPPED = 'stopped'
+
+  /**
+   * @return true if status of SourcesState state machine is a final state
+   * Final States are : REJECTED, COMPLETED, FAILED
+   */
+  isFinal: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return true if status of SourcesState state machine is INITIAL
+   */
+  isInitial: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return true if status of SourcesState state machine is VALIDATED
+   */
+  isValidated: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return true if status of SourcesState state machine is SCHEDULED
+   */
+  isScheduled: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return true if status of SourcesState state machine is a stopped state
+   * Stopped States are #STOPPING and #STOPPED
+   */
+  isStopped: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return `true` if the state is "completed"
+   */
+  isCompleted: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return `true` if the state is "processing"
+   */
+  isProcessing: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return `true` if the state is "failed"
+   */
+  isFailed: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return `true` if the state is "rejected"
+   */
+  isRejected: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return `true` if the state is "failing"
+   */
+  isFailing: function(status: !?string enum SourcesState): boolean
+
+  /**
+   * @return `true` if the state is "rejecting"
+   */
+  isRejecting: function(status: !?string enum SourcesState): boolean
+}

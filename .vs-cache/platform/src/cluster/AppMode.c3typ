@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * All possible modes a C3 Application can be deployed in.
+ */
+enum type AppMode {
+
+  /**
+   * App is in a production mode; i.e. source code and metadata is read only, data integration is turned ON, and
+   * features are materialized using integrated data.
+   * In this mode, basic auth will not be enabled. Users must log in through SSO.
+   */
+  PROD = 'prod'
+
+  /**
+   * App is in a development mode; i.e. source code and metadata is updatable, test data and types are available,
+   * data integration is turned ON, and features are materialized using integrated data.
+   */
+  DEV = 'dev'
+
+  /**
+   * App is in a production like mode but with test data, source code, and metadata available; i.e. source code and
+   * metadata is read only, data integration is turned ON, and features are materialized using integrated data.
+   */
+  TEST = 'test'
+
+  /**
+   * App is in a trial / experimentation mode; i.e. source code and metadata is updatable for the root pkg,
+   * but test data and types are not available, data integration is turned OFF,
+   * and features are materialized using raw source data.
+   */
+  TRIAL = 'trial'
+
+  /**
+   * Returns true if the AppMode includes Pkg contents from test overlay.
+   */
+  includesTestOverlay: inline function(mode: !string serialized AppMode): boolean
+
+  /**
+   * Returns true, in this mode, if Pkg needs to be updatable.
+   */
+  requiresUpdatablePkg: inline function(mode: !string serialized AppMode): boolean
+}

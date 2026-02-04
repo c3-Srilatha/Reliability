@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing "Authorization" error.
+ */
+type Err.Authz mixes Error {
+
+  @error(message="User '${user}' is not authorized to access ${action} in application '${app}'", httpCode=403)
+  notAuthorizedException: function(user: !string, app: !string, action: !Action): !Err.Authz
+
+  @error(message="User '${user}' is not authorized to access ${action} in application '${app}'", httpCode=403)
+  notAuthorizedException: function(user: !string, app: !string, action: !string): !Err.Authz
+
+  @error(message="User '${user}' is not authorized to access ${action} because of DataPermission expression '${expr}', roles: ${roles}",
+         httpCode=403)
+  dataPermissionException: function(user: !any, action: !any, expr: !any, roles: !any): !Err.Authz
+
+  @error(message="You cannot call this method for roles with higher security level: ${roles}!", httpCode=403)
+  cannotAssumeHigherRole: function(roles: Array<string>): !Err.Authz
+
+  @error(message="User ${user} reached maximum number of login attempts and has been locked out", httpCode=401)
+  userLockedOut: function(user: !any): !Err.Authz
+
+  @error(message="User ${user} attempted a basic auth login but it is not configured for it", httpCode=401)
+  basicAuthNotSetException: function(user: !any): !Err.Authz
+
+  @error(message="This operation is not allowed for user ${user}", httpCode=403)
+  securityLevelViolation: function(user: !any): !Err.Authz
+
+  @error(message="User ${user} is not impersonating in env ${env}", httpCode=500)
+  notImpersonating: function(user: !any, env: !any): !Err.Authz
+
+  @error(message="User ${impersonator} is already impersonating User ${impersonatee} (env ${env})", httpCode=500)
+  alreadyImpersonating: function(impersonator: !any, impersonatee: !any, env: !any): !Err.Authz
+
+  @error(message="Bad request", httpCode=400)
+  oauthBadRequest: function(): !Err.Authz
+
+  @error(message="unauthorized client", httpCode=401)
+  oauthUnauthorizedClient: function(): !Err.Authz
+
+  @error(message="invalid grant", httpCode=400)
+  oauthInvalidGrant: function(): !Err.Authz
+
+  @error(message="invalid scope", httpCode=400)
+  oauthInvalidScope: function(): !Err.Authz
+
+  @error(message="${message}", httpCode=400)
+  oauthInvalidRequest: function(message: !string): !Err.Authz
+
+  @error(message="${message}", httpCode=400)
+  oauthInvalidToken: function(message: !string): !Err.Authz
+}

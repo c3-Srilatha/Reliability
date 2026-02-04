@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type which provides context-specific target translation for a link from the user-specified value. Web links are
+ * supported in most contexts, but type links need to be resolved in a context-specific way.
+ *
+ * This type is not abstract because it provides default implementations, but they only handle web links and return
+ * null for others. This means that internal link and image references will be replaced by their anchor text (no link
+ * or image markup will be generated).
+ *
+ * @see DocumentationRenderer
+ * @see DocumentationRenderSpec
+ */
+type DocumentationLinkBuilder {
+
+  /**
+   * The file that contains the links to be resolved.
+   *
+   * This field is provided by DocumentationRenderer before starting to render links for a particular documentation
+   * file.
+   */
+  file: Pkg.File
+
+  /**
+   * Produce the link target for the specified logical reference. The kind of link and the path are passed and a
+   * reference usable in the context being rendered for should be returned. If null is returned, the link is removed
+   * and replaced by the anchor text.
+   *
+   * For example, HTML rendering will use the return value in the `<a href>` attribute and so the link must be a
+   * URL valid in the context for which the HTML is being rendered. However, the value need not strictly be a URL;
+   * it may be anything valid for the renderer.
+   */
+  href: member function(kind: !string enum DocumentationKind, path: !string): string
+
+  /**
+   * Produce the link target for the specified image reference. The image path is passed and a reference usable in the
+   * context being rendered for should be returned. If null is returned, the link is removed and replaced by the anchor
+   * text.
+   *
+   * For example, HTML rendering will use the return value in the `<img src>` attribute and so the link must be a
+   * URL valid in the context for which the HTML is being rendered. However, the value need not strictly be a URL;
+   * it may be anything valid for the renderer.
+   */
+  src: member function(path: !string): string
+
+  /**
+   * Optional function to produce additional `<a>` element attributes for special purposes. By default returns an
+   * empty map.
+   *
+   * @see #href
+   */
+  attrs: member function(kind: !string enum DocumentationKind, path: !string): map<string, string>
+}

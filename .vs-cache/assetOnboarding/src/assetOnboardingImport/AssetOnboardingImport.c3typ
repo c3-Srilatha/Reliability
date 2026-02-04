@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+ /**
+  * Handles the import for the asset onboarding application
+  */
+type AssetOnboardingImport mixes Value {
+
+  /**
+   * Gets the workflow that is used to run the import. Creates it if it doesn't already exist.
+   * @return The workflow to be executed for the import
+   */
+   getWorkflow: function (): Workflow py
+
+  /**
+   * Gets the workflow and starts it. The workflow extracts all the files from the zip file, reads them and adds necessary changes to the application.
+   * The workflow does not modify any existing entities, rather it just adds data.
+   * @param spec
+   *     Contains two main properties - path of uploaded zip file and the path where it will be unzipped.
+   * @return The workflow run being executed for the import
+   */
+  startImport: function (spec: map<string, string>): Workflow.Run py
+}

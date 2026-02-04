@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Ui representation of {@link Feature.Set} and its related types.
+ * The {@link #id} of this {@link FeatureUi.Set} is the same as the corresponding {@link Feature.Set}.
+ */
+type FeatureUi.Set mixes WithUniqueId, WithName {
+
+  /**
+   * Name of features on this set
+   */
+  features: set<string serialized Feature>
+
+  /**
+   * subjectType of this Feature Set
+   */
+  subjectType: Type<<FeatureEvaluatable>>
+
+  /**
+   * Returns the fetch count of all {@link Feature.Set}
+   */
+  fetchCount: function(fetchSpec: FetchSpec): int js-server
+
+  /**
+   * Creates a {@link FeatureUi.Set} from a {@link Feature.Set}.
+   *
+   * Callers should ensure that the following fields are populated:
+   * - {@link Feature.Set#name}
+   */
+  from: function(featureSet: Feature.Set): FeatureUi.Set js-server
+}

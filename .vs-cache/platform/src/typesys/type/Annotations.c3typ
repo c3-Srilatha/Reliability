@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This object represents a view of all annotations for a specific metadata instance. It provides method-based
+ * access to all annotations, whether they are declared or not. This allows code to access annotation values without
+ * a bunch of extra checks.
+ *
+ * For example, the type declaration:
+ * ```type
+ * @ser(includeCachedMethods=['js', 'py'])
+ * type Snake ...
+ * ```
+ *
+ * Means that `Snake.meta().annotations().ser()` would return an instance of {@link Ann.Ser} because `@ser` is declared.
+ * However, it will also return an empty instance of every other defined annotation as well, even though they are
+ * not declared on Snake.
+ */
+type Annotations {
+
+  /**
+   * Get the specified annotation name (as used) if present.
+   */
+  get: inline member function(name: !string): !Annotation java | js
+
+  /**
+   * Whether the specified annotation name (as used) or annotation field is present.
+   */
+  has: inline member function(name: !string, annField: string): boolean java | js
+
+  /**
+   * Invoke action for every annotation on this instance.
+   */
+  eachAnnotation: member function(action: lambda(ann: !?Annotation))
+
+  /**
+   * Invoke action for every annotation name on this instance.
+   */
+  eachAnnotationName: member function(action: lambda(annName: !string))
+
+  /**
+   * @return True if the boolean field at the specified path is true and false otherwise
+   */
+  boolAt: inline member function(annotationValuePath: !string): boolean
+
+  /**
+   * @return True if the boolean field was set at the specified path (either to true or false).
+   */
+  isBoolAtSet: inline member function(annotationValuePath: !string): boolean
+
+  /**
+   * The annotations declared on the owning element and its mixins.
+   *
+   * @see Annotatable#annotationsJson
+   */
+  annotationsJson: private json
+
+  /**
+   * Map of Annotation name to it's declaration json
+   */
+  annotationJsonByName: private map<string, json>
+
+  isEmptyObj: ~ java | js
+}

@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Allows a query of timed data to be defined, then executed.
+ * Reliability timed data includes data from the following sources:
+ * - {@link Sensor}s
+ * - `ReliabilityAssetAlerts`, {@link ReliabilityAssetEvent}s, {@link WorkOrder}s,
+ * and other persisted entities with a timestamp.
+ * - Model Outputs
+ * - Model Inputs
+ * - {@link ReliabilityMetric}s
+ *
+ * See usages of {@link ReliabilityTimedDataSubquery} for an exhaustive list.
+ */
+type ReliabilityTimedDataQuery {
+
+  /**
+   * A map of query id to the {@link ReliabilityTimedDataSubquery} that will be executed.
+   * The query id is used to identify the query in the result, and can be arbitrarily set.
+   */
+  queries: map<string, ReliabilityTimedDataSubquery>
+
+  /**
+   * Executes the {@link #queries}
+   * The result is a map of query id to the result of the query.
+   * @param timeInfo
+   *        Determines the time range and interval for the query. The {@link TimeInfo#timeZone} is ignored, and data
+   *        timestamps are not changed after the query is executed.
+   * @returns
+   *        A map of query id to the result of that query. Determined by the {@link #queries} map.
+   */
+  execute: member function(timeInfo: !TimeInfo): map<string, any> js-rhino
+}

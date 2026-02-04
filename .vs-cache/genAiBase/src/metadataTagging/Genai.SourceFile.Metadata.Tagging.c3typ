@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Automatic Metadata Extraction for {@link Genai.SourceFile}s that identify categories of keywords
+ * that enable better improved retrieval performance and explicit filtering over documents
+ */
+
+type Genai.SourceFile.Metadata.Tagging {
+
+  /**
+   * Analyzes source files using a sample size of {@link Genai.SourceFile.Metadata.Tagging.Config#documentSampleSize}
+   * and stores the result in {@link Genai.SourceFile.Metadata.Tagging.ScanResult} with the categories found in the source files.
+   * If the user has an active {@link Genai.Project}, the function will use the project's source files. Otherwise all source files
+   * accessible to the user will be used.
+   * @return with the categories found in the source files.
+   */
+  previewCategories: function(): !Genai.SourceFile.Metadata.Tagging.ScanResult js-rhino
+
+  /**
+   * Extracts and applies the metadata tags to the source files, based on the categories contained in the
+   * {@link Genai.SourceFile.Metadata.Tagging.ScanResult} passed as an input. It processes files in batches, using
+   # {@link Genai.SourceFile.Metadata.Tagging.Config#documentBatchSize} to determine the number of batches.
+   * @param scanResult
+   *    {@link Genai.SourceFile.Metadata.Tagging.ScanResult} with the categories to be used for the metadata extraction
+   */
+  applyMetadataTagging: function(scanResult: !Genai.SourceFile.Metadata.Tagging.ScanResult) js-rhino
+
+  /**
+   * Analyzes source files and stores the result
+   * in {@link Genai.SourceFile.Metadata.Tagging.ScanResult}
+   * @param files
+   *    list of {@link Genai.SourceFile}s to be analyzed
+   * @return with the categories found in the source files
+   */
+  identifyFilterCategories: private function(files: ![Genai.SourceFile]): !Genai.SourceFile.Metadata.Tagging.ScanResult py-chunker
+
+  /**
+   * This function automatically extracts metadata from the source files and return
+   * a json with the metadata for each file
+   * @param files
+   *    list of {@link Genai.SourceFile}s to be analyzed
+   * @param scanResult
+   *    {@link Genai.SourceFile.Metadata.Tagging.ScanResult} with the categories
+   *    to be used for the metadata extraction
+   *
+   * @return json with the metadata for each file
+   */
+  metadataExtraction: private function(scanResult: !Genai.SourceFile.Metadata.Tagging.ScanResult, files: ![Genai.SourceFile]): map<string, map<string, [string]>> py-chunker
+
+  /**
+   * This function integrates the metadata extracted from the source files
+   * by the {@link Genai.SourceFile.Metadata.Tagging#metadataExtraction} function
+   * @param metadata
+   *    map<string, map<string, [string]>> with the tags for each file
+   *    where the key is the file id, the second map key is the category
+   *    and finally a list of tags for that category
+   */
+  metadataIntegration: private function(metadata: map<string, map<string, [string]>>) py-chunker
+
+  /**
+   * This runs the entire process of metadata extraction and integration composed by
+   * the following steps:
+   *    1. Identify the categories of tags that will be used for the metadata extraction
+   *    2. Extract the metadata from the source files
+   *    3. Integrate the metadata extracted into the source files
+   * @param files
+   *    list of {@link Genai.SourceFile}s to be processed
+   *
+   * @return list of {@link Genai.SourceFile}s with the metadata integrated
+   */
+  process: function(files: ![Genai.SourceFile], scanResult: Genai.SourceFile.Metadata.Tagging.ScanResult): ![Genai.SourceFile] py-chunker
+}

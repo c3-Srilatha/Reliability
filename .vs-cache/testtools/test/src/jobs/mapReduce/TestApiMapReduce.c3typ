@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link MapReduce} used for testing {@link TestApi.waitForJob}. Simply maps {@link TestApiMapReduceEntity#id}
+ * to {@link TestApiMapReduceEntity#codeName} and reduces the map to an array of strings.
+ */
+entity type TestApiMapReduce extends MapReduce<TestApiMapReduceEntity, string, string, string> type key 'TAPI_MR' {
+  /**
+   * When `true` this job will fail during the {@link map} phase.
+   */
+  failJobDuringMap: boolean
+
+  /**
+   * When `true` this job will fail during the {@link reduce} phase.
+   */
+  failJobDuringReduce: boolean
+
+  /**
+   * The amount of time to stall (in ms) during {@link TestApiMapReduce#map map} before executing any of the
+   * implementation. Used by {@link Thread#sleep} to simulate a stall and is exclusively used to test handing when a 
+   * job times out.
+   */
+  mapStallTime: int = 0
+
+  /**
+   * The amount of time to stall (in ms) during {@link TestApiMapReduce#reduce reduce} before executing any of the
+   * implementation. Used by {@link Thread#sleep} to simulate a stall and is exclusively used to test handing when a 
+   * job times out.
+   */
+  reduceStallTime: int = 0
+
+  /**
+   * @inheritdoc
+   * Will throw an error if the job has {@link failJobDuringMap} set to `true`, otherwise will simply map the
+   * {@link TestApiMapReduceEntity#id} to {@link TestApiMapReduceEntity#codeName}.
+   */
+  map: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   * Will throw an error if the job has {@link failJobDuringReduce} set to `true`, otherwise will simply reduce the map
+   * to an array of {@link TestApiMapReduceEntity#codeName}.
+   */
+  reduce: ~ js-rhino
+}

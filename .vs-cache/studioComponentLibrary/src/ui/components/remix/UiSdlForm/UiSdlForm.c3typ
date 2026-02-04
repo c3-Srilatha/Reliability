@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Extension of UiSdlForm for dynamic behavior related to deriving fieldSets
+ */
+@typeScript(sourceCodeType="Module")
+remix type UiSdlForm {
+
+  /**
+   * Retrieves {@UiSdlForm#fieldValidity} from state.
+   *
+   * @param id
+   *           The componentId of the form
+   * @param state
+   *           Redux state
+   * @returns the fieldValidity of the form
+   */
+  getFieldValidity: function(id: string, state: !UiSdlReduxState): map<string, boolean> ts-client
+
+  /**
+   * An action to reset a UiSdlForm
+   *
+   * @param id
+   *           The componentId of the form
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='RESET_FORM_DYNAMIC')
+  resetFormDynamicAction: private function(id: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `RESET_FORM_DYNAMIC` and clears the form field values and validity.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='RESET_FORM_DYNAMIC')
+  dynamicFormResetReducer: private function(state: !UiSdlReduxState,
+                                            action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to set the fieldSets of a UiSdlForm
+   *
+   * @param id
+   *           The componentId of the form
+   * @param fieldSets
+   *           The fieldSets of the form
+   * @param reset
+   *           Whether to reset the form before setting the fieldSets
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_FIELDSETS')
+  setFieldSetsAction: private function(id: string,
+                                       fieldSets: [UiSdlFormFieldSet],
+                                       reset: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FIELDSETS` and sets the form fieldsets in state
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_FIELDSETS')
+  setFieldSetsReducer: private function(state: !UiSdlReduxState,
+                                        action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to set the hintText of a field in the form
+   *
+   * @param id
+   *           The componentId of the form
+   * @param fieldName
+   *           The field to set hint text for
+   * @param hintText
+   *           The text to display
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_HINT_TEXT')
+  setHintTextAction: private function(id: string, fieldName: string, hintText: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_HINT_TEXT` and sets the hintText for a field
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_HINT_TEXT')
+  setHintTextReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

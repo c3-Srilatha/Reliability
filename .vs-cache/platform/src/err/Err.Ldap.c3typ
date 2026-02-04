@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing "Authentication" error.
+ */
+type Err.Ldap mixes Error {
+
+  @error(message="Failed to connect to LDAP server", httpCode=501)
+  ldapConnectionFailed: function(): !Err.Ldap
+
+  @error(message="Trust store path and password must be set in config", httpCode=400)
+  ldapTlsMissingTrustStore: function(): !Err.Ldap
+
+  @error(message="Failed to unbind a connection to LDAP server", httpCode=501)
+  ldapUnbindFailed: function(): !Err.Ldap
+
+  @error(message="Failed to search in LDAP server for filter", httpCode=501)
+  ldapSearchFailed: function(): !Err.Ldap
+}

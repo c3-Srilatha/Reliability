@@ -1,0 +1,81 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlTreeList} component for testing purposes.
+ */
+type LukeTestUiSdlTreeList mixes LukeTestComponent {
+
+  parentSelector:     ~ = '.c3-sdl-tree-list'
+  renderingSelectors: ~ = ['.list']
+
+  /**
+   * Selector for the list items.
+   */
+  itemSelector: string = '.item'
+
+  /**
+   * Selector for the search box.
+   */
+  searchBoxSelector: string = '.ui.search input.c3-form-field'
+
+  /**
+   * Return a selector for the item at the given index.
+   *
+   * @param itemNumber
+   *           the index of the item (the top item is 1)
+   */
+  nthItemSelector: member function(itemNumber: !int): string js-client
+
+  /**
+   * Count of the number of items in the tree list
+   *
+   * @param timeout
+   *           Timeout in seconds for the chain
+   */
+  numOfItems: member function(timeout: int): string js-client
+
+  /**
+   * Verify that current list items match the expected items.
+   *
+   * @param expectedItems
+   *           the items that should be displayed, in order
+   */
+  checkItems: member function(expectedItems: [LukeTestUiSdlTreeListItem]) js-client
+
+  /**
+   * Click the expand icon for the item at the given index.  Causes an assertion error if the item can't be expanded.
+   *
+   * @param itemNumber
+   *           the index of the item (the top item is 1)
+   */
+  clickExpandIcon: member function(itemNumber: !int): LukeAsyncQueueNode js-client
+
+  /**
+   * Click the collapse icon for the item at the given index.  Causes an assertion error if the item can't be collapsed.
+   *
+   * @param itemNumber
+   *           the index of the item (the top item is 1)
+   */
+  clickCollapseIcon: member function(itemNumber: !int): LukeAsyncQueueNode js-client
+
+  /**
+   * Enter a string in the search bar.
+   */
+  enterSearchString: member function(searchString: !string): LukeAsyncQueueNode js-client
+
+  /**
+   * Click an item action.
+   *
+   * @param itemNumber
+   *           the index of the item (the top item is 1)
+   * @param actionNumber
+   *           the index of the action (the leftmost item for the action is 1)
+   */
+  clickItemAction: member function(itemNumber: !int, actionNumber: !int): LukeAsyncQueueNode js-client
+}

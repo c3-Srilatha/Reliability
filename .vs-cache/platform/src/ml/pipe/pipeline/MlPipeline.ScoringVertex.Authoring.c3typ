@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functional authoring type for {@link MlPipeline.ScoringVertex} that is used for embedding an {@link MlScoringMetric} within
+ * an {@link MlPipeline}.
+ */
+type MlPipeline.ScoringVertex.Authoring mixes MlPipeline.Vertex.Authoring<MlPipeline.ScoringVertex> {
+
+  toVertex: ~ py
+
+  /**
+   * Reference to the metric to use for scoring.
+   */
+  scoringMetric: private MlScoringMetric
+
+  /**
+   * Whether the vertex has nested-input ports for x.
+   */
+  isXNestedInput: private boolean
+
+  /**
+   * Whether the vertex has nested-input ports for y.
+   */
+  isYNestedInput: private boolean
+
+  /**
+   * Helper constructor for an authoring vertex.
+   * @param name
+   *           required name for the vertex.
+   * @param scoringMetric
+   *           metric used for scoring.
+   * @param xNames
+   *           names of x input ports that the new vertex will have.
+   * @param yNames
+   *           names of y input ports that the new vertex will have.
+   * @param contextNames
+   *           names of context input ports that the new vertex will have.
+   * @param outNames
+   *           names of output ports that the new vertex will have.
+   * @param isXNestedInput
+   *           Whether the vertex has nested input port(s) for x.
+   * @param isYNestedInput
+   *           Whether the vertex has nested input port(s) for y.
+   * @return constructed vertex.
+   */
+  fromScoringMetric: function(name: string,
+                              scoringMetric: MlScoringMetric,
+                              xNames: [string],
+                              yNames: [string],
+                              contextNames: [string],
+                              outNames: [string],
+                              isXNestedInput: boolean,
+                              isYNestedInput: boolean): MlPipeline.ScoringVertex.Authoring py
+}

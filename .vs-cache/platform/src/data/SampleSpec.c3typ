@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for how to perform sampling.
+ */
+type SampleSpec mixes Spec {
+
+  /**
+   * Number of elements to return. If set to 0 or null, then will use {@link #frac} to
+   * determine how many samples to return.
+   */
+  count: int = 1
+
+  /**
+   * Fraction of items to return. Only used if {@link #count} is set to 0 or null. Only supported by {@link Array}.
+   */
+  frac: float
+
+  /**
+   * Allow or disallow sampling of the same row more than once (whether to do sampling with replacement).
+   */
+  replace: boolean
+
+  /**
+   * Seed for random number generator.
+   */
+  rndSeed: int
+
+  /**
+   * Distribution of the values generated. The default is a uniform distribution (all values equally likely).
+   *
+   * Notes:
+   *  - Not all methods will be supported by all collections, but {@link Array} supports them all.
+   *  - #replace should generally be `true` for distributions other than `UNIFORM`.
+   */
+  dist: string enum SampleSpec.Dist = UNIFORM
+
+  /**
+   * When #dist is {@link SampleSpec.Dist.NORMAL}, this can be used to set the base index to a fraction of the size.
+   * For example, `0.5` is the center.
+   */
+  normalMeanFrac: double = 0.5
+
+  /**
+   * When #dist is {@link SampleSpec.Dist.NORMAL}, this can be used to set how many standard deviations out the ends
+   * of the array are. For example, `3` means the end values will be chosen only when the random value is 3σ from the
+   * mean.
+   */
+  normalSdFrac: double = 3
+
+  /**
+   * When #dist is {@link SampleSpec.Dist.EXPONENTIAL}, this can be used to set how much more likely an element is
+   * than the next one in the list. This value must be strictly > 0 and should not be too large, especially if the
+   * collection has many elements.
+   */
+  exponentialWeight: double = 1.2
+}

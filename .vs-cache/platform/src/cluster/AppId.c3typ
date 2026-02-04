@@ -1,0 +1,146 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 App ID
+ * Format: <cluster>-<env>-<app>
+ */
+inline type AppId mixes StringSerializable {
+
+  /**
+   * C3 Cluster ID component (first) in App ID
+   * E.g. prod-c3-crm
+   * => prod
+   */
+  cluster: string
+
+  /**
+   * C3 Environment name (second) component in App ID; e.g. srv,ui,c3.
+   * E.g. prod-c3-crm
+   * => c3
+   * An Environment name must be unique within a Cluster.
+   */
+  env: string
+
+  /**
+   * C3 Application name (third) component in App ID; e.g. c3,crm,lightbulb
+   * E.g. prod-c3-crm
+   * => crm
+   * An Application name must be unique within an Environment.
+   */
+  app: string
+
+  /**
+   * Fully formatted id value
+   */
+  id: cached property(): string
+
+  /**
+   * @return true if this App ID has all required components
+   */
+  hasId: member function(): boolean
+
+  /**
+   * C3 Environment ID that manages this App. Will return unique ID of the environment <cluster>-<env>
+   * E.g. prod-c3-crm
+   * => prod-c3
+   */
+  envId: cached member function(): string
+
+  /**
+   * C3 Application ID. Will return unique ID of the application <cluster>-<env>-<app>
+   * E.g. prod-c3-crm
+   * => prod-c3-crm
+   */
+  appId: cached member function(): string
+
+  /**
+   * @return true if provided string is same app id or name
+   */
+  isSameId: member function(app: !?string): boolean
+
+  /**
+   * @return true if this is a `cluster-*-c3` app
+   */
+  isC3App: member function(): boolean
+
+  /**
+   * @return true if this is a `cluster-env-c3` app
+   */
+  isEnvApp: member function(): boolean
+
+  /**
+   * @return true if this is a `cluster-c3-c3` app
+   */
+  isClusterApp: member function(): boolean
+
+  /**
+   * @return true if provided string is same env id or name
+   */
+  isEnv: member function(envIdOrName: !?string): boolean
+
+  /**
+   * @return true if provided string is same cluster id or name
+   */
+  isCluster: member function(cluster: !?string): boolean
+
+  /**
+   * @return true if this app id belongs to provided env id or env name
+   */
+  isInEnv: member function(envIdOrName: !?string): boolean
+
+  /**
+   * @return true if this app id belongs to provided cluster
+   */
+  isInCluster: member function(cluster: !?string): boolean
+
+  /**
+   * Constructs App ID instance based on provided string
+   */
+  fromString: function(s: !?string, failIfInvalid: boolean): AppId
+
+  /**
+   * Constructs App ID instance based on provided string that represents app id or name
+   */
+  fromAppIdOrName: function(env: !Env, app: !?string, failIfInvalid: boolean, failIfEnvIsDifferent: boolean): AppId
+
+  /**
+   * Constructs App ID instance based on app name
+   */
+  fromApp: function(env: !Env, app: !?string, failIfInvalid: boolean): AppId
+
+  /**
+   * Constructs App ID instance based on provided env and app name
+   */
+  fromEnvApp: function(cluster: !Cluster, env: !?string, app: !?string, failIfInvalid: boolean): AppId
+
+  /**
+   * Constructs App ID instance based on provided cluster id and env and app name
+   */
+  fromClusterEnvApp: function(cluster: !?string, env: !?string, app: !?string, failIfInvalid: boolean): AppId
+
+  /**
+   * Converts this AppId to be a valid id satisfying all naming conventions and constraints.
+   */
+  sanitize: member function(): !mixing AppId
+
+  /**
+   * Returns the parent app id of the current app. The parent app is the app that is one higher level in the cluster
+   * hierarchy.
+   * For example, envApp env1-c3's parent app will be the cluster app c3-c3. App env1-blue's parent app
+   * will be its envApp, env1-c3. getParentApp of cluster app c3-c3 will return null.
+   *
+   * @Return the Id of the App that is one level above it in the cluster hierarchy.
+   */
+  parentC3AppId: member function(): string
+
+  /**
+   * Returns true if the id is a valid app id: cluster-env-app
+   */
+  isValidId: cached inline function(id: !string): boolean
+}

@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contents of each cell in a {@link DataGrid}.
+ */
+type DataGrid.Cell {
+
+  /**
+   * The value to display for this cell. This will be empty if the source is null, otherwise it will be a shortish
+   * string representation. Generally this will be the natural string representation of the value, but may also be
+   * a custom representation appropriate to the source.
+   *
+   * To determine if the raw value was `null` check #source. To determine if there was a value at all, check #fillIn.
+   *
+   * @see DataGrid.FormatSpec
+   */
+  string: ?string
+
+  /**
+   * The raw cell value. This can be any value, including an {@link Obj} so generally the #string should be displayed
+   * to the user.
+   */
+  source: ?any
+
+  /**
+   * True if this cell does not represent an actual data location, but is only synthesized to create a rectangular grid
+   * out of a ragged data shape. In this case the #source will be null and #string will be empty. However this does not
+   * indicate a null value, but instead a cell where no value is possible.
+   */
+  fillIn: boolean
+
+  /**
+   * Format a printable value of a cell from the value type and raw value. This is used to produce the #string field.
+   * Note that this will never return a `null` string, but it may return an empty one for null values or if the string
+   * value was empty.
+   *
+   * @param vt expected value type
+   * @param value source (raw) value
+   * @param spec format specification
+   */
+  stringify: inline function(vt: !ValueType, value: !?any, spec: DataGrid.FormatSpec): ?string java | js
+}

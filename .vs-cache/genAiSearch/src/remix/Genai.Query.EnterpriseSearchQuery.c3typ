@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a query a user has input when using the enterpriseSearch package.
+ */
+remix type Genai.Query.EnterpriseSearchQuery {
+
+  /**
+   * @inheritdoc
+   * The id will be the {@link MD5#hashString} hash value of the #query and the {@link User#id}.
+   */
+  id: ~
+
+  /**
+   * The query string.
+   */
+  query: !string
+
+  /**
+   * The number of time this query has been asked by the {@link User}. Multiple {@link Genai.Query.EnterpriseSearchQuery} records
+   * may exist for a query if multiple users have entered the same query. To get the total number of times a specific
+   * query has been entered across _all_ users, sum the `timesQueried` for all records with the desired #query
+   * string.
+   */
+  timesQueried: private int = 1
+
+  /**
+   * The description of what the query is expected to return.
+   */
+  description: private string
+
+  /**
+   * Function to create a new instance of {@link Genai.Query.EnterpriseSearchQuery} and rank it in relation to other queries.
+   * @param query
+   *       The user input query
+   * @return The newly created {@link Genai.Query.EnterpriseSearchQuery}
+   */
+  createAndRankQuery: function(query: !string): Genai.Query.EnterpriseSearchQuery js-rhino
+
+  /**
+   * Function to fetch the query history. Internally checks {@link GenAiUiConfig#queryHistoryVisibility} and updates
+   * the filter accordingly.
+   *
+   * @param spec
+   *      The initial fetch spec. This may be modified internally based on {@link GenAiUiConfig#queryHistoryVisibility}.
+   * @return The unique Genai.Query.EnterpriseSearchQuery records to render as the query history in the UI
+   */
+  @action(group='read')
+  fetchQueryHistory: function(spec: FetchSpec): [Genai.Query.EnterpriseSearchQuery] js-rhino
+
+  /**
+   * Wrapper to invoke #createAndRankQuery in an {@link AsyncAction}.
+   * @param query
+   *       The user input query
+   * @return The {@link AsyncAction async}
+   */
+  createAndRankQueryAsync: function(query: !string): AsyncAction js-rhino
+
+  /**
+   * Callback to set the `id` of the {@link Genai.Query.EnterpriseSearchQuery} before writing to the database.  The `id` will
+   * be set by {@link MD5#hashString} the query.  Query will be downcased `toLowerCase` and trimmed `trim`
+   * before being hashed.
+   */
+  beforeCreate: ~ js-rhino
+}

@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A category of sensor health alerts.
+ */
+@db(unique=['priority'])
+@seed(userUpdatable=true, userRemovable=true)
+entity type SensorHealthCategory mixes SeedData schema name 'SACAT' {
+
+  /**
+   * Description of the alert category
+   */
+  description: string
+
+  /**
+   * Translated name of the alert category
+   */
+  displayName: string translate by id
+
+  /**
+   * Metric expression to evaluate this category. The category is evaluated to true
+   * if the data of the metric result are all true.
+   * The expression will be evaluated on {@link Sensor}
+   */
+  expression: !string
+
+  /**
+   * Metric bindings
+   */
+  bindings: map<string, any> schema suffix 'b'
+
+  /**
+   * When multiple categories need to be evaluated at the same time.
+   * Categories with lower priority values are evaluated first
+   */
+  priority: !int
+
+  /**
+   * The values of the map are metric expressions.
+   * The keys are names of the bindings in the evaluation of {@link expression}
+   * Some bindings are dynamic. This field is used to generate those bindings.
+   * The first value from the expression evaluation time series is used as a binding.
+   */
+  metricBindings: map<string, string> schema suffix 'm'
+
+  /**
+   * Metric evaluation interval
+   */
+  interval: !string enum Interval
+
+  /**
+   * The horizon is used to determine the start of the metric evaluation.
+   */
+  horizon: !int
+
+  /**
+   * Evaluate whether the alert category should be triggered
+   * @param sensor
+   *        The {@link Sensor} to evaluate the alert category on
+   * @param start
+   *        `start` of the metric evaluation. If null, `start` is calculated to be `end - period (horizon, interval)`
+   * @param end
+   *        `end` of the metric evaluation. If null, `end` is now
+   * @param interval
+   *        metric evaluation interval. If null, use {@link interval}
+   * @return whether the condition of the alert is met.
+   */
+  evaluateAlert: member function(sensor: !Sensor,
+                                 start: DateTime,
+                                 end: DateTime,
+                                 interval: string enum Interval): boolean js-rhino
+}

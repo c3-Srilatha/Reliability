@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to specify configurations for temporary files
+ */
+type TmpFileSpec mixes Spec {
+
+  /**
+   * The generated file will begin with this string
+   */
+  prefix: string
+
+  /**
+   * The generated file will end with this string
+   */
+  suffix: string
+
+  /**
+   * Time in seconds that the file should live (default {@link TmpFsConfig.ttlHours})
+   * Please note that files **may remain longer than the configured TTL** based on when and how they are being cleaned-up or
+   * deleted.
+   *
+   * e.g If a CronJob is setup to clean files every 8 hours, then based on when the TTL expires and the next
+   * clean-up is triggered, an TTL expired file (available-for-deletion) can stay up to 7 hrs 59 mins before getting
+   * cleaned-up.
+   *
+   * @see TmpFsConfig.ttlHours
+   * @see TmpFileSystem.reapTmpFiles
+   */
+  ttl: int
+}

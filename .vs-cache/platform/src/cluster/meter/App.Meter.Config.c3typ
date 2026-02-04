@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config that controls enablement and limits of {@link App.Meter} instances.
+ * The name of the config must match the target {@link App.Meter}.
+ */
+@config(minOverride=APP, maxOverride=CLUSTER)
+@action(group='app-admin')
+type App.Meter.Config mixes Config, Named {
+
+  /**
+   * Whether or not the {@link App.Meter} should collect data. This field is not the sole determiner of
+   * meter collection though.
+   * {@see App.Monitoring.Config}
+   */
+  disabled: boolean
+
+  /**
+   * Maximum number of unique metric series in `App.Node` for a given {@link App.Meter}.
+   * Every series is uniquely identified by the key-value {@link App.Meter#tags}.
+   * For example, a meter value with tags { tag1: 'foo', tag2: 'bar'} and a meter value with
+   * { tag1: 'zip', tag2: 'bar' } are 2 unique series.
+   */
+  maxSeries: int
+
+  /**
+   * Whether this {@link App.Meter} should still collect data even if the {@link App}
+   * is not listed in {@link App.Monitoring.Config#appIds}.
+   * Is not acknowledged if {@link #disabled} is not false.
+   */
+  bypassAppEnablement: private boolean
+
+  setConfig:      ~
+  setConfigValue: ~
+}

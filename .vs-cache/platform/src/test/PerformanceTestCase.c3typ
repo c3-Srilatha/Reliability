@@ -1,0 +1,104 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type PerformanceTestCase mixes MaximGunOptions {
+
+  /**
+   * The Lambda function name being supplied as the action lambda function
+   * If both `action` and `actionLambdaName` fields are provided, only the `action` field will be used.
+   */
+  actionLambdaName: string
+
+  /**
+   * The Lambda function name being supplied as the set up lambda function invoked before firing the actions
+   * If both `setupLambda` and `setupLambdaName` fields are provided, only the `setupLambda` field will be used.
+   */
+  setupLambdaName: string
+
+  /**
+   * The Lambda function name being supplied as the tear down lambda function invoked after firing the actions
+   * If both `teardownLambda` and `teardownLambdaName` fields are provided, only the `teardownLambda` field will be used.
+   */
+  teardownLambdaName: string
+
+  /**
+   * MaximGunStat values which triggers the test failure
+   */
+  failureThreshold: MaximGunStat
+
+  /**
+   * MaximGunStat values of warning threshold
+   */
+  warningThreshold: MaximGunStat
+
+  /**
+   * MaximGunStat values which triggers the test failure based on the measurementFieldsFromReturnValue field names
+   */
+  customFailureThreshold: map<string, MaximGunStat> schema suffix 'CF'
+
+  /**
+   * MaximGunStat values of the warning thresholds based on the customMeasurementFields field names
+   */
+  customWarningThreshold: map<string, MaximGunStat> schema suffix 'CW'
+
+  /**
+   * Accumulate results from the {@link MaximGunUser}s and return a {@link TestCase} with the overall results.
+   * This should be run after the test is completed.
+   *
+   * @param fire
+   *           the {@link MaximGunFire} that runs this test case
+   * @param testCaseClassname
+   *           the value for the classname field of the {@link TestCase}
+   * @param testCaseName
+   *           the value for the name field of the {@link TestCase}
+   * @return the generated {@link TestCase}
+   */
+  toTestCase: member function(fire: !MaximGunFire, testCaseClassname: !string, testCaseName: !string): TestCaseResult
+
+  /**
+   * Helper function to check whether failure/warning thresholds have been exceeded and construct a failure/warning
+   * message that gets appended to the `message` passed in.
+   *
+   * @param message
+   *           The current message, which will be appended to with warning or failure messages
+   * @param threshold
+   *           Failure or warning threshold
+   * @param performanceTestResult
+   *           The performance test result stats to compare against the threshold. The message will be appended only if
+   *           this result exceeds the threshold.
+   * @param isFailureThreshold
+   *           True if it is checking failure thresholds, false if it is checking warning thresholds. This determines
+   *           the language of the messaging (i.e., "Failed ..." vs. "Warning ...").
+   * @return The constructed failure or warning message
+   */
+  checkThreshold: private function(message: string,
+                                   threshold: MaximGunStat,
+                                   performanceTestResult: MaximGunStat,
+                                   isFailureThreshold: boolean): string
+
+  /**
+   * Helper function to check whether custom failure/warning thresholds have been exceeded and construct a
+   * failure/warning message that gets appended to the `message` passed in.
+   *
+   * @param message
+   *           The current message, which will be appended to with warning or failure messages
+   * @param customThreshold
+   *           Custom failure or warning threshold for each custom measurement metric
+   * @param customStats
+   *           Custom measurement stats to compare against the threshold. Messages for each custom measurement metric
+   *           will be appended only if the result exceeds the threshold.
+   * @param isFailureThreshold
+   *           True if it is checking failure thresholds, false if it is checking warning thresholds. This determines
+   *           the language of the messaging (i.e., "Failed ..." vs. "Warning ...").
+   * @return The constructed failure or warning message
+   */
+  checkCustomThreshold: private function(message: string,
+                                         customThreshold: map<string, MaximGunStat>,
+                                         customStats: map<string, MaximGunStat>,
+                                         isFailureThreshold: boolean): string
+}

@@ -1,0 +1,113 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * LukeTestNodeDiagram is a test component for {@link NodeDiagram}
+ */
+type LukeTestNodeDiagram mixes LukeTestComponent {
+
+  /**
+   * Selectors to determine if the page rendered properly
+   */
+  renderingSelectors: ~ = ['.c3-nodediagram']
+
+  /**
+   * The Diagram Panels
+   */
+  diagramPanels: [LukeTestNodeDiagramPanel]
+
+  /**
+   * Makes the correct instance of the LukeTestNodeDiagramNode based on the given nodeType.
+   */
+  makeLukeTestNodeDiagramNode: private inline member function(node: LukeBrowserWebElement,
+                                                              nodeType: string): LukeTestNodeDiagramNode js-client
+
+  /**
+   * Makes the correct instance of the LukeTestNodeDiagramEdge based on the given edgeType.
+   */
+  makeLukeTestNodeDiagramEdge: private inline member function(edge: LukeBrowserWebElement,
+                                                              edgeType: string): LukeTestNodeDiagramEdge js-client
+
+  /**
+   * Retrieve an instance of a {@link LukeTestNodeDiagramNode} by id of the node.
+   * Do not continually reuse this instance as the UI changes, it contains a reference to a LukeAsyncQueueNode which will need
+   * to be regenerated as the UI changes.
+   *
+   * @param id
+   *             Id of the node
+   * @param nodeType
+   *             Name of the corresponding luke component for the node type. Defaults to LukeTestNodeDiagramNode.
+   */
+  nodeForId: inline member function(id: !string, nodeType: string, timeout: int): LukeTestNodeDiagramNode js-client
+
+  /**
+   * Retrieve an instance of a {@link LukeTestNodeDiagramNode} by name of the node.
+   * WARNING: This API is considerably slowed than its counter part, {@link #nodeForId}. Do not use this
+   * tests with many nodes.
+   * Do not continually reuse this instance as the UI changes, it contains a reference to a LukeAsyncQueueNode which will need
+   * to be regenerated as the UI changes.
+   *
+   * @param name
+   *             Name of the node
+   * @param nodeType
+   *             Name of the corresponding luke component for the node type.
+   */
+  nodeForName: inline member function(name: !string,
+                                      nodeType: !string,
+                                      timeout: int): LukeTestNodeDiagramNode js-client
+
+  /**
+   * Retrieve an instance of a {@link LukeTestNodeDiagramEdge} by id of the edge.
+   * Do not continually reuse this instance as the UI changes, it contains a reference to a LukeAsyncQueueNode which will need
+   * to be regenerated as the UI changes.
+   *
+   * @param id
+   *             Id of the edge
+   * @param nodeType
+   *             Name of the corresponding luke component for the edge type. Defaults to LukeTestNodeDiagramEdge.
+   */
+  edgeForId: inline member function(id: !string, edgeType: string, timeout: int): LukeTestNodeDiagramEdge js-client
+
+  /**
+   * Resolves to whether or not the diagram has a spinner over it
+   */
+  isLoading: inline member function(): LukeAsyncQueueNode js-client
+
+  /**
+   * All the nodes rendered on the diagram. This is NOT instances of {@link LukeTestNodeDiagramNode}
+   * but rather the raw {@link LukeAsyncQueueNode} instance that is usually the reference in {@link LukeTestNodeDiagramNode#nodeEl}.
+   */
+  nodes: inline member function(): LukeAsyncQueueCollection js-client
+
+  /**
+   * Resolves to the number of Nodes rendered on the diagram
+   */
+  numberOfNodes: inline member function(): LukeAsyncQueueNode js-client
+
+  /**
+   * Resolves to the number of Edges rendered on the diagram
+   */
+  numberOfEdges: inline member function(): LukeAsyncQueueNode js-client
+
+  /**
+   * The Data Fusion Canvas CSS Selector
+   */
+  canvasSelector: string = '[class="react-flow__pane draggable"]'
+
+  /**
+   * The ERD Viewport CSS Selector
+   */
+  viewportSelector: string = '.react-flow__viewport'
+
+  /**
+   * Returns the scale value of the viewport
+   * @return {float} The scale value of the viewport
+   */
+  getViewportScale: inline member function(): Promise<float> js-client
+  
+}

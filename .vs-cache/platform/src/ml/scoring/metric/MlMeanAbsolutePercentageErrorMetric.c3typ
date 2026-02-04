@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link MlMeanAbsolutePercentageErrorMetric Mean Absolute Percentage Error (MAPE)} metric computes the average
+ * absolute percentage error between the predicted value and target value. It is primarily used for regression problems.
+ * The metric is sensitive to relative errors and is not affected by scale of the target variable.
+ * The `modelOutput` and `targetOutput` are expected to have the same shape.
+ * This metric supports `sampleWeights` as `context`. `sampleWeights` is single-dimensional with same number of samples
+ * as the `modelOutput`. It represents a per-sample weighting when aggregating for MAPE calculation.
+ */
+type MlMeanAbsolutePercentageErrorMetric mixes MlScoringMetricSupportingPd<Data, Data, { sampleWeights: Data }> {
+
+  /**
+   * If `true`, skips zero values in target `targetOutput` to avoid undefined result.
+   */
+  skipZeros: boolean
+
+  doScore:        ~ py
+  noTarget:       ~ py
+  contextNames:   ~ py
+  higherIsBetter: ~ py
+  scoreFunction:  ~ py
+}

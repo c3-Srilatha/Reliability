@@ -1,0 +1,95 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a process-only {@link MlPipe} that partitions {@link Data} by state. The input should have `state` and `features`.
+ */
+@beta
+entity type Reconstruction.Pre.PartitionDataByStatePipe<DO> extends MlTemplate.AtomicPipe<{features: Data, state: Data}, void, DO> mixes Reconstruction.Pre.Preprocessor type key 'DPRTN' {
+  /**
+   * The name of the states to partition data by.
+   */
+  states: ![string]
+
+  /**
+  * The mapping for the names of the states to the value(s) of the states in the input `state`. One state can map to one or multiple values.
+  */
+  stateToValues: map<string, [any]>
+
+  /**
+  * The mapping of the state to the features that will be retained for that state after partitioning. If empty for a particular state, then all features will be retained.
+  */
+  stateToFeatures: map<string, [string]>
+
+  /**
+  * An empty data indicator keyword in the `Subject` column. If there is no data for the states,
+  * it will return a 1-row data frame with this keyword in the `Subject` column to indicate that this is an empty data frame for each state.
+  * The default value is 'null'.
+  */
+  emptyDataSubjectIndicator: string = 'null'
+
+  /**
+   * This method constructs a new {@link MlPipeline} that appends any {@link MlPipe} or a map of <state, {@link MlPipe}> to this partition data by state pipe.
+   *
+   * When `pipe` is just a single {@link MlPipe}, this method will connect `this` partition data by state pipe) to `pipe` directly. The `pipe` should have all the states as input.
+   *
+   * When `pipe` is a map of <state, {@link MlPipe}>, this method will construct a `center_pipe` using the {@link MlPipe} of each state and connect `this` to the `center_pipe`. Every {@link MlPipe} in the `pipe` map should have `features` as input.
+   *
+   * The returned pipeline will have by-state output.
+   *
+   * See {@link Reconstruction.Pre.Preprocessor#precede} for the list of accepted keyword arguments.
+   *
+   * Example usage:
+   * __Example 1: When the `pipe` is a map of <state, {@link MlPipe}>__
+   * ```py
+   * # Create a map of states to models:
+   * from sklearn.preprocessing import StandardScaler
+   * scaler = StandardScaler()
+   * scaler_pipe = c3.SklearnPipe.convert(scaler, spec=c3.SklearnLikeConvertSpec(keepInputColumnIndices=True))
+   * by_state_scaler ={'state1': scaler_pipe, 'state2':scaler_pipe}
+   *
+   * # Create a data partition pipe
+   * data_partition_pipe = c3.Reconstruction.Pre.PartitionDataByStatePipe(states=['state1','state2'],stateToValues={'state1':[1], 'state2':[2]})
+   *
+   * # To directly connect the `data_partition_pipe` to the `by_state_scaler` and create a new pipeline that takes in `features` and
+   * # `state`, invoke `precede()` without any arguments
+   * new_pipeline = data_partition_pipe.precede(by_state_scaler)
+   * ```
+   *
+   * __Example 2: When the `pipe` is just a single pipe__
+   * ```py
+   * # Create an append data by state pipe:
+   * data_appending_pipe = c3.Reconstruction.Post.AppendDataByStatePipe(states = ['state1','state2'])
+   *
+   * # Create a data partition pipe
+   * data_partition_pipe = c3.Reconstruction.Pre.PartitionDataByStatePipe(states=['state1','state2'],stateToValues={'state1':[1], 'state2':[2]})
+   *
+   * # To directly connect the `data_partition_pipe` to the `data_appending_pipe` and create a new pipeline that takes in `features` and `state`,
+   * # invoke `precede()` without any arguments.
+   * new_pipeline2 = data_partition_pipe.precede(data_appending_pipe)
+   *
+   * ```
+   */
+  precede: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  doProcess: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  generateTypeBindings: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  generatePipe: ~ py
+}

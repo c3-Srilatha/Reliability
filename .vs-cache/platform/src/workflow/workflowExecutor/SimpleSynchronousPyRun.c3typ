@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specific run for a workflow.  It holds all status information about the run.
+ */
+entity type SimpleSynchronousPyRun mixes WorkflowExecutorRun {
+
+  /**
+   * NOTE: This method currently raises a C3 NotImplemented error.
+   *
+   * @return map of <k, v> -> <step name, step status>.
+   */
+  // TODO: PLAT-33287 implement this method, not throw an error. Likely need to expand return value to be its own type.
+  @beta
+  describe: member function(): map<string, JobStatus>
+
+  status:           ~
+  executionResults: ~
+
+  /**
+   * @return link (or copy) to the representation that this run executed.
+   */
+  executionRepr: member function(): !WorkflowExecutionRepresentation
+
+  /**
+   * Aggregate execution profiling results by action.
+   *
+   * @return a map where the key is the action id of the executed action (or a unique random ID if the action id is not
+   *         available) and the value holds the results accumulates by action profiling.
+   */
+  executionMetadataByAction: member function(): map<string, Log.Entry.Action>
+
+  /**
+   * Aggregate execution profiling results by parent vertex. It is up to the implementing type to determine how
+   * to map its vertices to its parent vertices.
+   * NOTE: this function only works if {@link #parent} is populated!
+   *
+   * @return a map with key id of parent vertex executed and value the results accumulated
+   *         by action profiling.
+   */
+  executionMetadataByParentVertex: member function(): map<string, Log.Entry.Action>
+
+  /**
+   * Execution Representation associated with this run.
+   */
+  // TODO: PLAT-36365, should be required
+  er: SynchronousPyExecutionRepresentation
+
+  /**
+   * The spec that workflow was started with
+   */
+  spec: WorkflowExecutionSpec
+
+  /**
+   * Holds the execution outputs (sink vertices) from the synchronous execution
+   */
+  @db(persistAllFields=true)
+  outputs: private !map<string, any>
+
+  /**
+   * Returned by {@link #executionMetadataByAction}.
+   */
+  execMetadata: private map<string, Log.Entry.Action>
+
+  /**
+   * The run of the workflow which executes the {@link Workflow#finallyVertex} of the workflow.
+   * This run could be used to make sure the {@link Workflow#finallyVertex} is done executing.
+   * The {@link Workflow#finallyVertex} execution starts before {@link SimpleSynchronousPyRun} transitions into completed, failed, or canceled state.
+   * The output of the {@link Workflow#finallyVertex} could be retrieved using {@link SimpleSynchronousPyRun#executionResults} keyed
+   * by `finallyVertexOutput`.
+   */
+  finallyVertexWorkflowRun: SimpleSynchronousPyRun
+
+  visualize:            ~ py
+  summary:              ~
+  errors:               ~
+  magnify:              ~
+  summaryAsFetchResult: ~
+  summaryCount:         ~
+}

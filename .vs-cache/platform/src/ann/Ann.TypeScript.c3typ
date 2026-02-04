@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functions implemented in TypeScript.
+ */
+type Ann.TypeScript mixes Ann.ImplLanguage, Annotation {
+
+  /**
+   * ECMAScript code can be a Script or a Module.
+   *
+   * Scripts are easy to concatenate and execute because they work in a common global scope, making them perfect for
+   * features like remixing because you can easily re-define a function without syntax errors.
+   *
+   * Modules have different semantics, they are always in strict mode, duplicate imports and exports can cause
+   * syntax errors and it is near-impossible to extend them in a predictable way.
+   *
+   * The default behavior, using "Module", implies that implementors of types must fully implement the type, be it
+   * a remix or a first time implementation and only the top-most implementation in remix order will be used.
+   * Note that this will not allow selective overriding of functions. Rather, the entire original implementation must be
+   * copied to the new implementation file, and then modified as needed to provide different behavior.
+   *
+   * If you are not authoring ES Modules and you want all the type implementations to be concatenated, use
+   * `sourceCodeType="Script"` instead.
+   *
+   * @see https://tc39.es/ecma262/#sec-ecmascript-language-scripts-and-modules
+   */
+  sourceCodeType: string enum("Script", "Module") = "Module"
+}

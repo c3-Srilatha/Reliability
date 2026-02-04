@@ -1,0 +1,423 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type to interact with a source control system repository through REST.
+ *
+ * Note: When trying to debug the JavaScript implementations of types that extend this type, it's useful to directly
+ * call the REST API to look at the response object, or to read about the response object in the API's official
+ * documentation. Otherwise, it might be hard to understand parts of the implementation that access properties
+ * of a REST response object.
+ */
+abstract type SourceControlRestApi<R> {
+
+  /**
+   * An instance of the REST type.
+   */
+  restInst: R
+
+  /**
+   * Repository URL.
+   */
+  repoUrl: string
+
+  /**
+   * The name of the repository set up in the respective source control host (e.g. `c3server`).
+   */
+  sourceControlRepoName: string
+
+  /**
+   * The {@link SourceControlHost} of {@link #repoUrl}
+   */
+  sourceControlType: !string enum SourceControlHost
+
+  /**
+   * The personal access token used to access repo and construct the {@link SourceControlRestApi} instance
+   */
+  token: string
+
+  /**
+   * Perform any necessary transformations to the token before it can be used.
+   */
+  transformToken: member function(token: string): string js-server
+
+  /**
+   * Validate `token` for appropriate permissions to function well in C3 IDS.
+   * Will throw exception on failure.
+   */
+  validateToken: abstract member function()
+
+  /**
+   * Returns an instance of source control rest api.
+   * Will throw exception when token is invalid.
+   *
+   * @param sourceControlType
+   *          type of source control system.
+   * @param repoUrl
+   *          a repository url to instantiate the source control REST type.
+   * @param restUrl
+   *          a REST url to instantiate the source control REST type. Defaults to REST type apiUrl.
+   * @param token
+   *          A token to instantiate the source control REST type. Defaults to REST type apiAuth.
+   *          1. GitHub - use the generated GitHub token
+   *          2. Azure DevOps - use the generated Azure DevOps token
+   *          3. BitBucket - use the combination of `username:token`, where `token` is the generated BitBucket token
+   *          4. GitLab - use the generated GitLab token
+   */
+  fromSourceControlType: function(sourceControlType: !string enum SourceControlHost,
+                                  repoUrl: string,
+                                  restUrl: string,
+                                  token: string): !mixing SourceControlRestApi js-server
+
+  /**
+   * Sets {@link #repoUrl} and any other fields dependent on repoUrl.
+   *
+   * @param repoUrl
+   *          a repository url to instantiate the source control REST type.
+   *
+   * @return the modified instance
+   */
+  configureWithRepoUrl: abstract member function(repoUrl: !string): !mixing SourceControlRestApi js-server
+
+  /**
+   * Returns the https url to the UI of the source control system for the specified branch name.
+   *
+   * @param branchName
+   *          The name of the branch to return the https url for
+   * @param targetDir
+   *          Path of the target directory to navigate to relative to root directory. The path must NOT start with
+   *          a `/`
+   */
+  getBranchUrl: abstract member function(branchName: !string, targetDir: string): string
+
+  /**
+   * Returns the content of the file.
+   *
+   * @param filePath
+   *          relative file path from the root directory of the repository.
+   * @param ref
+   *          name of the commit/branch/tag. Default: the repository’s default branch (usually `master`).
+   */
+  getFileContent: abstract member function(filePath: !string, ref: string): string
+
+  /**
+   * Checks if branch name already exists.
+   *
+   * @param branchName
+   *          name of the branch to check.
+   */
+  isBranchPresent: abstract member function(branchName: !string): boolean
+
+  /**
+   * Gets a source control branch
+   * @param branchName
+   *           The name of the branch to get
+   */
+  branch: abstract member function(branchName: !string): SourceControlBranch
+
+  /**
+   * Get the source control branches
+   * Get all branches when both pageNumber and numberPerPage params are not provided.
+   *
+   * @param pageNumber
+   *             Page number of the results to fetch
+   * @param numberPerPage
+   *             The number of results to show per page
+   * @return SourceControlBranch
+   */
+  branches: abstract member function(pageNumber: int, numberPerPage: int): [SourceControlBranch]
+
+  /**
+   * Creates a branch off the given branch.
+   *
+   * @param branchName
+   *          name of the branch to create.
+   * @param srcBranch
+   *          branch to branch off from.
+   */
+  createBranchFromSrcBranch: abstract member function(branchName: !string,
+                                                      srcBranch: !SourceControlBranch): !SourceControlBranch
+
+  /**
+   * Creates a branch from the given sha.
+   * @param branchName
+   *            name of the branch to create.
+   * @param sha
+   *            the SHA1 value to set this branch to
+   * @return the created branch info
+   */
+  createBranchFromSha: abstract member function(branchName: !string, sha: !string): !SourceControlBranch
+
+  /**
+   * Create a pull request
+   *
+   * @param head
+   *             The head to merge. It can be any valid reference, like branch name or SHA
+   * @param baseBranch
+   *             The name of the base branch that the head will be merged into.
+   * @param title
+   *             The title of the pull request.
+   * @param body
+   *             The body (description) of the pull request
+   * @param isReleaseNote
+   *             Whether this commit message should be appended to release note
+   * @return SourceControlPullRequest
+   */
+  createPullRequest: abstract member function(head: !string,
+                                              baseBranch: !string,
+                                              title: !string,
+                                              body: string,
+                                              isReleaseNote: boolean): SourceControlPullRequest
+
+  /**
+   * Declines and removes a pull request. Throw exception if the request was not valid
+   *
+   * @param pr
+   *             The SourceControlPullRequest object
+   * @param branchName
+   *             Azure specific: branch name associated with the pull request
+   * @return void
+   */
+  declinePullRequest: abstract member function(pr: !SourceControlPullRequest, branchName: string)
+
+  /**
+   * Delete the branch.
+   *
+   * @param branch
+   *          branch to delete.
+   */
+  deleteBranch: abstract member function(branch: !SourceControlBranch)
+
+  /**
+   * This function returns an array of commits for a branch
+   *
+   * @param branch
+   *             The branch to fetch commits from
+   * @param path
+   *             The file path to limit fetched commits to
+   * @param onlyCurrentUser
+   *             If set to true will only return commits authored by the current user
+   */
+  getCommits: abstract member function(branch: string, path: string, onlyCurrentUser: boolean): [SourceControlCommit]
+
+  /**
+   * Retrieves information details for a specific commit
+   *
+   * @param sha
+   *           The target commit sha
+   */
+  getCommitDetails: abstract member function(sha: string): SourceControlCommit
+
+  /**
+   * Retrieves the commit url for a specific commit
+   *
+   * @param sha
+   *           The target commit sha
+   */
+  getCommitUrl: abstract member function(sha: string): string
+
+  /**
+   * Returns the source control system username for the user this REST instance's token corresponds to.
+   */
+  getMyUsername: abstract member function(): string
+
+  /**
+   * Returns the number of commits the head branch is ahead of the base branch
+   *
+   * @param head
+   *             The head branch name or SHA.
+   * @param base
+   *             The base branch name or SHA to be compared with. Base will be `master` if left empty.
+   */
+  getCommitsAheadCount: abstract member function(head: !string, base: !string): int
+
+  /**
+   * Posts a status to a commit. Often used alongside pull requests to give feedback about CI, along with a link to an
+   * external process/UI.
+   *
+   * @param status
+   *           An object containing information about a commit.
+   */
+  postCommitStatus: abstract member function(status: !SourceControlCommitStatus)
+
+  /**
+   * If a branch with the given name does not exist, throw an error containing the given message.
+   */
+  assertBranchExists: member function(branchName: !string, message: string) js-server
+
+  /**
+   * Creates content on a branch
+   *
+   * @param path
+   *           The full path of the file
+   * @param message
+   *           The commit message
+   * @param content
+   *           The content, Base64 encoded
+   * @param branch
+   *           The branch
+   */
+  createContent: abstract member function(path: !string, message: !string, content: !string, branch: !string)
+
+  /**
+   * Updates content on a branch
+   *
+   * @param path
+   *           The full path of the file
+   * @param message
+   *           The commit message
+   * @param content
+   *           The updated content, Base64 encoded
+   * @param branch
+   *           The branch to update
+   */
+  updateContent: abstract member function(path: !string, message: !string, content: !string, branch: !string)
+
+  /**
+   * Compares the HEAD of the head branch against the base branch, or compares two SHAs.
+   *
+   * @param head
+   *           The head branch name or SHA
+   * @param base
+   *           The base branch name or SHA to be compared with
+   */
+  compare: abstract member function(head: !string, base: string): SourceControlCompareResult
+
+  /**
+   * Performs a merge of one branch into another without creating a pull request.
+   *
+   * @param base
+   *           The name of the base branch that the head will be merged into.
+   * @param head
+   *           The head to merge. It can be a branch name or a SHA
+   * @param message
+   *           The commit message to use for the merge commit. If omitted, a default message will be used
+   * @return A {@link SourceControlMergeResult}
+   */
+  merge: abstract member function(base: !string, head: !string, message: string): SourceControlMergeResult
+
+  /**
+   * Reset target branch to same sha as source branch.
+   *
+   * @param targetBranch
+   *           Name of target branch to be updated.
+   * @param sourceBranch
+   *           Branch whose latest sha will be used for update.
+   * @param force
+   *           When true, update will overwrite changes on target branch. default false, will do fast-forward update and
+   *           will throw error, if fast-forward is not allowed.
+   */
+  reset: abstract member function(targetBranch: !string, sourceBranch: !string, force: boolean)
+
+  /**
+   * Checks the status of a pull request
+   *
+   * @param number
+   *             The pull request number
+   * @return SourceControlPullRequest
+   */
+  getPullRequest: abstract member function(number: !string): SourceControlPullRequest
+
+  /**
+   * Get the open pull requests with their head commit
+   * Get all open pull requests when both pageNumber and numberPerPage params are not provided.
+   *
+   * @param pageNumber
+   *             Page number of the results to fetch
+   * @param numberPerPage
+   *             The number of results to show per page
+   * @return SourceControlPullRequest
+   */
+  getOpenPullRequests: abstract member function(pageNumber: int, numberPerPage: int): [SourceControlPullRequest]
+
+  /**
+   * Updates a given reference to the provided sha
+   *
+   * @param ref
+   *             The reference name. (e.g. `refs/heads/master`)
+   * @param sha
+   *             The SHA1 value to set this reference to
+   * @param force
+   *             Indicates whether to force the update or to make sure the update is a fast-forward update. Leaving
+   *             this out or setting it to false will make sure you’re not overwriting work. Default: `false`.
+   * @return {@link SourceControlResetRefResult}
+   */
+  updateReferenceToSha: abstract member function(ref: !string,
+                                                 sha: !string,
+                                                 force: boolean): SourceControlResetRefResult
+
+  /**
+   * Gets the correct rest url endpoint for the given source system
+   */
+  getRestUrl: abstract member function(): string
+
+  /**
+   *  Gets all the items (files and folders that are direct children) of the specified folder path. When the
+   * `folderPath` is not specified, this function will return all the items in the root folder of the repo.
+   *  @param commitSha
+   *            The sha of the commit to get the items from
+   *  @param folderPath
+   *            The folder to get the items from
+   */
+  getItemsInFolder: abstract member function(commitSha: !string,
+                                             folderPath: string = '/'): [SourceControlFileSystemItem]
+
+  /**
+   * Download a repository to the C3 File System.
+   *
+   * @param fileUrl
+   *           The file to store the downloaded repository zip
+   * @param ref
+   *           The name of the commit/branch/tag. Default: the repository’s default branch (usually `master`)
+   *
+   * @return the path to the downloaded repository zip.
+   */
+  downloadRepository: abstract member function(fileUrl: !FileUrl, ref: string): FileUrl
+
+  /**
+   * Get the origin of the {@link repoUrl}
+   * Origin for a url would be: scheme + '://' + host + [':' + port] (if a port exists)
+   * Example: For a repo url like `http://localhost:7990/projects/proj1/repos/repo1/browse`, origin would be
+   *          `http://localhost:7990`
+   */
+  getOriginFromRepoUrl: member function(): string js-server
+
+  /**
+   * Get a list of {@link SourceControlRepository} within the given limit, or grab all if no limit provided
+   *
+   * @param limit
+   *        the limit of how many repositories to grab at once
+   *
+   * @return {@link SourceControlRepository}
+   */
+  repositories: abstract member function(limit: int): [SourceControlRepository]
+
+  /**
+   * validate url and token within {@link SourceControlRestApi#restInst} is usable
+   *
+   * @param validateRepo
+   *        if true, check the token's permission against the repository stored within the instance as well
+   * @return boolean
+   */
+  validateConfigTokenAndUrl: abstract member function(validateRepo: boolean): boolean js-server
+
+  /**
+   * Get the Source Control type's token from the basic authentication string for REST calls
+   */
+  getTokenFromAuth: abstract member function(auth: !string): string js-server
+
+  /**
+   * Use the token to generate the basic authentication string for REST calls
+   */
+  getAuthFromToken: abstract function(token: !string): !string js-server
+
+  /**
+   * Asserts the {@link #repoUrl} is set
+   */
+  assertRepoUrl: private member function() js-server
+}

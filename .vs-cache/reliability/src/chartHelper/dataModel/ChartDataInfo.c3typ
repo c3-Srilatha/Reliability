@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enforces the return format for {@link ChartHelper#getChartInfo}. Contains the data and configs required by the UI
+ * to render charts.
+ */
+type ChartDataInfo {
+
+  /**
+   * The {@link ChartDataAction}s that were applied to create this {@link ChartDataInfo}.
+   */
+  appliedChartDataActions: [ChartDataAction]
+
+  /**
+   * Contains all the results keyed by some identifier.
+   */
+  resultMap: map<string, json>
+
+  /**
+   * Represents each chart's metric results by providing a list of paths into {@link #resultMap} for each chart.
+   * The key into this map is the chart ID.
+   */
+  chartToMetricResultKeys: map<string, [string]>
+
+  /**
+   * Represents each chart's event metric results by providing
+   * a list of paths into {@link #resultMap} for each chart.
+   * The key into this map is the chart ID.
+   */
+  chartToEventResultKeys: map<string, [string]>
+
+  /**
+   * Maps pre-calculated feature times series name to and it's corresopnding hashed reconstruction time series name
+   * according to series configuration in @see UiSdlTimeseriesLineBarChart#data.
+   * This map is currently used in the @see UiSdlDataTransform of the chart component to reorder
+   * the series in the chart to pairfeature series with their corresponding reconstruction series.
+   */
+  reconstructionToHashMap: map<string, string>
+}

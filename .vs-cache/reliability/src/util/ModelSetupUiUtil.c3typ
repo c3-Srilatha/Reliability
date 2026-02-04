@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contains Util functions for Model Setup UI.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@typeScript
+type ModelSetupUiUtil mixes Value {
+
+  /**
+   * Returns an rxjs observable that outputs next step or previous step actions on given progress indicator.
+   * The observable can also output actions that cause side effects.
+   * @param action
+   *          The action that triggered the epic calling this function.
+   * @param state
+   *          The redux state at the point this function was called.
+   * @param shouldGoNext
+   *          If true, indicates that moving to the next step should be attempted. If false, moves to the previous step.
+   * @param progressIndicatorId
+   *          The progress indicator on which to perform actions.
+   * @param idToActionFunctionMap
+   *          Map of step ids to functions to call when attempting to go to next step. The function should return
+   *          an object with two properties, `shouldGoNext` and `action`. If `shouldGoNext` is true, progress
+   *          indicator moves to the next step. Otherwise, it does not. `action` is the side effect action
+   *          that will be dispatched.
+   * @return An observable of redux actions
+   */
+  changeStep: function(
+    action: !UiSdlReduxAction<any>,
+    state: !UiSdlReduxState,
+    progressIndicatorId: !string,
+    shouldGoNext: boolean,
+    idToActionFunctionMap: map<string, any>
+  ): any
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type defining node styling.
+ */
+type UiSdlGraphVisualizationNodeStyleConfig {
+
+  /**
+   * Shape of the node.
+   */
+  shape: string enum UiSdlGraphVisualizationNodeShapeOption = CIRCLE
+
+  /**
+   * Fill with a static color. HTML color name 'gray' => '#808080'
+   */
+  fillColor: string serialized Color = '#808080'
+
+  /**
+   * Determine the fill color based on a field value of the data.  Select one of three possible strategies for how to
+   * color the node.
+   * {@link UiSdlGraphVisualizationFillColorByPropertyStrategyCategorical}
+   *   - Field values are grouped and a node color is selected from {@link UiSdlGraphVisualization#defaultNodeColors}.
+   *   - Use {@link UiSdlGraphVisualizationFillColorByPropertyStrategyCategorical#colorMap} to assign a specific color
+   *     to each category.
+   * {@link UiSdlGraphVisualizationFillColorByPropertyStrategyStepped}
+   *   - Node color is chosen based on the field value's position among a set of threshold values.
+   * {@link UiSdlGraphVisualizationFillColorByPropertyStrategyGradient}
+   *   - Node color is chosen based on where the field value falls along a continuous gradient.
+   */
+  fillColorByProperty: UiSdlGraphVisualizationFillColorByPropertyStrategyCategorical | UiSdlGraphVisualizationFillColorByPropertyStrategyStepped | UiSdlGraphVisualizationFillColorByPropertyStrategyGradient
+
+  /**
+   * Node's border outline color.
+   */
+  outlineColor: string serialized Color
+
+  /**
+   * Node outline color when hovered on.
+   */
+  haloColorOnHover: string serialized Color = '#c5cadb'
+
+  /**
+   * Node outline style.
+   */
+  outlineStyle: string enum UiSdlGraphVisualizationNodeOutlineOption
+
+  /**
+   * Property of the data that determines whether the node is dashed or solid: true -> dashed, false -> solid.
+   */
+  outlineDashedProperty: UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * Node label style. This encompasses whether text, icon or image is shown in the node, and how those values
+   * are determined.
+   */
+  labelStyle: UiSdlGraphVisualizationNodeLabelStyleConfig
+
+  /**
+   * The size of the nodes (static value).
+   */
+  @constraint(condition='size >= 1')
+  size: int = 1
+
+  /**
+   * Property of the node data that determines the enlargement factor of the node.
+   * If not set, {@link UiSdlGraphVisualizationNodeStyleConfig#size} is used as the fallback.
+   */
+  sizeByProperty: UiSdlFieldBasedDataSpecSetting
+}

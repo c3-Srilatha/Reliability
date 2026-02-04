@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Component that displays in-app documentation.
+ */
+@typeScript
+@uiComponentCategorizer(name='Display in app documentation', category='Components', hide=true)
+type UiSdlInAppDoc mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Whether the in-app documentation should be shown or not.
+   */
+  show: boolean = false
+
+  /**
+   * Whether the in-app button should be disabled or not.
+   * by default it is disabled.
+   */
+  disabledInAppButton: boolean = true
+
+  /**
+   * Render attached to the left or right side.
+   */
+  alignment: string enum('LEFT', 'RIGHT')
+
+  /**
+   * Whether the in-app documentation should be loaded eagerly (on component mount)
+   * or lazily (only when the documentation panel is opened).
+   * When false or not set, the documentation will only be fetched when show becomes true.
+   */
+  loadDocEagerly: boolean
+
+  /**
+   * Action to show or hide the in-app documentation.
+   *
+   * @param id
+   *           The id of the UiSdlInAppDoc instance to dispatch this action for.
+   * @param show
+   *           Whether the in-app documentation should be shown or not.
+   * @returns A `IN_APP_DOC_SHOW_HIDE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='IN_APP_DOC_SHOW_HIDE')
+  showHideDocAction: function(id: string, show: boolean): !UiSdlInAppDocShowHideAction ts-client
+
+  /**
+   * Listens for actions of type `IN_APP_DOC_SHOW_HIDE` and sets the {@link UiSdlInAppDoc#show}
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='IN_APP_DOC_SHOW_HIDE')
+  docShowHideReducer: function(state: !UiSdlReduxState, action: !UiSdlInAppDocShowHideAction): UiSdlReduxState ts-client
+}

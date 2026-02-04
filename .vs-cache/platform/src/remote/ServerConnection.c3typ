@@ -1,0 +1,114 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A remote connection to a C3 server. This should be established by calling {@link Remote#connect connect} or
+ * {@link Remote#connectAsync connectAsync}.
+ *
+ * @see Remote
+ */
+inline type ServerConnection mixes Value {
+
+  /**
+   * The base URL to the server.
+   */
+  url: member function(): !string java | js | py
+
+  /**
+   * Clean up any state associated with this connection.
+   */
+  close: member function() java | js | py
+
+  /**
+   * Create a request to be used on this connection.
+   */
+  request: member function(method: !string serialized HttpMethod,
+                           encodedPath: !?string): !ServerRequest java | js | py
+
+  /**
+   * Get an instance of the full type system that makes requests synchronously.
+   */
+  typeSystem: member function(): !TypeSystem java | js | py
+
+  /**
+   * Get an instance of the full type system that makes requests asynchronously.
+   */
+  asyncTypeSystem: member function(): !AsyncTypeSystem java | js | py
+
+  /**
+   * Get an instance of the thin type system that makes requests synchronously.
+   */
+  thinTypeSystem: member function(): !ThinTypeSystem java | js | py
+
+  /**
+   * Get an instance of the thin type system that makes requests asynchronously.
+   */
+  asyncThinTypeSystem: member function(): !AsyncThinTypeSystem java | js | py
+
+  /**
+   * Build a URL string for fetching the specified type's metadata. If the runtime is unspecified, it defaults to the
+   * one used to initialize the connection.
+   */
+  metadataUrl: member function(type: !string, runtime: string): !string serialized Url java | js | py
+
+  /**
+   * Build a URL string for calling the specified type method.
+   */
+  callUrl: member function(type: !string, action: !string): !string serialized Url java | js | py
+
+  /**
+   * Build a request instance usable for calling the specified type method. The type and method name are required to
+   * form the URL. The HTTP method will always be `POST`.
+   *
+   * If any arguments are specified, the body of the request will be JSON and it will have the JSON-related
+   * headers, including `Accept: application/json`. Otherwise, the request will have no body and `Accept: *\/*`.
+   *
+   * @param type the name of the type on which to call the method
+   * @param action the name of the method to call
+   * @param args the arguments to pass, with `this` or the type name first
+   * @return the HTTP request to make this call
+   *
+   * @see #callUrl
+   */
+  callRequest: member function(type: !string, action: !string, args: any ...): !ServerRequest java | js | py
+
+  /**
+   * To cache metadata for types in given `typeNames`.
+   */
+  @call(stayInEngine=true)
+  cacheTypes: member function(typeNames: ![string]) java | js
+
+  /**
+   * Discard cached type metadata for the given type. When not provided an argument, discard all cached type metadata
+   * on this connection. This is typically used in client SDKs to refresh cache for specific type or all types.
+   * Note that existing instances will still continue to use the old types, but references to types through this
+   * connection itself will reload after this call.
+   *
+   * Note that there may still be higher-level caches, particularly in the {@link TypeSystemBase full type systems}.
+   */
+  @call(stayInEngine=true)
+  clearTypeCache: member function(typeName: string) java | js | py
+
+  /**
+   * Returns true if the type meta for the type with given typeName is cached on this server connection, false otherwise.
+   */
+  @call(stayInEngine=true)
+  cacheContainsType: member function(typeName: !string): boolean java | js | py
+
+  /**
+   * Execute the specified code, preventing it from making any remote calls, and return the result. If the method tries
+   * to remote, the action will be aborted and null will be returned. Other errors will not be caught.
+   *
+   * Note that this is only meaningful in client environments, which often need to remote to the server.
+   *
+   * @param action code to be executed
+   * @param throwOnRemote throw error if the code remotes instead of returning null
+   * @return result value of action execution
+   */
+  withoutRemoting: member function<R>(action: !lambda(): R, throwOnRemote: boolean): R java | js | py
+}

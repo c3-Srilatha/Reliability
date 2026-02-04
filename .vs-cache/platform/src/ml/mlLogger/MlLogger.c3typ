@@ -1,0 +1,208 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Logger interface for {@link MlPipe} and {@link MlModel} operations and jobs.
+ */
+@beta
+abstract type MlLogger {
+
+  /**
+   * Logging level for the operation or job.
+   * Higher the number, more detailed the logging.
+   */
+  loggingLevel: int = 0
+
+  /**
+   * Initializes and creates a new logger from this logger. Default implementation returns the input logger instance.
+   * @param opNames
+   *           {@link MlDataOpName}s corresponding to the operation.
+   */
+  initialize: inline member function(opNames: ![MlDataOpName]): !mixing MlLogger py
+
+  /**
+   * Applies logging before executing a {@link MlModel} operation.
+   * @param model
+   *           {@link MlModel} for which the operation is being executed.
+   * @param xFeatureEvalSpecs
+   *           {@link EvalFeatureSpec}s for `x` inputs, keyed by `x` name.
+   * @param yFeatureEvalSpecs
+   *           {@link EvalFeatureSpec}s for `y` inputs, keyed by `y` name.
+   */
+  beforeModelOperation: abstract inline member function(model: !MlModel,
+                                                        xFeatureEvalSpecs: map<string, EvalFeatureSpec>,
+                                                        yFeatureEvalSpecs: map<string, EvalFeatureSpec>)
+
+  /**
+   * Applies logging after completion of {@link MlModel#train} operation.
+   * NOTE: for all non-training operations, the results are recorded by {@link #afterPipeOperation}.
+   * @param trainedModel
+   *           Trained {@link MlModel}, if applicable to the operation.
+   */
+  afterModelOperation: abstract inline member function(trainedModel: MlModel)
+
+  /**
+   * Applies logging before executing a {@link MlPipe} operation.
+   * @param pipe
+   *           {@link MlPipe} for which the operation is being executed.
+   * @param opNames
+   *           {@link MlDataOpName}s corresponding to the operation.
+   * @param operationRunId
+   *           `id` of {@link MlOperationRun} for the operation.
+   * @param workflowId
+   *           `id` of {@link Workflow} for the operation.
+   * @param x
+   *           `x` input for the operation.
+   * @param y
+   *           `y` input for the operation.
+   * @param context
+   *           `context` input for the operation.
+   * @param spec
+   *           An instance of {@link MlOperationSpec}.
+   */
+  // DEVELOPER NOTE: This hook is applied after {@link Workflow} is created and before execution has started.
+  beforePipeOperation: abstract inline member function(pipe: !MlPipe,
+                                                       opNames: ![MlDataOpName],
+                                                       operationRunId: string,
+                                                       workflowId: string,
+                                                       x: any,
+                                                       y: any,
+                                                       context: any,
+                                                       spec: MlOperationSpec)
+
+  /**
+   * Applies logging after completion of {@link MlPipe} operation.
+   *
+   * @param operationRun
+   *           {@link MlOperationRun} of the operation.
+   * @param result
+   *           Result of the operation or runtime error caused by operation.
+   */
+  // DEVELOPER NOTE: This hook is applied during execution of {@link MlOperationRun#result}.
+  afterPipeOperation: abstract member function(operationRun: !MlOperationRun, result: any)
+
+  /**
+   * Updates tracing for the {@link Workflow} of the operation.
+   * Default implementation returns the input workflow.
+   * Each {@link MlLogger} implementation can override this method to update tracing, and
+   * potentially use logging levels to control {@link Workflow} tracing.
+   *
+   * @param workflow
+   *           {@link Workflow} that needs tracing to be updated.
+   * @param opNames
+   *           {@link MlDataOpName}s corresponding to the operation.
+   * @param loggerName
+   *           key name in {@link MlOperationSpec#loggers}.
+   * @return an instance of {@link Workflow} with tracing enabled.
+   */
+  // DEVELOPER NOTE: This hook is applied at the end of unoptimized workflow creation, prior to workflow optimization.
+  updateWorkflowForTracing: inline member function(workflow: !Workflow,
+                                                   opNames: ![MlDataOpName],
+                                                   loggerName: !string): !Workflow py
+
+  /**
+   * Applies logging before training an {@link MlAtomicPipe}.
+   *
+   * @param pipe
+   *           {@link MlAtomicPipe} to be trained.
+   * @param x
+   *           `x` input for training {@link MlAtomicPipe}.
+   * @param y
+   *           `y` input for training {@link MlAtomicPipe}.
+   * @param model
+   *           Machine learning model.
+   */
+  // DEVELOPER NOTE: This hook is applied at the start of {@link MlAtomicPipe#beforeAndDoTrain}.
+  beforeTrain: abstract inline member function(pipe: !MlAtomicPipe, x: native, y: native, model: native)
+
+  /**
+   * Applies logging after training an {@link MlAtomicPipe}.
+   *
+   * @param pipe
+   *           Trained {@link MlAtomicPipe}.
+   */
+  // DEVELOPER NOTE: This hook is applied at the end of {@link MlAtomicPipe#updateModelFiles}.
+  afterTrain: abstract inline member function(pipe: !MlAtomicPipe)
+
+  /**
+   * Applies logging before processing an {@link MlAtomicPipe}.
+   *
+   * @param pipe
+   *           {@link MlAtomicPipe} to be processed.
+   * @param x
+   *           `x` input for processing.
+   * @param model
+   *           Machine learning model.
+   */
+  // DEVELOPER NOTE: This hook is applied at the start of {@link MlAtomicPipe#beforeDoAfterProcess}.
+  beforeProcess: abstract inline member function(pipe: !MlAtomicPipe, x: native, model: native)
+
+  /**
+   * Applies logging after processing an {@link MlAtomicPipe}.
+   *
+   * @param pipe
+   *           {@link MlAtomicPipe} that was processed.
+   * @param processOutput
+   *           Process output of pipe.
+   */
+  // DEVELOPER NOTE: This hook is applied at the end of {@link MlAtomicPipe#beforeDoAfterProcess}.
+  afterProcess: abstract inline member function(pipe: !MlAtomicPipe, processOutput: native)
+
+  /**
+   * Applies logging before scoring an {@link MlAtomicPipe}.
+   * @param metric
+   *           {@link MlScoringMetric} to be used for scoring.
+   * @param targetOutput
+   *           target output (i.e. "label") for scoring.
+   * @param modelOutput
+   *           model output (i.e. "prediction") input for scoring.
+   * @param context
+   *           `context` input for scoring.
+   */
+  // DEVELOPER NOTE: This hook is applied at the start of {@link MlScoringMetric#beforeDoAfterScore}.
+  beforeScore: abstract inline member function(metric: !MlScoringMetric,
+                                               targetOutput: native,
+                                               modelOutput: native,
+                                               context: native)
+
+  /**
+   * Applies logging after scoring an {@link MlAtomicPipe}.
+   * @param metric
+   *           {@link MlScoringMetric} used for scoring.
+   * @param scoreOutput
+   *           Score output of the scoring metric.
+   */
+  // DEVELOPER NOTE: This hook is applied at the end of {@link MlScoringMetric#beforeDoAfterScore}.
+  afterScore: abstract inline member function(metric: !MlScoringMetric, scoreOutput: native)
+
+  /**
+   * Applies logging before interpreting an {@link MlAtomicPipe}.
+   * @param interpreter
+   *           {@link MlInterpreter} to be used for interpreting.
+   * @param pipe
+   *           {@link MlAtomicPipe} to be interpreted.
+   * @param x
+   *           `x` input for interpreting.
+   */
+  // DEVELOPER NOTE: This hook is applied at the start of {@link MlInterpreter#interpret}.
+  beforeInterpret: abstract inline member function(interpreter: !MlInterpreter, pipe: !MlAtomicPipe, x: native)
+
+  /**
+   * Applies logging after interpreting an {@link MlAtomicPipe}.
+   * @param interpreter
+   *           {@link MlInterpreter} used for interpreting.
+   * @param pipe
+   *           {@link MlAtomicPipe} that was interpreted.
+   * @param interpretOutput
+   *           Interpret output of the interpreter.
+   */
+  // DEVELOPER NOTE: This hook is applied at the end of {@link MlInterpreter#interpret}.
+  afterInterpret: abstract inline member function(interpreter: !MlInterpreter,
+                                                  pipe: !MlAtomicPipe,
+                                                  interpretOutput: native)
+}

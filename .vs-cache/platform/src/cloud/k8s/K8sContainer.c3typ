@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+private type K8sContainer {
+
+  args:                     [string]
+  command:                  [string]
+  env:                      [K8sEnvVar]
+  envFrom:                  [K8sEnvFromSource]
+  image:                    string
+  imagePullPolicy:          string
+  lifecycle:                K8sLifecycle
+  livenessProbe:            K8sProbe
+  name:                     string
+  ports:                    [K8sContainerPort]
+  readinessProbe:           K8sProbe
+  startupProbe:             K8sProbe
+  resources:                K8sResourceRequirements
+  securityContext:          K8sSecurityContext
+  stdin:                    boolean = false
+  stdinOnce:                boolean = false
+  terminationMessagePath:   string
+  terminationMessagePolicy: string
+  tty:                      boolean = false
+  volumeDevices:            [K8sVolumeDevice]
+  volumeMounts:             [K8sVolumeMount]
+  workingDir:               string
+
+  /**
+   * Check if the K8sContainer contains a volume mount having the specified volume name.
+   *
+   * @param volumeMountName
+   *       Name of the volume mount to check for.
+   * @return true if the K8sContainer contains the volume mount, false otherwise.
+   */
+  containsVolumeMount: member function(volumeMountName: string): boolean
+}

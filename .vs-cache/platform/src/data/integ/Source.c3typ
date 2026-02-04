@@ -1,0 +1,135 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for defining external data sources in the C3 Agentic AI Platform.
+ * Custom source types should mix this type to ingest and transform data
+ * from external systems (e.g., CSV, JSON, databases) into the platform.
+ *
+ * This type can be used to serialize data from a {@link SourceCollection}
+ * This is the base type of {@link Canonical},
+ * representing raw external data that will eventually be transformed
+ * into standardized internal formats for application use.
+ */
+type Source {
+
+  /**
+   * Indicates the source system from which this canonical is imported
+   */
+  sourceSystem: string not persistable
+
+  /**
+   * Indicates the timestamp of the canonical in source system
+   */
+  timestamp: datetime not persistable
+
+  /**
+   * Id of the {@link Sources} for the Source
+   */
+  sourcesId: string not persistable
+
+  /**
+   * Encoded path of {@link SourceFile}
+   */
+  sourceFileEncodedPath: string not persistable
+
+  /**
+   * Url of the {@link SourceFile}
+   */
+  sourceFileUrl: string not persistable
+
+  /**
+   * @return the csv header of the canonical
+   */
+  csvHeader: function(): string
+
+  /**
+   * @return all source {@link Type}s in the current tag
+   * The {@link Source} and {@link Canonical} base types are not included in the result themselves -
+   * only other subtypes of {@link Source} are included in the resulting collection.
+   */
+  allSources: function(): [Type]
+
+  /**
+   * @param targetType
+   *           The target {@link Type}. This is the end result of the transformation
+   * @return a collection of all source {@link Type}s that transform into the provided target {@link Type}.
+   */
+  allSourcesForTarget: function(targetType: !Type): [Type]
+
+  /**
+   * @return A map of source types to the target {@link Type}s they can transform into
+   */
+  allSourcesWithTargets: function(): map<string, [Type]>
+
+  /**
+   * @return all {@link Transform}s for this source type.
+   * If called on abstract Source type, then all the transforms on the tag will be returned
+   */
+  allTransforms: function(): stream<Transform>
+
+  /**
+   * @return all {@link Type}s that this source type gets transformed into. If called on abstract Canonical type, then all
+   * the target types for all canonical types will be returned.
+   */
+  allTargetTypes: function(): [Type]
+
+  /**
+   * Get the target {@link Type} for the provided {@link Transform} type
+   * @param transformType
+   *           The transform {@link Type} for which to find the target type.
+   * @param failIfInvalid
+   *           If true, the function will fail if the transform type is invalid.
+   * @return target {@link Type} for provided transform type.
+   */
+  transformTargetType: function(transformType: !Type, failIfInvalid: boolean): Type
+
+  /**
+   * End to end processing of a source object
+   * i.e read Object => transform as defined => load into the target type
+   * @param spec
+   *             {@see SourceProcessSpec}
+   * @return result of process. See {@link SourceImportDataResult}
+   */
+  process: member function(): SourceImportDataResult
+
+  /**
+   * Performs #process on array of Sources.
+   * @param sources
+   *             The serialized {@link Source} objects
+   * @return result of process. See {@link SourceImportDataResult}
+   */
+  processBatch: function(sources: !?[mixing Source]): SourceImportDataResult
+
+  /**
+   * Performs #process on stream of Sources.
+   * @param sources
+   *             The stream of {@link Source}s to be processed
+   * @return result of process. See {@link SourceImportDataResult}
+   */
+  processStream: function(sources: !stream<mixing Source>): SourceImportDataResult
+
+  /**
+   * Native function to #process
+   * @param spec
+   *             The {@link SourceImportDataSpec} to specify import data
+   * @return result of process. See {@link SourceImportDataResult}
+   */
+  importData: function(spec: SourceImportDataSpec): SourceImportDataResult
+
+  /**
+   * Create target types from a list of sources and their transforms.
+   * If no spec is provided, objs will transform to all targets using default transforms
+   * @param objs
+   *             array of {@link Source} to transform
+   * @param spec
+   *             The {@link SourceTransformSpec} to specify transforms
+   * @return result of the process, consisting of stats. See {@link SourceTransformResult}
+   */
+  transformSource: function(objs: !?[mixing Source], spec: SourceTransformSpec): SourceTransformResult
+}

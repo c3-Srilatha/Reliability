@@ -1,0 +1,112 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An {@link Engine} that executes a {@link Workflow} on the engine nodes in persisted runtime(s). If Python
+ * runtimes are specified in the deployment, persisted interpreters will be started on the engine nodes when it is
+ * deployed.
+ */
+@beta
+type Workflow.Engine mixes WithInitialState.Engine<Workflow.Engine.Deployment, Workflow.Engine.DeploySpec> {
+
+  /**
+   * Run the specified workflow with the provided inputs.
+   *
+   * @param workflow
+   *           The {@link Workflow workflow} to run in the {@link Workflow.Engine engine}.
+   * @param inputs
+   *           Map of input values to be used for the {@link Workflow workflow} execution.
+   *           The key of the map must be the name of a vertex that mixes {@link Workflow.Input}.
+   * @param actionRequirement
+   *           Action requirement in which workflow should be executed. If not provided, the
+   *           {@link Workflow.Engine engine} will find reasonable default.
+   * @return the new workflow run.
+   *
+   * @see Workflow#start
+   * @see #runAndGetResult
+   */
+  run: member function(workflow: !Workflow,
+                       inputs: map<string, any>,
+                       actionRequirement: string serialized Action.Requirement): !WorkflowExecutorRun
+
+  /**
+   * Run the specified workflow with the provided inputs and extracts results.
+   *
+   * @param workflow
+   *           The {@link Workflow workflow} to run in the {@link Workflow.Engine engine}.
+   * @param inputs
+   *           Map of input values to be used for the {@link Workflow workflow} execution.
+   *           The key of the map must be the name of a vertex that mixes {@link Workflow.Input}.
+   * @param actionRequirement
+   *           Action requirement in which workflow should be executed. If not provided, the
+   *           {@link Workflow.Engine engine} will find reasonable default.
+   * @return Map of output values from the {@link Workflow workflow} execution.
+   *
+   * @see #run
+   */
+  runAndGetResult: member function(workflow: !Workflow,
+                                   inputs: map<string, any>,
+                                   actionRequirement: string serialized Action.Requirement): map<string, any>
+
+  /**
+   * Returns true if the engine can run the input {@link Workflow} entirely in the persisted {@link ImplLanguage.Runtimes}.
+   * Note that this does not account for any {@link Workflow.Action} in the input workflow which makes a remote call
+   * within its implementation.
+   *
+   * @param workflow
+   *           The {@link Workflow workflow} that we check.
+   * @param inputs
+   *           Map of input values to be used for the {@link Workflow workflow} execution.
+   *           The key of the map must be the name of a vertex that mixes {@link Workflow.Input}.
+   * @param possibleActionRequirements
+   *           If supplied, list of {@link Action.Requirement requirements} in which the workflow can be executed.
+   *           If not provided, workflow vertexes will be examined.
+   * @return True if this {@link Workflow.Engine engine} can run the workflow.
+   *
+   * @see #run
+   */
+  canRunInPersistedRuntimes: member function(workflow: !Workflow,
+                                             inputs: map<string, any>,
+                                             possibleActionRequirements: [string serialized Action.Requirement])
+                                      : !boolean
+
+  /**
+   * Returns true if the initial state for all inputs into the workflow have been loaded in the engine.
+   *
+   * @param workflow
+   *           The {@link Workflow workflow} that we check.
+   * @param inputs
+   *           Map of input values to be used for the {@link Workflow workflow} execution.
+   *           The key of the map must be the name of a vertex that mixes {@link Workflow.Input}.
+   * @param possibleActionRequirements
+   *           If supplied, list of {@link Action.Requirement requirements} in which the workflow can be executed.
+   *           If not provided, workflow vertexes will be examined.
+   * @return True if this {@link Workflow.Engine engine} can run the workflow.
+   */
+  canRunWithInitializedState: member function(workflow: !Workflow,
+                                              inputs: map<string, any>,
+                                              possibleActionRequirements: [string serialized Action.Requirement])
+                                       : !boolean
+
+  /**
+   * Returns a {@link Workflow.Engine engine} that can run the input {@link Workflow} with the provided inputs.
+   * Current implementation returns the first engine returned by {@link Workflow.Engine#list} that can run the workflow.
+   *
+   * @param workflow
+   *           The {@link Workflow workflow} that we check.
+   * @param inputs
+   *           Map of input values to be used for the {@link Workflow workflow} execution.
+   *           The key of the map must be the name of a vertex that mixes {@link Workflow.Input}.
+   * @param requirementsForAllOverloads
+   *           If supplied, list of {@link Action.Requirement requirements} in which the workflow can be executed.
+   * @return {@link Workflow.Engine engine} that can execute given workflow or null if no engine found.
+   */
+  findEngine: function(workflow: !Workflow,
+                       inputs: map<string, any>,
+                       requirementsForAllOverloads: [string serialized Action.Requirement]): !Workflow.Engine
+}

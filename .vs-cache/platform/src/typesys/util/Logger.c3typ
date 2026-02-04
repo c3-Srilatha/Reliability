@@ -1,0 +1,325 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility for logging any arbitrary information and for publishing any arbitrary events.
+ *
+ * It is crucial that all logging is done in a consistently formatted manner instead of using string concatenation. This
+ * way we can ensure that values get properly quoted as well as all logs are monitored to prevent accidental leakage of
+ * secrets or PII or sensitive data.
+ *
+ * It is preferred to pass context object as argument and use fields and dot notation in the format instead of passing
+ * fields as arguments.
+ *
+ * E.g. prefer:
+ *
+ * ```
+ *   log().info("User ${username} logged in on ${now()}", user)
+ * ```
+ * to:
+ *
+ * ```
+ *   log().info("User {} logged in on {}", user.username, now())
+ * ```
+ *
+ * Note that C3 type implementation should always use default logger for that type [ accessible via `log()` ] instead of
+ * creating a new logger.
+ *
+ * Logger also supports arbitrary event publishing. Only real difference between event and and log is that if event has
+ * no listeners it will immediately be discarded while log entries will be persisted as long as corresponding log
+ * level is enabled.
+ */
+inline final type Logger mixes StringSerializable, Value {
+
+  /**
+   * @return name of this logger
+   */
+  name: member function(): !string
+
+  /**
+   * @return true if given event name has any listeners
+   */
+  hasListeners: member function(event: !string): boolean
+
+  /**
+   * @return true if given event type has any listeners
+   */
+  hasListeners: member function(event: !Type<<Event>>): boolean
+
+  /**
+   * Fires arbitrary event with a given name. Note that if event name matches C3 type it needs to mixin Event and
+   * keys in the event data need to match fields from that type. You may consider using other overload in that case.
+   */
+  event: member function(event: !string, data: !lambda(b: !MapBuilder<string, any>))
+
+  /**
+   * Fires event of a predefined type.
+   *
+   * @see Event.fire
+   */
+  event: member function<E: Event>(event: !Type<<E>>, data: !lambda(b: !ObjBuilder<E>))
+
+  /**
+   * @return true if ERROR level logging is enabled
+   */
+  isErrorEnabled: member function(): boolean
+
+  /**
+   * Logs message at ERROR level using provided Obj as a scope for the format template.
+   */
+  error: member function(format: !string serialized StrFormat, scope: !Obj, err: Error)
+
+  /**
+   * Logs message at ERROR level using provided MapBuilder for building scope for the format template.
+   */
+  error: member function(format: !string serialized StrFormat,
+                         scope: !lambda(b: !MapBuilder<string, any>),
+                         err: Error)
+
+  /**
+   * Logs message at ERROR level using positional bindings. Note that if error shows up at any position in the provided
+   * args it will be removed from bindings and will be formatted separately.
+   */
+  error: member function(format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * Logs message at ERROR level using provided message and Java exception.
+   */
+  error: member function(msg: !string, ex: @java(class='Throwable') !native)
+
+  /**
+   * Logs Java exception at ERROR level.
+   */
+  error: member function(ex: @java(class='Throwable') !native)
+
+  /**
+   * @return true if WARN level logging is enabled
+   */
+  isWarnEnabled: member function(): boolean
+
+  /**
+   * Logs message at WARN level using provided Obj as a scope for the format template.
+   */
+  warn: member function(format: !string serialized StrFormat, scope: !Obj, err: Error)
+
+  /**
+   * Logs message at WARN level using provided MapBuilder for building scope for the format template.
+   */
+  warn: member function(format: !string serialized StrFormat, scope: !lambda(b: !MapBuilder<string, any>), err: Error)
+
+  /**
+   * Logs message at WARN level using positional bindings. Note that if error shows up at any position in the provided
+   * args it will be removed from bindings and will be formatted separately.
+   */
+  warn: member function(format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * Logs message at WARN level using provided message and Java exception.
+   */
+  warn: member function(msg: !string, ex: @java(class='Throwable') !native)
+
+  /**
+   * Logs Java exception at WARN level.
+   */
+  warn: member function(ex: @java(class='Throwable') !native)
+
+  /**
+   * @return true if INFO level logging is enabled
+   */
+  isInfoEnabled: member function(): boolean
+
+  /**
+   * Logs message at INFO level using provided Obj as a scope for the format template.
+   */
+  info: member function(format: !string serialized StrFormat, scope: !Obj, err: Error)
+
+  /**
+   * Logs message at INFO level using provided MapBuilder for building scope for the format template.
+   */
+  info: member function(format: !string serialized StrFormat, scope: !lambda(b: !MapBuilder<string, any>), err: Error)
+
+  /**
+   * Logs message at INFO level using positional bindings. Note that if error shows up at any position in the provided
+   * args it will be removed from bindings and will be formatted separately.
+   */
+  info: member function(format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * Logs the time it took to execute the provided supplier.
+   *
+   * @see {@link #info(string, any ...)}
+   */
+  timeAndInfo: member function<T>(supplier: !lambda(): T, format: !string serialized StrFormat, args: any ...): ?T
+
+  /**
+   * Logs the time it took to execute the provided function.
+   *
+   * @see {@link #info(string, any ...)}
+   */
+  timeAndInfo: member function<T, R>(val: ?T,
+                                     func: !lambda(val: T): R,
+                                     format: !string serialized StrFormat,
+                                     args: any ...): ?R
+
+  /**
+   * Logs the time it took to execute the provided runnable.
+   *
+   * @see {@link #info(string, any ...)}
+   */
+  timeAndInfo: member function(runnable: !lambda(), format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * Logs the time it took to execute the provided consumer.
+   *
+   * @see {@link #info(string, any ...)}
+   */
+  timeAndInfo: member function<T>(val: ?T,
+                                  consumer: !lambda(val: T),
+                                  format: !string serialized StrFormat,
+                                  args: any ...)
+
+  /**
+   * @return true if DEBUG level logging is enabled
+   */
+  isDebugEnabled: member function(): boolean
+
+  /**
+   * Logs message at DEBUG level using provided Obj as a scope for the format template.
+   */
+  debug: member function(format: !string serialized StrFormat, scope: !Obj, err: Error)
+
+  /**
+   * Logs message at DEBUG level using provided MapBuilder for building scope for the format template.
+   */
+  debug: member function(format: !string serialized StrFormat,
+                         scope: !lambda(b: !MapBuilder<string, any>),
+                         err: Error)
+
+  /**
+   * Logs message at DEBUG level using positional bindings. Note that if error shows up at any position in the provided
+   * args it will be removed from bindings and will be formatted separately.
+   */
+  debug: member function(format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * @return true if TRACE level logging is enabled
+   */
+  isTraceEnabled: member function(): boolean
+
+  /**
+   * Logs message at TRACE level using provided Obj as a scope for the format template.
+   */
+  trace: member function(format: !string serialized StrFormat, scope: !Obj, err: Error)
+
+  /**
+   * Logs message at TRACE level using provided MapBuilder for building scope for the format template.
+   */
+  trace: member function(format: !string serialized StrFormat,
+                         scope: !lambda(b: !MapBuilder<string, any>),
+                         err: Error)
+
+  /**
+   * Logs message at TRACE level using positional bindings. Note that if error shows up at any position in the provided
+   * args it will be removed from bindings and will be formatted separately.
+   */
+  trace: member function(format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * Logs message at a given {@link Logger.Level} using positional bindings. Note that if error shows up at any position in the provided
+   * args it will be removed from bindings and will be formatted separately.
+   */
+  log: member function(level: !string enum Logger.Level, format: !string serialized StrFormat, args: any ...)
+
+  /**
+   * Sets log level for this logger
+   */
+  setLogLevel: member function(level: !string enum Logger.Level, timeout: string serialized Duration)
+
+  /**
+   * Sets additive for this logger
+   * Each logging event for a given logger will be forwarded to all the appenders in that logger
+   *     as well as the appenders higher in the hierarchy. So if your loggers has Logger.AppenderKind.ServerLog and
+   *     the root logger has Logger.AppenderKind.Console then all logging events will print at least to console and to the file.
+   */
+  @action(group+='app-admin')
+  setAdditive: member function(additive: !boolean)
+
+  /**
+   * Adds an appender for this logger, which will ensure that the relevant log is also going to the configured logger.
+   * @see {@link Logger.AppenderKind}
+   *
+   * If no Logger.Level it will be set to Logger.Level.Error
+   */
+  @action(group+='app-admin')
+  addAppender: member function(appender: !string enum Logger.AppenderKind, level: string enum Logger.Level)
+
+  /**
+   *  Sets up logger for the provided type if there exists a {@link Logger.Config}
+   * @param typeName
+   *           Type's logger that will be setup
+   */
+  setupLogger: member function(typeName: !string)
+
+  /**
+   * Sets up logger for the provided config
+   * @param config
+   *           {@link Logger.Config} to set
+   */
+  setupLogger: member function(config: !Logger.Config)
+
+  /**
+   * Start appending log entries to the specified file, in addition to the normal location. This may be called
+   * multiple times and each log entry is sent to all destinations.
+   *
+   * Note that this will always start with the specified file, but multiple files may be created (one per flush).
+   * The files after the first may have a number appended before the final extension. For example: starting with
+   * "gs://bucket/directory/stuff.log" will create that file, but if flushing is required before #stopForwarding is
+   * called, the next flush will create "gs://bucket/directory/stuff.2.log" and so on.
+   *
+   * @param file the file URL to write to
+   * @param level the lowest log level to forward (errors only by default)
+   *
+   * @see #stopForwarding
+   * @see #addAppender
+   */
+  startForwarding: function(file: !string serialized FileUrl, level: string enum Logger.Level = ERROR)
+
+  /**
+   * Stop appending log entries to the specified file, as started by #startForwarding. This will flush pending
+   * entries.
+   *
+   * @param file the file URL we are writing to
+   * @param failIfUnknown if true, throw an error if we aren't currently forwarding logs to this file
+   */
+  stopForwarding: function(file: !string serialized FileUrl, failIfUnknown: boolean)
+
+  /**
+   * Flush log entries to the specified file, as started by #startForwarding. Calling this is only necessary if there
+   * is a pause and #stopForwarding is not called.
+   *
+   * @param file the file URL we are writing to
+   * @param failIfUnknown if true, throw an error if we aren't currently forwarding logs to this file
+   */
+  flushForwarding: function(file: !string serialized FileUrl, failIfUnknown: boolean)
+
+  /**
+   * @return the file URLs for all active calls to #startForwarding.
+   */
+  listForwarding: function(): [!string serialized FileUrl]
+
+  /**
+   * Constructor of a temporary logger. Note that this method is primarily for ad-hoc logging e.g. from console.
+   * Application code should always use default logger for parent type [ accessible via `log()` ] instead of this
+   * method.
+   */
+  for: inline function(name: !string): !Logger
+
+  for:        private inline function(klass: @java(class='Class') !native): !Logger
+  toString:   ~ java | py | js
+  fromString: ~ java | py | js
+}

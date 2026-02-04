@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type JavaAst.Rewriter {
+
+  /**
+   * Field which indicates whether the Java code has been modified at all.
+   */
+  isChanged: private boolean
+
+  /**
+   * Represents the Java code it will mutate.
+   */
+  compilationUnit: @java(class="com.github.javaparser.ast.CompilationUnit") native
+
+  /**
+   * Takes in a compilationUnit and creates a rewriter with the input being the @compilationUnit it will mutate.
+   */
+  fromCompilationUnit: function(input: @java(class="com.github.javaparser.ast.CompilationUnit") !native)
+                         : JavaAst.Rewriter
+
+  /**
+   * Takes in a Content obj and a spec and creates a rewriter with the compilationUnit being the file's content.
+   * The compilationUnit is parsed with a c3.platform.java.ast.JavaTypeSolver with path being default path
+   */
+  fromContent: function(input: !Content, spec: JavaAst.RewriterSpec): JavaAst.Rewriter
+
+  /**
+   * Changes the package of the Java code to the provided String.
+   */
+  changePackage: member function(newPackage: !string): JavaAst.Rewriter
+
+  /**
+   * Changes the class name of the Java code to the provided `newName`.
+   * `oldName` is only used as a fall back class name matcher if there are multiple classes and none of them contain a 'public' modifier.
+   *
+   * The selected class to change follows the following rules:
+   * 1. If there is only one class, select that class
+   * 2. If there are multiple classes, select the class with the 'public' modifier
+   * 3. If there are multiple classes and no 'public' modifier, select the class with name `oldName` if set
+   * 4. If there are multiple classes and no 'public' modifier or matching `oldName` modifiers, select the first class
+   */
+  changeClassName: member function(newName: !string, oldName: string): JavaAst.Rewriter
+
+  /**
+   * Update the Java code according to the provided `native` ModifierVisitor,
+   */
+  change: member function(visitor: @java(class="c3.platform.java.ast.JavaAstRewriterModifierVisitor") !native)
+                   : JavaAst.Rewriter
+
+  /**
+   * Update the Java code by applying the rules from the provided collection of `JavaAst.Transform`.
+   */
+  change: member function(transforms: !Collection<JavaAst.Transform>): JavaAst.Rewriter
+
+  /**
+   * Returns a Content Obj with the value being the Java code.
+   */
+  toContent: member function(): !Content
+
+  /**
+   * Returns the string representation of the Java code with the formatting preserved as much as possible
+   */
+  toString: member function(): !string
+}

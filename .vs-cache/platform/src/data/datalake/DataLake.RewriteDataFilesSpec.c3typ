@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type DataLake.RewriteDataFilesSpec mixes Spec {
+
+  /**
+   * The strategy to use for rewriting operation.
+   * There are three strategies available: BINPACK, SORT and ZORDER.
+   * See {@link DataLake.RewriteStrategy}
+   */
+  strategy: string = DataLake.RewriteStrategy.BINPACK
+
+  /**
+   * Files that may contain data matching the filter will be considered for rewriting.
+   */
+  filter: string serialized Filter
+
+  /**
+   * Defines how data and deletes files should be ordered in a table
+   */
+  sort_order: string
+
+  /**
+   * Other optional settings for the rewrite action. See https://iceberg.apache.org/docs/nightly/spark-procedures/#options
+   */
+  options: map<string, string>
+}

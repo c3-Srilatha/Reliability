@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * Helper functions for UI-related code. Only contains code that can be used in all UI-related packages,
+ * i.e. code that does not need to be remixed for a specific package.
+ */
+@typeScript
+type GenAiUiHelpers {
+  /**
+   * Returns the ID of the documents upload form that should be rendered by the conditional renderer.
+   */
+  getDocumentsUploadFormComponentId: function(state: !UiSdlReduxState): string ts-client
+
+  /**
+   * Checks the current status of the query, If the query is completed,
+   * we then process the finished result.
+   * @param genAiResultId
+   *          The string id of the {@link Genai.Query.Result}.
+   * @param chatMessage
+   *          If triggered by a chat query, the {@link Genai.Query.ChatMessage} associated.
+   * @param dispatch
+   *          The hook used to dispatch actions to the redux store.
+   * @param setDoneStreaming
+   *          State setter to indicate if the query response is done streaming.
+   * @param componentId
+   *          The id of the component where the streaming is occurring.
+   */
+  pollQueryStatus: function(genAiResultId: !string,
+                            chatMessage: Genai.Query.ChatMessage,
+                            dispatch: !lambda(): any,
+                            setDoneStreaming: !lambda(done: boolean),
+                            componentId: !string) ts-client
+
+  /**
+   * Gets the {@link TypeMeta}s and does a comparison with the whitelisted types configured. Then does a
+   * fetchCount on the type to get the total rows. If no whitelisted types are given, then it returns empty.
+   *
+   * @return A map of the type to the {@link TypeMeta} info and total rows on database for that type.
+   */
+  getWhitelistedTypeMetadata: function(): map<string, GenAiUiTypeMetadataResult> js-rhino
+
+  /**
+   * Gets the {@link Genai.StructuredData.Config#whiteListedDataModel}s for each structured tool and returns the merged
+   * json of whitelisted types.
+   *
+   * @return A json containing the merged list of whitelisted data models for all tools
+   */
+  mergeWhiteListedDataModel: private function(models: ![json]): json js-rhino
+
+  /**
+   * Retrieves a list of categories associated with a given tag label.
+   *
+   * @param tagLabel The label of the tag for which to fetch the associated categories.
+   * @return An array of category labels linked to the specified tag.
+   */
+  getTagLabelCategories: private function(tagLabel: string): [string] ts-client
+
+  /**
+   * Gets the direct children of a directory.
+   *
+   * @param directory
+   * The directory to get the children for.
+   * @param fileSystem
+   * The file system to use for the operation. Defaults to 'S3FileSystem'.
+   * @returns A list of files in the directory.
+   */
+  getDirectoryChildren: private function(directory: !string,
+                                        fileSystem: string = 'S3FileSystem'): [string] ts-client
+
+  /**
+   * Checks if the query result is using a dynamic trajectory.
+   *
+   * @param result
+   * The query result to check.
+   * @returns True if the result is using a dynamic trajectory, false otherwise.
+   */
+  checkIsUsingDynamicTrajectory: private function(result: !Genai.Query.Result): boolean ts-client
+}

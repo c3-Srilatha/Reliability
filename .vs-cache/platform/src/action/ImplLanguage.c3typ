@@ -1,0 +1,380 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The languages supported for method implementations. Some of these run within the server itself, and others run
+ * outside through various engines.
+ *
+ * This type has public constants with the official names of the languages, such as "Python".
+ */
+inline type ImplLanguage mixes Named, Singleton {
+
+  /**
+   * Java source.
+   * @see https://en.wikipedia.org/wiki/Java_(programming_language)
+   */
+  JAVA: const string = 'Java'
+
+  /**
+   * JavaScript source (any ECMAScript version).
+   * @see https://en.wikipedia.org/wiki/JavaScript
+   */
+  JAVASCRIPT: const string = 'JavaScript'
+
+  /**
+   * Python source.
+   * @see https://en.wikipedia.org/wiki/Python_(programming_language)
+   */
+  PYTHON: const string = 'Python'
+
+  /**
+   * TypeScript source.
+   * @see https://www.typescriptlang.org/docs/handbook/basic-types.html
+   */
+  @beta
+  TYPESCRIPT: const string = 'TypeScript'
+
+  /**
+   * TypeScript/React source.
+   * @see https://www.typescriptlang.org/docs/handbook/jsx.html
+   */
+  TSX: const string = 'TSX'
+
+  /**
+   * @return `true` if underlying language supports overloaded functions
+   */
+  supportsOverloads: abstract member function(): boolean
+
+  /**
+   * Language versions supported for this language. Note that this is not necessarily a semantic version.
+   */
+  versions: abstract member function(): ![string]
+
+  /**
+   * Return the official name of matching ImplLanguage for the specified string or null. This is case-insensitive and
+   * handles common abbreviations.
+   */
+  nameOf: inline function(lang: !?string, failIfInvalid: boolean): string
+
+  /**
+   * @return name of this language as used in method declaration (if any)
+   */
+  dslName: abstract member function(): string
+
+  /**
+   * @return name of the specified language as used in method declaration (if any)
+   */
+  dslNameOf: cached inline function(lang: !string serialized ImplLanguage): string
+
+  /**
+   * Return the canonical file extension for one of the language enum values.
+   *
+   * @return file extension (including dot)
+   */
+  fileExt: abstract member function(): !string
+
+  /**
+   * Return the canonical file extension for the specified language enum value.
+   *
+   * @return file extension (including dot)
+   */
+  fileExtOf: function(lang: !string serialized ImplLanguage): !string
+
+  /**
+   * Return the canonical content type extension for one of the language enum values.
+   *
+   * @return content type
+   */
+  mediaType: abstract member function(): !string
+
+  /**
+   * Extract the function names from the script that could implement type methods. This means named top-level
+   * functions which could match up with type methods names.
+   *
+   * Normally a script that cannot be parsed will fail silently, returning an empty list, but passing true to
+   * failIfInvalid will cause an appropriate error to be thrown instead.
+   *
+   * @param source code to parse
+   * @param failIfInvalid throw an exception the script has a syntax error
+   */
+  functions: abstract member function(source: !string, failIfInvalid: boolean): [string]
+
+  /**
+   *  Return the list of keywords for a given language. This is the list of words used by the implementation of a
+   *  programming language. If the name of a field or method conflicts with one of these keywords, the field or method
+   *  can be accessed by appending "_" to the end of its name. For example:
+   *
+   *  ```py
+   *     with open("foo.txt", "w") as f: # Note that "with" is a Python keyword
+   *         f.write("bar")
+   *     inst = c3.ArrayType.ofBool().emptyArray()
+   *     # inst = inst.with(True) <- this would fail as "with" is a keyword in Python
+   *     inst = inst.with_(True) # Works!
+   *     c3.Py.keywords().contains("with") # returns True
+   * ```
+   */
+  keywords: cached abstract member function(): [string]
+
+  /**
+   * Return the matching ImplLanguage for the specified string or null. This is case-insensitive and handles common
+   * abbreviations.
+   */
+  forName: ~
+
+  /**
+   * Return the matching language for the specified extension.
+   *
+   * @param ext extension string to match
+   * @param failIfNone if true, throw error instead of returning null
+   * @return matched enum value
+   */
+  forFileExt: cached function(ext: !?string, failIfNone: boolean): mixing ImplLanguage
+
+  /**
+   * @return `true` if this is Java implementation language
+   */
+  isJava: abstract member function(): boolean
+
+  /**
+   * @return `true` if this is JavaScript implementation language
+   */
+  isJs: abstract member function(): boolean
+
+  /**
+   * @return `true` if this is Python implementation language
+   */
+  isPy: abstract member function(): boolean
+
+  /**
+   * @return implementation language for Java
+   */
+  java: function(): !ImplLanguage
+
+  /**
+   * @return implementation language for JavaScript
+   */
+  js: function(): !ImplLanguage
+
+  /**
+   * @return implementation language for Python
+   */
+  py: function(): !ImplLanguage
+
+  /**
+   * @return all implementation languages.
+   */
+  all: cached function(): ![ImplLanguage]
+
+  /**
+   * @return all implementation languages.
+   */
+  allNames: cached function(): ![string]
+
+  /**
+   * @return file extensions for all supported ImplLanguages.
+   */
+  allFileExts: cached function(): [string]
+
+  /**
+   * @return scripting language instances (implementation languages other than Java)
+   *
+   * @see #all
+   */
+  allScripting: cached function(): ![ImplLanguage]
+
+  /**
+   * @return scripting language names (implementation languages other than Java)
+   *
+   * @see #allNames
+   */
+  allScriptingNames: cached function(): ![string serialized ImplLanguage]
+
+  /**
+   * @return `true` if any of provided {@link Action.Requirements} is for Java
+   */
+  hasJava: private function(actionRequirements: !?[string serialized Action.Requirement]): boolean
+
+  /**
+   * @return `true` if any of provided {@link Action.Requirements} is for JavaScript
+   */
+  hasJs: private function(actionRequirements: !?[string serialized Action.Requirement]): boolean
+
+  /**
+   * @return `true` if any of provided {@link Action.Requirements} is for Python
+   */
+  hasPy: private function(actionRequirements: !?[string serialized Action.Requirement]): boolean
+
+  /**
+   * @return `true` if the provided {@Link Action.Engine} can run any of provided {@Link Action.Requirement actionRequirements}. If the parameter actionRequirements is
+   * empty we assume it has only one {@Link Action.Requirement} "java".
+   */
+  canRunActionRequirements: private function(find: !?string serialized Action.Engine,
+                                             actionRequirements: !?[string serialized Action.Requirement]): boolean
+
+  /**
+   * @return `true` if any of provided {@link Action.Requirements} use the specified language
+   */
+  hasLang: private function(find: !string serialized ImplLanguage,
+                            actionRequirements: !?[string serialized Action.Requirement]): boolean
+
+  /**
+   * @return `true` if the provided language is a scripting language.
+   *
+   * @see #allScripting
+   */
+  isScriptLang: private function(lang: !string serialized ImplLanguage): boolean
+
+  /**
+   * @return `true` if any of provided {@link Action.Requirements} are a scripting language
+   *
+   * @see #allScripting
+   */
+  hasScript: private function(actionRequirements: !?[string serialized Action.Requirement]): boolean
+
+  /**
+   * @return the requirements from the list that use the specified language
+   */
+  filterLang: private function(find: !string serialized ImplLanguage,
+                               actionRequirements: !?[string serialized Action.Requirement])
+                        : [string serialized Action.Requirement]
+
+  /**
+   * Installs the specified runtime, deleting potentially stale (cache-dirty) installations already present.
+   */
+  installRuntime: private member function(runtime: !ImplLanguage.ResolvedRuntime)
+
+  /**
+   * Resolve the specified runtime, {@Link ImplLanguage.RuntimeLocation locations}, and {@Link ImplLanguage.Executor executors} combinations.
+   *
+   * @param runtime
+   *            The runtime to resolve.
+   * @param location
+   *            If provided, runtime will be resolved for the specific {@Link ImplLanguage.RuntimeLocation location}. If not
+   *            provided runtime is resolved against all {@Link ImplLanguage.RuntimeLocation locations}.
+   * @param executors
+   *            If provided, the runtime will be resolved only for {@Link ImplLanguage.Executor executors} specified in the parameter executors. If not
+   *            set runtime is resolved against all {@Link ImplLanguage.Executor executors}.
+   * @param doNotValidate
+   *            Runtime resolution typically involves validation to confirm that the resolved runtimes satisfy the
+   *            runtime. In some cases, it may be desirable or necessary to disable this validation. For
+   *            example, if one of the packages has an installation name that does not match its 'importable' name.
+   * @return A named tuple with fields `seededRuntimes` and `errors`. The 'seededRuntimes' field is a map with {@Link Action.Engine} as the key and its {@Link Action.Engine#installedRuntime resolved runtime}
+   * as the value. The 'errors' field is a map with {@Link Action.Engine} as the key and the error message as value if the runtime resolution failed for that {@Link Action.Engine}.
+   */
+  // TODO: PLAT-45939 update this documentation
+  resolveRuntime: private member function(runtime: !ImplLanguage.Runtime,
+                                          location: string enum ImplLanguage.RuntimeLocation,
+                                          executors: [string enum ImplLanguage.Executor],
+                                          doNotValidate: boolean)
+                                   : !{ seededRuntimes: map<string serialized Action.Engine, ImplLanguage.ResolvedRuntime>, errors: map<string serialized Action.Engine, string> }
+
+  /**
+   * The api to upsert a runtime. After a runtime is successfully upserted it can be used as a part of {@Link Action.Requirement}
+   * in method claims and {@Link Lambda lambdas}.
+   *
+   * @param runtime
+   *            The runtime to upsert. Once a runtime is successfully upserted it is available for use in {@Link Action.Requirement}
+   *            with any valid combination of {@Link ImplLanguage.RuntimeLocation locations} and {@Link ImplLanguage.Executor executors} that support
+   *            custom runtimes. The user can also upsert a runtime for specific locations and executors and then it can be used with only those
+   *            combination of locations and executors.
+   * @param location
+   *            This optional parameter allows user to upsert a runtime for a specific {@Link ImplLanguage.RuntimeLocation location}. If not provided a successfully upserted runtime can be used
+   *            with any location in an {@Link Action.Requirement}. For instance, calling upsert on a runtime "py-foo" with location set as "server" will allow users to use that runtime only with server.
+   *            Any method claim like "py-foo-client" will be invalid and throw metadata error.
+   * @param executor
+   *            This optional parameter allows user to upsert a runtime for some array of {@Link ImplLanguage.Executor executors}. If not provided a successfully upserted runtime can be used
+   *            with any {@Link ImplLanguage.Executor executor} that supports custom runtimes. For instance, calling upsert on a runtime "py-foo" with executor
+   *            set as ["ipython"] will allow users to use that runtime only with the executor {@Link ImplLanguage.Executor#IPYTHON ipython}. A method claim like
+   *            "py-foo-server" will be invalid and throw metadata error as {@Link ImplLanguage.Executor#IPYTHON ipython} is an executor for client side python. Similarly,
+   *            the method claim "py-foo-py4j" will be invalid as "py-foo" can only be used with the executor {@Link ImplLanguage.Executor#IPYTHON ipython}.
+   * @param doNotValidate
+   *            Upsertion of runtime typically involves validation to confirm that the installed runtimes satisfy the
+   *            runtime which was to be upserted. In some cases, it may be desirable or necessary to disable this validation. For
+   *            example, if one of the packages has an installation name that does not match its 'importable' name.
+   *
+   * @return A named tuple with fields 'seededRuntimes' and 'errors'. The 'seededRuntimes' field will provide detailed information
+   *         about the the libraries that will be installed when using this runtime with various {@Link ImplLanguage.RuntimeLocation locations} and {@Link ImplLanguage.Executor executors}. It is a map with {@Link Action.Engine} as key and its {@Link Action.Engine#installedRuntime} as value.
+   *         The 'errors' field is a map with {@Link Action.Engine} as key and error message as value if the runtime upsertion failed for that particular {@Link Action.Engine}. To check if upsertion is completely successfully it is enough to check that 'errors' field is an empty map.
+   *         If the upsertion was not successful or partially successful `errors` field will give detailed information about why upsertion failed for all/some
+   *         requested {@Link ImplLanguage.RuntimeLocation locations} and {@Link ImplLanguage.Executor executors}.
+   */
+  /*
+   * This api resolves the runtime and then upserts it.
+   * TODO: PLAT-49992 link to the c3doc for runtime/Action requirements which should explain in detail how to interpret
+   * the returned named tuple
+   * TODO: PLAT-45939 update this documentation
+   */
+  upsertRuntime: member function(runtime: !ImplLanguage.Runtime,
+                                 location: string enum ImplLanguage.RuntimeLocation,
+                                 executors: [string enum ImplLanguage.Executor],
+                                 doNotValidate: boolean)
+                          : !{ seededRuntimes: map<string serialized Action.Engine, ImplLanguage.ResolvedRuntime>, errors: map<string serialized Action.Engine, string> }
+
+  upsertRuntime: member function(runtime: !ImplLanguage.Runtime,
+                                 executors: [string enum ImplLanguage.Executor],
+                                 doNotValidate: boolean)
+                          : !{ seededRuntimes: map<string serialized Action.Engine, ImplLanguage.ResolvedRuntime>, errors: map<string serialized Action.Engine, string> }
+
+  /**
+   * Upserts each runtime in {{runtimes}} via {@link upsertRuntime}. Ancestor runtimes will be upserted prior to their
+   * descendants. If resolution fails for a parent runtime, attempts to resolve any of its descendants will be skipped.
+   *
+   * All arguments and return value have the same semantics as {@link upsertRuntime}.
+   */
+  upsertRuntimes: member function(runtimes: ![ImplLanguage.Runtime],
+                                  location: string enum ImplLanguage.RuntimeLocation,
+                                  executors: [string enum ImplLanguage.Executor],
+                                  doNotValidate: boolean)
+                           : !{ seededRuntimes: map<string serialized Action.Engine, ImplLanguage.ResolvedRuntime>, errors: map<string serialized Action.Engine, string> }
+
+  /**
+   * Upserts each runtime in {{changedRuntimes}} via {@link upsertRuntimes}. Also upserts runtimes
+   * for any runtime which {@link ImplLanguage.Runtime#isDescendantOf is a descendant of} a runtime in
+   * {{changedRuntimes}}. Ancestor runtimes will be upserted prior to their descendants.
+   *
+   * All arguments and return value have the same semantic as {@link upsertRuntime}
+   */
+  upsertRuntimesAndDependents: member function(changedRuntimes: ![ImplLanguage.Runtime],
+                                               location: string enum ImplLanguage.RuntimeLocation,
+                                               executors: [string enum ImplLanguage.Executor],
+                                               doNotValidate: boolean)
+                                        : !{ seededRuntimes: map<string serialized Action.Engine, ImplLanguage.ResolvedRuntime>, errors: map<string serialized Action.Engine, string> }
+
+  /**
+   * Upserts all runtimes declared in the current {@link Pkg} via {@link upsertRuntimes}.
+   *
+   * All arguments and return value have the same semantic as {@link upsertRuntime}
+   */
+  upsertPkgRuntimes: member function(location: string enum ImplLanguage.RuntimeLocation,
+                                     executors: [string enum ImplLanguage.Executor],
+                                     doNotValidate: boolean)
+                              : !{ seededRuntimes: map<string serialized Action.Engine, ImplLanguage.ResolvedRuntime>, errors: map<string serialized Action.Engine, string> }
+
+  /**
+   * Uninstalls the specified runtime if installed.
+   */
+  uninstallRuntime: private member function(runtimeName: !string serialized ImplLanguage.Runtime)
+
+  /**
+   * Library manager for this language and provided runtime.
+   */
+  libraryManager: private cached abstract member function(runtimeName: string serialized ImplLanguage.Runtime)
+                                                   : !LibraryManager
+
+  /**
+   * All valid executors for this language
+   */
+  executors: private cached abstract property(): [string enum ImplLanguage.Executor]
+
+  /**
+   * Regular expression that matches all supported languages
+   */
+  regexPattern: private cached function(): !string
+
+  inst: abstract ~
+}

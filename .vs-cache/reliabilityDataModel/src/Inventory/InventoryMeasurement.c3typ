@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * InventoryMeasurement.c3typ
+ * This type encapsulates inventory measurement data.
+ */
+@db(compactType=true,
+    datastore='cassandra',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    shortId=true,
+    allowsRemixOverride=true,
+    shortIdReservationRange=100000)
+extendable entity type InventoryMeasurement mixes TimedDataPoint<InventorySeries> schema name "INVMMT" {
+  /**
+   * The end-of-day inventory quantity available at an item-storage location at the time of measurement.
+   * The  treatment is defined to be `latest` rather than `previous` on this field to help identify data quality issues when an inventory quantity
+   * measurement is not provided or properly ingested on a given day. Since most metrics using this measurement
+   * will likely want the EOD inventory value to be carried forward onto to the next interval (i.e. apply the previous treatment), the following compound
+   * metric expression can be used to derive the desired timeseries:
+   * ```
+   * interpolate("<InventoryQuantityMetric>", 'PREVIOUS', 'MISSING')
+   * ```
+   */
+  @ts(treatment='latest')
+  quantity: int
+}

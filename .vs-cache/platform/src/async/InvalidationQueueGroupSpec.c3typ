@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used for specifying group criteria for count functions.
+ */
+type InvalidationQueueGroupSpec mixes Spec {
+
+  /**
+   * Group by target type id.
+   */
+  targetTypeId: boolean
+
+  /**
+   * Group by t arget obj id.
+   */
+  targetObjId: boolean
+
+  /**
+   * Group by entryType.
+   */
+  entryType: boolean
+
+  /**
+   * Group by context.
+   */
+  context: boolean
+
+  /**
+   * Group by priority.
+   */
+  priority: boolean
+
+  /**
+   * Group by node pool.
+   */
+  nodePool: boolean
+
+  /**
+   * Group by status.
+   */
+  status: boolean
+
+  /**
+   * Group by error code.  Only valid for reporting errors.
+   */
+  errorCode: boolean
+
+  /**
+   * Group by review.  Only valid for reporting errors.
+   */
+  review: boolean
+
+  /**
+   * Parses a comma separated list of queue fields to group on.
+   *
+   * @param spec
+   *           Comma separated list of queue fields to group on.
+   *
+   * @return an InvalidationQueueGroupSpec to group on the fields specified in the spec.
+   */
+  parse: function(spec: !string): !InvalidationQueueGroupSpec
+
+  /**
+   * Constructs a group expression based on the spec.  This is not a member function so that it can be called on
+   * null specs.
+   *
+   * @param spec
+   *           Spec to build filter expression for.
+   *
+   * @return a group expression based on the group spec.
+   */
+  groupExpr: function(spec: InvalidationQueueGroupSpec): string
+}

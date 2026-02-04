@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type representing metadata about dataset partitions stored in blob storage.
+ * ExMachina dataset consists of one or more partitions.
+ * Partition is readonly and immutable.
+ */
+entity type ExMachinaDatasetPartitionMetadata mixes AclEnabled schema name 'EXM_DATASET_PART_META' {
+  /**
+   * Partition Id.
+   */
+  id: !string
+
+  /**
+   * Path in blob storage relative to dataset-storage baseUrl.
+   * Usually has form of "dataset.guid/partition.id", where dataset-guid - is id of dataset, under which it was uploaded originally.
+   */
+  path: !string
+
+  /**
+   * Partition filename.
+   * Doesn't have to be unique. Often versions of the same file are uploaded multiple times.
+   */
+  filename: !string
+
+  /**
+   * Status of the partition. @see c3.vad.model.datasets.PartitionStatus for possible values.
+   */
+  status: !string
+
+  /**
+   * Partition schema in json format
+   */
+  dataSchema: string
+
+  /**
+   * Partition digest in json format
+   */
+  digest: string
+}

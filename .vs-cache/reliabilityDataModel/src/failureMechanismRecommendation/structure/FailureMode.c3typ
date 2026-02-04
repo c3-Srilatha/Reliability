@@ -1,0 +1,120 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The `FailureMode` entity represents a mechanism through which an asset can fail.
+ * It contains various attributes and methods to track and manage failure modes in the system.
+ */
+@db(versionHistory=true)
+entity type FailureMode mixes AssetOnboardingMeta, ExemptFromFacilityFilter schema name 'FMD' {
+
+  /**
+   * The name of the failure mode.
+   * It should uniquely identify the failure mode.
+   */
+  name: !~
+
+  /**
+   * Text that describes the failure mode.
+   */
+  description: string
+
+  /**
+   * Indicates if the failure mode is single-use across cases and alerts.
+   * - `true`: single-use.
+   * - `false`: can be reused.
+   */
+  singleUse: boolean
+
+  /**
+   * Indicates whether or not the {@link FailureMode} should be automatically linked to alerts
+   * when creating alerts from model predictions.
+   */
+  autoLinkAlert: boolean = true
+
+  /**
+   * Indicates whether or not the {@link FailureMode} was created by a user in the UI.
+   * - `true`: user-created.
+   * - `false`: system-generated.
+   */
+  userCreated: boolean
+
+  /**
+   * The library to which this failure mode record belongs.
+   */
+  failureModeLibrary: FailureModeLibrary
+
+  /**
+   * List of failure mode line items detailing this failure mode.
+   */
+  failureModeLineItems: [FailureModeLineItem](failureMode)
+
+  /**
+   * Expected sensors to diagnose this failure mode (rule-based or ML-based).
+   * Calculated from the failureModeLineItems.
+   */
+  expectedSensors: [ExpectedSensor] calc failureModeLineItems.expectedSensor
+
+  /**
+   * All recommendations linked to this failure mode.
+   */
+  recommendations: [FailureModeRecommendation](failureMode)
+
+  /**
+   * Count of unique recommendations for this failure mode.
+   * Calculated from the recommendations list.
+   */
+  countRecommendations: int calc count(recommendations)
+
+  /**
+   * Count of line items associated with this failure mode.
+   * Calculated from the failureModeLineItems list.
+   */
+  countLineItems: int calc count(failureModeLineItems)
+
+  /**
+   * Fetches {@link FailureMode}s, and for each {@link FailureMode} returned by the spec, checks its {@link FailureModeLineItem}s to see how many use one of the given expectedSensors. Makes a {@link FailureModeWithNumActiveLineItems} from each {@link FailureMode}.
+   * @param spec
+   *           The spec to use for fetching the {@link FailureMode}s.
+   * @param expectedSensors
+   *           The {@link ExpectedSensor}s to use for filtering the {@link FailureModeLineItem}s.
+   * @return The {@link FailureModeWithNumActiveLineItems}s with the number of active {@link FailureModeLineItem}s and whether they are active.
+   */
+  @action(group='asset-onboarding-read')
+  fetchWithNumActiveLineItems: function(spec: FetchSpec, expectedSensors: ?[ExpectedSensor]): FetchResult<FailureModeWithNumActiveLineItems> js-rhino
+
+  /**
+   * Cleans up all of the associated {@link FailureModeLineItem}s & {@link FailureModeRecommendation}s.
+   * This function is called by the the {@link FailureMode#removed} function.
+   *
+   * @param failureModes
+   *           A list of {@link FailureMode}s to be removed.
+   * @return The number {@link FailureModeLineItem}s removed.
+   */
+  @action(group='asset-onboarding-write')
+  cleanupRelatedEntities: function (failureModes: ![FailureMode]): int js-rhino
+
+ /**
+   * Wrapper for {@link FailureMode#merge}.
+   * When attempting to create a new {@link FailureMode}, but one already exists with the same name in the parent library, an error is thrown.
+   *
+   * @param spec
+   *           The merge specification (e.g., which fields to update).
+   * @return The merged {@link FailureMode} instance.
+   */
+  mergeIfUniqueName: member function (spec: MergeSpec): FailureMode js-rhino
+
+  /**
+   * For each {@link FailureMode} that has been removed, this function asynchronously calls cleanupRelatedEntities.
+   *
+   * @param txn
+   *           The list of {@link FailureMode}s ids that were removed.
+   */
+  removed: ~ js-rhino
+}

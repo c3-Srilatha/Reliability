@@ -1,0 +1,125 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state that holds information to render the Model Scenario Details page.
+ */
+@typeScript
+type ModelScenarioDetailsApplicationState mixes UiApDataStore {
+
+  /**
+   * The name of the scenario.
+   */
+  name: string
+
+  /**
+   * {@link ReliabilityMlModel} over which this scenario is based.
+   *
+   * During the scenario execution, we will use the {@link MlPipeline} of this model to
+   * generate predictions.
+   */
+  baseModel: ReliabilityMlModel
+
+  /**
+   * The {@link ReliabilityAsset} for which this scenario is executed.
+   */
+  asset: ReliabilityAsset
+
+  /**
+   * The time range over which the scenario is executed.
+   */
+  timeRange: TimeRange
+
+  /**
+   * Contains metadata information about the scenario.
+   */
+  meta: Meta
+
+  /**
+   * The [status](ReliabilityOrchestrator.RunStatus) of the scenario.
+   */
+  status: string
+
+  /**
+   * Contains the configuration for the Model Scenario Details Chart.
+   */
+  chartConfig: UiApTimeseriesChartConfig
+
+  /**
+   * A map of `alertOutput`s to {@link FetchResult} of `json`. Each object contains the data needed to display
+   * information in the Alerts Grid, and a field with the list of feature contributions and their fields for the
+   * nested grid.
+   */
+  alertData: map<string, FetchResult<json>>
+
+  /**
+   * A map from {@link Feature#id}s to {@link Timeseries} data, representing features' values.
+   * Used to avoid fetching data when selecting new features to plot in the chart.
+   */
+  featureData: map<string serialized Feature, Timeseries>
+
+  /**
+   * The time range of the scenario.
+   */
+  scenarioTimeRange: TimeRange
+
+  /**
+   * The time range of the data to be plotted in the chart. This time range is equal to the combination of the original
+   * model time range, plus the #scenarioTimeRange.
+   */
+  dataTimeRange: TimeRange
+
+  /**
+   * An action to indicate chart data retrieval. Gets the scenario id from the page parameters,
+   * and uses it to fetch the chart data.
+   *
+   * @returns a Redux action of type `GET_CHART_DATA`.
+   */
+  @uiSdlActionCreator(actionType='GET_CHART_DATA')
+  getChartDataAction: function(): !UiSdlReduxAction ts-client
+
+  /**
+   * Gets chart data for the scenario leveraging the {@link ReliabilityMlModelScenario#getDetailChartInfo} function,
+   * stores the result in this application state, and dispatches a #dataReceiveAction to store the data in the
+   * #dataMap with the `chartConfig` key.
+   *
+   * @param actionStream
+   *        The stream of actions that triggered this epic.
+   * @param stateStream
+   *        The stream of current application state.
+   * @returns A stream of actions that will be dispatched.
+   */
+  @uiSdlEpic(actionType='GET_CHART_DATA')
+  getChartData: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * An action to monitor the status of the scenario, and update the #status field accordingly.
+   * @returns a Redux action of type `CHECK_JOB_STATUS`.
+   */
+  @uiSdlActionCreator(actionType='CHECK_JOB_STATUS')
+  checkJobStatusAction: function(): !UiSdlReduxAction ts-client
+
+  /**
+   * Requests the status of the scenario, and updates the #status field accordingly.
+   *
+   * @param actionStream
+   *        The stream of actions that triggered this epic.
+   * @param stateStream
+   *        The stream of current application state.
+   * @returns A stream of actions that will be dispatched.
+   */
+  @uiSdlEpic(actionType='CHECK_JOB_STATUS')
+  checkJobStatus: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+}

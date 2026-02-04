@@ -1,0 +1,112 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * **DataValidation.Rule.ForeignKey** will check for the referential integrity of all foreign keys present on the type.
+ * Foreign keys include:
+ * 1. Foreign keys without any fkeyRef.
+ * 2. Stored Calc returning a Persistable subtype
+ *
+ * If case there are any foreign keys which do not exist in the "primary table", then it will be returned ({@link DataValidation.Run.Details}) along
+ * with the number of impacted rows. The output will look like: <key,value,count> as the three columns.
+ *
+ * Please note that only **ParentPartitionable** subtypes of a **kv datastore** types are allowed to have foreign integrity checks.
+ * Moreover, these checks will only look at the **parent** field and no other field on those types.
+ *
+ * An error will be thrown during create / update if:
+ * 1) A non **ParentPartitionable kv datatsore** subtype is passed as targetType.
+ */
+entity type DataValidation.Rule.ForeignKey extends DataValidation.Rule type key 'FKEY' {
+
+  KEY:         private const string = "ForeignKeyField"
+  VALUE:       private const string = "Value"
+  COUNT:       private const string = "AffectedRows"
+  ID:          private const string = "id"
+  afterCreate: ~
+  afterUpdate: ~
+  afterRemove: ~
+
+  /**
+   * @inheritDoc
+   *
+   * After initializing the run, we will look at the foreign key fields on the type and then, trigger the appropriate job
+   * which will perform the integrity checks of the foreign keys.
+   */
+  initRun: ~
+
+  /**
+   * @inheritDoc
+   *
+   * ForeignKey rule returns a tuple of three values:
+   * a) key: the fieldName of the targetType the rule is defined on, for which a match wasn't found.
+   * b) value: the fieldValue of the fieldName for which a match wasn't found in the primary-key entity/table.
+   * c) count: the number of entries for the given key and value that are missing.
+   */
+  detailsType: ~ = '{ ForeignKeyField: string, Value: string, AffectedRows: int }'
+
+  /**
+   * @inheritDoc
+   *
+   * Override the arguments passed as {@link MapReduceOptions} to {@link DataValidation.Rule.ForeignKey.MapReduceJob}
+   * <p/>
+   * 1. Add {@link #fkeyNames()} to {@link MapReduceOptions#include}
+   */
+  overiddenArgs: ~
+
+  /**
+   * fieldTypes which will be considered for ForeignKey reference integrity checks. The collection ForeignKey fields are
+   * also included and each persistable instance in the ForeignKey field collections will be inspected.
+   */
+  fkeyFieldTypes: function(targetType: !Type): !?[FieldType]
+
+  /**
+   * FieldTypes being considered for ForeignKey reference integrity checks
+   * Same as fkeyFieldTypes other than the fact it returns an instance with {@link ValueType} in it.
+   * A workaround of the issue where {@link FieldType} doesn't have {@link ValueType} in it.
+   */
+  fkeyInfo: private function(targetType: !Type): !?[DataValidation.Rule.ForeignKey.FieldType]
+
+  /**
+   * Field names being considered for ForeignKey reference integrity checks. The collection ForeignKey fields are
+   * also included and each persistable instance in the ForeignKey field collections will be inspected.
+   */
+  fkeyNames: function(targetType: !Type): !?[string]
+
+  /**
+   * @inheritDoc
+   *
+   * Finalize and update the status on the run.
+   */
+  finalizeRun: ~
+
+  /**
+   * Helper function to return the types using JdbcDatastore as datastore.
+   * @param includeExternal
+   *        if set, the {@link External} types will be included in this process.
+   */
+  sqlTypes: private function(includeExternal: boolean): [!Type]
+
+  /**
+   * Helper function to return the types using KvStore as datastore.
+   * @param includeExternal
+   *        if set, the {@link External} types will be included in this process.
+   */
+  kvTypes: private function(includeExternal: boolean): [!Type]
+
+  /**
+   * Iterate through the tables for the entity types and make sure they have {@link DataValidation.Rule.ForeignKey} attached to them.
+   * If there are any tables that don't have foreign key rules, it will create the default foreign key rules for them.
+   * @param schedule
+   *        a string representing the CronSchedule to be set to the foreign key rules created by this function. If not set,
+   *        the default schedule is '0 0 0 * * ?', i.e. scheduled at the midnight [UTC] of each day.
+   * @param includeExternal
+   *        if set, the {@link External} types will be included in this process.
+   * @return the number of tables that are missing the foreign key rules.
+   */
+  ensureRules: function(schedule: string = '0 0 0 * * ?', includeExternal: boolean): int
+}

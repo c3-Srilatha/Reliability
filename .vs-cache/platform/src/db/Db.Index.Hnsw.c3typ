@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Hnsw index is used for approximate nearest neighbor search (ANN). Hierarchical Navigable Small Worlds (HNSW)
+ * is a graph-based index that combines the advantages of skip lists and navigable small worlds.
+ * HNSW is a good choice for applications that require high speed and good accuracy.
+ * It is also a good choice for applications where the vectors are high-dimensional, but
+ * that it has large memory usage.
+ */
+type Db.Index.Hnsw mixes Db.Index {
+
+  method: ~ = HNSW
+
+  /**
+   * This parameter specifies the maximum number of edges per node in the graph structure. It influences the
+   * connectivity of the graph and affects the trade-off between search accuracy and efficiency.
+   */
+  @constraint(condition="neighborsCount >= 1")
+  neighborsCount: int = 16
+
+  /**
+   * This parameter controls the size of the dynamic list of candidate neighbors during the index construction process.
+   * A larger value of EfConstruction generally leads to better quality indexes but requires more computational
+   * resources during construction.
+   */
+  @constraint(condition="efConstruction >= 2 * neighborsCount")
+  efConstruction: int = 64
+}

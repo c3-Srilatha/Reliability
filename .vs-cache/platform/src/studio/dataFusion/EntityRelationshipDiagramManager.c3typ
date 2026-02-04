@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type EntityRelationshipDiagramManager {
+
+  // Returns a map of nodeId (with format of `pkgName_typeName`) to their {@link TypeMeta#toTypedJson} representation from {@link TypeMetaDeps}
+  nodeTypeMetaJson: function(): map<string, json>
+
+  /**
+   * Returns a json of all the issues categorized into either a DSL or implementation warning/error
+   * TODO: PLAT-115291 - Differentiate between .py and .js issues on the frontend
+   *
+   * @param issues
+   *        Map of {@link Pkg.Path} to array of {@link Pkg.Issue}s for the according type.
+   * @return json with dslErrors, dslWarnings, implErrors, and implWarnings fields
+   */
+  categorizeIssues: private function(issues: map<string, [Pkg.Issue]>): json
+
+  /**
+   * Builds a complete package dependency graph
+   * {@link EntityRelationshipDiagramPackageDependencyGraph}
+   * @return A map containing:
+   *     - "rootPkg": The name of the root package, and its dependencies.  {@link EntityRelationshipDiagramRootPackageInfo}
+   *     - "dependencies": A map where keys are package names and values are their direct dependency packages.
+   *     - "pkgInfo": A map containing detailed information for all packages in the dependency map.  {@link EntityRelationshipDiagramPackageInfo}
+   */
+  packageDependencyGraph: function(): EntityRelationshipDiagramPackageDependencyGraph
+
+  /**
+   * API to delete a type in the root pkg.
+   */
+  deleteType: function(typeName: !string)
+}

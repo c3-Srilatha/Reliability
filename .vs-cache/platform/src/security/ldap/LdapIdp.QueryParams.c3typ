@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type LdapIdp.QueryParams {
+
+  /**
+   * root location for ldap server ex: "dc=example,dc=com"
+   */
+  baseDn: !string
+
+  /**
+   * location for users in ldap server ex: "ou=people,dc=example,dc=com"
+   */
+  userDn: !string
+
+  /**
+   * location for groups in ldap server ex: "ou=groups,dc=example,dc=com"
+   */
+  groupDn: !string
+
+  /**
+   * ldap server's group type of object class ex: groupOfUniqueNames, groupOfNames, group
+   */
+  groupObjectClass: !string enum LdapIdp.QueryKind
+
+  /**
+   * ldap server's people type of object class as defined inside the groups ex: uniqueMember, member
+   */
+  peopleObjectClass: !string enum LdapIdp.QueryKind
+
+  /**
+   * password string in ldap server ex: password, userPassword, passcode
+   */
+  passwordKey: !string
+
+  /**
+   * prefix for user information Ex: UID, MAIL, S_AMA_ACCOUNT_NAME
+   */
+  userPrefix: !string enum LdapIdp.QueryKind
+
+  /**
+   * prefix for group information Ex: MEMBER, S_AMA_ACCOUNT_NAME
+   */
+  groupPrefix: !string enum LdapIdp.QueryKind
+}

@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Chart helper providing a preview of {@link Sensor} data and mask configuration for
+ * the Dataset Preparation workflow.
+ */
+type DataPrepPreviewChart mixes Value {
+
+  /**
+   * Returns the time range to plot on the chart.
+   *
+   * If {@link DataPrepPreviewChartSpec#showAllSensorData} is true, will use earliest and latest normalized
+   * timestamps on related {@link PointPhysicalMeasurementSeries}.
+   * @param spec
+   *           The data preparation preview chart specification.
+   * @return A {@link TimeRange} object representing the start and end dates for the chart.
+   */
+  getStartAndEndDate: private inline function (spec: !DataPrepPreviewChartSpec): TimeRange js-rhino
+
+
+  /**
+   * Based on the spec, get the right sensor and mask data.
+   *
+   * Will ignore masks/events and return an empty chart configuration if spec.sensors is empty
+   * so that the chart can render an empty state.
+   *
+   * Used by the chart's `advancedDataSpec`.
+   * @param spec
+   *           The data preparation preview chart specification.
+   * @return A {@link DataPrepPreviewChartData} object containing the chart data.
+   */
+  getChartData: function (spec: !DataPrepPreviewChartSpec): DataPrepPreviewChartData js-rhino
+}

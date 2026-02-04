@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A wrapper to easily expose native Python code through the C3 platform.
+ *
+ * NOTE: `GenaiCore.DynamicPy.Base`s that have specific runtime requirements
+ *    A) Must specify that in the {@link GenaiCore.DynamicPy.Base.Spec#actionRequirement} used to create the instance
+ *    B) Should be deployed/used in a {@link GenaiCore.DynamicPy.Engine} or {@link GenaiCore.DynamicPy.Service} to improve performance by
+ *       ensuring that the required engine is kept warm.
+ */
+extendable entity type GenaiCore.DynamicPy.Base mixes GenaiCore.NativePyUtil, SeedData schema name "DPB" {
+
+  /**
+   * Create a new GenaiCore.DynamicPy.Base from a Python file at the given path, which can be either
+   * a local path (on Jupyter) or a file elsewhere in the C3 file system.
+   *
+   * The Python file must have a global function `load` that returns either
+   *     a) a function that takes a single parameter `x`
+   *     b) an instance of a class with a member method `call` that takes only `self` and `x`
+   * That function will be called with the input data `x` when `call` is called on the instance.
+   *
+   * @param filePath
+   *        The path to the Python file, either a local path (on Jupyter) or a file elsewhere in the C3 file system
+   * @param spec
+   *        The spec controlling how the instance should be created
+   *
+   * @return The new instance
+   */
+   // spec should not be required but not passing it throws java compilation error
+  fromPyFile: function(filePath: !string, spec: !GenaiCore.DynamicPy.Base.Spec): !mixing GenaiCore.DynamicPy.Base py
+
+  /**
+   * Create a new GenaiCore.DynamicPy.Base from a Python directory at the given local path.
+   *
+   * The directory name must be the name of the package and the root folder must contain a file named `c3_init.py` that
+   * has a `load` function that returns either
+   *     a) a function that takes a single parameter `x`
+   *     b) an instance of a class with a member method `call` that takes only `self` and `x`
+   * That function will be called with the input data `x` when `call` is called on the instance.
+   *
+   * @param dirPath
+   *        The path to the local directory
+   * @param spec
+   *        The spec controlling how the instance should be created
+   *
+   * @return The new instance
+   */
+   // spec should not be required but not passing it throws java compilation error
+  fromPySrcDir: function(dirPath: !string, spec: !GenaiCore.DynamicPy.Base.Spec): !mixing GenaiCore.DynamicPy.Base py
+
+  /**
+   * Internal implementation of #call that **must** be invoked in an {@Action.Engine} that `canRun` #actionRequirement.
+   * Use #call instead of this function if calling from a more generic context.
+   * @param x
+   *        The input
+   *
+   * @return The output
+   */
+  doCall: private member function(x: any): any py
+
+  /**
+   * The main entry point to the python code in #pySrc. The input `x` will be passed to the result of the
+   * `load` function as described in the `fromPyFile` and `fromPySrcDir` methods. For instances with multiple
+   * logical methods, the input can be a dict with one key specifying the underlying function and the rest of the
+   * keys specifying the arguments to that function.
+   * @param x
+   *        The input
+   *
+   * @return The output
+   */
+  call: member function(x: any): any py
+
+  /**
+   * @return the downloaded Python code from #pySrc and sets up the in-runtime function to handle `call`
+   */
+  loadImpl: private inline member function(): native py
+}

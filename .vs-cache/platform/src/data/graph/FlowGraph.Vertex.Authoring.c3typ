@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functional authoring type for {@link FlowGraph.Vertex}. For example usage, see {@link FlowGraph.Authoring}.
+ */
+abstract type FlowGraph.Vertex.Authoring<V: FlowGraph.Vertex> mixes Identifiable {
+
+  /**
+   * Returns Port Authoring Type. If the authoring have specialization of FlowGraph.Port.Authoring, it should override this method.
+   * @return type for authoring port of this vertex authoring.
+   */
+  portAuthoringType: cached function(): !Type
+
+  /**
+   * @return type for vertex in this authoring graph.
+   */
+  vertexType: cached function(): !Type
+
+  /**
+   * Connects this vertex to the input port(s)/graph(s). For example usage, see {@link FlowGraph.Authoring}.
+   * @param inPort
+   *           output port/graph to connect to the input of this vertex
+   * @param isMultiOutput
+   *           Forces the output to be a map irrespective of the number of output ports.
+   * @return a single {@link FlowGraph.Port.Authoring} for single output vertex or a named tuple of
+   *           {@link FlowGraph.Port.Authoring}s with field names corresponding to the output port names for a
+   *           multi-output vertex.
+   */
+  connect: member function(inPort: FlowGraph.Port.Authoring,
+                           isMultiOutput: boolean): !FlowGraph.Port.Authoring<V> | Tuple py
+
+  /**
+   * Overload for {@link FlowGraph.Vertex#connect}.
+   */
+  connect: member function(inPort: [FlowGraph.Port.Authoring],
+                           isMultiOutput: boolean): !FlowGraph.Port.Authoring<V> | Tuple py
+
+  /**
+   * Overload for {@link FlowGraph.Vertex#connect}.
+   */
+  connect: member function(inPort: map<string, FlowGraph.Port.Authoring>,
+                           isMultiOutput: boolean): !FlowGraph.Port.Authoring<V> | Tuple py
+
+  /**
+   * @return whether this is a source authoring vertex.
+   */
+  isSource: member function(): boolean py
+
+  /**
+   * @return FlowGraph
+   */
+  toVertex: abstract member function(): !V
+
+  /**
+   * The name of this vertex. Authoring translates to {@link FlowGraph.Vertex#name}.
+   */
+  name: string
+
+  /**
+   * The from ports for all incoming edges to this vertex, organized by vertex input port name.
+   * key - input port name
+   * value - port on "previous" vertex that feeds into the named input port
+   */
+  inputs: map<string, FlowGraph.Port.Authoring>
+
+  /**
+   * key - port name
+   * value - information about type associated with this port. This is useful for {@link FlowGraph.Edge} validation.
+   */
+  inTypes: !map<string, ValueType>
+
+  /**
+   * key - port name
+   * value - information about type associated with this port. This is useful for {@link FlowGraph.Edge} validation.
+   */
+  outTypes: !map<string, ValueType>
+
+  /**
+   * Automatically populate id field of @link FlowGraph.Vertex}.
+   */
+  beforeMake: ~ java | py
+}

@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Outer type to provide a namespace for Genai.ChatBot.Config Type
+ */
+type Genai.ChatBot {
+  /**
+   * Utility function to include fields needed to display rationale sources in UI.
+   */
+  rationaleSourcesIncludeString: private inline function(): !string js-rhino
+
+  /**
+   * Persists and returns a {@link Genai.Query.Result} which is further processed and updated by the query handler in use.
+   * @param query
+   *       User query
+   * @param queryType
+   *         The type of query triggered by the user
+   * @param filtersToAdd
+   *       Filters to add from the UI, on top of any filters explicitly set via search operators
+   * @param targetTool
+   *       The tool that should be used when executing the query.
+   * @param toolsOverride
+   *      The {@link Genai.Agent.Tool.Config}s that should be used to answer the user query.
+   *      This is used when `targetTool` is `multiSourceQuery()` to retrieve data and answer user
+   *      query using tools from `toolsOverride`.
+   *      If this is not passed, and `targetTool` is `multiSourceQuery()`,
+   *      then all tools from {@link Genai.Agent.Tool.MultiSourceSynthesizer.Config#toolkitName} will be executed.
+   * @param planner
+   *      The {@link Genai.Agent.Planner} that should be used to generate and execute the plan.
+   * @param session
+   *      The id of the {@link GenaiCore.Session.Kv} associated with this query
+   * @return initial {@link Genai.Query.Result} with {@link Genai.Query.Result#searchQuery} populated, or a cached result
+   */
+  createInitialGenAiResult: private function(query: !string,
+                                              queryType: Genai.Query.Type = QUERY,
+                                              filtersToAdd: map<string, [Genai.Query.SourceFilter]>,
+                                              targetTool: string,
+                                              toolsOverride: [string],
+                                              planner: Genai.Agent.Planner,
+                                              overrideFilterFromParent: boolean,
+                                              session: GenaiCore.Session.Kv,
+                                              executeSpec: Genai.Query.ExecuteSpec): !Genai.Query.Result js-rhino
+
+  /**
+   * Get include spec string for chat with rationale sources
+   * private - exposed for testing purposes
+   *
+   * @return query string for chat
+   */
+  queryIncludeString: private function(): !string js-rhino
+
+  /**
+   * Get include spec string for {@link Genai.Agent.DynamicTrajectory.Step} steps with rationale sources
+   * @param fullResult
+   *          Whether to include all fields in the result or only the main ones needed in the feed.
+   *
+   * @return query string for chat
+   */
+  trajectoryIncludeString: private function(fullResult: boolean): !string js-rhino
+
+  /**
+   * Helper function used to log the error in the answer of {@link Genai.Query.Result} if
+   * {@link Genai.ChatBot#createInitialGenAiResult} fails
+   * @param errorMessage
+   *           The error message with which the function failed
+   * @param detectedLanguageCode
+   *           The detected language code if translation was enabled
+   */
+  handleError: private function(errorMessage: !string, detectedLanguageCode: string): !string js-rhino
+
+  /** Private - exposed for testing purposes.
+   *
+   * @return the {@link Genai.Query.Handler} for the query
+   */
+  getHandler: private function(): !Genai.Query.Handler js-rhino
+}

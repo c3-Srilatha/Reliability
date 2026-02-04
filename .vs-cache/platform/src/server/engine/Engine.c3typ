@@ -1,0 +1,432 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for "engines" i.e. special types that have a well defined life-cycle.
+ *
+ * Engines are persistent between calls, which makes them useful for building caches of expensive data and serving
+ * requests against that cache quickly. These caches should generally be set up during #start, but it may also be
+ * reasonable to cache on demand, as long as #start validates the basic configuration necessary to function.
+ *
+ * Typically Engine will be started on-demand when one of the member methods is called. However see
+ * {@link Engine.Daemon} and {@link Engine.Periodic}
+ *
+ * Typically this type is not used directly but through a well known sub-type like {@link Action.Engine} or
+ * {@link Lambda.Engine}.
+ *
+ * Note that engines are not always singletons but can be as needed.
+ */
+// TODO PLAT-71956 Use ObjPool annotation to ensure usage of correct instances of the Engine
+@beta
+abstract type Engine<D: Engine.Deployment, S: Engine.DeploySpec> mixes Named, Identified, DispatchTarget {
+
+  /**
+   * Holds {@link Engine.Deployment} object for current instance of {@link Engine}.
+   *
+   * For internal use only!
+   *
+   * This object may differ from what is stored in the config framework (until it's updated by {@link Engine.Controller}).
+   * Value in config framework may be missing if the engine is been {@link #terminate terminated}.
+   */
+  _deploymentCache: private @java(class="java.util.concurrent.atomic.AtomicReference") native
+
+  /**
+   * Errors that are captured during engine start
+   */
+  _onStartError: private string
+
+  /**
+   * Deploys new {@link Engine engine} based on spec.
+   *
+   * If current node cannot run actions for the {@link Engine engine}, such actions will be routed to
+   * {@link #targetNodes} for execution.
+   *
+   * You can use advanced options to control spinning up of {@link Engine engine} on {@link App.Node nodes}:
+   * - Use {@link Engine.DeploySpec#autoStart} to control whether {@link Engine engine} should be started
+   *   automatically on all {@link App.Node nodes} that match filter (See {@link Engine.DeploySpec#nodeRole nodeRole},
+   *   {@link Engine.DeploySpec#altNodeRoles}, {@link Engine.DeploySpec#nodePools}).
+   * - Use {@link Engine.DeploySpec#failActionIfEngineNotReady} to control behavior of {@link Action actions} routed to
+   *   {@link #isHealthy unhealthy} {@link Engine engine}.
+   * - Use {@link Engine.DeploySpec#initializingNodeAvoidanceDuration} to avoid routing of {@link Action actions} to newly added
+   *   {@link App.Node nodes}. This helps to avoid routing of {@link Action actions} to {@link Engine engines} that
+   *   have not yet finished initialization.
+   *
+   * @see activate
+   * @see deactivate
+   * @see Engine.Controller
+   */
+  deploy: final function(spec: !S): !mixing Engine
+
+  /**
+   * Activate deployment of this engine
+   *
+   * @see Engine.DeploySpec#inactive
+   */
+  activate: final member function()
+
+  /**
+   * Deactivate deployment of this engine
+   *
+   * @see Engine.DeploySpec#inactive
+   */
+  deactivate: final member function()
+
+  /**
+   * Current state of this engine.
+   */
+  state: inline property(): string enum Engine.State
+
+  threadPoolsSummary: private final function(engineTypeName: !string, id: !string): Engine.Summary
+
+  /**
+   * Return summary information about current state of this {@link Engine} deployment for each {@link #targetNodes node}.
+   */
+  summaryHelper: private member function(): ![Engine.Summary]
+
+  /**
+   * Return summary information about current state of this {@link Engine} deployment for each {@link #targetNodes node}.
+   */
+  summary: member function(): !Data
+
+  /**
+   * Return summary information about current state of this {@link Engine} deployment on current {@link #targetNodes node}.
+   */
+  summarizeInstance: private inline member function(): !Engine.Summary
+
+  /**
+   * Return {@link App.Node.Thread.Info} for each {@link App.Node.Thread thread} that are running on given
+   * {@link App.Node node} and belong to this {@link Engine engine} deployment.
+   */
+  summarizeThreads: member function(node: !string serialized App.Node): !Data
+
+  /**
+   * @return list of errors that this {@link Engine} deployment has.
+   */
+  errors: member function(): [string]
+
+  /**
+   * @return true if the {@link Engine} instance is started.
+   */
+  isRunning: final inline member function(): !boolean
+
+  /**
+   * @return true if the {@link Engine} instance is ready to serve requests.
+   */
+  isHealthy: final inline member function(): !boolean
+
+  /**
+   * @return true if the {@link Engine} instance specified by name is ready to serve requests.
+   */
+  isHealthy: final inline function(engineType: !string, name: !string): !boolean
+
+  /**
+   * @return true if the {@link Engine} instance is stopped.
+   */
+  isStopped: final inline member function(): !boolean
+
+  /**
+   * Returns {@link Engine.Deployment} configuration for current {@link Engine}.
+   *
+   * If {@link Engine.Deployment} was removed from the config framework will return configuration with which the
+   * {@link Engine} was deployed.
+   */
+  deployment: final property(): !D
+
+  /**
+   * Returns {@link Engine.Deployment} configuration for current {@link Engine} based on config value.
+   *
+   * May be `null` if {@link Engine} is stopping. Use {@link #deployment} instead.
+   */
+  configuredDeployment: private final property(): !D
+
+  /**
+   * @return deployment type for this engine
+   */
+  deploymentType: final function(): !Type<<D>>
+
+  /**
+   * @return deployment spec for this engine
+   */
+  deploySpecType: final function(): !Type<<S>>
+
+  /**
+   * Restarts this engine
+   */
+  restart: final member function(): !mixing Engine
+
+  /**
+   * Starts {@link Engine} {@link Engine.deployment deployment} on current {@link App.Node}.
+   *
+   * Automatically called first time any action is called on this {@link Engine} instance or by
+   * {@link Engine.Controller} if {@link Engine.Deployment#autoStart} is `true`.
+   *
+   * Call to method idempotent and will return immediately if engine is {@link Engine.State.RUNNING}.
+   *
+   * If called from many threads simultaneously, calls will be blocked until some thread does start {@link Engine}.
+   *
+   * If start makes calls to other engines then expectation is that potential calls back from that engine into this one
+   * will succeed.
+   *
+   * @param waitForReady If unset or `false` will return `null` immediately, without waiting for engine to be fully
+   *           started or ready.
+   * @param spec
+   *           Wait specification that will be used in case waitForReady is set to `true`.
+   * @return `null` if not waiting for ready and ready instance of the {@link Engine} otherwise.
+   */
+  start: final member function(waitForReady: boolean, spec: WaitableSpec): mixing Engine
+
+  /*
+   * Internal method that starts the engine synchronously.
+   *
+   * If operation succeeds, the engine will be running. However, it is not guaranteed to be healthy.
+   *
+   * If the operation fails, then engine is stopped and an exception will be thrown.
+   */
+  doStart: private final member function(): !mixing Engine
+
+  /**
+   * Stops {@link Engine} {@link Engine.deployment deployment} on current {@link App.Node}.
+   *
+   * Automatically called as part of C3 {@link App.Node} shutdown or by {@link Engine.Controller} if
+   * {@link Engine.deployment deployment} {@link #terminate terminated} or {@link #deactivate deactivated}.
+   *
+   * This is where preparation for shutdown should happen and this is when this Engine should stop initiating any new
+   * root actions to other Engines. E.g. all monitoring threads started by this Engine should be stopped here.
+   *
+   * Note that #stop will be called before #shutdown and expectation is that even after stop other methods of the engine
+   * still continue to work. E.g. if Db.Engine is stopped it should still continue to process requests (because
+   * another engine using Db.Engine may still be running).
+   *
+   * If stop fails, the graceful shutdown on C3 {@link App.Node} will be aborted.
+   */
+  stop: final member function(spec: Engine.StopSpec)
+
+  /**
+   * Called as part of C3 App Node shutdown. Should free up all allocated resources. This function will not wait to
+   * drain the queues and will interrupt currently running actions.
+   */
+  shutdown: final member function()
+
+  stopEngineOnNode: private final function(engineName: !string, spec: Engine.StopSpec): boolean
+
+  /**
+   * Optional callback that will be invoked after {@link #terminate}. Allows to do any additional cleanup that is
+   * required for the engine.
+   *
+   * @param spec - spec that was passed to {@link #deploy}
+   * @return spec that will be used for {@link #deploy}
+   */
+  afterTerminate: optional member function(spec: Engine.StopSpec)
+
+  /**
+   * Terminates the engine. This will remove the {@link Engine.Deployment} and stop all running instances of the
+   * {@link Engine}.
+   *
+   * @see #stop
+   */
+  terminate: final member function(spec: Engine.StopSpec)
+
+  /**
+   * Update {@link Engine} instance to match {@link #deployment}.
+   *
+   * Will take no effect if {@link #deployment} stays the same. Usually be called from {@link Engine.Controller}.
+   *
+   * @see Engine.Controller
+   */
+  update: final member function()
+
+  /**
+   * call `action` on a specific engine
+   */
+  call: member function<T>(action: !Lambda<function(engine: !mixing Engine<D, S>): T>): T
+
+  /**
+   * Optional callback that will be invoked every time engine is started on an {@link App.Node}.
+   * This callback is called outside of engine's dedicated ThreadPool, once per {@link App.Node}.
+   *
+   * @return engine with initialized field, or unmodified object.
+   *
+   * @see #start
+   * @see #onEngineThreadStart
+   */
+  onStart: optional member function(): !mixing Engine
+
+  /**
+   * Optional callback that will be invoked every time engine is stopped on an {@link App.Node}.
+   *
+   * Use {@link #cachedDeployment} if necessary to access {@link Engine.Deployment config}. Otherwise underling
+   * {@link #deployment} may be already removed from the config framework
+   *
+   * @see #stop
+   * @see #terminate
+   * @see #onEngineThreadStop
+   */
+  onStop: optional member function()
+
+  /**
+   * Optional callback that will be invoked from any new thread this Engine is used from.
+   *
+   * Will only be called if this engine has a dedicated thread-pool i.e. {@link Engine.DeployBase#threadPool} is set.
+   *
+   * @see #start
+   * @see #onStart
+   */
+  onEngineThreadStart: optional member function()
+
+  /**
+   * Optional callback that will be invoked from thread in which this engine was used when thread terminates.
+   *
+   * Will only be called if this engine has a dedicated thread-pool i.e. {@link Engine.DeployBase#threadPool} is set.
+   *
+   * Use {@link #cachedDeployment} if necessary to access {@link Engine.Deployment config}. Otherwise underling
+   * {@link #deployment} may be already removed from the config framework
+   *
+   * @see #stop
+   * @see #terminate
+   * @see #onStop
+   */
+  onEngineThreadStop: optional member function()
+
+  /**
+   * Optional callback that will be invoked from {@link #update} if config changed.
+   *
+   * Called once per {@link App.Node}.
+   *
+   * @see #update
+   */
+  onUpdate: optional member function(oldDeployment: !D)
+
+  /**
+   * Returns `true` if engine can be started on provided `nodeId`.
+   *
+   * @see #targetNodes.
+   */
+  canRunOnNode: final inline member function(nodeId: !string serialized App.Node): boolean
+
+  /**
+   * Optional callback that will be invoked at the beginning of {@link #deploy}. Allows to modify spec before it's used
+   * for deployment.
+   *
+   * @param spec - spec that was passed to {@link #deploy}
+   * @return spec that will be used for {@link #deploy}
+   */
+  beforeDeploy: optional function(spec: !S): !S
+
+  /**
+   * Converts given spec to the configs that will be seeded during engine's deployment.
+   *
+   * The first element of the returned list should be the {@link Engine.Deployment}.
+   * Note that configs from this list will be set in reverse order.
+   *
+   * @param spec - spec that was passed to {@link #deploy}
+   * @return List of configs that needs to be seeded.
+   */
+  specToConfigs: function(spec: !S): ![!Config]
+
+  /**
+   * Internal method that is used to identify target node for calling this {@link Engine}.
+   *
+   * THis implementation will try to use current node if it's in list of {@link targetNodes} or will use
+   * {@link App#availableNode some available} {@link App.Node} from {@link #targetNodes}.
+   *
+   * Sub-types can override this logic if customization is needed.
+   * Method return `null` if no dispatching is needed.
+   */
+  targetNode: private inline member function(): App.Node
+
+  /**
+   * Internal method that is used to query all target node for this Engine; effectively all nodes in #targetNodePools.
+   *
+   * @param excludeMe
+   *           If set to `true` list will not include current app node where this action is called from.
+   * @param alwaysConstruct
+   *           If set to `true` method returns all {@link App.Node nodes} where this {@link Engine} can be executed
+   *           even if it can be executed on all {@link App.Node nodes} within the {@link App}.
+   * @return list of {@link App.Node nodes} in which this {@link Engine} can run. If `alwaysConstruct=false` and engine
+   *         can be executed on all {@link App.Node nodes} within the {@link App}.
+   */
+  targetNodes: private final inline member function(excludeMe: boolean, alwaysConstruct: boolean): [App.Node]
+
+  /**
+   * Internal method that is used to identify target node-pools for this Engine; by default it'll use
+   * Engine.Deployment#nodeRole or Engine.Deployment#nodePools but sub-types can override this logic
+   *
+   * Method returns null or empty array if {@link Engine} can run on any {@link App.Node}.
+   */
+  targetNodePools: private inline member function(): [App.NodePool]
+
+  /**
+   * Returns {@link App.Node.ThreadPool} responsible for running actions for this {@link Engine},
+   * `null` if {@link Engine.Deployment#dedicatedThreadPool} is `false`.
+   *
+   * @see Engine.Deployment#dedicatedThreadPool
+   */
+  targetThreadPool: private cached inline property(): App.Node.ThreadPool
+
+  /**
+   * @return lambda to calculate target {@link Server server node} for {@link Action action} called on this
+   * {@link Engine}.
+   *
+   * Used internally for dispatching.
+   * @see #targetNode
+   */
+  targetNodeFunc: final ~
+
+  /**
+   * @return lambda to calculate target {@link App.ThreadPool thread pool} for {@link Action action} called on this
+   * {@link Engine}.
+   *
+   * Used internally for dispatching.
+   * @see #targetThreadPool
+   */
+  targetThreadPoolFunc: final ~
+
+  /**
+   * List {@link Engine engines} {@lik #deploy deployed} in an {@link App}.
+   *
+   * @see: #deploy
+   * @see: #terminate
+   */
+  list: final inline function(): [!mixing Engine<D, S>]
+
+  /**
+   * Returns {@link AppId id} of an {@link App} in which this {@link Engine.Deployment} is running.
+   */
+  appId: final property(): !string serialized AppId
+
+  /**
+   * Waits for the deployment to become ready across all nodes. Uses {@link #isReadyOnAllNodes} to make the check.
+   *
+   * This wait will complete only if there at least one node assigned to the engine.
+   */
+  waitForDeployment: member function(waitSpec: WaitSpec): boolean
+
+  /**
+   * Returns true if all running nodes for the engine are healthy.
+   *
+   * If no nodes assigned to the engine returns `false`.
+   */
+  isReadyOnAllNodes: member function(): boolean
+
+  /**
+   * Validates that all resources required by the engine are available.
+   * If the node that runs the engine does not have the required resources, eg: GPUs specified in the HardwareProfile
+   * of NodePool, the engine will not start and the error will be added to the engine's error list and are available
+   * via {@link #summary}.
+   */
+  validateOnStart: private member function()
+
+  toString:   final ~
+  fromString: final ~
+
+  // TODO: PLAT-130524 - Make Engine#forName final and fix GenaiCore.TypeProxyEngine override
+  // forName:    final ~
+  forName: ~
+
+  forId: final ~
+}

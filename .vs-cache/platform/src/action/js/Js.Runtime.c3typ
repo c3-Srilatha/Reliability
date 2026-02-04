@@ -1,0 +1,22 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+inline private type Js.Runtime mixes ImplLanguage.ResolvedRuntime, ImplLanguage.WithLibraries<ImplLanguage.Library> {
+
+  /**
+   * Specifies if the runtime has been merged with runtimes from other packages. This feature is used in UI packages because they have a hierarchical dependency on other packages and might want to add extra dependencies to a known runtime by name.
+   */
+  merged: boolean
+
+  /**
+   * Takes the specified package-lock from a resolved NodeJS action runtime and uses it to install the dependencies to invoke
+   * the subsequent NodeJS Action. If a packageLock does not exist, npm install will be executed by creating a package.json with the
+   * `libraries` specified.
+   */
+  packageLock: json
+}

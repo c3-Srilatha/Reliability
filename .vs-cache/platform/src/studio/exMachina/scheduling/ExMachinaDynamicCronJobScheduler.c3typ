@@ -1,0 +1,111 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Mixin for scheduling types where each record must start a new CronJob. This mixin prevents the CronScheduler from
+ * being overwhelmed by a large number of Cron entries. It works by dynamically creating/removing CronJob entries
+ * depending on the value of the {@link upsertCronJobBy} field.
+ */
+type ExMachinaDynamicCronJobScheduler<S> {
+
+  /**
+   * The timestamp before which a {@link CronJob} record must be persisted for the scheduled execution to begin.
+   * This field is updated automatically after the entity is created or updated, and is filtered on and updated by
+   * the managing CronJob
+   */
+  upsertCronJobBy: private datetime
+
+  /**
+   * Called by the managing {@link CronJob}. To avoid overwhelming the CronScheduler, we dynamically create/remove
+   * CronJob entries for the records for the subtype, so that at any point in time, there are a limited number of
+   * CronJob entries to process.
+   */
+  manageCronJobs: function() js-server
+
+  /**
+   * For each existing CronJob, updates the {@link upsertCronJobBy} field on the record of the mixing type.
+   */
+  updateUpsertCronJobByFieldForEntitiesThatHaveExistingCronJobs: private inline function(existingCronJobs: [CronJob]) js-server
+
+  /**
+   * Returns the schedules where the {@link upsertCronJobBy} falls within the given number of hours into the future to
+   * upsert associated {@link CronJob}s. That number of hours is set on the mixing type and is returned by
+   * {@link getNumHoursIntoFutureToUpsertCronJobs}.
+   */
+  fetchSchedulesWithUpsertCronJobByWithinHours: private inline function(): [S] js-server
+
+  /**
+   * Returns all CronJobs associated with the type of scheduler (the type that mixes ExMachinaDynamicCronJobScheduler).
+   */
+  fetchExistingCronJobsForScheduledEntities: private inline function(): [CronJob] js-server
+
+  /**
+   * Called within {@link manageCronJobs} to return a list of {@link CronJob} ids that can be removed.
+   */
+  getIdsOfCronJobsToRemove: private inline function(schedulesToUpsertCronJobsFor: [S],
+                                                    existingCronJobs: [CronJob]): [string] js-server
+
+  /**
+   * Called within {@link manageCronJobs} to return a list of {@link CronJob} ids that should be created.
+   */
+  getIdsOfCronJobsToUpsert: private inline function(schedulesToUpsertCronJobsFor: [S]): [string] js-server
+
+  /**
+   * Called within {@link manageCronJobs} to return a list of {@link CronJob}s that should be created.
+   */
+  getCronJobsToUpsert: private inline function(schedulesToUpsertCronJobsFor: [S],
+                                               existingCronJobs: [CronJob]): [CronJob] js-server
+
+  /**
+   * Output a CronJob based on the cronJobId and schedule entity
+   * @param cronJobId
+   *          The new id of the {@link CronJob}. This is usually in the format "<typeName>-<entityId>".
+   *          Suppose the type is "ExMachinaSchedule" and an entity record exists with id "abc", the id of the
+   *          corresponding CronJob will be "ExMachinaSchedule-abc"
+   * @param schedule
+   *          The corresponding entity record
+   */
+  makeCronJobForSchedule: abstract function(cronJobId: !string, schedule: !S): CronJob js-server
+
+  /**
+   * While {@link makeCronJobForSchedule} is called at a set interval, we upsert CronJobs for the next few hours for
+   * fault tolerance in case {@link makeCronJobForSchedule} failed to run on a previous execution. The number of hours
+   * is determined by this method by the subtype.
+   */
+  getNumHoursIntoFutureToUpsertCronJobs: abstract function(): int js
+
+  /**
+   * Get the {@link CronJob.id} from the record id.
+   * @param scheduleId
+   *          The id of the record persisted of the type mixing in {@link ExMachinaDynamicCronJobScheduler}
+   * @param typeName
+   *          The typeName for the type mixing in {@link ExMachinaDynamicCronJobScheduler}. This can be optionally
+   *          provided for performance. If not provided, it determines the current typeName using c3CurrentAction
+   */
+  getCronJobIdFromScheduleId: inline function(scheduleId: !string, typeName: string): string js-server
+
+  /**
+   * Get the id of the record persisted of the type mixing in {@link ExMachinaDynamicCronJobScheduler}.
+   * @param cronJobId
+   *          The {@link CronJob.id}.
+   * @param typeName
+   *          The typeName for the type mixing in {@link ExMachinaDynamicCronJobScheduler}. This can be optionally
+   *          provided for performance. If not provided, it determines the current typeName using c3CurrentAction
+   */
+  getScheduleIdFromCronJobId: inline function(cronJobId: !string, typeName: string): string js-server
+
+  /**
+   * Helper method to get the entity type related to the caller type that mixes ExMachinaDyanamicCronJobScheduler
+   */
+  getEntityType: private function(): Type js-server
+
+  /**
+   * Helper method to get the entity type name related to the caller type that mixes ExMachinaDyanamicCronJobScheduler
+   */
+  getEntityTypeName: private function(): string js-server
+}

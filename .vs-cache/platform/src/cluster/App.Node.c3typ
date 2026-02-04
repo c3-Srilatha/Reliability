@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// TODO: App.Node
+type App.Node mixes Identified {
+
+  /**
+   * @return parent App of this node
+   */
+  app: property(): !App
+
+  /**
+   * @return all thread-pools for this node
+   */
+  threadPools: member function(): [App.Node.ThreadPool]
+
+  /**
+   * @return a thread-pool for this node by name or id
+   */
+  threadPool: member function(threadPool: !?string, failIfMissing: boolean): App.Node.ThreadPool
+
+  /**
+   * @return action queues for a provided thread pool in this node
+   */
+  threadPoolActionQueue: member function(threadPool: !string serialized App.Node.ThreadPool): !Action.Queue
+
+  /**
+   * @return action queues by thread pool name for this node
+   */
+  threadPoolActionQueues: member function(): map<string, Action.Queue>
+
+  /**
+   * @return action queue in this node for a target node-pool; actions that are suppose to execute on provided node-pool
+   *         from this node will be dispatched via this queue
+   */
+  nodePoolActionQueue: member function(nodePool: !string serialized App.NodePool): !Action.Queue
+
+  /**
+   * @return action queues by node pool name for this node
+   */
+  nodePoolActionQueues: member function(): map<string, Action.Queue>
+
+  /**
+   * All configured thread pools by name
+   */
+  @cache(platPkg=true)
+  threadPoolsByName: cached property(): map<string, App.Node.ThreadPool>
+
+  appId: private string serialized AppId
+}

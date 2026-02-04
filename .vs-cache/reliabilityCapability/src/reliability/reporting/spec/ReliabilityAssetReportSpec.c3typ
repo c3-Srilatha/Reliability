@@ -1,0 +1,195 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec type to configure user preferences in a {@link ReliabilityAsset} report.
+ */
+type ReliabilityAssetReportSpec mixes ReliabilityReportSpec {
+
+  /**
+   * Title to show up at the top of the report. Defaults to a title including the asset name(s).
+   */
+  title: string
+
+  /**
+   * File name for the Pdf report. If not specified, defaults to title + timestamp.
+   */
+  fileName: string
+
+  /**
+   * Directory for Pdf report. If not specified, defaults to value from {@link ReliabilityReportConfig#reportDirectory}.
+   */
+  directory: string
+
+  /**
+   * Time range to use for asset summary components.
+   */
+  timeRange: !TimeRange
+
+  /**
+   * Model statuses to include models for within the {@link timeRange} for the asset.
+   */
+  modelStatuses: ![MlModel.Route.Status.Label] = [MlModel.Route.Status.Label.CHAMPION]
+
+  /**
+   * Spec type to configure user preferences in the nested {@link ReliabilityMlModelReport}s.
+   */
+  modelReportSpec: !ReliabilityMlModelReportSpec
+
+  /**
+   * Used to filter the {@link ReliabilityAsset#currentModelRelations} for the selected {@link ReliabilityAsset}
+   */
+  project: !ReliabilityMl.Project
+
+  /**
+   * Generates a formatted training period given a {@link TimeRange}.
+   * Triggered by {@link ReliabilityAssetReportSpec#generateModelAndFeatureInfo}.
+   * @param trainInput
+   *           {@link TimeRange} that needs to be formatted.
+   * @return Training Period formatted correctly.
+   */
+  formatTrainingPeriod: function(trainInput: TimeRange): string js-rhino
+
+  /**
+   * Generates a PDF component data grid for the alert summary section of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generateReportSummarySection}
+   * @param filter
+   *           The filter to apply to the {@link ReliabilityAssetAlert}s to include in the summary.
+   * @return A {@link PdfDataGrid} component containing the alert summary.
+   */
+  generateAlertSummary: private function(filter: !Filter): PdfComponent js-rhino
+
+  /**
+   * Generates the PDF component data grid for the event summary section of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generateReportSummarySection}
+   * @param filter
+   *           The filter to apply to the {@link ReliabilityAssetEvent}s to include in the summary.
+   * @return The components for the event summary section.
+   */
+  generateEventSummary: private function(filter: !Filter): PdfComponent js-rhino
+
+  /**
+   * Generates the the PDF component data grid for the expected sensor summary section of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generateReportSummarySection}
+   * @param asset
+   *           The {@link ReliabilityAsset} for which the report is being generated.
+   * @param start
+   *           The start date of the report.
+   * @param end
+   *           The end date of the report.
+   * @return The components for the expected sensor summary section.
+   */
+  generateExpectedSensorSummary: private function(asset: !ReliabilityAsset, start: !datetime, end: !datetime): PdfComponent js-rhino
+
+  /**
+   * Generates the components for the model and feature information section of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generateReportSummarySection}
+   * @param liveModel
+   *           The {@link ReliabilityMlModel} for which the report is being generated.
+   * @param asset
+   *           The {@link ReliabilityAsset} for which the report is being generated.
+   * @return The components for the model and feature information section.
+   */
+  generateModelAndFeatureInfo: private function(liveModel: !ReliabilityMlModel, asset: !ReliabilityAsset): [PdfComponent] js-rhino
+
+  /**
+   * Generates the components for the report summary section of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generatePdfComponents}
+   * @param asset
+   *           The {@link ReliabilityAsset} for which the report is being generated.
+   * @param start
+   *           The start date of the report.
+   * @param end
+   *           The end date of the report.
+   * @param project
+   *           The reliability ML project to use for the report.
+   * @return The components for the report summary section.
+   */
+  generateReportSummarySection: private function(asset: !ReliabilityAsset, start: !datetime, end: !datetime, project: ReliabilityMl.Project): [PdfComponent] js-rhino
+
+  /**
+   * Generates the components for the asset information section of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generatePdfComponents}
+   * @param asset
+   *           The {@link ReliabilityAsset} for which the report is being generated.
+   * @param project
+   *           The reliability ML project to use for the report.
+   * @return The components for the asset information section.
+   */
+  generateAssetInfo: private function(asset: !ReliabilityAsset, project: ReliabilityMl.Project): [PdfComponent] js-rhino
+
+  /**
+   * Generates the components for the title page of a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generatePdfComponents}
+   * @param assetReportTitle
+   *           The title of the report.
+   * @param start
+   *           The start date of the report.
+   * @param end
+   *           The end date of the report.
+   * @param project
+   *           The reliability ML project to use for the report.
+   * @return The components for the title page.
+   */
+  generateTitlePageComponents: private function(assetReportTitle: !string, start: !datetime, end: !datetime, project: ReliabilityMl.Project): [PdfComponent] js-rhino
+
+  /**
+   * Generates a URL for a {@link ReliabilityAsset} report.
+   * Triggered by {@link ReliabilityAssetReportSpec#generatePdfComponents}
+   * @param asset
+   *           The {@link ReliabilityAsset} for which the report is being generated.
+   * @return The URL for the report.
+   */
+  generateReportUrl: private function(asset: !ReliabilityAsset): string js-rhino
+
+  /**
+   * Generates the components for a PDF report for a {@link ReliabilityAsset} given it's id based on spec
+   * Triggered by {@link ReliabilityAssetReportSpec#generatePdf}
+   * @param asset
+   *           The reporting {@link ReliabilityAsset}
+   * @param assetReportSpec
+   *           The {@link ReliabilityAssetReportSpec} for the report
+   * @param url
+   *           The url for the report
+   * @return The {@link PdfGenerationSpec} for the report
+   */
+  generatePdfComponents: private function(asset: !ReliabilityAsset, assetReportSpec: !ReliabilityAssetReportSpec, url: string): PdfGenerationSpec js-rhino
+
+  /**
+   * Generates a PDF report summary for a {@link ReliabilityAsset} given it's id based on spec
+   * Triggered by {@lnk ReliabilityAsset#generateReport}
+   * @param asset
+   *           The reporting {@link ReliabilityAsset}
+   * @param url
+   *           The url for the report
+   * @return {@link ReliabilityReportResult} with the generated report and its errors if any
+   */
+  generatePdf: member function(asset: !ReliabilityAsset, url: string): ReliabilityReportResult js-rhino
+
+  /**
+   * Generates a string url for an asset report based on the corresponding {@link ReliabilityAssetReportSpec}
+   * Triggered by {@lnk ReliabilityAsset#generateReport}
+   * @param asset
+   *           Asset for which to generate report url
+   * @return The URL string for the asset report.
+   */
+  generateReportUrl: member function(asset: ReliabilityAsset): string js-rhino
+
+  /**
+   * Helper method to fetch and filter the {@link ReliabilityAssetToModelRelation}s from a {@link ReliabilityAsset}
+   * based on the {@link modelStatuses} and {@link timeRange} in the spec.
+   *
+   * @param asset
+   *           Asset for which to fetch the relations.
+   * @param project
+   *           The reliability ML project to use for filtering.
+   * @return List of {@link ReliabilityAssetToModelRelation}s that match the criteria.
+   */
+  getFilteredModelRelationsForAssetReport: inline member function(asset: !ReliabilityAsset, project: ReliabilityMl.Project): ![ReliabilityAssetToModelRelation] js-rhino
+}

@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Epic to populate the selected model templates grid with data based on the action that triggered the epic.
+ *
+ * If the action suffix is `ROW_ADDED` or `ROW_DELETED`, the epic will populate the
+ * `Reliability.BulkModelConfigTemplateSelectionGrid_dataSpec_ds` with numbered rows.
+ *
+ * If the action suffix is 'DATA_ADD', the epic will check that the action is triggered
+ * for the first row of `Reliability.BulkModelConfigTemplateSelectionGrid` and populate it
+ * with the default model template.
+ *
+ * Else, the epic will assume it was triggered by a `DATA_MODIFY` action and it will populate the displayDescription
+ * and displayWhenToUse on the `Reliability.BulkModelConfigTemplateSelectionGrid_dataSpec_ds`
+ * based on the model template specified in the payload.
+ *
+ * The payload for a `DATA_MODIFY` action will contain the following:
+ *  `id`: The Id of the row that was modified.
+ *  `newValue`: The new value that was set on the row. In this case, this new value
+ *              is the model template id that was selected by the user.
+ *  `field`: The field that was modified.
+ *
+ * The payload for a `DATA_ADD` action will contain the following that is
+ * relevant for the scope of what the epic does:
+ *  `id`: The Id of the row that was added.
+ */
+@typeScript
+type BulkModelConfigPopulateSelectedModelTemplatesEpic mixes UiSdlEpic {
+
+  epic: ~ ts-client
+}

@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Output of the {@ReliabilityMlDatasetPreparationHelper#prepareMlDatasets} method. It contains all the artifacts generated during
+ * the dataset preparation routine for a given asset. It stores the results from that routine but also
+ * all the information needed to reproduce it (override metrics used, time range, features).
+ */
+entity type ReliabilityMlDatasetPreparationRun extends ReliabilityMlDatasetPreparationRunCommon mixes TimedValueHistory<ReliabilityAsset>, FilterableByFacility type key 'PR' {
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["parent.facility"]
+
+  /**
+   * The {@link MapReduce} job, as part of which, this {@link ReliabilityMlDatasetPreparationRun}
+   * was created in an asynchronous manner.
+   */
+  job: ReliabilityMlDatasetPreparationJob
+
+  /**
+   * A given {@link ReliabilityMl.Project} associated with this dataset.
+   * Dataset is being prepared for a specific project usecase with custom properties.
+   * Dataset prepared for one project cannot be used in the context of another project.
+   */
+  project: ~
+
+  /**
+   * Array of {@link FeatureDataReport}s that contain the metrics computed, in JSON format.
+   *
+   * The {@link FeatureDataReport}s will not be generated if
+   * {@link ReliabilityMlDatasetPreparationSpec#computeFeatureDataReports} is not set to true.
+   *
+   * If featureDataReports are generated, then the number of reports should be equal to #numFeatures.
+   */
+  featureDataReports: [json]
+
+  /**
+   * Count of the number of {@link FeatureDataReport}s. See #featureDataReports for important details.
+   * This field gives the total count of generated feature data reports.
+   */
+  numFeatureDataReports: int calc count(featureDataReports)
+
+  /**
+   * Contains errors from {@link computeMetrics}.
+   * This stores any error messages or issues encountered during the metrics computation.
+   */
+  computeMetricErrors: [string]
+
+  /**
+   * Whether or not this run is the parent {@link ReliabilityAsset}'s latest dataset preparation run,
+   * and therefore the default dataset preparation run for model configuration purposes.
+   */
+  isLatestCompleteDatasetPreparationRun: boolean calc id == parent.latestCompleteDatasetPreparationRun.id
+
+  /**
+   * The {@link User} that was responsible for the creation of this dataset preparation run.
+   * If the run was created by a {@link job}, then this field will show the name of the
+   * {@link User} that started the {@link job}.
+   */
+  owner: User stored calc exists(job) ? userInformation(job.meta.createdBy) : userInformation(meta.createdBy)
+
+  /**
+   * Function to fetch FeatureDataReport.
+   * This function retrieves the feature data report based on the specified fetch specification.
+   * @return FetchResult for {@link FeatureDataReport}.
+   */
+  fetchFeatureDataReport: member function(spec: FetchSpec): !FetchResultWithTotalCount<FeatureDataReport> js-rhino
+
+  /**
+   * Function that computes the {@link status} of this dataset preparation run.
+   * This function evaluates the overall status of the dataset preparation process.
+   */
+  evaluateStatus: member function(): !string py
+
+  /**
+   * Function to execute any actions before creating the entity.
+   */
+  beforeCreate: ~ py
+
+  /**
+   * Function to execute any actions before updating the entity.
+   */
+  beforeUpdate: ~ py
+
+  /**
+   * Function to execute any actions after creating the entity.
+   */
+  afterCreate: ~ py
+
+  /**
+   * Computes the dataset preparation data based on the provided specification.
+   * @param spec
+   *    The specification for computing the dataset preparation data.
+   * @return Computed data.
+   */
+  computeData: member function(spec: !ReliabilityMlDatasetPreparationRunComputeDataSpec): Data.Persisted py
+
+  /**
+   * Computes the metrics for this dataset preparation run.
+   * If an error occurs, it will persist the trace to {@link computeMetricErrors} and fail silently.
+   * @return A list of FeatureDataReport instances.
+   */
+  computeMetrics: member function(): [FeatureDataReport] py
+
+  /**
+   * Provides a description of the dataset preparation run.
+   * This function computes and returns a description of the dataset preparation based on the provided spec.
+   * @param spec
+   *        The specification for describing the dataset preparation data.
+   * @return descriptive data.
+   */
+  describe: member function(spec: !ReliabilityMlDatasetPreparationRunComputeDataSpec): Data.Persisted py
+}

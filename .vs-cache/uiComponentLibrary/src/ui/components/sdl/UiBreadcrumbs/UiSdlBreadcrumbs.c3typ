@@ -1,0 +1,243 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type for breadcrumb that can be used to keep track of page navigation.
+ */
+@typeScript
+@uiComponentCategorizer(name='Breadcrumbs', category='Components')
+type UiSdlBreadcrumbs mixes UiSdlComponent<UiSdlBreadcrumbsDataSpec> {
+
+  /**
+   * Whether or not to treat a {@link UiSdlRoute} with urlPath "/" as part of these breadcrumbs
+   */
+  includeRootRoute: boolean = true
+
+  /**
+   * Whether or not the Previous button should be disabled
+   */
+  disablePreviousButton: boolean
+
+  /**
+   * This field  will be populated dynamically from routes
+   */
+  breadcrumbs: [UiSdlBreadcrumbsConfig]
+
+  /**
+   * Whether or not the Next button should be disabled
+   */
+  disableNextButton: boolean
+
+  /**
+   * Whether or not to render the Next and Previous buttons
+   */
+  renderNextAndPreviousButtons: boolean
+
+  /**
+   * Whether or not to render the link (`<a>` tag) with a `redirect` class. This should
+   * be set to `true` if you want take care of redirects with custom application logic.
+   * Otherwise, if set to `false`, redirects will be handled automatically by the {@link UiSdlSite}.
+   */
+  internalRedirect: boolean = false
+
+  /**
+   * The maximum number of breadcrumb levels to show on the component before overflowing.
+   * When number of breadcrumbs are over this limit, the overflow is handled by hiding them in a dropdown.
+   * Supported for AT LEAST 1 level.
+   */
+  visibleLevels: int = 4
+
+  /**
+   * Used to map data created internally to props.
+   *
+   * Internal use only.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataCollection')
+  dataSpec: ~
+
+  /**
+   * Holds the data created internally based on {@link UiSdlRoute}.
+   *
+   * Internal use only.
+   *
+   * The key matches the page params id.
+   * The value is the result from `get` action
+   * e.g.
+   * {
+   *   level1_id: {
+   *       name: 'recordName'
+   *   },
+   *   level2_id: {
+   *      another_name: 'recordName2'
+   *   }
+   * }
+   */
+  dataCollection: map<string, Obj>
+
+  doDataMerge: ~ ts-client
+
+  /**
+   * Triggered when the breadcrumb stack needs to be updated
+   *
+   * @param id
+   *            Id of the component.
+   * @param breadcrumbs
+   *           The configs of the breadcrumbs
+   *
+   * @returns a `BREADCRUMB_UPDATE` action for this instance with the following properties:
+   * - payload.breadcrumbs: {[{@link UiSdlBreadcrumbConfig}]} The breadcrumbs
+   * - payload.componentId: {string} The component id
+   */
+  @uiSdlActionCreator(actionType='BREADCRUMB_UPDATE')
+  updateBreadcrumbAction: function(id: string,
+                                   breadcrumbs: [UiSdlBreadcrumbConfig]): UiSdlBreadcrumbUpdateAction ts-client
+
+  /**
+   * Triggered when a breadcrumb link is clicked
+   *
+   * @param id
+   *            Id of the component.
+   * @param index
+   *           The index of the breadcrumb that was clicked.
+   * @param config
+   *           The configuration of the breadcrumb that was clicked.
+   *
+   * @returns a `BREADCRUMB_LINK_CLICK` action for this instance with the following properties:
+   * - payload.url: {string} The route of the breadcrumb link.
+   * - payload.params: {object} The params of the breadcrumb link.
+   * - payload.componentId: {string} The component id
+   */
+  @uiSdlActionCreator(actionType='BREADCRUMB_LINK_CLICK')
+  clickBreadcrumbAction: function(id: string,
+                                          index: int,
+                                          config: UiSdlBreadcrumbConfig): UiSdlBreadcrumbLinkClickAction ts-client
+
+  /**
+   * Triggered when the Next button is clicked
+   *
+   * @param id
+   *            Id of the component.
+   * @param event
+   *           The click event
+   *
+   * @returns a `NEXT_BUTTON_CLICK` action for this instance with the following properties:
+   * - payload.event: {any} The click event
+   * - payload.componentId: {string} The component id
+   */
+  @uiSdlActionCreator(actionType='NEXT_BUTTON_CLICK')
+  clickNextButtonAction: function(id: string, event: any): UiSdlNextButtonClickAction ts-client
+
+  /**
+   * Triggered when the Previous button is clicked
+   *
+   * @param id
+   *            Id of the component.
+   * @param event
+   *           The click event
+   *
+   * @returns a `PREVIOUS_BUTTON_CLICK` action for this instance with the following properties:
+   * - payload.event: {any} The click event
+   * - payload.componentId: {string} The component id
+   */
+  @uiSdlActionCreator(actionType='PREVIOUS_BUTTON_CLICK')
+  clickPreviousButtonAction: function(id: string, event: any): UiSdlPreviousButtonClickAction ts-client
+
+  /**
+   * Trigger for updating the visibility of the Next and Previous buttons
+   * NOTE: This function's argument should have the following structure:
+   * ```
+   * payload = {
+   *   disableNextButton: {Boolean},
+   *   disablePreviousButton: {Boolean},
+   * };
+   * ```
+   *
+   * @param id
+   *            Id of the component.
+   * @param payload
+   *           An object containing the new state of disableNextButton and disablePreviousButton
+   *
+   * @returns a `NEXT_PREVIOUS_BUTTON_STATE_UPDATE` action for this instance with the following properties:
+   * - payload: { disableNextButton: {Boolean}, disablePreviousButton: {Boolean} } The payload argument passed
+   */
+  @uiSdlActionCreator(actionType='NEXT_PREVIOUS_BUTTON_STATE_UPDATE')
+  updateNextPreviousButtonStateAction: function(id: string,
+                                                payload: any): UiSdlNextPreviousButtonStateUpdateAction ts-client
+
+  /**
+   * Triggered when the breadcrumb stack needs to be loaded from the route hierarchy.
+   *
+   * @param id
+   *            Id of the component.
+   * @param routes
+   *            The available routes.
+   *
+   * @returns a `BREADCRUMB_LOAD_FROM_ROUTE` action for this instance with the following properties:
+   * - payload.componentId: {string} The component id
+   * - payload.routes: [UiSdlRoute] The route hierarchy
+   */
+  @uiSdlActionCreator(actionType='BREADCRUMB_LOAD_FROM_ROUTE')
+  loadBreadcrumbFromRoutesAction: function(id: string,
+                                           routes: [UiSdlRoute]): UiSdlBreadcrumbLoadFromRouteAction ts-client
+
+  /**
+   * Listens for actions of type `BREADCRUMB_UPDATE` and updates internal
+   * field {@link breadcrumbs}
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='BREADCRUMB_UPDATE')
+  breadcrumbUpdateEffect: private function(state: UiSdlReduxState,
+                                           action: UiSdlBreadcrumbUpdateAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `NEXT_PREVIOUS_BUTTON_STATE_UPDATE` and updates internal
+   * fields disableNextButton and disablePreviousButton
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action containing a payload with new values for disableNextButton and disablePreviousButton
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='NEXT_PREVIOUS_BUTTON_STATE_UPDATE')
+  nextPreviousButtonStateUpdateEffect: private function(state: UiSdlReduxState,
+                                                        action: UiSdlNextPreviousButtonStateUpdateAction)
+                                                 : UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `BREADCRUMB_LOAD_FROM_ROUTE` and loads the breadcrumbs from the route hierarchy.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='BREADCRUMB_LOAD_FROM_ROUTE')
+  breadcrumbLoadFromRouteReducer: private function(state: UiSdlReduxState,
+                                                   action: UiSdlBreadcrumbLoadFromRouteAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `BREADCRUMB_LINK_CLICK` and triggers a {@link UiSdlEpicRedirect} effect if the payload
+   * contains a url.
+   *
+   * @param actionStream
+   *           UiSdlObservable action stream
+   * @param stateStream
+   *           UiSdlObservable state stream
+   * @returns an observable action stream
+   */
+  @uiSdlEpic(actionType='BREADCRUMB_LINK_CLICK')
+  breadcrumbLinkClickEpic: private function(actionStream: UiSdlActionsObservable,
+                                            stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+}

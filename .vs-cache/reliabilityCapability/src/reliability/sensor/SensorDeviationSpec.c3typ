@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Parameters that are required arguments to the functions {@link Sensor#computeDeviationFromSensor}
+ * and {@link Sensor#computePairwiseSensorDeviations}.
+ */
+type SensorDeviationSpec mixes Spec {
+
+  /**
+   * Deviations are computed over a time range. This denotes the start timestamp
+   * of that time range.
+   */
+  start: !datetime
+
+  /**
+   * Deviations are computed over a time range. This denotes the end timestamp
+   * of that time range.
+   */
+  end: !datetime
+
+  /**
+   * Deviations are computed over a time range at a specified {@link Interval} of
+   * the time series data . This denotes the interval of that time range.
+   */
+  interval: string enum Interval = Interval.QUARTER_HOUR
+
+  /**
+   * Deviations computed over the time range are aggregated to a single number. This
+   * specifies the aggregation method. The options are from among functions supported
+   * by the `numpy` python package.
+   */
+  aggregationMethod: string enum('min', 'max', 'mean', 'median') = 'mean'
+
+  /**
+   * By default, the `Quantity` metric is evaluated on both {@link Sensor}s to extract
+   * their time series data. However, if another metric is preferred, its name must be
+   * defined in this field.
+   */
+  metricName: string = 'Quantity'
+
+  /**
+   * If a metric other than `Quantity` is preferred to evaluate the time series data and
+   * has been defined in the {@link metricName} but is not provisioned, the metric
+   * definition(s) may be passed on-the-fly in this argument.
+   */
+  overrideMetrics: [Metric]
+
+  /**
+   * By default, this function computes the absolute percentage deviation of one {@link Sensor}
+   * from another. However, if the absolute value of the deviations are preferred,
+   * set this field to `true`.
+   */
+  computeAbsoluteDeviation: boolean = false
+}

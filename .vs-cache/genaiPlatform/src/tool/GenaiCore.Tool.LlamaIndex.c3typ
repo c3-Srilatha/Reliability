@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized tool that extends {@link GenaiCore.Tool} to integrate LlamaIndex tools.
+ *
+ * Example usage:
+ * ```py
+ * llama_tool = SomeLlamaIndexTool()
+ * c3_tool = GenaiCore.Tool.LlamaIndex.createFromLlamaTool(llama_tool)
+ * result = c3_tool.call(args)
+ * ```
+ */
+entity type GenaiCore.Tool.LlamaIndex extends GenaiCore.Tool type key "LLA" {
+  /**
+   * This field represents the serialized version of the LlamaIndex native tools.
+   */
+  nativeTool: !string
+
+  /**
+   * Serializes LlamaIndex native tool and stores it in {@link #nativeTool}.
+   * This method captures the tool's metadata, including its name, description and argument schema.
+   * @param tool
+   *        The LlamaIndex tool instance to be serialized.
+   * @returns A `GenaiCore.Tool.LlamaIndex` instance.
+   */
+  createFromLlamaTool: inline function(tool: !native): !GenaiCore.Tool.LlamaIndex py
+
+  func: ~ py
+}

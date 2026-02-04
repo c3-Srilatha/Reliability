@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Record of a resource profile, used to specify the resource requirements of a task.
+ * Note: as a general rule of thumb, to distinguish from {@link HardwareProfile}, ResourceProfile should be used
+ * for resource requests for external (possibly containerized) services (e.g. Jupyter). See {@link HardwareProfile}
+ * for its usage guidelines.
+ */
+// TODO PLAT-51499 Replace ResourceProfile with ResourceRequirement
+@db(unique=['name'])
+@beta
+type ResourceProfile mixes Metadata, ResourceRequirement, Named {
+
+  /**
+   * Name of the resource profile, must be unique.
+   */
+  name: string
+
+  /**
+   * @return the ResourceProfile for a given name if it exists. Otherwise, returns `null` or an exception depending on
+   *         `failIfMissing`.
+   */
+  forName: function(name: !?string, failIfMissing: boolean): ResourceProfile
+
+  /**
+   * @return list of existing ResourceProfiles
+   */
+  listProfilesStream: function(): stream<ResourceProfile>
+}

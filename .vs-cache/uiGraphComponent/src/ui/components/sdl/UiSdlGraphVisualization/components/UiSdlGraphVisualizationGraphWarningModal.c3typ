@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that represents a warning modal that will appear when the user attempts to clear or reset
+ * a {@link UiSdlGraphVisualization} instance of all its {@link UiSdlGraphVisualization#canvasItems}.
+ */
+@typeScript
+@uiComponentCategorizer(name='Graph warning modal', category='Data Visualization', hide=true)
+type UiSdlGraphVisualizationGraphWarningModal mixes UiSdlModal {
+
+  /**
+   * Component id of the {@link UiSdlGraphVisualization} which spawned the event modal.
+   */
+  uiSdlGraphVisualizationComponentId: private string
+
+  /**
+   * Triggered to set the parent {@link UiSdlGraphVisualization} that is emitting the event.
+   *
+   * @param id
+   *           Id of the component.
+   * @param uiSdlGraphVisualizationComponentId
+   *           The component id of the UiSdlGraphVisualization instance.
+   * @return {@link UiSdlGraphVisualizationComponentIdSetAction}.
+   */
+  @uiSdlActionCreator(actionType='UI_GRAPH_VIZ_COMPONENT_ID_SET')
+  setUiSdlGraphVisualizationComponentIdAction: function(id: string,
+                                                        uiSdlGraphVisualizationComponentId: string)
+                                                 : UiSdlGraphVisualizationComponentIdSetAction ts-client
+
+  /**
+   * Listens for actions of type `UI_GRAPH_VIZ_COMPONENT_ID_SET` and updates the redux store with the
+   * {@link UiSdlGraphVisualization} component id.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @return a new Redux state.
+   */
+  @uiSdlReducer(actionType='UI_GRAPH_VIZ_COMPONENT_ID_SET')
+  uiSdlGraphVisualizationComponentIdSetReducer: private function(state: !UiSdlReduxState,
+                                                                 action: UiSdlGraphVisualizationComponentIdSetAction)
+                                                          : !UiSdlReduxState ts-client
+}

@@ -1,0 +1,171 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Component to display files to be uploaded into the {@link Genai.Retriever}
+ */
+@beta
+@typeScript
+type GenAiUiFileIndexLoader mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * The title of the file index loader component
+   */
+  headerText: string
+
+  /**
+   * The active tab of the file loader component
+   */
+  activeTab: string enum ('EnterpriseSearch.AddToIndex', 'EnterpriseSearch.RemoveFromIndex')
+
+  /**
+   * The list of source files currently being displayed in the file loader
+   */
+  sourceFiles: [Genai.SourceFile]
+
+  /**
+   * The empty state component to display when no files are in a tab
+   */
+  emptyState: private UiSdlComponentRef<UiSdlEmptyState>
+
+  /**
+   * The data grid the rest of the data on the source files is coming from
+   */
+  sourceFilesGrid: UiSdlComponentRef<UiSdlDataGrid>
+
+  /**
+   * Triggered when the active tab needs to be changed.
+   *
+   * @param id
+   *           Id of the component.
+   * @param activeTab
+   *           The id of the active tab.
+   *
+   * @return An `ACTIVE_TAB_SET` action for this instance.
+   *   - payload {string} The id of the active tab.
+   */
+  @uiSdlActionCreator(actionType='ACTIVE_TAB_SET')
+  setActiveTabAction: function(id: string, activeTab: !string, ownProps: any): !UiSdlActiveTabSetAction ts-client
+
+  /**
+   * Triggered when a source file is added.
+   *
+   * @param id
+   *           Id of the component.
+   * @param sourceFileIds
+   *           The ids of the source files.
+   *
+   * @return A `SOURCE_FILES_ADD` action for this instance.
+   *   - payload [string] The list of source file ids.
+   */
+  @uiSdlActionCreator(actionType='SOURCE_FILES_ADD')
+  addSourceFilesAction: function(id: string, sourceFileIds: ![string], ownProps: any): !GenAiUiSourceFilesAddAction ts-client
+
+  /**
+   * Triggered when the source files for the component are set.
+   *
+   * @param id
+   *           Id of the component.
+   * @param sourceFile
+   *           The source files.
+   *
+   * @return A `SOURCE_FILES_SET` action for this instance.
+   *   - payload [{@link Genai.SourceFile}] The list of source files.
+   */
+  @uiSdlActionCreator(actionType='SOURCE_FILES_SET')
+  setSourceFilesAction: function(id: string, sourceFile: ![Genai.SourceFile], ownProps: any): !GenAiUiSourceFilesSetAction ts-client
+
+  /**
+   * Triggered when a source files for the component are cleared.
+   *
+   * @param id
+   *           Id of the component.
+   *
+   * @return A `SOURCE_FILES_CLEAR` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SOURCE_FILES_CLEAR')
+  clearSourceFilesAction: function(id: string, ownProps: any): !GenAiUiSourceFilesClearAction ts-client
+
+  /**
+   * Triggered when a source file is removed.
+   *
+   * @param id
+   *           Id of the component.
+   * @param sourceFileIds
+   *           The ids of the source files.
+   *
+   * @return A `SOURCE_FILES_REMOVE` action for this instance.
+   *   - payload [string] The list of source file ids.
+   */
+  @uiSdlActionCreator(actionType='SOURCE_FILES_REMOVE')
+  removeSourceFilesAction: function(id: string, sourceFileIds: ![string], ownProps: any): !GenAiUiSourceFilesRemoveAction ts-client
+
+  /**
+   * Triggered when the user clicks on a button to add source files to index.
+   *
+   * @param id
+   *           Id of the component.
+   * @param sourceFiles
+   *           The source files.
+   *
+   * @return A `SOURCE_FILES_ADD_TO_INDEX` action for this instance.
+   *   - payload [string] The list of source file ids.
+   */
+  @uiSdlActionCreator(actionType='SOURCE_FILES_ADD_TO_INDEX')
+  addSourceFilesToIndexAction: function(id: string, sourceFiles: ![Genai.SourceFile], ownProps: any): !GenAiUiAddToIndexAction ts-client
+
+  /**
+   * Triggered when the user clicks on a button to remove source files from index.
+   *
+   * @param id
+   *           Id of the component.
+   * @param sourceFiles
+   *           The source files.
+   *
+   * @return A `SOURCE_FILES_REMOVE_FROM_INDEX` action for this instance.
+   *   - payload [string] The list of source file ids.
+   */
+  @uiSdlActionCreator(actionType='SOURCE_FILES_REMOVE_FROM_INDEX')
+  removeSourceFilesFromIndexAction: function(id: string, sourceFiles: ![Genai.SourceFile], ownProps: any): !GenAiUiRemoveFromIndexAction ts-client
+
+  /**
+   * Update the state of the #activeTab to the value of the tab id passed in with the action
+   */
+  @uiSdlReducer(actionType='ACTIVE_TAB_SET')
+  activeTabSetEffect: private inline function(state: !UiSdlReduxState,
+                                              action: !UiSdlActiveTabSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Update the state of the #sourceFiles to now include the source files passed in with the action
+   */
+  @uiSdlReducer(actionType='SOURCE_FILES_ADD')
+  sourceFilesAddEffect: private inline function(state: !UiSdlReduxState,
+                                                action: !GenAiUiSourceFilesAddAction): !UiSdlReduxState ts-client
+
+  /**
+   * Update the state of the #sourceFiles to remove the source files passed in with the action
+   */
+  @uiSdlReducer(actionType='SOURCE_FILES_REMOVE')
+  sourceFilesRemoveEffect: private inline function(state: !UiSdlReduxState,
+                                                   action: !GenAiUiSourceFilesRemoveAction): !UiSdlReduxState ts-client
+
+  /**
+   * Update the state of the #sourceFiles to be the source files in the action.
+   */
+  @uiSdlReducer(actionType='SOURCE_FILES_SET')
+  sourceFilesSetEffect: private inline function(state: !UiSdlReduxState,
+                                                action: !GenAiUiSourceFilesSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Update the state of the #sourceFiles to be empty
+   */
+  @uiSdlReducer(actionType='SOURCE_FILES_CLEAR')
+  sourceFilesClearEffect: private inline function(state: !UiSdlReduxState,
+                                                  action: !GenAiUiSourceFilesClearAction): !UiSdlReduxState ts-client
+}

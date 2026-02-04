@@ -1,0 +1,192 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A snapshot for a set of features and subjects, which can be built incrementally
+ * One snapshot is only for one specific subjectType.
+ *
+ * @see MlModel
+ * @see Feature
+ * @see Feature.Set
+ */
+@beta
+entity type Feature.Set.Snapshot {
+
+  /**
+   * Id for the given snapshot - format: subjectType + "#" + snapshotId
+   */
+  id: ~
+
+  /**
+   * snapshot id
+   */
+  snapshotId: !string
+
+  /**
+   * subject type of this snapshot
+   */
+  subjectType: !Type<<FeatureEvaluatable>>
+
+  /**
+   * subject filter captured by this snapshot.
+   * user can extend the filter if reusing the same snapshot
+   * see {@link FeatureEvaluatable.evalFeatureSetBatch} and {@link FeatureEvaluatable.evalFeaturesBatch}
+   */
+  subjectFilter: string
+
+  /**
+   * A human readable description of what data is stored in this snapshot
+   */
+  description: string
+
+  /**
+   * An array of {@link Feature.Set.Snapshot.Subject}s this snapshot captured. Each snapshot subject refers to one single
+   * {@link FeatureEvaluatable} instance based on its subjectId. The referenced {@link FeatureEvaluatable} instances are
+   * filtered by the {@link CreateSnapshotSpec.subjectFilter} or the {@link CreateSnapshotSpec.subjects} passed by users
+   * during feature evaluation. Since Feature.Set.Snapshot is immutable once created, so this field is also immutable.
+   * see {@link FeatureEvaluatable.evalFeatureSetBatch} and {@link FeatureEvaluatable.evalFeaturesBatch}
+   */
+  subjects: [Feature.Set.Snapshot.Subject](parent)
+
+  /**
+   * {@link Feature.Set} captured by this snapshot during evaluation
+   */
+  @db(persistAllFields=true)
+  featureSet: Feature.Set
+
+  /**
+   * The {@link Feature.Set#featureFingerprint featureFingerprint} of the FeatureSet that is used to create this snapshot
+   */
+  featureFingerprint: !string
+
+  /**
+   * ML models that used this snapshot for training
+   */
+  models: [MlModel](snapshot)
+
+  /**
+   * Start time of the snapshot. It's the same as {@link CreateSnapshotSpec#start}.
+   */
+  start: datetime
+
+  /**
+   * End time of the snapshot. It's the same as {@link CreateSnapshotSpec#end}.
+   */
+  end: datetime
+
+  /**
+   * time of creation
+   */
+  created: property(): !datetime
+
+  /**
+   * who created this
+   */
+  createdBy: property(): string
+
+  /*
+   * Fetch and return a stream of subjects specified by this snapshot from entity for auditability. The actual subjects
+   * are fetched by first fetching the {@link Feature.Set.Snapshot.Subject}s that have the parent field same as the snapshotId
+   * of this snapshot and then fetching the actual subjects that are represented by the result
+   * {@link Feature.Set.Snapshot.Subject}s. Note that this api does not fetch the subjects from the snapshot store, and
+   * the output is unchanged for a given snapshot since the snapshot and snapshot header are immutable.
+   */
+  @dependency(include="subjectType")
+  fetchSubjects: member function(): stream<FeatureEvaluatable>
+
+  forId: function(subjectType: !string, snapshotId: !string): Feature.Set.Snapshot
+  forId: function(featureSet: !Feature.Set, snapshotId: !string): Feature.Set.Snapshot
+
+  /*
+   * **remove**, **removeAll** and **removeBatch** will use {@link Feature.Set.Snapshot#deleteDataAndSubject}
+   * to delete the data and the referenced {@link Feature.Set.Snapshot.Subject} instances.
+   */
+  beforeRemove: ~
+
+  // **clearCollection** will use {@link Feature.Set#deleteDataAndSubject} to delete the data and the referenced {@link Feature.Set.Snapshot.Subject} instances.
+  clearCollection: ~
+
+  /**
+   * Delete the underlying data of this snapshot in the kvStore and remove the corresponding {@link #subjects} from {@link Feature.Set.Snapshot.Subject}.
+   *
+   * @see Feature.Set#deleteSnapshot
+   */
+  @dependency(include="subjectType, featureSet, snapshotId")
+  deleteDataAndSubject: member function(confirm: !boolean)
+
+  /**
+   * Initialize the {@link FeatureEvaluatable.Bin.Strategy} for this snapshot.
+   */
+  @dependency(include="featureSet, snapshotId")
+  initStrategy: member function()
+
+  /**
+   * Create the id for the snapshot instance of the format: <subjectType>#<snapshotId>. This id is different from the snapshotId passed by the users and this id
+   * will be used for identify the strategies and blocks for this snapshot.
+   * @param fs
+   *        feature set that contains the subjectType
+   * @param snapshotId
+   *        snapshotId passed by the users
+   */
+  constructId: private function(fs: !Feature.Set, snapshotId: !string): !string
+
+  /**
+   * @return the strategies for this snapshot.
+   */
+  @dependency(include="featureSet, snapshotId")
+  strategies: private member function(includeNonReady: boolean): [FeatureEvaluatable.Bin.Strategy]
+
+  /**
+   * @return provide the most recent created strategy, which will be used in the new snapshot
+   */
+  @dependency(include="featureSet, snapshotId")
+  latestStrategy: private member function(includeNonReady: boolean): FeatureEvaluatable.Bin.Strategy
+
+  /**
+   * Helper function to create the filter for all the strategies created for this snapshot
+   */
+  @dependency(include="featureSet, snapshotId")
+  strategyFilter: private member function(): !Filter
+
+  /**
+   * Migrate the snapshot(s) created in 8.3.x to 8.4 via a **DynBatchJob**. It will:
+   * 1. Update the {@link #featureFingerprint} of the snapshot based on the underlying {@link Feature.Set}'s fingerprint. Please note that no validation will be performed to check if the feature definition is the same between the current version of **Feature.Set** and the old one. (attached to the snapshot)
+   * 2. Update the {@link #start} and {@link #end} of the snapshot only if its empty.
+   * 3. Copy the data from the underlying files / kv rows to Feature.Store.Block(s).
+   * Please note that this API will **only create the Job** but won't start it.
+   */
+  @deprecated(finalVersion="8.5", details="Will be deleted in 8.6 as its only used for 8.3.x to 8.4 migration.")
+  @dependency(include="id, featureSet, start, end")
+  createOneShotMigrationJob: member function(): DynBatchJob js-server
+
+  /**
+   * Exports snapshot in an open format (Parquet) such that it can be consumed by external systems with no knowledge of the C3 ecosystem. The snapshot will be split
+   * into some number of files inside the supplied folder based on the batching strategy specified. Filtering is expected to be have done prior to the export. The data is partitioned into batches
+   * by order in {@link MapReduceOptions} and assigned a random UUID.
+   *
+   * @param destinationUrl
+   *    String representing the C3 url of a folder that will contain the exported files upon completion of this job.
+   * @param options
+   *    Notable parameters are batchSize, numBatches, filter, and order.
+   *
+   * Example usage:
+   * ```python
+   * snapshot = c3.Feature.Set.Snapshot.forId("WindTurbine#test-snapshot")
+   * url = "gcs://{My URL}/export"
+   * options = c3.MapReduceOptions.make().withBatchSize(1337)
+   * snapshot.export(url, options)
+   * ```
+   *
+   * This is an experimental feature. Known limitations:
+   * 1. Metric-backed feature set snapshots only support String, DateTime, and Double value types.
+   * 2. Excessively large batch sizes will cause the job to hang. The evaluated data needs to fit in memory.
+   * 3. Nanosecond precision timestamps will be truncated to microsecond precision.
+   */
+  @beta
+  export: member function(destinationUrl: !string, options: MapReduceOptions): Feature.Set.ExportSnapshotJob
+}

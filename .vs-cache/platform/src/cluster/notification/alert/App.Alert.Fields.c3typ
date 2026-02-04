@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Shared fields for App Alerts between persisted entity and interface
+ */
+type App.Alert.Fields mixes TimeRange {
+
+  /**
+   * Name of the alert instance. See {@link App.Alert.Template#triggeredAlertNameTemplate}
+   */
+  name: !string
+
+  /**
+   * When the alert was triggered
+   */
+  start: !~
+
+  /**
+   * When the alert was resolved (will not be defined if the alert is still FIRING)
+   */
+  end: ~
+
+  /**
+   * The {@link App#id} for which this alert is triggered for
+   */
+  appId: !string
+
+  /**
+   * A user friendly message for the alert
+   */
+  message: string
+
+  /**
+   * All tags associated with the alert
+   */
+  tags: map<string, string>
+
+  /**
+   * Annotations for the alert
+   */
+  annotations: map<string, string>
+}

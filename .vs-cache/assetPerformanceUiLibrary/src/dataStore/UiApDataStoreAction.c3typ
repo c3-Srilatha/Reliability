@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An action that can be used to request data with a {@link UiApDataStore}.
+ */
+type UiApDataStoreAction mixes PartiallyAppliedAction, WithDataTransforms {
+  /**
+   * Whether to allow multiple in-progress requests for the same data ID.
+   * Should be used in cases where data should be written multiple times concurrently,
+   * just with different arguments.
+   */
+  allowMultipleInProgressRequests: boolean
+
+  /**
+   * Whether to allow duplicate sequential requests with the same arguments. If this is false,
+   * if a data request A was just made with certain arguments, and data request B
+   * is made again with the same arguments, the request B will be ignored. If a
+   * request is made with different arguments between those two requests, the
+   * request B will be allowed.
+   *
+   * Use this in cases where the underlying data can change, and can be updated in the UI
+   * using the same arguments. If this is not enabled for these cases, the user will have to
+   * refresh the page to get the latest data.
+   *
+   */
+  allowDuplicateRequests: boolean
+
+  /**
+   * Whether to automatically request data when the action is updated due to context vars or state changing.
+   * If this is false, the data will not be requested automatically when the action is set.
+   * The user will have to manually request the data.
+   */
+  doNotAutoRequest: boolean
+}

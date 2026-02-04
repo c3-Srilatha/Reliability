@@ -1,0 +1,295 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type which represents a progress indicator, which may be composed of 1-N steps.
+ * Generally used to indicate the status of sequential steps a user must take to mark a process as complete.
+ * The SET_FIELD action reducer pair can be used to modify any of the fields dynamically.
+ */
+@beta
+@typeScript
+type UiSdlProgressIndicator mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Array of {@link UiSdlProgressIndicatorStep} components that this component is composed of
+   */
+  stepsData: [UiSdlProgressIndicatorStep]
+
+  /**
+   * Option to render a Vertical Progress Indicator rather than the default Horizontal Progress Indicator.
+   */
+  isVertical: boolean = false
+
+  /**
+   * Option to render a dropdown menu in each of the steps
+   * If set to true, only the current active step will expand a dropdown on click.
+   * The dropdown will typically have options for navigating between steps, but can also have other actions.
+   */
+  withDropdown: boolean = true
+
+  /**
+   * Boolean flag to enforce that steps can only be viewed in sequence.
+   * If set to true, the steps cannot be clicked on for navigation.
+   * If set to false, any of the steps within Progress Indicator can be viewed by clicking on them.
+   * The status of the step you were on before clicking away will remain.
+   * But the status of the new step you clicked on will become current and active.
+   */
+  isSequential: boolean = false
+
+  /**
+   * Boolean flag to set whether icon of step changes after being selected.
+   * If set to true, selecting a step will set the icon to be "In Progress".
+   * If set to false, selecting a step will not change the icon.
+   */
+  showInProgressForCurrentStep: boolean = false
+
+  /**
+   * Boolean flag to set whether the subtitle will be shown in the list of steps. To show the subtitle
+   * in the children container, set `showSubtitle` in {@link UiSdlProgressIndicator#childrenContainerSettings}.
+   * Does NOT apply to substeps, since substeps never show their subtitle in the list of steps.
+   * Also does NOT apply to the children container.
+   * If set to true, steps will show their subtitle below their title in the list of steps.
+   * If set to false, subtitles will not be shown in the list of steps.
+   */
+  showStepSubtitles: boolean = true
+
+  /**
+   * Boolean flag to prevent parent steps from being selected.
+   * If set to true, selecting a parent step will instead select the first substep.
+   * If false, selecting a parent step will select the parent step.
+   */
+  forceSubstepSelection: boolean = false
+
+  /**
+   * Sets the max-width css value of the step list container.
+   */
+  stepListMaxWidth: string = "20%"
+
+  /**
+   * Sets the height css value of the component.
+   */
+  height: string
+
+  /**
+   * Settings for the container that contains the children components from {@link UiSdlProgressIndicatorStep#children}.
+   */
+  childrenContainerSettings: UiSdlProgressIndicatorChildrenContainerSettings
+
+  /**
+   * Empty state that will be shown if stepsData is empty.
+   */
+  emptyState: UiSdlComponentRef<UiSdlEmptyState>
+
+  /**
+   * Current step index for progress indicator.
+   */
+  currentStepIndex: private int = 0
+
+  /**
+   * Current sub step index for progress indicator.
+   */
+  currentSubstepIndex: private int = -1
+
+  /**
+   * Triggered when the action group is clicked in one of the {@link UiSdlProgressIndicatorStep} in {@link UiSdlProgressIndicator}.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *            The suffix of the action that should be triggered.
+   *
+   * @returns A `STEP_ACTION_BUTTON_CLICK_${actionSuffix}` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='STEP_ACTION_BUTTON_CLICK_${actionSuffix}')
+  @typeScript(env='client')
+  clickStepActionButton: function(id: !string, actionSuffix: !string): !UiSdlStepActionButtonClickAction
+
+  /**
+   * Triggered when `STEP_ACTION_MENU_MOVE_FORWARD` is triggered.
+   * @param id
+   *            Id of the component.
+   * @returns A `STEP_ACTION_MENU_MOVE_FORWARD` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='STEP_ACTION_MENU_MOVE_FORWARD')
+  moveForwardAction: function(id: !string): !UiSdlStepMoveForwardAction
+
+  /**
+   * Listens for actions of type `STEP_ACTION_MENU_MOVE_FORWARD`.
+   *
+   * @param action
+   *           Observable action stream.
+   * @param state
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlReducer(actionType='STEP_ACTION_MENU_MOVE_FORWARD')
+  moveForwardEffect: private function(state: !UiSdlReduxState,
+                                          action: !UiSdlStepMoveForwardAction): !UiSdlReduxState
+
+  /**
+   * Triggered when `STEP_ACTION_MENU_MOVE_BACKWARD` is triggered.
+   * @param id
+   *            Id of the component.
+   * @returns A `STEP_ACTION_MENU_MOVE_BACKWARD` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='STEP_ACTION_MENU_MOVE_BACKWARD')
+  moveBackwardAction: function(id: !string): !UiSdlStepMoveBackwardAction
+
+  /**
+   * Listens for actions of type `STEP_ACTION_MENU_MOVE_BACKWARD`.
+   *
+   * @param action
+   *           Observable action stream.
+   * @param state
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlReducer(actionType='STEP_ACTION_MENU_MOVE_BACKWARD')
+  moveBackwardEffect: private function(state: !UiSdlReduxState,
+                                          action: !UiSdlStepMoveBackwardAction): !UiSdlReduxState
+
+  /**
+   * Triggered when `SKIP_TO_STEP` is triggered.
+   * @param id
+   *            Id of the component.
+   * @param clickedStepIndex
+   *            Index of step user is trying to skip to.
+   *
+   * @param clickedSubstepIndex
+   *            Index of sub step user is trying to skip to.
+   *
+   * @returns A `SKIP_TO_STEP` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SKIP_TO_STEP')
+  skipToStepAction: function(id: !string, clickedStepIndex: int, clickedSubstepIndex: int): !UiSdlSkipToStepAction
+
+  /**
+   * Listens for actions of type `SKIP_TO_STEP`.
+   *
+   * @param action
+   *           Observable action stream.
+   * @param state
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlReducer(actionType='SKIP_TO_STEP')
+  skipToStepEffect: private function(state: !UiSdlReduxState,
+                                          action: !UiSdlSkipToStepAction): !UiSdlReduxState
+
+  /**
+   * Triggered when `UPDATE_STEPS_DATA` is triggered.
+   * @param id
+   *            Id of the component.
+   * @returns A `UPDATE_STEPS_DATA` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_STEPS_DATA')
+  updateStepsDataAction: function(id: !string): !UiSdlUpdateStepsDataAction
+
+  /**
+   * Listens for actions of type `UPDATE_STEPS_DATA`.
+   *
+   * @param action
+   *           Observable action stream.
+   * @param state
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlReducer(actionType='UPDATE_STEPS_DATA')
+  updateStepsDataEffect: private function(state: !UiSdlReduxState,
+                                          action: !UiSdlUpdateStepsDataAction): !UiSdlReduxState
+
+  /**
+   * An action to change a field in this component's state.
+   *
+   * @param componentId
+                Progress Indicator to be update.
+   * @param field
+   *            The field in application state to be updated.
+   * @param path
+   *            The path the value to update the state field.
+   * @param value
+   *            The value to update the state field with. You can also include a path to the value instead.
+   * @returns a Redux action of type `SET_FIELD`.
+   */
+  @uiSdlActionCreator(actionType='SET_FIELD')
+  setFieldAction: function(componentId: !string,
+                                   field: !string,
+                                   path: string,
+                                   value: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FIELD` and store selected value in a component's state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_FIELD')
+  setFieldReducer: inline function(state: !UiSdlReduxState,
+                                           action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to set the current step's status.
+   *
+   * @param componentId
+                Progress Indicator to be update.
+   * @param newStatus
+   *            The field in application state to be updated.
+   * @returns a Redux action of type `'SET_CURRENT_STEP_STATUS'`.
+   */
+  @uiSdlActionCreator(actionType='SET_CURRENT_STEP_STATUS')
+  setCurrentStepStatusAction: function(componentId: !string, newStatus: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Sets the current step's status.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_CURRENT_STEP_STATUS')
+  setCurrentStepStatusEffect: inline function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * Action to set to incomplete the status of steps.
+   *
+   * @param componentId
+                Progress Indicator to be update.
+   * @returns a Redux action of type `'RESET_STATUS'`.
+   */
+  @uiSdlActionCreator(actionType='RESET_STATUS')
+  resetStatusAction: function(componentId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Sets to incomplete the status of steps.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='RESET_STATUS')
+  resetStatusEffect: inline function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+}

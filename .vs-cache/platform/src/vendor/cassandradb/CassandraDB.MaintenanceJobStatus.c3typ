@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Status of maintenance job.
+ */
+type CassandraDB.MaintenanceJobStatus {
+
+  /**
+   * The Spec of the maintenance job
+   */
+  spec: CassandraDB.MaintenanceJobSpec
+
+  /**
+   * The state of the maintenance job
+   */
+  state: !CassandraDB.MaintenanceJobState
+
+  /**
+   * The time the maintenance job was created
+   */
+  lastExecution: datetime
+
+  /**
+   * The estimated time of completion for the job.
+   */
+  eta: datetime
+
+  /**
+   * The error message if any
+   */
+  error: Error
+
+  /**
+   * Checks if the job is in the "running" state.
+   *
+   * @return {boolean} true if the job is in the "running" state.
+   */
+  isRunning: private inline member function(): !boolean
+}

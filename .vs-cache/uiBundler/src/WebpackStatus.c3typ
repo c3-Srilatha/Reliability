@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Output of the webpack compiler when run through {@link Webpack}.
+ * @see https://webpack.js.org/api/stats/
+ */
+type WebpackStatus {
+
+  /**
+   * Version of webpack used for the compilation.
+   */
+  version: string
+
+  /**
+   * Compilation specific hash.
+   */
+  hash: string
+
+  /**
+   * Compilation time in milliseconds.
+   */
+  time: int
+
+  /**
+   * The time at which the compilation started.
+   */
+  builtAt: datetime
+
+  /**
+   * A count of excluded modules when exclude is passed to the toJson method.
+   */
+  filteredModules: int
+
+  /**
+   * Path to webpack output directory.
+   */
+  outputPath: string
+
+  /**
+   * The entrypoints that were processed by the compiler.
+   */
+  entrypoints: json schema suffix 'EP'
+
+  /**
+   * Chunk name to emitted asset(s) mapping.
+   */
+  assetsByChunkName: json schema suffix 'AS'
+
+  /**
+   * A list of error strings.
+   */
+  errors: [string] schema suffix 'ER'
+
+  /**
+   * A list of warning strings.
+   */
+  warnings: [string] schema suffix 'WR'
+}

@@ -1,0 +1,147 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Drawing function for box and whisker plots.
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.bxp.html
+ */
+type PlotBxpSpec mixes PlotElementSpec {
+
+  /**
+   * A list of dictionaries containing stats for each boxplot. Required keys are:
+   * (matplotlib bxpstats)
+   *
+   * Python: list of dicts
+   */
+  bxpStats: [json]
+
+  /**
+   * Sets the positions of the boxes. The ticks and limits are automatically set to match the positions.
+   *
+   * Python: array-like
+   */
+  positions: [any]
+
+  /**
+   * Either a scalar or a vector and sets the width of each box. The default is 0.15*(distance between extreme positions), clipped to no less than 0.15 and no more than 0.5.
+   *
+   * Python: array-like
+   */
+  widths: [any]
+
+  /**
+   * If True (default), makes the boxes vertical. If False, makes horizontal boxes.
+   */
+  vert: boolean
+
+  /**
+   * If False produces boxes with the Line2D artist. If True produces boxes with the Patch artist.
+   * (matplotlib patch_artist)
+   */
+  patchArtist: boolean
+
+  /**
+   * If False (default), produces a rectangular box plot. If True, will produce a notched box plot
+   * (matplotlib shownotches)
+   */
+  showNotches: boolean
+
+  /**
+   * If True, will toggle on the rendering of the means
+   * (matplotlib showmeans)
+   */
+  showMeans: boolean
+
+  /**
+   * If True, will toggle on the rendering of the caps
+   * (matplotlib showcaps)
+   */
+  showCaps: boolean
+
+  /**
+   * If True, will toggle on the rendering of the box
+   * (matplotlib showbox)
+   */
+  showBox: boolean
+
+  /**
+   * If True, will toggle on the rendering of the fliers
+   * (matplotlib showfliers)
+   */
+  showFliers: boolean
+
+  /**
+   * If provided, will set the plotting style of the boxes
+   * (matplotlib boxprops)
+   *
+   * Python: dict or None (default)
+   */
+  boxProps: json
+
+  /**
+   * If provided, will set the plotting style of the whiskers
+   * (matplotlib whiskerprops)
+   *
+   * Python: dict or None (default)
+   */
+  whiskerProps: json
+
+  /**
+   * If provided will set the plotting style of the fliers
+   * (matplotlib flierprops)
+   *
+   * Python: dict or None (default)
+   */
+  flierProps: json
+
+  /**
+   * If provided, will set the plotting style of the medians
+   * (matplotlib medianprops)
+   *
+   * Python: dict or None (default)
+   */
+  medianProps: json
+
+  /**
+   * If provided, will set the plotting style of the caps
+   * (matplotlib capprops)
+   *
+   * Python: dict or None (default)
+   */
+  capProps: json
+
+  /**
+   * If provided, will set the plotting style of the means
+   * (matplotlib meanprops)
+   *
+   * Python: dict or None (default)
+   */
+  meanProps: json
+
+  /**
+   * If True (and showmeans is True), will try to render the mean as a line spanning the full width of the box according to meanprops. Not recommended if shownotches is also True. Otherwise, means will be shown as points.
+   * (matplotlib meanline)
+   */
+  meanLine: boolean
+
+  /**
+   * If the function should adjust the xlim and xtick locations.
+   * (matplotlib manage_xticks)
+   */
+  manageXTicks: boolean
+
+  /**
+   * The zorder of the resulting boxplot
+   * (matplotlib zorder)
+   *
+   * Python: scalar
+   */
+  zOrder: any
+}

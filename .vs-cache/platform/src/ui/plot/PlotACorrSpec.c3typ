@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Plot the autocorrelation of x.
+ *
+ * ```JavaScript
+ * let x = C3.Array.patternOfDbl(20, n => 1 + n % 5);
+ * PlotAxes.make().aCorr({ x, maxLags: x.length / 2 }).show();
+ * ```
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.acorr.html
+ */
+type PlotACorrSpec mixes PlotElementSpec {
+
+  /**
+   * Python: sequence of scalar
+   */
+  x: [double]
+
+  data: any
+
+  /**
+   * x is detrended by the detrend callable. Default is no normalization.
+   * (matplotlib detrend)
+   *
+   * Python: callable
+   */
+  detrEnd: lambda(): any
+
+  /**
+   * If True, input vectors are normalised to unit length.
+   * (matplotlib normed)
+   */
+  normEd: boolean = true
+
+  /**
+   * If True, Axes.vlines is used to plot the vertical lines from the origin to the acorr. Otherwise, Axes.plot is used.
+   * (matplotlib usevlines)
+   */
+  useVLines: boolean = true
+
+  /**
+   * Number of lags to show. If None, will return all 2 * len(x) - 1 lags.
+   * (matplotlib maxlags)
+   */
+  maxLags: int
+
+  /**
+   * Only used if usevlines is False.
+   * (matplotlib linestyle)
+   *
+   * Python: Line2D prop, optional, default: None
+   */
+  lineStyle: any
+
+  /**
+   * Default is 'o'.
+   */
+  marker: string
+}

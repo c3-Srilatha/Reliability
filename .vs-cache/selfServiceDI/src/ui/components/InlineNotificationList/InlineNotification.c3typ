@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The InlineNotification containing id, title and linkText and status
+ */
+@typeScript
+type InlineNotification {
+
+  /**
+   * the type of the inlineNotification like CONNECTION_FAILURE, TABLE_CHANGE_ERROR
+   */
+  notificationType: string enum('CONNECTION_FAILURE', 'TABLE_CHANGE_ERROR', 'SCHEMA_CHANGE_ERROR')
+  
+  /**
+   * Unique identifier for a inlineNotification, can be connectorName or other fields
+   */
+  id: !string
+
+  /**
+   * Stores information about an inline notification that could be needed when we click on a notification link
+   */
+  args: json
+
+  /**
+   * The title to display
+   */
+  title: string | UiSdlDynamicValueSpec
+
+  /**
+   * link text to display
+   */
+  linkText: string | UiSdlDynamicValueSpec
+
+  /**
+   * the status of the inlineNotification
+   */
+  status: string enum('WARNING', 'ERROR')
+}

@@ -1,0 +1,132 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contains intarchange-related and functional group - related control segments' data.
+ * Including segments ISA and GS. Values from GE and IEA segments are not included, only validated.
+ */
+type X12ControlHeader {
+
+  /**
+   * Code identifying the type of information in the Authorization Information.
+   */
+  authorInfoQualifier: string
+
+  /**
+   * Information used for additional identification or authorization of the interchange sender or the data in the interchange;
+   * the type of information is set by the Authorization Information Qualifier.
+   */
+  authorInfo: string
+
+  /**
+   * Code identifying the type of information in the Security Information.
+   */
+  sequrityInfoQualifier: string
+
+  /**
+   * This is used for identifying the security information about the interchange sender or the data in the interchange; the type of information is set by the Security Info Qualifier.
+   */
+  sequrityInfo: string
+
+  /**
+   * Code identifying the system/method of code structure used to designate the sender or receiver ID element being qualified.
+   */
+  interchangeIdQualifiers: [string] schema suffix 'IIQ'
+
+  /**
+   * Identification code published by the sender for other parties to use as the receiver ID to route data to them;
+   * the sender always codes this value in the sender ID element
+   */
+  interchangeSenderId: string
+
+  /**
+   * Identification code published by the receiver of the data;
+   * When sending, it is used by the sender as their sending ID, thus other parties sending to them will use this as a receiving ID to route data to them.
+   */
+  interchangeReceiverId: string
+
+  /**
+   * Date and time of the interchange.
+   */
+  interchangeDate: datetime
+
+  /**
+   * Type is not applicable;
+   * the repetition separator is a delimiter and not a data element;
+   * this field provides the delimiter used to separate repeated occurrences of a simple data element or a composite data structure;
+   * this value must be different than the data element separator, component element separator, and the segment terminator.
+   */
+  repetitionSeparator: string
+
+  /**
+   * Code identifying the version number of the interchange control segments.
+   */
+  interControlVersionNum: string
+
+  /**
+   * A control number assigned by the interchange sender.
+   */
+  interControlNumber: int
+
+  /**
+   * Code indicating sender's request for an interchange acknowledgement.
+   */
+  ackRequest: string
+
+  /**
+   * Code indicating whether data enclosed by this interchange envelope is test, production or information.
+   */
+  usageIndicator: string
+
+  /**
+   * /**
+   *  Type is not applicable;
+   *  the repetition separator is a delimiter and not a data element;
+   *  this field provides the delimiter used to separate component data elements within a composite data structure;
+   *  this value must be different than the data element separator, component element separator, and the segment terminator.
+   */
+  componentElementSeparator: string
+
+  /**
+   * Code identifying a group of application related transaction sets.
+   */
+  functionalIdCode: string
+
+  /**
+   * Code identifying party sending transmissions; codes agreed by trading partners.
+   */
+  applicationSenderCode: string
+
+  /**
+   * Code identifying party receiving transmissions; codes agreed by trading partners.
+   */
+  applicationReseiverCode: string
+
+  /**
+   * Date expressed as CCYYMMDD where CC represents the first 2 digits of the calendar year.
+   */
+  functionalGroupDate: datetime
+
+  /**
+   * Assigned number originated and maintained by the sender.
+   */
+  groupCtrlNum: int
+
+  /**
+   * Code identifying the issuer of the standard; this code is used in conjunction with verReleaseIdCode.
+   */
+  responsibleAgencyCode: string
+
+  /**
+   * Code indicating the version, release, subrelease, and industry identifier of the EDI standard being used, including the GS and GE segments;
+   * if responsibleAgencyCode is X, then verReleaseIdCode positions 1-3 are version number; positions 4-6 are release and subrelease, level of the version;
+   * and positions 7-12 are the industry or trade association identifiers (optionally assigned by user);
+   * if responsibleAgencyCode is T, then other formats are allowed.
+   */
+  verReleaseIdCode: string
+}

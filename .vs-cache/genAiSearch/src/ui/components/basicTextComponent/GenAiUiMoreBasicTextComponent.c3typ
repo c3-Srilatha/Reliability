@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A component for rendering very basic text.
+ */
+@beta
+@typeScript
+type GenAiUiMoreBasicTextComponent mixes UiSdlComponent<BasicDataSpec> {
+
+  /**
+   * Optional class name to.
+   */
+  className: string
+
+  /**
+   * The HTML tag to render the text in.
+   */
+  htmlTag: string enum('h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'p') = 'p'
+
+  /**
+   * Whether or not to wrap the text in a container.
+   */
+  wrapWithContainer: boolean = false
+
+  /**
+   * The specification used for retrieving data.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataValue')
+  dataSpec: ~
+
+  /**
+   * The value to render
+   */
+  dataValue: string | int | double | datetime
+
+  /**
+   * The value to render takes priority over dataValue.
+   */
+  staticValue: string | int | double | datetime
+
+  /**
+   * The text to display in the tooltip
+   */
+  infoTooltipText: string
+}

@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The operation result of {@link MlModel.Evaluator.ScoringMetric} is a map of metric name to metric value for the
+ * metrics specified in {@link #scoringMetrics}.
+ * The metrics are provided the process output from the {@link MlModel#process} operation, in addition to the
+ * evaluated labels and contexts from {@link MlModel.Evaluator#operationFeatures}. To influence the mapping of names
+ * for inputs to the metrics, use {@link MlMappedMetric} to wrap the metrics.
+ */
+type MlModel.Evaluator.ScoringMetric mixes MlModel.Evaluator.Operation {
+
+  /**
+   * A map of metric names to scoring metric definitions that will be used to compare model process outputs to labels.
+   * NOTE: If the {@link MlModel#process} output names are different than the scoring metric input names, then
+   * use {@link MlMappedMetric}.
+   */
+  scoringMetrics: !map<string, MlScoringMetric>
+
+  requiredModelOutputs: ~ py
+  doOperation:          ~ py
+}

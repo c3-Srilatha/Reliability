@@ -1,0 +1,129 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Annotation to customize C3 Type serialization. Note this should only be used in exceptional cases. E.g. when
+ * integrating with external data source or when implementing backwards compatibility layer.
+ */
+@annotation
+type Ann.Ser mixes Annotation {
+
+  /**
+   * Alternative name for a field used only during serialization.
+   */
+  name: string
+
+  /**
+   * If true then this field will not be serialized.
+   */
+  // TODO: PLAT-10063 Ann.Ser.hidden
+  @beta
+  hidden: boolean
+
+  /**
+   * Specify which fields should be sent when instances of this type are serialized. Note that this allows methods to be
+   * included as though they were data fields, as well as pare down the actual data fields that are included in the
+   * JSON. By default, only data fields (not constants, not methods) are sent.
+   *
+   * This is keyed by the {@link Action.Requirement}, so different sets of fields may be serialized for different client SDKs.
+   *
+   * ```type
+   * @ser(include={"js-client": "magnitude", "py-ipython": "magnitude"})
+   * type Complex {
+   *   r: !double
+   *   i: !double
+   *
+   *   magnitude: cached member function(): !double
+   * }
+   * ```
+   *
+   * In the example above, this works because the `magnitude` is marked with `cached`. It only makes sense to use this
+   * feature on methods which are pure functions since the client then has a cached version of the function's return
+   * value.
+   *
+   * Serialization of an instance will return JSON like:
+   * ```json
+   * { "type": "Complex", "r": 3.0, "i": -4.0, "magnitude": 5.0 }
+   * ```
+   *
+   * If you want the same behavior across different {@link Action.Requirement} then use include directly as a string
+   * ```type
+   * @ser(include="magnitude")
+   * type Complex {
+   *   r: !double
+   *   i: !double
+   *
+   *   magnitude: cached member function(): !double
+   * }
+   * ```
+   *
+   * This is for use with {@link Obj} types only. Non-Obj types ({@link Value values}) should explicitly mixin
+   * {@link Serializable} and implement custom serialization if needed.
+   *
+   * @see Serialized
+   * @see Include
+   */
+  include: string serialized Include | map<string serialized Action.Requirement, string serialized Include>
+
+  /**
+   * Specify that _cached_ member methods with no parameters (except "fail" flags) should be sent as well as data
+   * fields when instances of this type is serialized. This is a convenience to avoid having to specify all the method
+   * names in the #include field.
+   *
+   * This is keyed by the actionRequirement, so different sets of fields may be serialized for different client SDKs.
+   *
+   * This is for use with {@link Obj} types only. Non-Obj types ({@link Value values}) should explicitly mixin
+   * {@link Serializable} and implement custom serialization if needed.
+   *
+   * @see #include
+   */
+  includeCachedMethods: [string serialized Action.Requirement]
+
+  /**
+   * Indicates location of where the field value should be placed for the json that will be created
+   *
+   * Ex:
+   *   Applying this annotation on a field @ser(path="image.registry) would result in a json like:
+   *    {"image" : {
+   *                    "registry" : "registry location"
+   *                }
+   *    }
+   */
+  @beta
+  path: string
+
+  /**
+   * Indicates if location of path should be wrapped in an array
+   *
+   * Ex:
+   *    {"image" : {"registry" : "registry location"}}
+   * will become
+   *    {"image" : [{"registry" : "registry location"}]}
+   * if set to true
+   */
+  @beta
+  wrapInArray: boolean
+
+  /**
+   * Specifies the datetime format to use when serializing datetime fields.
+   * This guides the serdeser for serialization when the DateTime format is ambiguous,
+   * allowing customization of how datetime values are represented in the serialized output.
+   *
+   * The format follows the pattern syntax compatible with java.text.SimpleDateFormat.
+   * Common examples:
+   * - "yyyy-MM-dd HH:mm:ss" for standard datetime format
+   * - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" for ISO 8601 format with milliseconds
+   * - "MM/dd/yyyy" for date-only format
+   *
+   * If not specified, the default datetime serialization format will be used.
+   *
+   * @see {@link DateTimeFormat}
+   */
+  @beta
+  dateTimeFormat: string serialized DateTimeFormat
+}

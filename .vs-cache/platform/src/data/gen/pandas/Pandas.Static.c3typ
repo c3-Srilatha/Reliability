@@ -1,0 +1,326 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// TODO: PLAT-46986 Generate Pandas.Static.c3typ
+@deprecated(finalVersion="8.9",
+            details="All the pandas subtypes apis are deprecated on Data types and will be removed in a future release")
+abstract type Pandas.Static mixes Value {
+
+  /**
+   * Construct a {@link Data} manually. Corresponds to pd.DataFrame constructor from Pandas 1.3.4
+   */
+  dataFrame: abstract function(data: map<string, any> | [any],
+                               index: any,
+                               columns: any,
+                               dtype: native,
+                               copy: boolean): ?Data
+
+  /**
+   * Construct a {@link Data.Series} manually. Corresponds to pd.Series constructor from Pandas 1.3.4
+   */
+  series: abstract function(data: any,
+                            index: any,
+                            dtype: native,
+                            name: any,
+                            copy: boolean,
+                            fastpath: boolean): ?Data.Series
+
+  /**
+   * Construct a {@link Data.Index} manually. Corresponds to pd.Index constructor from Pandas 1.3.4
+   */
+  index_: abstract function(data: any,
+                            dtype: native,
+                            copy: boolean,
+                            name: any,
+                            tupleize_cols: any)
+                     : ?(Data.Index | Data.MultiIndex | Data.DatetimeIndex | Data.TimedeltaIndex | Data.Float64Index | Data.Int64Index)
+
+  /**
+   * Construct a {@link Data.RangeIndex} manually. Corresponds to pd.RangeIndex constructor from Pandas 1.3.4
+   */
+  rangeIndex: abstract function(start: any,
+                                stop: int,
+                                step: int,
+                                dtype: native,
+                                copy: boolean,
+                                name: any): Data.RangeIndex
+
+  /**
+   * Construct a {@link Data.CategoricalIndex} manually. Corresponds to pd.CategoricalIndex constructor from Pandas 1.3.4
+   */
+  categoricalIndex: abstract function(data: any,
+                                      categories: any,
+                                      ordered: any,
+                                      dtype: native,
+                                      copy: boolean,
+                                      name: any): ?Data.CategoricalIndex
+
+  /**
+   * Construct a {@link Data.MultiIndex} manually. Corresponds to pd.MultiIndex constructor from Pandas 1.3.4
+   */
+  multiIndex: abstract function(levels: any,
+                                codes: any,
+                                sortorder: int,
+                                names: any,
+                                dtype: native,
+                                copy: boolean,
+                                name: any,
+                                verify_integrity: any): ?Data.MultiIndex
+
+  /**
+   * Construct a {@link Data.IntervalIndex} manually. Corresponds to pd.IntervalIndex constructor from Pandas 1.3.4
+   */
+  intervalIndex: abstract function(data: any,
+                                   closed: string,
+                                   dtype: native,
+                                   copy: boolean,
+                                   name: any,
+                                   verify_integrity: any): ?Data.IntervalIndex
+
+  /**
+   * Construct a {@link Data.DatetimeIndex} manually. Corresponds to pd.DatetimeIndex constructor from Pandas 1.3.4
+   */
+  datetimeIndex: abstract function(data: any,
+                                   freq: any,
+                                   tz: any,
+                                   normalize: boolean,
+                                   closed: string,
+                                   ambiguous: any,
+                                   dayfirst: boolean,
+                                   yearfirst: boolean,
+                                   dtype: native,
+                                   copy: boolean,
+                                   name: any): ?Data.DatetimeIndex
+
+  /**
+   * Construct a {@link Data.TimedeltaIndex} manually. Corresponds to pd.TimedeltaIndex constructor from Pandas 1.3.4
+   */
+  timedeltaIndex: abstract function(data: any, unit: any, freq: any, copy: boolean, name: any): ?Data.TimedeltaIndex
+
+  /**
+   * Construct a {@link Data.PeriodIndex} manually. Corresponds to pd.PeriodIndex constructor from Pandas 1.3.4
+   */
+  periodIndex: abstract function(data: any,
+                                 ordinal: any,
+                                 freq: any,
+                                 dtype: native,
+                                 copy: boolean,
+                                 name: any,
+                                 year: any,
+                                 month: any,
+                                 quarter: any,
+                                 day: any,
+                                 hour: any,
+                                 minute: any,
+                                 second: any): ?Data.PeriodIndex
+
+  /**
+   * Construct a {@link Data.Int64Index} manually. Corresponds to pd.Int64Index constructor from Pandas 1.3.4
+   */
+  int64Index: abstract function(data: any, dtype: native, copy: boolean, name: any): ?Data.Int64Index
+
+  /**
+   * Construct a {@link Data.UInt64Index} manually. Corresponds to pd.UInt64Index constructor from Pandas 1.3.4
+   */
+  uInt64Index: abstract function(data: any, dtype: native, copy: boolean, name: any): ?Data.UInt64Index
+
+  /**
+   * Construct a {@link Data.Float64Index} manually. Corresponds to pd.Float64Index constructor from Pandas 1.3.4
+   */
+  float64Index: abstract function(data: any, dtype: native, copy: boolean, name: any): ?Data.Float64Index
+
+  /**
+   * Read a comma-separate values file and construct a {@link Data} out of the contents.
+   *
+   * Example usage:
+   * ```py
+   * Reading an individual csv file.
+   * >>> dt = c3.Data.read_csv('path-to-your-file/your-file.csv')
+   *
+   * Reading multiple csv files with the same schema inside a folder.
+   * >>> dt = c3.Data.read_csv('path-to-your-folder/')
+   *
+   * Reading from client "local" folder. These are files local to the calling (e.g. SDK) process.
+   * >>> dt = c3.PyDataTable.read_csv('local:///path-to-your-folder/')
+   * ```
+   *
+   * @param path
+   *           c3 file path that contains the data. See {@link Dataset#fromFiles} for specifics on semantics.
+   * @param parse_dates
+   *           list of names of "columns" in the header to interpret as datetime.
+   * @return a {@link Data} that contains the data of the file(s).
+   */
+  read_csv: abstract function(filepath_or_buffer: !(string | ContentValue),
+                              spec: Data.ManualOpSpecs.ReadCsvSpec): ?Data
+
+  /**
+   * Simultaneously read data from multiple .csv files.
+   * `path` should be constructed as a glob. Only implemented for Modin execution mode
+   *
+   * Example usage:
+   * ```py
+   * >>> dt = c3.Data.read_csv_glob('path-to-your-file/*.csv')
+   * ```
+   *
+   * @param filepath_or_buffer
+   *           c3 file path that contains the data.
+   * @param parse_dates
+   *           list of names of "columns" in the header to interpret as datetime.
+   * @return a {@link Data} that contains the data of the file(s).
+   */
+  read_csv_glob: private abstract function(filepath_or_buffer: !string,
+                                           spec: Data.ManualOpSpecs.ReadCsvGlobSpec): ?Data
+
+  /**
+   * Reads SQL query into a DataFrame equivalent.
+   *
+   * @param sql
+   *           SQL query string
+   * @param url
+   *           database connection path for the sql_alchemy engine
+   * @param http_path
+   *           http_path for the sql_alchemy engine
+   * @param parse_dates
+   *           list of column names to parse as dates
+   */
+  // TODO: PLAT-47670 Alternative approach to fixing read_sql_query() overload through a SQLAlchemy connectable C3 Type
+  _read_sql_query: private abstract function(sql: !string, url: !string, http_path: !string, parse_dates: any): ?Data
+
+  /**
+   *  Perform a merge by key distance.
+   *
+   *  Both Data must be sorted by the key.
+   *
+   *  For each row in the left Data:
+   *    - A "backward" search chooses the last row in the right Data whose
+   *      'on' key is less than or equal to the left's key.
+   *    - A "forward" search chooses the first row in the right Data whose
+   *      'on' key is greater than or equal to the left's key.
+   *    - A "nearest" search chooses the row in the right Data whose 'on'
+   *      key is closest to the left's key.
+   *
+   *  @param left
+   *         Data to merge
+   *  @param right
+   *         Data to merge
+   *  @param on
+   *         Column name to join on, needs to be present in both Data. The column being merged on must be ordered and
+   * numeric must be a numeric column (integer, float, or datetime). On or left_on/right_on must be provided.
+   *  @param left_on
+   *         Column name to join on in the left Data
+   *  @param right_on
+   *         Column name to join on in the left Data
+   *  @param left_index
+   *         Indicate if the index of the left Data should be used as the join key
+   *  @param right_index
+   *         Indicate if the index of the right Data should be used as the join key
+   *  @param by
+   *         List of column names or a single column name. These columns are matched prior to merging
+   *  @param left_by
+   *         Column name. Columns to match on in the left Data
+   *  @param right_by
+   *         Column name. Columns to match on in the right Data
+   *  @param suffixes
+   *         2-length list or sequence. Suffix applied to overlapping column names in the left and right Data, respectively
+   *  @param tolerance
+   *         int or time delta. Select asof tolerance from this range. The tolerance needs to be compatible with the
+   *         designated merge index
+   *  @param allow_exact_matches
+   *         If True, allow matching with the same ‘on’ value during merge (greater-than-or-equal-to or less-than-or-equal-to)
+   *         If False, don’t match the same ‘on’ value during merge (strictly greater-than or strictly less-than)
+   *  @param direction
+   *         Indicate to look for prior, subsequent, or closest matches during merge
+   *
+   *  @return a {@link Data} representing the merged Data
+   */
+  // TODO: PLAT-48481 ?boolean param defaults to false instead of null - Change allow_exact_matches to ?boolean
+  merge_asof: abstract function(left: ?Data,
+                                right: ?Data,
+                                on: any,
+                                left_on: any,
+                                right_on: any,
+                                left_index: ?boolean = false,
+                                right_index: ?boolean = false,
+                                by: any,
+                                left_by: any,
+                                right_by: any,
+                                suffixes: any,
+                                tolerance: any,
+                                allow_exact_matches: any,
+                                direction: string enum("backward", "forward", "nearest") = "backward"): ?Data
+
+  /**
+   * Concatenate Data along a specified axis with optional logic along the other axis
+   * @param objs
+   *           Mapping or sequence of Data objects. If a mapping is passed, the sorted keys will be used as the `keys`
+   *           argument, unless it is passed, in which case the values will be selected.
+   * @param axis
+   *           The axis to concatenate along
+   * @param join
+   *        How to process indexes on the axis
+   * @param ignore_index
+   *        When true index values along the concatenation axis are ignored.
+   * @param keys
+   *        Sequence used to construct hierarchical index
+   * @param levels
+   *        list of sequences.
+   *        Levels to use for building a Multi-index. If left null, the multi-index will be inferred from keys
+   * @param names
+   *        Names of each level in the resulting hierarchical index
+   * @param verify_integrity
+   *        Check if the concatenated axis contains any duplicates
+   * @param sort
+   *        Sorts the non-concatenation axis when join='outer' and it is not already aligned
+   * @param copy
+   *        Does not copy data unnecessarily when false   *
+   * @return a {@link Data} representing the concatenated Data
+   */
+  // TODO: PLAT-48481 ?boolean param in ReClaimed method called from SDK defaults to false instead of null - Change copy to ?boolean
+  concat: abstract function(objs: any,
+                            axis: int | string = 0,
+                            join: string enum("inner", "outer") = "outer",
+                            ignore_index: ?boolean = false,
+                            keys: any,
+                            levels: any,
+                            names: any,
+                            verify_integrity: ?boolean = false,
+                            sort: ?boolean = false,
+                            copy: any): ?Data
+
+  /**
+   * Normalize semi-structured JSON data into a Data
+   * @param data
+   *           Unserialized JSON objects
+   * @param record_path
+   *           Path in each object to list of records. If not passed, data will be assumed to be an array of records.
+   * @param meta
+   *        Fields to use as metadata for each record in resulting table.
+   * @param meta_prefix
+   *        If True, prefix records with dotted (?) path, e.g. foo.bar.field if meta is [‘foo’, ‘bar’].
+   * @param record_prefix
+   *        If True, prefix records with dotted (?) path, e.g. foo.bar.field if path to records is [‘foo’, ‘bar’].
+   * @param errors
+   *        Configures error handling.
+   *        ‘ignore’ : will ignore KeyError if keys listed in meta are not always present.
+   *        ‘raise’ : will raise KeyError if keys listed in meta are not always present.
+   * @param sep
+   *        Nested records will generate names separated by sep. e.g., for sep=’.’, {‘foo’: {‘bar’: 0}} -> foo.bar.
+   * @param max_level
+   *        Max number of levels(depth of dict) to normalize. if None, normalizes all levels.
+   *
+   * @return a {@link Data} representing the structured JSON data
+   */
+  json_normalize: abstract function(data: !any,
+                                    record_path: any,
+                                    meta: any,
+                                    meta_prefix: any,
+                                    record_prefix: any,
+                                    errors: string = "raise",
+                                    sep: string = ".",
+                                    max_level: int): ?Data
+}

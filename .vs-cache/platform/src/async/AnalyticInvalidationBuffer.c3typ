@@ -1,0 +1,152 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Buffer for collection metric/invalidation specs before sending to the invalidation queues
+ */
+private type AnalyticInvalidationBuffer {
+
+  /**
+   * Set to true by the {@link initialize} function.  No invalidations can be made to an uninitialized buffer.
+   */
+  initialized: boolean
+
+  /**
+   * If true, queue entries will be auto committed when flushed to the queues.
+   */
+  autoCommit: boolean
+
+  /**
+   * When `maxSize` is reached on either {@link analyticInvals} or {@link metricInvals}, they will be flushed to
+   * the appropriate queue.
+   */
+  maxSize: !int
+
+  /**
+   * Called to process/invalidate the analytics invalidations.
+   */
+  analyticsConsumer: !lambda(specs: [MetricGroupInvalidationSpec], autoCommit: boolean, appOverride: int)
+
+  /**
+   * Called to process/invalidate the metrics invalidations.
+   */
+  metricsConsumer: !lambda(specs: [MetricInvalidationSpec], autoCommit: boolean, appOverride: int)
+
+  /**
+   * Specs for the analytics queue.
+   */
+  analyticInvals: MapBuilder<string, ArrayBuilder<MetricGroupInvalidationSpec>>
+
+  /**
+   * Specs for the metrics queue.
+   */
+  metricInvals: MapBuilder<string, ArrayBuilder<MetricInvalidationSpec>>
+
+  /**
+   * If true, the buffer is for facaded invalidation.
+   */
+  forFacade: boolean
+
+  /**
+   * If forFacade is true, the facading appCode
+   */
+  facadeAppCode: int
+
+  /**
+   * Constructs and initializes a new instance of the buffer.  This must be called (rather than
+   * AnalyticInvalidationBuffer.make) in order to add invalidations due to immutability constraints.
+   *
+   * @param maxSize
+   *        When `maxSize` is reached on either {@link analyticInvals} or {@link metricInvals}, they will be flushed
+   *        to the appropriate queue.
+   * @param analyticsConsumer
+   *        Callback to flush entries to the analytics queue.
+   * @param forFacade
+   *        If true, the buffer is for facaded invalidation.
+   * @param facadeAppCode
+   *        If forFacade is true, the facading app code.
+   * @param metricsConsumer
+   *        Callback to flush entries to the metrics queue.
+   */
+  initialize: inline function(maxSize: !int,
+                              forFacade: boolean,
+                              facadeAppCode: int,
+                              analyticsConsumer: !lambda(specs: [MetricGroupInvalidationSpec],
+                                                         autoCommit: boolean,
+                                                         appOverride: int),
+                              metricsConsumer: !lambda(specs: [MetricInvalidationSpec],
+                                                       autoCommit: boolean,
+                                                       appOverride: int)): !AnalyticInvalidationBuffer
+
+  /**
+   * Makes an analytic invalidation spec.
+   *
+   * @param srcTypeId
+   *        Type id for the source obj being invalidated.
+   * @param srcId
+   *        Id of the source obj being invalidated.
+   * @param timeRange
+   *        Time range being invalidated.
+   * @param priority
+   *        Priority to invalidate the entry with (e.g. the priority for the entry put in the analytics queue).
+   * @param metricGroup
+   *        Metric group for the invalidation (tells ACE what it needs to do).
+   */
+  makeAnalyticInvalSpec: inline function(srcTypeId: !int,
+                                         srcId: !string,
+                                         timeRange: TimeRangeWithSourceInfo,
+                                         priority: int,
+                                         metricGroup: string): !MetricGroupInvalidationSpec
+
+  /**
+   * Makes a metric invalidation spec.
+   *
+   * @param srcTypeId
+   *        Type id for the source obj being invalidated.
+   * @param srcId
+   *        Id of the source obj being invalidated.
+   * @param metricName
+   *        Name of the metric triggering invalidation.
+   * @param timeRange
+   *        Time range being invalidated.
+   * @param priority
+   *        Priority to invalidate the entry with (e.g. the priority for the entry put in the metrics queue).
+   *
+   * @return The requested invalidation spec.
+   */
+  makeMetricInvalSpec: inline function(srcTypeId: !int,
+                                       srcId: !string,
+                                       metricName: string,
+                                       timeRange: TimeRangeWithSourceInfo,
+                                       priority: int): !MetricInvalidationSpec
+
+  /**
+   * Adds an analytic or metric invalidation spec.
+   *
+   * @param metricId
+   *        Id of the metric triggering the invalidation.
+   * @param metricGroup
+   *        Metric group for the invalidation (tells ACE what it needs to do).
+   * @param srcType
+   *        Type for the source obj being invalidated.
+   * @param srcId
+   *        Id of the source obj being invalidated.
+   * @param timeRange
+   *        Time range being invalidated.
+   */
+  addInval: inline member function(metricId: !string,
+                                   metricGroup: string,
+                                   srcType: Type,
+                                   srcId: !string,
+                                   timeRange: TimeRangeWithSourceInfo)
+
+  /**
+   * Flushes accumulated invalidations to the appropriate queues.
+   */
+  flush: member function()
+}

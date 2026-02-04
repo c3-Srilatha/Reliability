@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config to access different pkgs from all backing stores Pkg.Store.
+ * @see Pkg.Store
+ */
+type Pkg.Store.Config mixes Config, Named {
+
+  /**
+   * If true, Pkg can be constructed from Pkg.Store using `Pkg.Store.inst().pkg('testPkg') -> Pkg`
+   */
+  enabled: boolean
+
+  /**
+   * listed stores will be processed to access pkgs in the same order and first one wins,
+   * if a pkg is available in more than one store.
+   */
+  stores: [Pkg.Store.Nested]
+
+  /**
+   * git Workspace  info to pull and push for writable pkgs in Pkg.Store. @see configWithGit to set it.
+   */
+  // Pkg.Store.GitWorkspace
+  gitWorkspace: string
+
+  /**
+   * If true, other app nodes will not be notified of Pkg.File.Event and Pkg.Store on other nodes will not invalidate
+   * any pkg caches.
+   */
+  multiNodeUpdateDisabled: boolean
+
+  /**
+   * If true, run full UI Metadata validation for all UI metadata files.
+   * If false, run normal validation on UI Metadata files.
+   */
+  fullUiMetadataValidationEnabled: boolean
+
+  /**
+   * If true, validate all types for runtime code-gen during package validation
+   * If false, don't validate for runtime code-gen. The default is false
+   */
+  needRuntimeCodeValidation: boolean
+
+  /**
+   * Max concurrent valdiations queue processors.  Range (1, cores/2).
+   */
+  maxValidationQueueProcessors: int = 2
+
+  /**
+   * @private
+   * Number of paths to validate exceed this value, then will check to see if validation by pkg
+   * needs to be done using fullValidationPct.
+   * For testing path only, give high number to do avoid by pkg.
+   */
+  maxPathsToValidate: int = 100
+
+  /**
+   * @private
+   * If number of paths out of total paths in a Pkg to validate is more than this percent, full pkg will be validated.
+   * otherwise, provided paths will be validated.
+   */
+  fullValidationPct: double = 0.0
+
+  /**
+   * Semantic Version of the most recently loaded packages from ArtifactHub.
+   */
+  basePkgVersion: string serialized SemanticVersion
+
+  /**
+   * If true, dependency resolution will not be retried ignoring locks if a resolution error is thrown. Recommended
+   * only to be true during CI or validation of locks. For this config to take effect please make sure {@link Pkg.Store.WriteSpec#ignoreLocks} is false
+   */
+  doNotIgnoreLocksUponResolutionError: boolean
+
+  setConfig: ~
+  getConfig: ~
+}

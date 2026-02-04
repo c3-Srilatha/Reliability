@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A tool to search the web for information and return the results
+ */
+type Genai.Agent.Tool.WebSearch mixes Genai.Agent.Tool<Genai.Agent.Tool.WebSearch.Config>, Genai.Agent.Tool.DataRetriever {
+  initialize: ~ py-query_orchestrator
+  run: ~ py-query_orchestrator
+
+  /**
+   * Extract and replace URLs in the given text with a placeholder.
+   * @param text
+   *           The text to extract URLs from
+   * @param replaceWithUrlHash
+   *           If true, replace the URLs with a hash of the URL. If false, replace the URLs with a numeric index.
+   * @return The text with URLs replaced by placeholders
+   */
+  extractAndReplaceUrlsInText: function (text: string, replaceWithUrlHash: boolean): json py
+
+  /**
+   * Create a URL source from a URL and search results
+   * @param urls
+   *           The URLs to create the source from
+   * @param searchResults
+   *           The search results to use. The first result will be used to populate the source.
+   * @return The URL source
+   */
+  createSourceRelations: function (urls: [string], searchResults: [Genai.Agent.Tool.WebSearch.Result]): [Genai.Source.Relation.Url] py
+
+  retrieveData: ~ py-query_orchestrator
+  formatData: ~ py-query_orchestrator
+}

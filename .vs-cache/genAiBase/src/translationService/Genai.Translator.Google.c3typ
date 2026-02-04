@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface for the google language detection and translation apis.
+ */
+type Genai.Translator.Google mixes Genai.Translator {
+  detectLanguage: ~ py-translator
+  translate: ~ py-translator
+  getUnwantedKeywords: ~ py
+
+  /**
+   * The max length of contents is 1024 strings, with a total maximum size of 30000 characters
+   * {@link https://cloud.google.com/translate/docs/reference/rest/v3/projects/translateText#:~:text=contents%5B%5D,for%20larger%20text.}
+   */
+  translateBatch: ~ py-translator
+
+  /**
+   * Translates a file and returns new file path of the translated content. If the file was originally in the
+   * `targetLanguage` then the original file path is returned.
+   * @param filePath
+   *            the local file path of the file to be translated.
+   * @param targetLanguage
+   *            The target language to translate the input document to. Set to one of the language codes listed in
+   * {@link https://cloud.google.com/translate/docs/languages}
+   * @return string
+   *            the local file path of the newly translated file
+   */
+  translateFile: function(filePath: !string, targetLanguage: !Genai.Translator.Language): !string py-chunker
+}

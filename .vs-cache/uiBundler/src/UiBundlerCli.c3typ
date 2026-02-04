@@ -1,0 +1,122 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type UiBundlerCli {
+  validate: private function(isTestMode: boolean): string js-server
+
+  produceUiFiles: private function(uiNamespace: string): map<string, string> js-server
+
+  getAppActionRuntime: private function(uiNamespace: string): map<string, string> js-server
+
+  getTranslations: private function(locale: string): [Translation] js-server
+
+  /**
+   * Gets the translations for a particular locale, including the passed locale's parent locales if any.
+   *
+   * @param locale - The locale as a string. Note that it will be coming from server data
+   *   and so is delimited with an underscore rather than a hyphen.
+   * @return A json string with the translation keys as strings, and the translation values (what is displayed
+   *   on the page) as values
+   */
+  getTranslationsIncludingParentLocales: private function(locale: string): string js-server
+
+  upsertTranslations: private function(allLocalTranslations: [json]): [Translation] js-server
+
+  // TODO UI-11472: Fix and revert arguments to Value Type
+  addImportsAndExportsBatch: private function(inputs: json): [UiSdlMetadataLoaderResult] js-server
+
+  addImportsAndExports: private function(code: string, componentType: string): string js-server
+
+  getUiRoutes: private function(): [UiSdlRoute] js-server
+
+  getRootPackage: private function(): Pkg js-server
+
+  getDependencies: private function(): [string] js-server
+
+  // TODO UI-11472: Fix and revert arguments to Value Type
+  generateUiSdlComponentSourceCodeBatch: private function(inputs: json): [UiSdlMetadataLoaderResult] js-server
+
+  generateUiSdlComponentSourceCode: function(componentId: string, componentMetadata: json): string js-server
+
+  upsertBatchRoutes: function(routes: [json]): [UiSdlRoute] js-server
+
+  uploadFiles: function(metadtaPathToContent: map<!string serialized Pkg.Path, !?Content>) js-server
+
+  getRootPackageName: function(): string js-server
+
+  /**
+   * Gets the value of the typeScript sourceCodeType annotation, if the annotation exists.
+   * @param typeName
+   *           The name of the type to check the annotation.
+   * @returns The value of the annotation, or null if it doesn't exist.
+   */
+  typeIsRemixing: function(typeName: !string): string enum("Script", "Module") js-server
+
+  getMergedRuntime: function(uiNamespace: string): Js.Runtime js-server
+
+  getMergedRuntimeLibraries: function(runtime: Js.Runtime) js-server
+
+  npmRegistryUrl: function(uiNamespace: string): string js-server
+
+  /**
+   * @returns the list of all the package paths for types that have the @codeGeneratorWithCaching annotation.
+   */
+  getPkgPathsWithCacheGeneratedAnnotation: function (): [string] js-server
+
+  /**
+   * Given a pkgPath, generates a fingerprint for the source code at that path.
+   *
+   * @param pkgPath
+   *           The path to the metadata file
+   * @returns The fingerprint of the source code at the given path
+   */
+  generateFingerprintForSourceAtPkgPath: function (pkgPath: string): string js-server
+
+  /**
+   * Generates the entire manifest for all types that have the @codeGeneratorWithCaching annotation.
+   * @returns A map of the package path to the fingerprint of the source code at that path
+   */
+  generateManifestForSourceWithCachingAnnotation: function (): map<string, string> js-server
+
+  /**
+   * Compares the existing manifest in the working directory against the current server side state of the
+   * uiInfrastructure files.
+   * If there is no existing manifest (fresh working directory), the manifest is generated and returned.
+   * If there is an existing manifest, and the server side state has changed, the manifest is updated, the code generated
+   * files cache is cleared, and the new manifest is returned.
+   * If there is an existing manifest, and the server side state has not changed, the function returns null.
+   *
+   * @param existingManifest
+   *          The existing manifest in the working directory
+   * @returns The new manifest if the server side state has changed, null otherwise.
+   */
+  checkCachingTypesManifest: function (existingManifest: json): json js-server
+
+  /**
+   * Gets the override options of {@link BundlerOptionsUserOverrideConfig}.
+   */
+  getUserOverrideConfig: function(): BundlerOptions js-server
+
+  /**
+   * Finds instances of custom components that import other custom components through @c3/ui/** import and
+   * generates metadata warnings to instruct developers to use the @c3/app/ui/src/** path instead.
+   */
+  checkCustomComponentMetadataWarningsBatch: function(inputs: json) js-server
+
+  /**
+   * Partitions all UI component metadata by the given partition key.
+   *
+   * @param partitionBy
+   *           The attribute to use as a partition key.
+   * @param deep
+   *           Whether each partition should include transitive dependencies,
+   *           i.e. components that are grandchildren, great-grandchildren, etc.
+   */
+  partitionUiMetadata: function(partitionBy: string enum('PAGE', 'COMPONENT') = 'COMPONENT',
+                                deep: boolean = false): map<string, map<string, json>> js-server
+}

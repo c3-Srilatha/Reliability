@@ -1,0 +1,161 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Py mixes ImplLanguage, ImplLanguageMethodStubs, NativeCompat {
+
+  toArray:         ~ py
+  toArrayOfAny:    ~ py
+  toArrayOfDbl:    ~ py
+  toArrayOfInt:    ~ py
+  toArrayOfStr:    ~ py
+  toMap:           ~ py
+  toMapOfAny:      ~ py
+  toMapOfStrToAny: ~ py
+  toMapOfStrToDbl: ~ py
+  toMapOfStrToInt: ~ py
+  toMapOfStrToStr: ~ py
+  toObj:           ~ py
+  toSet:           ~ py
+  toSetOfDbl:      ~ py
+  toSetOfInt:      ~ py
+  toSetOfStr:      ~ py
+  toStream:        ~ py
+  toStreamOfAny:   ~ py
+  toStreamOfDbl:   ~ py
+  toStreamOfInt:   ~ py
+  toStreamOfStr:   ~ py
+  toValue:         ~ py
+
+  /**
+   * Private function to profile a python action/lambda and dump profile results to a local file
+   *
+   * @param name
+   *        name of the action or test, used as the profile result file name
+   * @param lambda
+   *        the lambda to be profiled
+   * @param count
+   *        profile the action for this many times
+   * @return the (last if running multiple times) return value of the action
+   *
+   * @see PythonTesting.c3doc
+   */
+  profilePyAction: private inline function(name: !string, lambda: !lambda(), count: !int = 1): native py
+
+  /**
+   * Allows py4j interpreters to persist beyond the action for which they were created to avoid process startup
+   * overhead on subsequent calls that use the same interpreter.
+   *
+   * By default, persistent py4j interpreters are disabled.
+   *
+   * @see #disablePersistentPy4jInterpreters
+   */
+  @deprecated(finalVersion='8.10',
+              details='Replaced by py4j interpreter pooling, see {@link App.NodePool.Config#pyInterpreterPool}.')
+  enablePersistentPy4jInterpreters: private function()
+
+  /**
+   * Prevents py4j interpreters from persisting beyond the action for which they were created.
+   * This API does not close existing py4j interpreters. To do so, use #closeAllPy4jInterpreters.
+   *
+   * By default, persistent py4j interpreters are disabled.
+   *
+   * @see #enablePersistentPy4jInterpreters
+   */
+  @deprecated(finalVersion='8.10',
+              details='Replaced by py4j interpreter pooling, see {@link App.NodePool.Config#pyInterpreterPool}.')
+  disablePersistentPy4jInterpreters: private function()
+
+  /**
+   * Closes all open Py4j interpreters.
+   */
+  closeAllPy4jInterpreters: private function()
+
+  /**
+   * Invalidates all Jep interpreters. Due to the thread-access pattern for jep, this will not synchronously close
+   * all Jep interpreters, but rather ensure that the next time that interpreter would be used by its corresponding
+   * Java worker thread, the Jep thread is closed and reopened.
+   */
+  invalidateAllJepInterpreters: private function()
+
+  /**
+   * Initializes a Python interpreter in the current Java thread for the given {@link Action.Engine}. This means
+   * starting the Python interpreter, bootstrapping the Python SDK, and respecting any initialization semantics of
+   * {@link App.Node.ThreadPool.Config.Py}. If the Python interpreter is already initialized for the current thread,
+   * this method will do nothing. This function only applies to {@link ImplLanguage.RuntimeLocation#SERVER server}
+   * action engines.
+   *
+   * Note: If the provided action engine has the {ImplLanguage.Executor#PY4J py4j} executor and its Py4j interpreter
+   * is not persisted, invoking this method will not be meaningful (as the initialized interpreter will not be
+   * persisted).
+   */
+  startInterpreter: private function(engine: !string serialized Action.Engine)
+
+  /**
+   * Implements respecting Python config semantics which must occur when a Java thread starts
+   */
+  onJavaThreadStart: private function(config: App.Node.ThreadPool.Config.Py)
+
+  /**
+   * Evaluate a Python expression (using `py-jep`) and return the result. This only works for _expressions_;
+   * to call a declared Python function, use #call.
+   *
+   * @param expr Python expression
+   * @return expression result value
+   */
+  eval: function(expr: !string): any py-jep
+
+  /**
+   * Execute a block of Python code (using `py-jep`). Like Python's built-in `exec`, this does not return a value,
+   * so is only useful for its side-effects. To call a declared Python function, use #call.
+   *
+   * @param code the source code containing the function declaration
+   */
+  exec: function(code: !string): any py-jep
+
+  /**
+   * Call a declared Python function (using `py-jep`) and return the result. If `args` is an array, the values are
+   * called as positional arguments. If a map, as keyword arguments.
+   *
+   * @param code the source code containing the function declaration
+   * @param fn the function name to call
+   * @param args arguments passed to the function
+   * @return function return value
+   */
+  call: function(code: !string, fn: !string, args: [any] | map<string, any>): any py-jep
+
+  /**
+   * Upsert the pandas dataframe into database such that each row corresponds to a single instance of the provided
+   * **serType**. Please note that {@link Persistable.createBatch} will be used to create the instances in the db if
+   * UpsertSpec#createDirect option is provided.
+   */
+  @beta
+  upsert_pandas_to_db: function(pandas: !native, serType: !Type<<Persistable>>, batchSize: int, spec: UpsertSpec) py
+
+  /**
+   * Upsert the local arrow file into database such that each row corresponds to a single instance of the provided
+   * **serType**. Please note that {@link Persistable.createBatch} will be used to create the instances in the db if
+   * UpsertSpec#createDirect option is provided.
+   */
+  @beta
+  upsertLocalArrowToDb: private function(metadata: !Feature.Store.WriteMetadata,
+                                         serType: !Type<<Persistable>>,
+                                         batchSize: int,
+                                         spec: UpsertSpec)
+
+  /**
+   * @return profiler for profiling server side python calls
+   *
+   * @see #Py.Profiler#start
+   */
+  profiler: member function(): !Py.Profiler
+
+  /**
+   * Returns py4j interpreter's current pool size if interpreter pooling is enabled.
+   */
+  py4jInterpreterPoolSize: private function(): int
+}

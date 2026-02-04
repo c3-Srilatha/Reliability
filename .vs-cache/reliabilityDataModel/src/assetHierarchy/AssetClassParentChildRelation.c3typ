@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a many to many parent child relation between two {@link AssetClass}es.
+ * More specifically, the `parent` asset class is recommended to contain or be a parent of
+ * an asset with `child` asset class.
+ *
+ * Practically, this relation is used to recommend adding certain types (encoded by {@link AssetClass}) of
+ * {@link ReliabilityAsset} under other {@link ReliabilityAsset}s. For example, an Car asset should contain a
+ * Engine asset, so a relation with parent = Car and child = Engine is created.
+ */
+entity type AssetClassParentChildRelation mixes ExemptFromFacilityFilter {
+  /**
+   * The {@link AssetClass} of the asset that is recommended to contain or be a parent of an asset with {@link AssetClass}
+   * equal to {@link AssetClassParentChildRelation#child}.
+   */
+  parent: !AssetClass
+
+  /**
+   * The {@link AssetClass} of the asset that is recommended to be contained by or be a child of
+   * an asset with {@link AssetClass} equal to {@link AssetClassParentChildRelation#parent}.
+   */
+  child: !AssetClass
+}

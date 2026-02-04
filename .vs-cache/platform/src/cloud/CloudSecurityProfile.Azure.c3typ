@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This config is the mapping between the azure cloud identity and the k8s service account for enabling workload identity
+ * This config controls the k8s serviceAccount tied to the apps based on the
+ * cloudCluster hierarchy the config is present.
+ */
+type CloudSecurityProfile.Azure mixes CloudSecurityProfile {
+
+  getManualSteps: ~
+
+  /**
+   * User provided name of the associated Azure Managed Identity
+   */
+  managedIdentityName: string
+
+  /**
+   * System generated client-id for the associated Azure Managed Identity
+   */
+  managedIdentityClientId: string
+
+  /**
+   * Name of the Azure resource group of the associated Azure Managed Identity
+   */
+  resourceGroup: string
+
+  /**
+   * The OpenID Connect (OIDC) Issuer URL of your AKS cluster that authenticates the kubernetes tokens.
+   * You can retrieve this information via 'az aks show --name "CLUSTER_NAME" --resource-group "RESOURCE_GROUP" --query "oidcIssuerProfile.issuerUrl" --output tsv'.
+   */
+  aksOidcIssuerUrl: string
+
+  /**
+   * Name of the federated identity credential between the Azure Managed Identity, the Kubernetes Service Account issuer, and the Kubernetes Service Account.
+   */
+  federatedIdentityCredentialName: string
+}

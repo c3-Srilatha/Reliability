@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+remix type UiApTimeseriesChartEventDataset {
+  /**
+   * Creates a map of event type to dataset from the given timed data query result.
+   *
+   * @param timedDataQueryResult
+   *           The result of a {@link ReliabilityTimedDataQuery#execute} call.
+   * @return A map where keys are event types and values are ReliabilityTimeseriesChartEventDataset objects
+   */
+  createMap: inline function (
+    /**
+     * The result of a {@link ReliabilityTimedDataQuery#execute} call.
+     */
+    timedDataQueryResult: map<string, any>
+  ): map<string, UiApTimeseriesChartEventDataset> js-rhino
+
+
+  /**
+   * Used to specify which fields to include when querying event data.
+   *
+   * @returns a map where keys are event types and values are comma-separated field names
+   */
+  getIncludeStringMap: inline function(): map<string serialized Type, string> js-rhino
+
+  /**
+   * A map of event type to label. Update this field to add new event types.
+   * Used to populate the {@link #label} field.
+   */
+  eventLabels: const map<string serialized Type, string> = {
+    "ReliabilityAssetEvent": "Reliability.Event",
+    "ReliabilityAssetAlert": "Reliability.Alert",
+    "WorkOrder": "Reliability.WorkOrder"
+  }
+
+  /**
+   * A map of event type to field labels. The field labels are stored as an array of pairs,
+   * to preserve the order of the labels. Update this field to add new event types.
+   * Used to populate the {@link #fieldLabels} field.
+   */
+  eventFieldLabels: const json = {
+    "ReliabilityAssetEvent": [
+      ["name", "Reliability.Name"],
+      ["parent.name", "Reliability.Asset"],
+      ["eventStartDatetime", "Reliability.EventStartTime"],
+      ["eventEndDatetime", "Reliability.EventEndTime"]
+    ],
+    "ReliabilityAssetAlert": [
+      ["name", "Reliability.Name"],
+      ["parent.name", "Reliability.Asset"],
+      ["triggeringModel.name", "Reliability.ModelName"],
+      ["currentState.name", "Reliability.Status"]
+    ],
+    "WorkOrder": [
+      ["name", "Reliability.Name"],
+      ["parent.name", "Reliability.Asset"],
+      ["displayStatus", "Reliability.Status"],
+      ["workDueDate", "Reliability.DueDate"]
+    ]
+  }
+}

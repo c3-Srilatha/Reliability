@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+private type Py.ResolvedLibrary mixes ImplLanguage.LibraryBase {
+
+  /**
+   * The full name of the package tarball along with the file extension.
+   * The file extension can be .conda or .tar.bz2.
+   * Conda package naming convention is explained {@link https://docs.conda.io/projects/conda-build/en/stable/concepts/package-naming-conv.html here}.
+   */
+  packageFileName: string
+
+  /**
+   * The conda channel we will use to download the package while installing a runtime
+   */
+  channel: Py.ResolvedLibrary.Channel
+
+  url: member function(useConfig: boolean,
+                       useAppInternalUrl: boolean,
+                       authToken: map<string enum SystemUser, string>): Url
+
+  /**
+   * It takes a full url to download and install a conda package as input and constructs an instance of
+   * {@link Py.ResolvedLibrary}.
+   */
+  fromUrl: cached function(url: string serialized Url): Py.ResolvedLibrary
+
+  /**
+   * Creates an instance of {@link ImplLanguage.Library} from this current instance of {@link Py.ResolvedLibrary}.
+   */
+  library: private member function(): ImplLanguage.Library
+
+  isLocalPackage: ~
+}

@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Vertex in an {@link Data.Flow} which represents an action that returns a {@link Data} or {@link Data.Series}.
+ * This vertex will not have any parents and is used for a minimal representation of Data.Flow used for execution. Only
+ * produced when {@link DataToFlowSpec#useCachedData} is true.
+ */
+@beta
+private type Data.Flow.Cached mixes Data.Flow.Vertex {
+
+  /**
+   * Cached data represented by this vertex.
+   */
+  data: !DataImpl
+
+  /**
+   * Creates new {@link Data.Flow.Cached} vertex from provided {@link DataImpl}. If provided DataImpl is concrete,
+   * creates "constant" node using concrete value. If provided DataImpl is lazy, calls {@link DataImpl.Lazy#cache} and
+   * creates "constant" node from resulting concrete value.
+   */
+  fromData: ~
+}

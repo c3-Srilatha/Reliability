@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * MapReduce job to process create snapshot in a distributed mode. If feature metastore is used, the snapshot data is created and stored as feature store blocks,
+ * otherwise, the snapshot data is created and stored as KvRows in the KvStore.
+ */
+entity type Feature.Set.CreateSnapshotJob extends MapReduce<FeatureEvaluatable, string, Boxed<[string]>, void>
+                                          mixes FeatureEvaluatable.Bin.JobBase, Feature.Set.CreateSnapshotOptions
+                                          type key 'FSSJ' {
+
+  /**
+   * A flag to set when we know that we only need to copyRows and don't need to evaluate data at runtime for creating the snapshot.
+   */
+  _shouldCopyMaterializedData: private boolean
+
+  /**
+   * Create a MapReduce job to create a snapshot based on the provide feature set instance and CreateSnapshotSpec. Users can provide more options
+   * defined in {@link MapReduceOptions} and then start the job.
+   * Please note that if you are planning to use this function to create your Feature.Set.CreateSnapshotJob instance, then please remember to use
+   * {@link Feature.Set#createSnapshotHeader} before starting the job as that will ensure that appropriate {@link Feature.Set.Snapshot} is created or an error will be thrown
+   * if the an existing snapshot exists with the same {@link Feature.Set.Snapshot#snapshotId snapshotId}.
+   */
+  fromFsAndSpec: function(fs: !Feature.Set, spec: !CreateSnapshotSpec): Feature.Set.CreateSnapshotJob
+
+  snapshot: cached property(): !Feature.Set.Snapshot
+  map:      ~
+
+  /**
+   * Overridden to increasing the probability of subjects belonging to the same bin ending up in the same map task / batch.
+   * Simply uses {@link MapReduce#scanTargetType} to get the original stream and then, uses the {@link FeatureBase#latestStrategy} to identify the bins and then, co-locating the ids. This will ensure that when batches are cut from the **stream**, the ids
+   * belonging to the same bin are most likely to end up in the same batch.
+   */
+  scanTargetType: ~
+
+  /**
+   * Overridden to marking the {@link Feature.Set.Snapshot#latestStrategy} as "operationally ready" once the data has been written to the new blocks
+   */
+  completed: ~
+}

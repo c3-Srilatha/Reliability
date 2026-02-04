@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config for {@link Genai.Agent.Tool.UnstructuredDataQuery}
+ */
+type Genai.Agent.Tool.UnstructuredDataQuery.Config mixes DefaultInstance, Identified, Config, Genai.Agent.Tool.ConfigBase,
+     Genai.Agent.Tool.DataRetriever.ConfigBase, Genai.Agent.Tool.FunctionCalling.Config, Genai.ParentConfig {
+
+  /**
+   * If set to true then the time information will be extracted from the query and search results will be filtered on #dateFieldToFilter
+   */
+  extractTimeInfoFromQuery: boolean
+
+  /**
+   * {@link Genai.SourceFile.Metadata} field to filter on when #extractTimeInfoFromQuery is set to true
+   */
+  dateFieldToFilter: string
+
+  /**
+   * The name of the {@link Genai.UnstructuredQuery.Engine.Config} that this tool should use.
+   * If not set, then the default pipeline config will be used.
+   */
+  configName: string
+
+  /**
+   * The name of the {@link Genai.UnstructuredQuery.Engine.REA.PipelineConfig} that this tool should use.
+   * If not set, then the default pipeline config will be used.
+   */
+  @deprecated(finalVersion='6.0', details='Use configName for Genai.UnstructuredQuery.Engine.Config instead.')
+  pipelineConfigName: string
+
+  inst: ~ js
+
+  childConfigFields: ~ js
+}

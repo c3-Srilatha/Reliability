@@ -1,0 +1,128 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the specification for an end-to-end automated model retraining workflow across multiple {@link ReliabilityMl.Project}s.
+ *
+ * This specification enables orchestration of a multi-stage retraining pipeline, including:
+ * - Selection of champion models from each project using custom {@link ReliabilityMl.Project#filterModelsForAutoRetrainingLambda} lambdas.
+ * - Configuration and execution of {@link ReliabilityOrchestrator.AutomatedRetrainingJob} runs for the selected {@link ReliabilityMlModel}s.
+ * - Deployment of retrained models and updates to {@link ReliabilityAssetToModelRelation} with the retraining job ID.
+ * - Launching of {@link ReliabilityOrchestrator.PostTrainingJob} instances to evaluate retrained models and generate reports.
+ *
+ * Enables full automation and traceability for the retraining lifecycle, including model selection, retraining, deployment, and post-training evaluation.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type ReliabilityOrchestrator.AutomatedRetrainingWorkflowSpec {
+
+  /**
+   * List of {@link ReliabilityMl.Project}s for which the workflow should be created.
+   */
+  projects: [ReliabilityMl.Project]
+
+  /**
+   * Configuration {@link ReliabilityOrchestrator.JobOptions} for executing the retraining workflow, such as concurrency limits and timeouts.
+   */
+  automatedRetrainingJobOptions: ReliabilityOrchestrator.JobOptions
+
+  /**
+   * Configuration {@link ReliabilityOrchestrator.JobOptions} for executing post-training, such as concurrency limits and timeouts.
+   */
+  postTrainingJobOptions: ReliabilityOrchestrator.JobOptions
+
+  /**
+   * Specify whether to classify the model after it is trained. By default this
+   * field is set to False, meaning the model will be classified.
+   */
+  doNotClassify: boolean = false
+
+  /**
+   * Specify whether to validate the model after it is trained. By default this
+   * field is set to True, meaning the model will not be validated.
+   */
+  doNotValidate: boolean = true
+
+  /**
+   * Specify whether to generate model validation reports for the model after it is trained.
+   * By default this field is set to False, meaning that a model report will be generated.
+   */
+  doNotGenerateValidationReports: boolean = false
+
+  /**
+   * Starts a new {@link ReliabilityOrchestrator.AutomatedRetrainingJob} using the provided job ID and job specifications.
+   * This function creates and persists the job, then triggers its execution with the desired options.
+   *
+   * @param jobId
+   *        Unique identifier for the {@link ReliabilityOrchestrator.AutomatedRetrainingJob} instance.
+   * @param jobSpecs
+   *        Array of {@link ReliabilityOrchestrator.AutomatedRetrainingJobSpec}, each defining which models and projects to retrain.
+   * @param options
+   *        Optional {@link ReliabilityOrchestrator.JobOptions} for controlling job execution parameters such as concurrency and timeouts.
+   * @return The {@link MlOperationRun} run object for tracking the job’s execution and completion state.
+   */
+  startAutomatedRetrainingJob: function(
+    jobId: string,
+    jobSpecs: [ReliabilityOrchestrator.AutomatedRetrainingJobSpec],
+    options: ReliabilityOrchestrator.JobOptions
+  ): MlOperationRun py
+
+  /**
+   * Starts a new {@link ReliabilityOrchestrator.PostTrainingJob} for the given list of projects and retraining job ID.
+   * This function generates post-training job specifications, tying each to the provided retraining job, and
+   * launches a post-training job to evaluate retrained models and generate reports.
+   *
+   * @param projects
+   *        List of {@link ReliabilityMl.Project} to include in the post-training evaluation.
+   * @param automatedRetrainingJobId
+   *        The ID of the {@link ReliabilityOrchestrator.AutomatedRetrainingJob} whose results are to be evaluated.
+   * @param options
+   *        Optional {@link ReliabilityOrchestrator.JobOptions} for controlling job execution parameters such as concurrency and timeouts.
+   * @param doNotClassify
+   *        Specify whether to skip model classification after retraining. Default is false (model will be classified).
+   * @param doNotValidate
+   *        Specify whether to skip model validation after retraining. Default is true (model will not be validated).
+   * @param doNotGenerateValidationReports
+   *        Specify whether to skip generation of model validation reports. Default is false (report will be generated).
+   * @return The {@link MlOperationRun} run object for tracking the post-training job’s execution state.
+   */
+  startPostTrainingJob: function(
+    projects: [ReliabilityMl.Project],
+    automatedRetrainingJobId: string,
+    options: ReliabilityOrchestrator.JobOptions,
+    doNotClassify: boolean,
+    doNotValidate: boolean,
+    doNotGenerateValidationReports: boolean
+  ): MlOperationRun py
+
+  /**
+   * Member function to create the automated retraining workflow.
+   * @return {@link Workflow} instance representing the created workflow.
+   */
+  createWorkflow: member function(): Workflow py
+
+  /**
+   * Member function to create and start the workflow
+   * @return {@link Workflow.Run} instance representing the started workflow.
+   */
+  startWorkflow: member function(): Workflow.Run py
+
+  /**
+   * Fetches all {@link ReliabilityMl.Project} instances where `enableAutomaticRetraining` is set to true,
+   * and starts the automated retraining workflow for these projects using {@link CronJob}.
+   * @return {@link Workflow.Run} The workflow run instance that was started.
+   */
+  startAutomatedRetrainingCronJob: function(): Workflow.Run py
+
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

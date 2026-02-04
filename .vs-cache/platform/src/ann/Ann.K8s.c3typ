@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@annotation(appliesTo=['type'])
+type Ann.K8s mixes Annotation {
+
+  /**
+   * Kubernetes API server url prefix, example: /api (default) or /apis
+   * @see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22
+   */
+  apiPrefix: string
+
+  /**
+   * The resource kind identifier used to construct the endpoint for
+   * K8sApiServer API calls for a given K8s resource
+   * @see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22
+   */
+  nativeKind: string
+
+  /**
+   * The plural form of the resource kind identifier used to construct the endpoint for
+   * K8sApiServer API calls for a given K8s resource
+   * @see https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.22
+   */
+  nativeKindPlural: string
+
+  /**
+   * Specific type of cloud service ex: jupyterhub, selenium
+   */
+  cloudServiceKind: string
+
+  /**
+   * Endpoint for cloud service ex: jupyter, selenium
+   */
+  cloudServiceEndpoint: string
+
+  /**
+   * Field value type of template for K8s resources
+   */
+  templateFieldTypes: map<string, string serialized ValueType>
+
+  /**
+   * Fields in json that are arrays
+   */
+  templateArrayFields: map<string, string>
+
+  /**
+   * The resource can not be updated
+   */
+  immutable: boolean
+
+  /**
+   * Indicates whether this resource is a "Workload Resource", ie, brings up pods when created
+   * @see https://kubernetes.io/docs/concepts/workloads/controllers/
+   */
+  workloadResource: boolean
+
+  /**
+   * Indicates whether this resource is a "CustomResourceDefinition"
+   */
+  crd: boolean
+
+  /**
+   * Indicates whether this resource uses the operator pattern
+   * @see https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+   */
+  operator: boolean
+}

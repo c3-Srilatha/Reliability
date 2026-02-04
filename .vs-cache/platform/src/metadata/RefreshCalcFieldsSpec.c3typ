@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for the {@link Persistable#refreshCalcFields} function.
+ */
+type RefreshCalcFieldsSpec mixes RefreshSpec {
+
+  /**
+   * If specified, the list of calc fields to refresh.  If empty, all calc fields for the
+   * type will be refreshed.
+   */
+  calcFieldsToRefresh: [string]
+
+  /**
+   * If true and {@link calcFieldsToRefresh} is not specified, then only calc fields that
+   * were defined in the type itself (e.g. not in its base type) will be refreshed.  If
+   * calcFieldsToRefresh is specified, this is ignored.
+   */
+  excludeBaseTypeFields: boolean
+
+  /**
+   * If true, then the calc fields will be cleared instead of recomputed.  This is only
+   * useful for testing and should not be used otherwise.
+   */
+  clearFields: boolean = false
+
+  /**
+   * If true and certain data related issues (e.g. arry/mapp overflow) will not cause the request to fail.  Instead
+   * the issues will be added to the {@link CalcFieldIssue} type for further review and reprocessing after the issue is resolved.
+   */
+  allowDataIssues: boolean
+}

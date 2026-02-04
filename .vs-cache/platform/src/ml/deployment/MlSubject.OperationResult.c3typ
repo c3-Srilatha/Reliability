@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Process result for a {@link MlSubject}. Since multiple {@link MlModel} can be simultaneously deployed on the
+ * same subject, this type gathers the different outputs (and potential errors) for further handling.
+ *
+ * @see MlSubject.ProcessResult
+ * @see MlSubject.InterpretResult
+ * @see MlModel
+ * @see MlSubject
+ * @see MlSubject#process
+ * @see MlSubject#interpret
+ */
+type MlSubject.OperationResult<OT> mixes Result {
+
+  /**
+   * @return the models used during the process, i.e. the active models deployed on the subject.
+   */
+  models: member function(): [MlModel]
+
+  /**
+   * The outputs for each model. The keys are the {@link MlModel model} IDs.
+   */
+  outputs: map<string, [OT]>
+
+  /**
+   * The potential errors raised during the prediction (the keys are the models' ids).
+   */
+  errors: map<string, [Error]>
+}

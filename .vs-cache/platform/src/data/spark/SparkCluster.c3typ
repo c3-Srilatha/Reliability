@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+type SparkCluster mixes CloudService<SparkCluster.Config>, Named, DefaultInstance {
+
+  inst:          ~
+  ensureService: ~
+  stop:          ~
+  terminate:     ~
+  status:        ~
+  list:          ~
+  listForApp:    ~
+  config:        ~
+  configKey:     ~
+
+  /**
+   * The name of the default instance.
+   */
+  DEFAULT_NAME: const string = "dflt"
+
+  /**
+   * Retrieve SparkCluster by its name.
+   */
+  forName: ~
+
+  /**
+   * Stop SparkCluster whose {@link SparkCluster#idleTimeMillis} is greater than the defined threshold {@link SparkClusterSpec#idleTimeoutMinutes}
+   */
+  stopIdleCluster: function()
+
+  /**
+   * Link the config to a new ExMachina instance if exmId is not set.
+   * Set the corresponding ExMachina_Config with the current SparkCluster.Config.
+   */
+  sync: private member function(): SparkCluster.Config
+
+  /**
+   * Unique identifier of this SparkCluster. Used for displaying metrics in Grafana (Spark Monitoring dashboard).
+   */
+  serviceId: member function(): string
+
+  /**
+   * Return the time the service reports since the last authorized request was processed.
+   */
+  idleTimeMillis: member function(): int
+
+  /**
+   * Check if Spark pods are ready.
+   * @return true if Spark pods are ready to take requests, false otherwise
+   */
+  isReady: member function(): boolean
+
+  /**
+   * Start the Spark cluster with the provided name and spec
+   */
+  @deprecated(finalVersion="8.10",
+              details="Use {@link SparkCluster.Config#setConfig} and {@link SparkCluster#forName} instead")
+  create: private function(spec: SparkClusterSpec): SparkCluster
+
+  /**
+   * create a local Spark Service, for local development only
+   */
+  createLocal: private function(url: string): SparkCluster
+
+  /**
+   * Pointing to the local Spark cluster, for local development only
+   */
+  apiURL: private string
+
+  @deprecated(finalVersion="8.10", details="Use {@link SparkCluster#dataSparkSession} instead")
+  getDataSparkSession: member function(): Data.SparkSession
+
+  /**
+   * Get {@link Data.SparkSession} that points to this Spark Cluster. This is the entry point for using {@link Data.Spark}
+   */
+  dataSparkSession: member function(): Data.SparkSession
+
+  /**
+   * URL for accessing Spark cluster via Spark connect, consumed by {@link SparkCluster#getSparkConnectSession}
+   * See SparkCluster.py.c3typ
+   */
+  sparkConnectUrl: member function(): string serialized Url
+}

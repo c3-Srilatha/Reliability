@@ -1,0 +1,149 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link MapReduce} that computes {@link FeatureEvaluatable#rollupMetrics} for any type.
+ * The T parameter is the type where the rollup metrics are computed on.
+ */
+entity type RollupMetricMapReduceJob<T> extends MapReduce<T, string, RollupMetricMapReduceInterValue, Timeseries<double>> type key 'RMC_MR' {
+
+  /**
+   * The existing cache {@link RollupMetricPersistedResult} to save the results of the map job .
+   */
+  caches: [RollupMetricPersistedResult]
+
+  /**
+   * Can be any of the values valid for {@link RollupMetricSpec#rollupFunc}.
+   */
+  rollupFunc: !string enum('OR', 'AND', 'SUM', 'AVG', 'MIN', 'MAX', 'VARIANCE', 'STDDEV')
+
+  /**
+   * The expressions that will be rolled up in the Job.
+   */
+  metrics: ![!string]
+
+  /**
+   * The filter used to select the objs for the job.
+   */
+  filter: !string
+
+  /**
+   * The {@link RollupMetricSpec#start} to use.
+   */
+  startDate: !datetime
+
+  /**
+   * The {@link RollupMetricSpec#end} to use.
+   */
+  endDate: !datetime
+
+  /**
+   * The {@link RollupMetricSpec#interval} to use.
+   */
+  interval: !string enum Interval
+
+  /**
+   * The {@link RollupMetricSpec#timeZone} to use.
+   */
+  timeZone: string serialized TimeZone
+
+  /**
+   * Computes the rollup sum for the objs provided during the {@link map} phase.
+   * @param spec
+   *    The specification for configuring the rollup sum computation.
+   * @returns
+   *    The {@link Timeseries} resulting from the sum rollupMetric.
+   */
+  rollupSum: function(spec: !RollupSumSpec): Timeseries js-rhino
+
+  /**
+   * Computes the rollup sum of the square of the metric for the objs provided during the {@link map} phase.
+   * @param sourceType
+   *    The type where the rollup metrics run on, varBinding T.
+   * @param ids
+   *    The ids of the objs that are computed in the current {@link map} that calls this func.
+   * @param job
+   *    The instance of {@link RollupMetricMapReduceJob}.
+   * @returns
+   *    The {@link Timeseries} resulting from the sum of squares rollupMetric.
+   */
+  rollupSumOfSquares: private function(sourceType: !string, ids: ![!string], job: !RollupMetricMapReduceJob): Timeseries js-rhino
+
+  /**
+   * Computes the rollup sum the metric for the objs provided during the {@link map} phase,
+   * along with the count (of objs with a value in the respective timestamp) for every timestamp.
+   * @param sourceType
+   *    The type where the rollup metrics run on, varBinding T.
+   * @param ids
+   *    The ids of the objs that are computed in the current {@link map} that calls this func.
+   * @param job
+   *    The instance of {@link RollupMetricMapReduceJob}.
+   * @returns
+   *    A map with the {@link Timeseries} resulting from the sum rollupMetric and the count {@link Timeseries}.
+   */
+  rollupSumWithCount: private function(sourceType: !string, ids: ![!string], job: !RollupMetricMapReduceJob): map<string, Timeseries> js-rhino
+
+  /**
+   * A general aggregation of two {@link Timeseries} for all the aggregation functions that have associativity.
+   * @param metric1
+   *    The first {@link Timeseries} to aggregate.
+   * @param metric2
+   *    The second {@link Timeseries} to aggregate.
+   * @param aggregationFunction
+   *    The {@link RollupMetricSpec#rollupFunc} that will be used to reduce the results form the {@link map} step.
+   */
+  aggregate: private function(metric1: !Timeseries, metric2: !Timeseries, aggregationFunction: !string) js-rhino
+
+
+  /**
+   * A division method for {@link Timeseries} that guards againts division by 0, the value is substituted by 0 in this case.
+   * @param numeratorTs
+   *    The numerator {@link Timeseries}.
+   * @param denominatorTs
+   *    The denominator {@link Timeseries}.
+   * @returns
+   *    The resulting {@link Timeseries} of the division.
+   */
+  safeDivide: private function(numeratorTs: !Timeseries, denominatorTs: !Timeseries): Timeseries js-rhino
+
+  /**
+   * Map step where the rollup metrics are computed for and specific batch
+   * @param batch
+   *    The batch of objs to compute the rollup metrics.
+   * @param objs
+   *    The objects after fetch
+   * @param job
+   *    The instance of {@link RollupMetricMapReduceJob}.
+   * @param subBatch
+   *    The subBatch of objs to compute the rollup metrics.
+   * @returns
+   *    The resulting {@link RollupMetricMapReduceInterValue} of the map.
+   */
+  map: ~ js-rhino
+
+  /**
+   * Reduce step where the rollup metrics are aggregated.
+   * @param outKey
+   *    The key of the reduce.
+   * @param interValues
+   *    The intermediate values to reduce {@link RollupMetricMapReduceInterValue}.
+   * @param job
+   *    The instance of {@link RollupMetricMapReduceJob}.
+   * @returns
+   *   The resulting {@link Timeseries} of the reduce.
+   */
+  reduce: ~ js-rhino
+
+  /**
+   * Completed step where the results are persisted.
+   * @param job
+   *    The instance of {@link RollupMetricMapReduceJob}.
+   */
+  completed: ~ js-rhino
+}

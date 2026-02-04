@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Email, Twitter handle, URL etc associated with a party.
+ *
+ * Business Key: party+type+identifier+usage
+ */
+@db(unique=['communicationIdentifier,communicationType,communicationUsage,party'], index+=['meta.timestamp'])
+entity type PartyElectronicCommunication schema name 'STRUCT_PARTYEC' {
+
+  /**
+   * Allows designation of use for parties with multiple email addresses
+   * i.e. billing email, marketing email, etc
+   */
+  communicationUsage: string enum('billing')
+
+  /**
+   * Designates how to communicate with the party using communicationIdentifier
+   */
+  communicationType: !string enum('email', 'twitter', 'facebook', 'url')
+
+  /**
+   * Email address, twitter handle text used for identification
+   */
+  communicationIdentifier: !string
+
+  /**
+   * Preferred electronic communication for a party
+   * may be used for stored calc to replicate on party or partyRole
+   */
+  isPreferred: boolean
+
+  /**
+   * FK to parent
+   */
+  party: !Party
+
+  name: ~ not persistable
+}

@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized {@link FlowGraph.Vertex} that represents a vertex in a {@link Workflow}.
+ */
+abstract type Workflow.Vertex mixes FlowGraph.Vertex {
+
+  /**
+   * ids of parent vertices in {@Workflow#parent} {@link FlowGraph}. NOTE: there can be multiple in the case
+   * that several vertices in the parent {@link FlowGraph} were merged as part of translation to a single vertex
+   * in the new graph.
+   */
+  parents: [string]
+
+  /**
+   * Timeout for the execution of the vertex. After timeout time has passed the vertex execution fails if not
+   * successfully completed or failed already.
+   */
+  timeout: string serialized Duration
+
+  /**
+   * Visits this {@link Workflow.Vertex} instance using provided {@link Workflow.Visitor}
+   *
+   * @param visitor
+   *        Workflow.Visitor that implements visitation of this Workflow.Vertex instance
+   * @param ctx
+   *        state that is passed along with visitor
+   * @return final state after visiting
+   */
+  visit: member function<C>(type: !?Type<<Workflow.Visitor>>, ctx: !?C): C
+
+  /**
+   * @return whether this vertex requires polling to determine its completion status. See {@link Workflow.Run.Vertex#requiresPolling}
+   *        for additional details.
+   */
+  requiresPolling: member function(): !boolean
+
+  /**
+   * Helper method to create name for the vertex based on the default name and existing name provided.
+   * @param defaultName
+   *        Default name provided by the caller
+   * @param givenName
+   *        current or existing name
+   *
+   * @returns current name if it is not empty or null; otherwise, returns defaultName
+   */
+  nameFromArgs: private function(defaultName: !string, givenName: string): !string
+}

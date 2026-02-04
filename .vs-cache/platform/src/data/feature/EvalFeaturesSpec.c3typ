@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for {@link FeatureEvaluatable#evalFeatures}.
+ *
+ * Used to define different merge specifications for *evalFeatures*, from {@link Feature.MergeDataSpec}.
+ *
+ * e.g: Let's say we have two features, **activePowerAvgFeature** defined on **HOUR** interval and **generatorRotationSpeedAvgFeature** defined on **DAY** interval,
+ * and we want to eval on them.
+ *
+ * We can use interval to define how we want to eval them together
+ * ```python
+ * c3.WindTurbine.evalFeaturesBatch(filter="name=='TURBINE-1'", features=[ 'activePowerAvgFeature', 'generatorRotationSpeedAvgFeature'], start='2018-02-01', end='2018-03-01', interval='HOUR')
+ * ```
+ */
+type EvalFeaturesSpec mixes Feature.MergeDataSpec, EvalFeatureSpec {
+
+  // TBD: How to hide the projection field from the EvalFeaturesSpec
+  projection: ~
+}

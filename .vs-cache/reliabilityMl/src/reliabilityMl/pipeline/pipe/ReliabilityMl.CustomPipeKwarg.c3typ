@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Every python class backing a {@link ReliabilityMl.CustomPipe} will have
+ * an `__init__` function with named arguments. This Type contains the metadata
+ * for one keyword argument to the `__init__` function.
+ */
+type ReliabilityMl.CustomPipeKwarg {
+
+  /**
+   * The name of the function argument.
+   */
+  name: !string
+
+  /**
+   * The data type of the argument. Examples are:
+   * `int`, `string`, `double`, `map<string, double>`.
+   */
+  dataType: !ValueType
+
+  /**
+   * The data type of the argument as it should be displayed in the UI.
+   * If not provided, the displayed data type is inferred from
+   * the `dataType` field. If the data type cannot be resolved, the
+   * default value is `Any`.
+   */
+  dataTypeDisplay: string
+
+  /**
+   * The value passed to this argumenet for instantiation
+   * of the native class instance.
+   */
+  value: any
+
+  /**
+   * A description to help explain what this argument is
+   * and what it does.
+   */
+  description: string
+
+  /**
+   * Is this an important hyperparameter that greatly influences
+   * the behavior of the python class?
+   */
+  isKey: boolean = false
+
+  /**
+   * Can this parameter be changed without having to retrain
+   * the model? An example is "alert threshold". If there is a model
+   * that raises an alert based on a value exceeding a threshold,
+   * once set to a new value, the new model may run
+   * inference without requiring retraining.
+   */
+  isForInferenceOnly: boolean = false
+
+  /**
+   * If specified, this argument will display these options in a dropdown menu in the UI,
+   * preventing the user from entering custom values.
+   */
+  options: [string | int | double]
+}

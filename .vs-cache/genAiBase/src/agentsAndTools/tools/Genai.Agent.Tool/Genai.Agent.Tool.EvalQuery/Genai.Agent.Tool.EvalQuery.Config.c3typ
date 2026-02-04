@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config for {@link Genai.Agent.Tool.EvalQuery}
+ */
+type Genai.Agent.Tool.EvalQuery.Config mixes DefaultInstance, Identified, Config, Genai.Agent.Tool.ConfigBase, Genai.Agent.Tool.DataRetriever.ConfigBase {
+  /**
+   * Whether the {@link Genai.Agent.Tool.EvalQuery}'s modules should be initialized.
+   */
+  doNotInitialize: boolean
+
+  /**
+   * The data model graph that the tool should use
+   */
+  dataModelGraph: !Genai.StructuredData.DataModelGraph
+
+  /**
+   * Spec containing the relevant arguments for the eval spec generation mode.
+   */
+  specGenerationModelSpec: !Genai.Agent.Tool.Util.EvalQuery.SpecGenerationModel.Spec
+
+  /**
+   * Spec to instantiate the {@link Genai.Agent.Tool.Util.TableAnsweringModel}.
+   */
+  tableAnsweringModelSpec: !Genai.Agent.Tool.Util.TableAnsweringModel.Spec
+
+  /**
+   * Spec to instantiate the {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor}.
+   */
+  specProcessorSpec: Genai.Agent.Tool.Util.EvalQuery.SpecProcessor.Spec
+
+  /**
+   * Spec to instantiate the {@link Genai.Agent.Tool.Util.StringFuzzyMatcher}.
+   * If not set on the config, then fuzzy matching will not be applied.
+   *
+   * NOTE: the `dataModelGraph` set on the spec will be ignored in favor of the `dataModelGraph` set on this config since
+   * they must be consistent.
+   */
+  fuzzyMatcherSpec: Genai.Agent.Tool.Util.StringFuzzyMatcher.InitializationSpec
+
+  /**
+   * In-place modification of this config's #dataModelGraph.
+   * @param whiteListedDataModel
+   *           The data model to update the graph with.
+   * @return The updated data model graph.
+   */
+  updateDataModelGraph: member function(whiteListedDataModel: json): !Genai.StructuredData.DataModelGraph py
+
+  inst: ~ js-rhino
+}

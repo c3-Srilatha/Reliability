@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that identifies the state of the hosting operating system and run commands.
+ */
+type Os mixes DefaultInstance<Os> {
+
+  /**
+   * @return the name of the current OS
+   */
+  name: inline member function(): !string
+
+  /**
+   * @return if the Os is mac.
+   */
+  isMac: inline member function(): !boolean
+
+  /**
+   * @return if the Os is Linux
+   */
+  isLinux: inline member function(): !boolean
+
+  /**
+   * @return all the metrics with evaluated values for the Os.
+   */
+  allMetrics: inline member function(): map<string, double>
+
+  /**
+   * @return a metric evaluated for a given name for the Os.
+   */
+  metric: inline member function(metricName: !string enum OsMetrics): double
+
+  /**
+   * @return all the metric names for the Os.
+   */
+  metricNames: inline member function(): [string]
+
+  /**
+   * Executes predefined os command with arguments passing input in stdin and
+   * returning stdout as string. The arguments are passed in as Array of string
+   * to help preserve the spaces in the arguments.
+   */
+  @action(group+='cluster-admin')
+  commandWithArgs: function(command: string, args: [string], input: string): string
+
+  /**
+   * Returns and env var that appropriately sets LD_LIBRARY_PATH to the folder containing nvidia drivers
+   * (if they exist on the system). Currently, this only returns a path on either GKE or when the drivers are already
+   * in the system LD_LIBRARY_PATH.
+   *
+   * i.e.
+   *   * If the libs exist, "LD_LIBRARY_PATH=/usr/local/nvidia/lib64"
+   *   * If not, null
+   */
+  nvidiaDriversEnvVar: private inline member function(): string
+}

@@ -1,0 +1,148 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents an ECMA Script package.
+ *
+ * Use this to define a package that can be built and bundled for testing purposes.
+ */
+
+@restful(endpoint='packages')
+type Es.Package mixes Metadata, Identified, Configurable<Es.Package.Config> {
+
+  /**
+   * The runtime environment for the package.
+   */
+  runtime: !string enum ("bun","node") = "node"
+
+  /**
+   * The ES package's path in the repository, relative to the C3 package resource folder.
+   * If the package is part of a monorepo, this should be the path to the monorepo.
+   * Leave empty if the package is in the root resource folder
+   * See {@link Es#Package#workspaceName} to specify which package in the monorepo to use.
+   */
+  resourcePath: !string = "resource"
+
+  /**
+   * The name of the package in the monorepo to use. Should match what is specified in
+   * the package.json `workspaces` field. Will be used with `-w` on commands.
+   */
+  workspaceName: string
+
+  /**
+   * The package build script name as defined in the package.json file.
+   */
+  buildScript: string = "build"
+
+  /**
+   * A package script name that's needed to run before running tests as defined in the package.json file.
+   */
+  setupScript: string
+
+  /**
+   * A package script name that's needed to run after running tests to clean up the environment as defined in the package.json file.
+   */
+  cleanupScript: string
+
+  /**
+   * The package bundle script name as defined in the package.json file.
+   */
+  bundlerScript: string = "bundle"
+
+  /**
+   * The package test script name as defined in the package.json file.
+   */
+  testScript: string = "test"
+
+  /**
+   * The package test script name with coverage as defined in the package.json file.
+   */
+  coverageScript: string = "test:coverage"
+
+  /**
+   * The path to the test report file inside the ES package.
+   */
+  testReportPaths: [string] = ["vitest-report.json"]
+
+  /**
+   * Configuration for running coverage tests, marking a failure if the coverage for
+   * a certain file is not high enough.
+   */
+  coverageReports: [Es.PackageCoverageReportSpec] = [{}]
+
+  /**
+   * The script to install dependencies.
+   */
+  installCommand: string = "install"
+
+  /**
+   * Installs the package dependencies.
+   */
+  @nodejs(typeSystem=true, async=false)
+  install: member function() js-node
+
+  /**
+   * Builds the package.
+   */
+  @nodejs(typeSystem=true, async=false)
+  build: member function() js-node
+
+  /**
+   * Bundles the package.
+   */
+  @nodejs(typeSystem=true, async=false)
+  bundle: member function() js-node
+
+  /**
+   * Tests the package.
+   */
+  @nodejs(typeSystem=true, async=false)
+  test: member function(spec:Es.PackageTestSpec) js-node
+
+  /**
+   * Cleans the package installation directory.
+   */
+  @nodejs(typeSystem=true, async=false)
+  clean: member function() js-node
+
+  /**
+   * Runs the setup script
+   */
+  @nodejs(typeSystem=true, async=false)
+  setup: member function() js-node
+
+  /**
+   * Runs the cleanup script
+   */
+  @nodejs(typeSystem=true, async=false)
+  cleanup: member function() js-node
+
+  /**
+   * Function to run an npm script in the OS.
+   */
+  @nodejs(typeSystem=true, async=false)
+  runNpmScript: private member function(scriptName:string, async:boolean) js-node
+
+  /**
+   * Function to run an npm command in the OS.
+   */
+  @nodejs(typeSystem=true, async=false)
+  runNpmCommand: private member function(commandName:string) js-node
+
+  /**
+   * Retrieves the package's path from {@link Es.Package#Config}.
+   */
+  @nodejs(typeSystem=true, async=false)
+  getPkgPath: member function(): string js-node
+
+  /**
+   * Function to retrieve the presentational components .tgz package based on filename.
+   */
+  @restful(subPath='npm-modules/:filename')
+  retrievePresentationalComponentsPackage: function(filename: !string): !ContentValue js-server
+}

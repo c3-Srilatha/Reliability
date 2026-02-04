@@ -1,0 +1,250 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract Type representing a state machine.
+ */
+abstract entity type StateMachine<SMH: StateMachineHistory, SMS: StateMachineState, SMT: StateMachineTransition> {
+
+  /**
+   * A stored calc field representing the current state - uses a {@link StateMachineHistory} to keep track.
+   */
+  currentState: SMS stored calc stateHistories[0].state
+
+  /**
+   * A collection of the states this {@link StateMachine} has passed through.
+   */
+  stateHistories: [SMH](parent)
+
+  /**
+   * Transitions available from the current state
+   */
+  @db(filter='isValid == true')
+  transitions: [SMT](from, currentState)
+
+  /**
+   * Transition an array of state machines to a new state
+   */
+
+  // c3-analysis-disable c3-excessive-method-params -- This fix will have a considerable impact on the codebase.
+  @action(group='regular-user')
+  transitionBatch: function(stateMachines: ![mixing StateMachine],
+                            toState: !SMS,
+                            retry: int,
+                            stateHistoryParams: SMH): ![StateMachineTransitionStatus<SMH, SMT>] js-server
+
+  /**
+   * Transition to a state
+   * @param testOnly if true, the function will only check if transition to `toState` is possible without state change.
+   * @param stateHistoryParams if it is set, they merge them to stateMachineHistory
+   */
+  @action(group='regular-user')
+  transition: member function(toState: !SMS,
+                              testOnly: boolean,
+                              stateHistoryParams: SMH): !StateMachineTransitionStatus<SMH, SMT> js-server
+
+  /**
+   * Return `true` if state `toState` can be transitioned to from current state given the current user permissions and current conditions
+   */
+  @action(group='regular-user')
+  checkTransition: member function(toState: !SMS): boolean js-server
+
+  /**
+   * Return list of possible states resulting from transitioning out of the current state given the current user permissions and current conditions.
+   */
+  @action(group='regular-user')
+  possibleStates: member function(): [SMS] js-server
+
+  /**
+   * Return list of all states in the {@link StateMachine}.
+   */
+  @action(group='regular-user')
+  allStates: function(): [SMS] js-server
+
+  /**
+   * Return list of transitions possible from the current state given the current user permissions and current conditions.
+   */
+  @action(group='regular-user')
+  possibleTransitions: member function(): [SMT] js-server
+
+  /**
+   * Return list of all transitions in the SM given the current user permissions.
+   * Both fromState and toState are optional.
+   * If no fromState, return every transition to toState.
+   * If no toState, return every transition from fromState.
+   */
+  @action(group='regular-user')
+  allTransitions: function(fromState: SMS, toState: SMS): [SMT] js-server
+
+  /**
+   * Force the state machine to a new state.
+   * We do not run any state specific actions nor transition specific actions.
+   * @return true if force transition is successful
+   */
+  @action(group='admin-user')
+  forceTransition: member function(toState: !SMS, stateHistoryParams: SMH): boolean js-server
+
+  /**
+   * Force the state machines to a new state.
+   * @return a map with key being the id of the state machine, and value being whether the force transition is successful.
+   */
+  @action(group='admin-user')
+  forceTransitionBatch: function(stateMachines: ![mixing StateMachine],
+                                 toState: !SMS,
+                                 stateHistoryParams: SMH): !map<string, boolean> js-server
+
+  /**
+   * Recover the state machine to normal after some transition actions failed.
+   * This function should be called after the error in the transition action has been fixed.
+   */
+  @action(group='admin-user')
+  stateRecover: member function(): boolean js-server
+
+  /**
+   * Recover the state machines to normal after some transition actions failed.
+   * @return a map with key being the id of the state machine, and value being whether the recover is successful.
+   */
+  @action(group='admin-user')
+  stateRecoverBatch: function(stateMachines: ![mixing StateMachine]): !map<string, boolean> js-server
+
+  /**
+   * Transition with a valid transition in the transitions array
+   */
+  transitionWithTransitions: private member function(transitions: [SMT],
+                                                     testOnly: boolean,
+                                                     stateHistoryParams: SMH): !StateMachineTransitionStatus<SMH, SMT> js-server
+
+  /**
+   * Calc field to get the current state history
+   */
+  currentStateHistory: private SMH calc stateHistories[0]
+
+  /**
+   * If defined, executed in {@link beforeCreate} after validating the state machine.
+   * Since {@link beforeCreate} is marked as final, developers can add logics to doBeforeCreate.
+   */
+  doBeforeCreate: optional function(objs: !?[mixing StateMachine]): ObjList<mixing StateMachine>
+
+  /**
+   * If defined, executed in {@link afterUpdate} after triggering automatic synchronous transitions.
+   * Since {@link afterUpdate} is marked as final, developers can add logics to doAfterUpdate.
+   */
+  doAfterUpdate: optional function(objs: !?[mixing StateMachine]): [ObjError] js-server
+
+
+  /**
+   * See {@link PersistableWritable#beforeCreate}
+   */
+  beforeCreate: final ~ js-server
+
+  /**
+   * If defined, executed in afterCreate after initializing the state machine.
+   * Since afterCreate is marked as final, developers can add logics to doAfterCreate.
+   * @param objs The state machines to create
+   * @return The state machines that were created
+   */
+  doAfterCreate: optional function(objs: !?[mixing StateMachine]): ObjList<mixing StateMachine>
+
+  /**
+   * See {@link PersistableWritable#afterCreate}
+   */
+  afterCreate: final ~ js-server
+
+  /**
+   * If defined, executed in removed after all state histories have been removed.
+   * @param txn The transaction
+   */
+  doRemoved: optional function(txn: !Transaction)
+
+  /**
+   * Remove state history.
+   * @param txn The transaction
+   */
+  removed: final function(txn: !Transaction) js-server
+
+  /**
+   * Internal use only.
+   * Transition to the new state and execute transition actions.
+   * This function assumes the stateOrderCounter is already reserved and transition condition has been verified.
+   */
+  executeTransition: private member function(transition: !SMT,
+                                             stateOrderCounter: !int,
+                                             stateHistoryParams: SMH): !SMH js-server
+
+  /**
+   * Internal use only.
+   * Execute the {@link Lambda} function and return the error message if the {@link Lambda} fails.
+   */
+  executeLambda: private inline member function(action: lambda(srcObj: any)): string js-server
+
+  /**
+   * Internal use only.
+   * Return transitions whose condition is evaluated to true.
+   * This function assumes the condition field is populated on `allTransitions`.
+   */
+  findTransitions: private inline member function(allTransitions: !?[SMT]): [SMT] js-server
+
+  /**
+   * Internal use only.
+   * Implements a statemachine db lock.
+   */
+  reserveStateOrderCounter: private member function(): !StateMachineTransitionStatus<SMH, SMT> js-server
+
+  /**
+   * Internal use only.
+   * Verify whether the state machine is in error state.
+   */
+  checkStateMachine: private member function(): !StateMachineTransitionStatus<SMH, SMT> js-server
+
+  /**
+   * If defined, executed in {@link updated}
+   */
+  doUpdated: optional function(txn: !Transaction)
+
+  /**
+   * Internal use only.
+   * Call all valid Transitions for which the trigger is AUTOMATIC.
+   */
+  updated: final function(txn: !Transaction) js-server
+
+  /**
+   * Used from the UI to transition and refresh currentState stored calc.
+   */
+  @action(group='regular-user')
+  transitionAndRefreshCurrentState: member function(toState: !SMS,
+                                                    stateHistoryParams: SMH): !StateMachineTransitionStatus<SMH, SMT> js-server
+
+  /**
+   * Used from the UI to batch transition and refresh currentState stored calc.
+   */
+
+  // c3-analysis-disable c3-excessive-method-params -- This fix will have a considerable impact on the codebase.
+  @action(group='regular-user')
+  transitionBatchAndRefreshCurrentState: function(stateMachines: ![mixing StateMachine],
+                                                  toState: !SMS,
+                                                  retry: int,
+                                                  stateHistoryParams: SMH): ![StateMachineTransitionStatus<SMH, SMT>] js-server
+
+  /**
+   * Given stateMachineIds, trigger automatic transitions for these state machines.
+   *
+   * @param stateMachineIds
+   *        The ids of the {@link StateMachine}s to transition.
+   * @param sync
+   *        Whether this is being called synchronously or asynchronously. If true, the function is called by
+   *        `afterUpdate` which is synchronous. If false, the function is called by
+   *        `updated` which is asynchronous.
+   */
+  triggerAutomaticTransition: private inline function(
+    stateMachineIds: ![string serialized StateMachine],
+    sync: boolean
+  ) js-server
+
+  afterUpdate: final ~ js-server
+}

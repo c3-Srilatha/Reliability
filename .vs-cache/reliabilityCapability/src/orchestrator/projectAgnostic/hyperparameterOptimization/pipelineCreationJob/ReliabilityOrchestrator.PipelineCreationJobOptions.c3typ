@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Use this type to configure a {@link ReliabilityOrchestrator.PipelineCreationJob}.
+ */
+@beta
+type ReliabilityOrchestrator.PipelineCreationJobOptions mixes BatchJobOptions {
+
+  /**
+   * The {@link ReliabilityMl.Pipeline} for which HPO should be run
+   */
+  pipeline: !ReliabilityMl.Pipeline
+
+  /**
+   * Provide the hyperparams in the following expected format:
+   * The keys of the outer dictionary MUST be one of `algorithmPipe` or `alertPipe`.
+   * The keys of the inner dictionary must be the hyperparams you want to modify, and the values must be a list of possible values
+   * you want to type for that hyperparameter.
+   * An example is:
+   * ```
+   * search_space = {
+   *     "algorithmPipe": {
+   *         "epochs": c3.Hp.ParamSpace.Categorical.fromValues([5, 10]),
+   *         "window_size": c3.Hp.ParamSpace.Categorical.fromValues([4, 5])
+   *     },
+   *     "alertPipe": {
+   *         "alert_threshold": c3.Hp.ParamSpace.Categorical.fromValues([0.2, 0.4, 0.6])
+   *     }
+   * }
+   * ```
+   */
+  searchSpace: !map<string, map<string, Hp.ParamSpace.Categorical>>
+
+  /**
+   * Set this field to -1 to create all possible combinations of the provided hyperparams. This corresponds to performing a
+   * grid search on provided hyperparams.
+   * Set this field to a fixed number in order to randomly select a subset of combinations to try out during HPO. This corresponds
+   * to performing a random search on provided hyperparams.
+   */
+  nCombinations: int = -1
+
+  /**
+   * The number of {@link ReliabilityMl.Pipeline}s that will be created per batch.
+   */
+  batchSize: !int = 1
+}

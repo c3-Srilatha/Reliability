@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec specifying how to shard the {@link NormalizedTimeseries} table. By default, NormalizedTimeseries tables will be
+ * sharded by {@link IntervalDataPoint} or {@link TimedDataPoint} type unless {@link doNotShard} is set
+ */
+type NormalizedTimeseriesShardSpec mixes Spec {
+
+  /**
+   * If set, no sharding of NormalizedTimeseries tables will be done (neither by data point type nor shardCount)
+   * CAUTION: be very careful about changing this configuration as it can dynamically change the NormalizedTimeseries
+   * table under neath and cause renormalization
+   */
+  doNotShard: boolean
+
+  /**
+   * If set, shards the nts table (after applying byType if set) into the specified number of shards
+   * CAUTION: be very careful about changing this configuration as it can dynamically change the NormalizedTimeseries
+   * table under neath and cause renormalization
+   */
+  shardCount: int
+}

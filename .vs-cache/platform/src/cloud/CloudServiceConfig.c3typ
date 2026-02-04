@@ -1,0 +1,99 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type CloudServiceConfig mixes Config, CloudResourceFields {
+
+  setConfig:      ~
+  setConfigValue: ~
+  setSecret:      ~
+  setSecretValue: ~
+
+  /**
+   * Specific version of Cloud Service to use
+   */
+  @ser(path="version")
+  version: string
+
+  /**
+   * Specific resource to create when creating a cloud service that uses an operator
+   */
+  operatorResourceKind: string
+
+  /**
+   * Specify if this Cloud Service is managed
+   */
+  managed: boolean
+
+  /**
+   * Tls Certificate if this Cloud Service needs a secure connection to be accessed
+   */
+  certs: TlsCertificate
+
+  /**
+   * Metadata of the CloudService; when started, started by who, etc
+   */
+  meta: CloudCluster.Meta
+
+  /**
+   * Creates a json from a Config
+   *
+   * @returns config in the form of a json based on @ser(path="")
+   */
+  jsonCfg: member function(): json
+
+  /**
+   * Computed name of helm release from CloudService#id
+   */
+  releaseName: private property(): string
+
+  /**
+   * The cloudServiceUrl of the cloudService
+   */
+  cloudServiceUrl: CloudServiceUrl
+
+  /**
+   * Logical registry to fetch CloudServices' Artifacts
+   */
+  logicalImageRegistry: string serialized ContainerRegistry
+
+  /**
+   * If true, storage resources (such as PVCs) will not be cleaned up when the cloud service is terminated.
+   * Default is false, meaning storage resources ARE cleaned up by default. Subtypes can override this.
+   *
+   * NOTE: Preserved storage is currently not protected against orphan resource cleanup that is enabled on development clusters.
+   */
+  doNotCleanupStorageOnTerminate: boolean
+
+  /**
+   * Retrieve all known cloud services in this cluster for the appId; if called on a subtype, limit results to instances of that.
+   * The source of truth for this list is the CloudServiceConfig type.
+   * @param appId - AppId to filter by
+   */
+  @action(group+='app-admin')
+  listForApp: function(appId: !string): [CloudServiceConfig]
+
+  /**
+   * Retrieve all known cloud services in this cluster for the envId; if called on a subtype, limit results to instances of that.
+   * The source of truth for this list is the CloudServiceConfig type.
+   * @param envId - EnvId to filter by
+   */
+  @action(group+='env-admin')
+  listForEnv: function(envId: !string): [CloudServiceConfig]
+
+  /**
+   * Clear the config of the cloud services for the appId for all overrides.
+   */
+  @action(group+='app-admin')
+  clearConfigsForApp: private function(appId: !string): BatchError
+
+  /**
+   * Clear the config of the cloud services for the envId for all overrides.
+   */
+  @action(group+='env-admin')
+  clearConfigsForEnv: private function(envId: !string): BatchError
+}

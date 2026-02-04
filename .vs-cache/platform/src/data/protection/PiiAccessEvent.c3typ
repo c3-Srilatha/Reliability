@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Describes PII access event.
+ *
+ * @see PiiAccessListener
+ */
+type PiiAccessEvent {
+
+  /**
+   * Type containing PII.
+   */
+  piiType: !Type
+
+  /**
+   * Object IDs containing PII.
+   */
+  piiObjIds: ![string] schema suffix 'IDS'
+
+  /**
+   * PII field names.
+   */
+  piiFields: ![string] schema suffix 'FLDS'
+
+  /**
+   * PII access.
+   */
+  access: !string enum('read', 'write')
+
+  /**
+   * Query string used in PII read access in the format of "<root type name>: <filter expression>"
+   */
+  readQuery: string
+
+  /**
+   * User accessing PII.
+   */
+  user: string
+
+  /**
+   * `true` PII was accessed by "machine" / batch process. In this case user will be `null`.
+   */
+  machine: boolean
+
+  /**
+   * Time of access.
+   */
+  timestamp: !datetime
+
+  /**
+   * Server node hostname where PII was accessed.
+   */
+  serverNode: !string
+
+  /**
+   * Server node IP address where PII was accessed.
+   */
+  serverIpAddress: !string
+}

@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Postal address and geo coordinates associated to a party.
+ * currently only used by role of Contact
+ */
+@db(index+=['meta.timestamp'])
+entity type PartyPostalAddress mixes InlineAddress schema name 'STRUCT_PARTYADDR' {
+
+  /**
+   * Allows designation of use for parties with multiple addresses
+   * i.e. billing address, work/office address (for a contact). etc
+   */
+  addressUsage: string enum('billing', 'office')
+
+  /**
+   * Preferred postal address for a party
+   * May be used for stored calc to replicate on party or partyRole
+   */
+  isPreferred: boolean
+
+  /**
+   * Street address.
+   */
+  street_address: string stored calc components.(types.id=='street_address').name
+
+  /**
+   * City.
+   */
+  city: string stored calc components.(types.id=='locality').name
+
+  /**
+   * State.
+   */
+  state: string stored calc components.(types.id=='administrative_area_level_1').abbr
+
+  /**
+   * Postal code.
+   */
+  postalCode: string stored calc components.(types.id=='postal_code').name
+
+  /**
+   * FK references FROM parents
+   */
+  party: !Party
+
+  name: ~ not persistable
+}

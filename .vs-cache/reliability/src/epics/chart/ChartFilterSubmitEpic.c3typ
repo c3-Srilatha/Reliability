@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Epic that handles the submission of the chart filter and updates the chart based on selected filters such as time interval, start date, and end date.
+ *
+ * This epic is triggered when the user submits the form with specific filters applied to generate and plot the chart data.
+ *
+ * **Validations**:
+ * - **Interval Validation**: Ensures that the selected interval is one of the following values: `'MINUTE'`, `'FIVE_MINUTE'`, `'TEN_MINUTE'`, `'QUARTER_HOUR'`, `'HALF_HOUR'`, `'HOUR'`, `'DAY'`, `'MONTH'`, or `'YEAR'`.
+ * - **Start and End Date Validation**: Ensures that the `startDate` and `endDate` are valid date values.
+ * - **Data Point Limit Check**: Verifies that the number of data points requested does not exceed the predefined limit, default 10000 data points.
+
+ * **Interval Conversion**:
+ * The function `getIntervalMinutes` maps the selected interval to its corresponding duration in minutes, used for calculating the number of data points:
+ * - `MINUTE` = 1 minute
+ * - `FIVE_MINUTE` = 5 minutes
+ * - `TEN_MINUTE` = 10 minutes
+ * - `QUARTER_HOUR` = 15 minutes
+ * - `HALF_HOUR` = 30 minutes
+ * - `HOUR` = 60 minutes
+ * - `DAY` = 1440 minutes
+ * - `MONTH` = 43800 minutes
+ * - `YEAR` = 525600 minutes
+ *
+ * **Data Point Limit**:
+ * - If the requested number of data points exceeds this limit, the system opens modal, asks for user input to continue to query to plot the graph or close the modal.
+ *
+ * **Actions Triggered**:
+ * - `receiveDataAction`: To clear or update the chart data.
+ * - `mergeArgumentsAction`: To update the chart's data source with the selected filters.
+ * - `requestDataAction`: To request the filtered data from the backend.
+ *
+ */
+@typeScript
+type ChartFilterSubmitEpic mixes UiSdlEpic {
+
+  epic: ~ ts-client
+}

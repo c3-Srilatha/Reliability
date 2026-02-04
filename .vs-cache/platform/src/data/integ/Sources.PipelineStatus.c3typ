@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Entity representing the status of a source file as it progresses through a pipeline.
+ */
+@db(unique=["sourcesId, pipelineId"])
+entity type Sources.PipelineStatus {
+
+  sourcesId:  !string
+  sources:    property(): !Sources
+  pipelineId: !string
+  pipeline:   property(): !DataInteg.Pipeline
+
+  /**
+   * The current state of the source file on corresponding pipeline.
+   * Possible values refer to {@link SourcesState}
+   */
+  state: !SourcesState
+
+  /**
+   * @return The unique id that is safe to be used as {@link Persistable#id} value
+   * The ID will always be at most 128 characters to meet the DB restriction.
+   */
+  safeId: inline member function(): !string
+
+  /**
+   * Initializes the status for the specified pipeline.
+   *
+   * This function will:
+   * 1. Delete all existing status entries for specified pipeline
+   * 2. Fetch all the sources and init the state for each sources
+   *
+   * @param pipelineId
+   *        The ID of the pipeline to initialize
+   */
+  init: function(pipelineId: string)
+}

@@ -1,0 +1,142 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to store the fields needed for both sensor association and data prep settings.
+ *
+ * This fields represents the UI settings that can be set by the Sensor Association Modal, and implements methods to
+ * convert the current instance into a {@link ReliabilityOrchestrator.SensorAssociation}, and
+ * {@link ReliabilityMlDatasetPreparationSpec} that can be used to run the sensor association job.
+ *
+ * **Target and Time Selectio Fields**:
+ * This fields are used to define the [targetTag](ExpectedSensor) to be used during the sensor association, the
+ * assets, and the training/validation time range.
+ *
+ * **Correlation Calculation Fields**:
+ * This fields are used to define the [correlation method](ReliabilityAssetSensorAssociationMethod),
+ * the correlation threshold, and the sensors to include/exclude.
+ *
+ * **Exclusion Metrics Fields**:
+ * This fields are used to define the exclusion metrics to be used during the sensor association.
+ * Most of the "flags" used here are going to be converted into {@link Feature}s for data preparation.
+ * See {@link ReliabilityMlMaskPreparationSpec#adHocTrainingMaskFeatureOverride}.
+ *
+ * @see ReliabilityOrchestrator.SensorAssociation
+ * @see ReliabilityMlDatasetPreparationSpec
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type BulkSensorAssociationUiSettings mixes BulkSensorAssociationUiDefaultableFields {
+
+  /* ------------------------------------------ TARGET AND TIME SELECTION ------------------------------------------ */
+
+  /**
+   * List of selected [assets ids](ReliabilityAsset) to be used during the sensor association.
+   */
+  assets: ![string serialized ReliabilityAsset]
+
+  /**
+   * Target tag to be used during the sensor association.
+   *
+   * *NOTE*: A `tag` is the name used for an {@link ExpectedSensor}.
+   */
+  targetTag: !ExpectedSensor
+
+  /**
+   * @inheritdoc
+   */
+  interval: !~
+
+  /**
+   * @inheritdoc
+   */
+  datasetPreparationInterval: !~
+
+  /**
+   * Training start date to be used during the sensor association
+   */
+  trainingStart: !datetime
+
+  /**
+   * Training end date to be used during the sensor association.
+   *
+   * **NOTE**: It is expected for this field to be after #trainingStart.
+   */
+  trainingEnd: !datetime
+
+  /**
+   * Validation start date to be used during the sensor association.
+   */
+  validationStart: !datetime
+
+  /**
+   * Validation end date to be used during the sensor association.
+   *
+   * **NOTE**: It is expected for this field to be after #validationStart.
+   */
+  validationEnd: !datetime
+
+  /**
+   * Confidence level for data prep
+   */
+  confidenceLevel: float
+  /* ------------------------------------------- CORRELATION CALCULATION ------------------------------------------- */
+
+  /**
+   * String matching pattern to include sensors during the sensor association.
+   * This will include sensors that its name matches the pattern.
+   */
+  includeSensorMatchPatterns: [string]
+
+  /**
+   * String matching pattern to exclude sensors during the sensor association.
+   * This will exclude sensors that its name matches the pattern.
+   */
+  excludeSensorMatchPatterns: [string]
+
+  /* ---------------------------------------------- EXCLUSION METRICS ---------------------------------------------- */
+  // all fields inherited from BulkSensorAssociationUiDefaultableFields
+
+  /* ------------------------------------------------ CONFIRMATION ------------------------------------------------ */
+
+  /**
+   * The desired name for the sensor association job that will be started using these settings.
+   */
+  jobName: string
+
+  /**
+   * Converts the current instance into {@link ReliabilityOrchestrator.SensorAssociation}
+   *
+   * **NOTE**: For all boolean fields that indicate the use of other related fields, it is expected
+   * for those fields to be set. No null checking will be done on the other related fields.
+   */
+  toSpec: member function(): ReliabilityOrchestrator.SensorAssociation js-rhino
+
+  /**
+   * Constructs the `externalSensorFilter` used in the sensor association spec using the following parameters.
+   *
+   * @param assetId
+   *     String serialized {@link ReliabilityAsset}. The function will use the provided asset to construct a
+   *     filter to only include sensors associated with the overarching plant for that asset.
+   * @param includeSensorMatchPatterns
+   *     List of strings containing the patterns for included sensors. The function will use these patterns to
+   *     construct a filter to include sensors that match the pattern.
+   * @param excludeSensorMatchPatterns
+   *     List of strings containing the patterns for excluded sensors. The function will use these patterns to
+   *     construct a filter to exclude sensors that match the pattern.
+   * @return
+   *     The filter constructed using the provided parameters.
+   */
+  constructSensorAssociationSpecExternalSensorFilter: function(assetId: !string serialized ReliabilityAsset, includeSensorMatchPatterns: [string], excludeSensorMatchPatterns: [string]): Filter js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

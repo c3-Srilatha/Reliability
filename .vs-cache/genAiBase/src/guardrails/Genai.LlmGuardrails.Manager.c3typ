@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Manages {@link Genai.LlmGuardrails.Processor}s and applies them to
+ * all LLM input and output.
+ */
+type Genai.LlmGuardrails.Manager mixes Singleton, Config {
+  /**
+   * All processors to apply in order to the input.
+   */
+  inputProcessors: [Genai.LlmGuardrails.Processor]
+
+  /**
+   * All processors to apply in order to the output.
+   */
+  outputProcessors: [Genai.LlmGuardrails.Processor]
+
+  /**
+   * Initialize all processors in #inputProcessors and #outputProcessors.
+   * @param forceReload
+   *           If true, will re-initialize.
+   */
+  initialize: member function(forceReload: boolean) py-llmguard
+
+  /**
+   * Processes an LLM prompt applying all #inputProcessors in order.
+   *
+   * @param inputPrompt
+   *   The LLM input to process.
+   * @return the processed LLM input.
+   */
+  processInput: member function(inputPrompt: !Genai.Prompt): !Genai.LlmGuardrails.Processor.Result py-llmguard
+
+  /**
+   * Processes an LLM response applying all #inputProcessors in order.
+   *
+   * @param outputPrompt
+   *   The LLM output to process.
+   * @return the processed LLM output.
+   */
+  processOutput: member function(outputPrompt: !string): !Genai.LlmGuardrails.Processor.Result py-llmguard
+}

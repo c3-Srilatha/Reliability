@@ -1,0 +1,126 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Plot a histogram.
+ *
+ * @see PlotAxes
+ * @see https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.hist.html
+ */
+type PlotHistSpec mixes PlotElementSpec {
+
+  /**
+   * Input values, this takes either a single array or a sequence of arrays which are not required to be of the same length
+   *
+   * Python: (n,) array or sequence of (n,) arrays
+   */
+  x: [any] | [[any]]
+
+  /**
+   * If an integer is given, bins + 1 bin edges are calculated and returned, consistent with numpy.histogram().
+   * (matplotlib bins)
+   *
+   * Python: integer or sequence or 'auto'
+   *
+   * enum('auto')
+   */
+  binS: int | [any] | string
+
+  /**
+   * The lower and upper range of the bins. Lower and upper outliers are ignored. If not provided, range is (x.min(), x.max()). Range has no effect if bins is a sequence.
+   *
+   * Python: tuple or None
+   */
+  range: [any]
+
+  /**
+   * If True, the first element of the return tuple will be the counts normalized to form a probability density, i.e., the area (or integral) under the histogram will sum to 1. This is achieved by dividing the count by the number of observations times the bin width and not dividing by the total number of observations. If stacked is also True, the sum of the histograms is normalized to 1.
+   */
+  density: boolean
+
+  /**
+   * An array of weights, of the same shape as x. Each value in x only contributes its associated weight towards the bin count (instead of 1). If normed or density is True, the weights are normalized, so that the integral of the density over the range remains 1.
+   *
+   * Python: (n, ) array_like or None
+   */
+  weights: [any]
+
+  /**
+   * If True, then a histogram is computed where each bin gives the counts in that bin plus all bins for smaller values. The last bin gives the total number of datapoints. If normed or density is also True then the histogram is normalized such that the last bin equals 1. If cumulative evaluates to less than 0 (e.g., -1), the direction of accumulation is reversed. In this case, if normed and/or density is also True, then the histogram is normalized such that the first bin equals 1.
+   */
+  cumulative: boolean = false
+
+  /**
+   * Location of the bottom baseline of each bin. If a scalar, the base line for each bin is shifted by the same amount. If an array, each bin is shifted independently and the length of bottom must match the number of bins. If None, defaults to 0.
+   *
+   * Python: array_like, scalar, or None
+   */
+  bottom: [any]
+
+  /**
+   * The type of histogram to draw.
+   * (matplotlib histtype)
+   *
+   * Python: {'bar', 'barstacked', 'step', 'stepfilled'}
+   */
+  histType: string enum('bar', 'barstacked', 'step', 'stepfilled') = 'bar'
+
+  /**
+   * Controls how the histogram is plotted.
+   *
+   * Python: {'left', 'mid', 'right'}
+   */
+  align: string enum('left', 'mid', 'right') = 'mid'
+
+  /**
+   * If 'horizontal', barh will be used for bar-type histograms and the bottom kwarg will be the left edges.
+   *
+   * Python: {'horizontal', 'vertical'}
+   */
+  orientation: string enum('horizontal', 'vertical') = 'vertical'
+
+  /**
+   * The relative width of the bars as a fraction of the bin width. If None, automatically compute the width.
+   * (matplotlib rwidth)
+   *
+   * Python: scalar or None
+   */
+  rWidth: any
+
+  /**
+   * If True, the histogram axis will be set to a log scale. If log is True and x is a 1D array, empty bins will be filtered out and only the non-empty (n, bins, patches) will be returned.
+   */
+  log: boolean = false
+
+  /**
+   * Color spec or sequence of color specs, one per dataset. Default (None) uses the standard line color sequence.
+   *
+   * Python: color or array_like of colors or None
+   */
+  color: string | [string]
+
+  /**
+   * String, or sequence of strings to match multiple datasets. Bar charts yield multiple patches per dataset, but only the first gets the label, so that the legend command will work as expected.
+   *
+   * Python: string or None
+   */
+  label: string
+
+  /**
+   * If True, multiple data are stacked on top of each other If False multiple data are arranged side by side if histtype is 'bar' or on top of each other if histtype is 'step'
+   */
+  stacked: boolean = false
+
+  /**
+   * Deprecated; use the density keyword argument instead.
+   * (matplotlib normed)
+   */
+  normEd: boolean
+
+  data: any
+}

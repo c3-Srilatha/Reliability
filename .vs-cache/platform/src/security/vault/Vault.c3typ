@@ -1,0 +1,171 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Vault where secrets are stored. This is a low level API, use Config instead.
+ */
+@action(authz='always')
+@deprecated(finalVersion='7.8', details='Use Config instead')
+private type Vault {
+
+  /**
+   * @return secret value for the provided path if set or `null` or error otherwise depending on `failIfMissing`
+   *
+   * secret: function(path: !string, type: !TypeRef, failIfMissing: !boolean): Obj
+   *
+   * Sets secret value for the provided path.
+   *
+   * setSecret: function(path: !string, value: !?Obj)
+   *
+   * @return per user secret value for the provided path
+   *
+   * setSecretAdmin: function(path: !string, value: !?Obj, cluster: string, tenant: string, tag: string)
+   *
+   * Get the given secret from the vault
+   *
+   * @param secretType
+   *            one of 'credentials', 'keyPair', 'api', 'certificate'
+   * @param secretName
+   *            secret name as a hierarchy key (absolute or relative)
+   * @return  The secret Obj
+   */
+  get: function(secretType: string, secretName: string): Obj
+
+  /**
+   * Stores the given secret in the vault and the backup vault (if configured)
+   *
+   * @param secretType
+   *            one of 'credentials', 'keyPair', 'password', 'api', 'certificate'
+   * @param secretName
+   *            secret name as a hierarchy key (absolute or relative)
+   * @param secret
+   *            the secret Obj
+   */
+  set: function(secretType: string, secretName: string, secret: Obj)
+
+  /**
+   * Delete the given secret from the vault, will not delete from the backup
+   * vault (must be done by hand)
+   *
+   * @param secretType
+   *            one of 'credentials', 'keyPair', 'password', 'api', 'certificate'
+   * @param secretName
+   *            secret name as a hierarchy key (absolute or relative)
+   */
+  delete: function(secretType: string, secretName: string)
+
+  /**
+   * Returns a map of secretName,secretValue entries for the given secretType
+   */
+  fetch: function(secretType: string): map<string, Obj>
+
+  /**
+   * Stores the secret in the given Vault
+   */
+  seed: function(vaultURI: string, secretType: string, secretName: string, secret: Obj)
+
+  /**
+   * Copies the Source Vault entries to the Destination Vault
+   */
+  backup: function(srcVaultURI: string, dstVaultURI: string)
+
+  /**
+   * Migrates all security objects from the database to the vault Note that
+   * the security objects must manually be cleaned up: (db, configuration
+   * files, code)
+   */
+  migrateTo: function(vaultURI: string)
+
+  /**
+   * Insert the certificate into DB
+   * @param name
+   *           the name of a certificate
+   * @param certificate
+   *           the certificate
+   */
+  setCertificate: function(name: !string, certificate: !Obj)
+
+  /**
+   * Get the certificate
+   * @param name
+   *           the name of a certificate.
+   * @return a certificate
+   */
+  getCertificate: function(name: !string): Obj
+
+  /**
+   * Delete the certificate
+   * @param thingName
+   *           the name of a certificate
+   */
+  delCertificate: function(name: !string)
+
+  /**
+   * Get the names of all certificates
+   * @return the names of all certificates
+   */
+  getAllCertificateNames: function(): [string]
+
+  /**
+   * Get the domain certificate content
+   * @param domain
+   *        the domain of a certificate
+   * @param expirationDatetime
+   *        the expiration datetime of the certificate
+   * @param failIfMissing
+   *        whether or not indicate failure if domain certificate doesn't exist
+   */
+  domainCertificate: function(domain: !string, expirationDatetime: datetime, failIfMissing: boolean): string
+
+  /**
+   * Get the domain certificate chain
+   * @param domain
+   *        the domain of a certificate chain
+   * @param expirationDatetime
+   *        the expiration datetime of the certificate
+   */
+  domainCertificateChain: function(domain: !string, expirationDatetime: datetime): string
+
+  /**
+   * Get the domain certificate private key
+   * @param domain
+   *        the domain of a certificate private key
+   * @param expirationDatetime
+   *        the expiration datetime of the certificate
+   * @param failIfMissing
+   *        whether or not indicate failure if domain certificate doesn't exist
+   */
+  domainCertificatePrivateKey: function(domain: !string, expirationDatetime: datetime, failIfMissing: boolean): string
+
+  /**
+   * upsert the domain certificate
+   * @param domain
+   *        the domain of a certificate private key
+   * @param expirationDatetime
+   *        the expiration datetime of the certificate
+   * @param public
+   *        the certificate body
+   * @param private
+   *        the certificate private key
+   */
+  upsertDomainCertificate: function(domain: !string, expirationDatetime: !datetime, public: !string, private: !string)
+
+  /**
+   * upsert the domain certificate chain
+   * @param domain
+   *        the domain of a certificate private key
+   * @param expirationDatetime
+   *        the expiration datetime of the certificate
+   * @param content
+   *        the certificate chain
+   */
+  upsertDomainCertificateChain: function(domain: !string, expirationDatetime: !datetime, content: !string)
+
+  VAULT_PREFIX:      private const string = 'c3Vault:'
+  removeVaultPrefix: private inline function(path: !string): !string
+}

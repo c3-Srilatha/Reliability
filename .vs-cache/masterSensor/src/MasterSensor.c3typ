@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The type stores the core metadata for a sensor, including its ID, description, example value, and unit of measurement.
+ * This metadata serves as a blueprint for creating new sensors.
+ * When actual @{Sensor}s are instantiated, a refernce of those sensors is added to this type.
+ */
+@db(unique=['sensorId'])
+entity type MasterSensor {
+
+  /**
+   * The unique id of the @{Sensor} which will be created using this @{MasterSensor}.
+   */
+  sensorId: !string
+
+  /**
+   * The name of the @{Sensor} that will be created using this @{MasterSensor}.
+   * Typically, the sensor name is unique and matches the id.
+   * When ingesting MasterSensor data, the name may not always be defined for some users.
+   * Therefore, the `sensorId` field should be relied upon for uniqueness.
+   */
+  name: string
+
+  /**
+   * The facility to which this @{MasterSensor} belongs to. Assumes that facilities are creating @{MasterSensor} for that facility.
+   */
+  facility: Facility
+
+  /**
+   * The description of the @{Sensor} which will be created using this @{MasterSensor}.
+   */
+  sensorDescription: string
+
+  /**
+   * This represents an example of the value for the corresponding @{Sensor}.
+   * It serves as a reference for how the sensor's value might appear, such as '12.03'.
+   */
+  exampleValue: string
+
+  /**
+   * The unit of the measurements from the @{Sensor}.
+   */
+  unit: Unit
+
+  /**
+   * The {@link Sensor} that is created using this {@link MasterSensor}.
+   * This field will be populated when actual @{Sensor}s are created later.
+   */
+  convertedSensor: Sensor
+}

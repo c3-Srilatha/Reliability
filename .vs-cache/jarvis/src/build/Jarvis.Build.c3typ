@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single Jarvis Pipeline run
+ */
+type Jarvis.Build mixes Identified, Jarvis.WithStateHistory {
+
+  /**
+   * The date at which the data related to this build expires.
+   * Applies to artifacts for this build, unless {@link #keepForever} is true.
+   */
+  expiresAt: datetime
+
+  /**
+   * Whether to keep this build forever.
+   */
+  keepForever: boolean
+
+  /**
+   * The repository the branch belongs to
+   */
+  repositoryUrl: !string serialized GitUrl
+
+  /**
+   * The branch that was built
+   */
+  branch: !string
+
+  /**
+   * The source control service URL for {@link #branch}.
+   */
+  branchUrl: string
+
+  /**
+   * The head of the {@link #branch} that was built
+   */
+  sha: !string
+
+  /**
+   * The source control service URL for the {@link #sha}.
+   */
+  shaUrl: string
+
+  /**
+   * The source control service URL for the corresponding PR on this branch, if present.
+   */
+  prUrl: string
+
+  /**
+   * The path in source control which leads to the packages which should be processed by this build.
+   */
+  packagesPath: string
+
+  /**
+   * A tag to be used at the beginning of the {@link SemanticVersion#preReleaseVersion} for artifacts generated
+   * during builds for this branch group.
+   */
+  preReleaseTag: string
+
+  /**
+   * Path to the jarvis file
+   */
+  jarvisFilePath: string
+
+  /**
+   * The name of the first {@link Jarvis.Lambda} that should be executed.
+   * The default step is 'generatePackageSteps', which is run after 'stashRepo'
+   */
+  firstStepName: string = 'generatePackageSteps'
+
+  /**
+   * Commit diff of this build
+   * TODO: diff needs to be strongly typed
+   */
+  changes: [SourceControlFileDiff]
+
+  /**
+   * The current state of the execution of the build.
+   * Changes as the build and its steps progress through Jarvis.
+   */
+  state: !string serialized Jarvis.State
+
+  /**
+   * The results of the build
+   */
+  result: Jarvis.Build.Result
+
+  /**
+   * The build number for this build. Unique by {@link #branch}.
+   */
+  buildNumber: int = 1
+
+  /**
+   * Returns a shared content stash for the given key. Content written to the stash can be read by all
+   * {@link Jarvis.Step#executor}s. Allows sharing of large content quickly across {@link Jarvis.Step}s for this build.
+   * This content will be removed once the build is completed.
+   *
+   * @param key
+   *           A unique key for the stash. The scope of the key is a single {@link Jarvis.Build}.
+   * @return Writable and readable {@link Content} for accessing the shared stash.
+   */
+  stashFor: member function(key: !string): !Jarvis.Content
+
+  /**
+   * Returns a shared content stash for the given key. This content will continue to exist as long as the build
+   * entity exists.
+   *
+   * @param key
+   *           A unique key for the stash. The scope of the key is a single {@link Jarvis.Build}.
+   * @param kind
+   *           The kind of the content.
+   * @return Writable and readable {@link Content} for accessing the shared stash.
+   */
+  artifactFor: member function(key: !string, kind: string enum Jarvis.Content.Kind): !Jarvis.Content
+}

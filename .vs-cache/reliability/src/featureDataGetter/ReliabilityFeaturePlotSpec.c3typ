@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the arguments for {@link ReliabilityFeatureUiHelper#addFeaturePlotting}
+ */
+type ReliabilityFeaturePlotSpec mixes Spec {
+
+  /**
+   * The features to plot. Each feature should have the id + name fields populated.
+   * If plotActualValues is true, they should contain the feature description/expected sensor
+   * to populate the legend description correctly.
+   *
+   * Users of this spec must ensure the feature fields are populated, as the features will not be refetched.
+   */
+  relFeatures: [FeatureFetchBase]
+
+  /**
+   * The asset for which to get data
+   */
+  assetId: !string
+
+  /**
+   * If set, the contributions and reconstructions will be plotted for the given model. Feature data
+   * will still be based on the given assetId.
+   */
+  modelId: string
+
+  /**
+   * If true, the actual values of each feature will be plotted
+   */
+  plotActualValues: boolean
+
+  /**
+   * If true, the reconstructions of each feature will be plotted
+   */
+  plotReconstructions: boolean
+
+  /**
+   * If true, the contributions of each feature will be plotted
+   */
+  plotContributions: boolean
+
+  /**
+   * If set to true, and the `RiskScore` metric is being plotted for the given `modelId` or `assetId`,
+   * the contributions will be scaled so that they add up to the risk score of the model or asset.
+   * Only applies if plotContributions is true. In addition, the `Other Contributors` series will be added,
+   * along with the `AddOtherFeatureContributorsTransform` to populate its data properly.
+   * Note that running {@link ReliabilityFeatureUiHelper#addFeaturePlotting} with this set to true multiple times
+   * is currently not supported.
+   *
+   * Otherwise, the contributions will be plotted as lines.
+   */
+  scaleContributionsToRiskScore: boolean
+
+  /**
+   * If set to true, the `yAxisFields` in the chart configuration will be ordered based on the feature.
+   * For each feature, its actual value, reconstruction, and contribution series will appear consecutively on the chart.
+   *
+   * Note:
+   * This option is automatically set to false when {@link #scaleContributionsToRiskScore} is set to true.
+   */
+  // TODO REL-20835: Support ordering based on feature when scaleContributionsToRiskScore is enabled
+  orderYAxisFieldsBasedOnFeature: boolean
+}

@@ -1,0 +1,116 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue entry error details. There will be at most one error entry for a queue entry. This will be
+ * enforced by having a unique index on the queueTypeId/entryId and using a hash of those values as the ID value.
+ */
+@db(systemType=true,
+    compactType=true,
+    unique=['queueTypeId, entryId'],
+    index+=['queueTypeId, targetTypeId, targetObjId, errorCode', 'queueTypeId, targetTypeId, errorCode'],
+    domain='queues')
+entity type InvalidationQueueError schema name 'ASYNQ_INVQERR' {
+
+  /**
+   * The ID of the queue type where the entry with the errors are located.
+   */
+  queueTypeId: int
+
+  /**
+   * Target type ID for the entry that has the error.
+   */
+  targetTypeId: int
+
+  /**
+   * Target object ID for the entry that has the error.
+   */
+  targetObjId: string
+
+  /**
+   * Entry type for the entry that has the error.
+   */
+  entryType: string
+
+  /**
+   * Context for the entry that has the error.
+   */
+  context: string | datetime | Obj
+
+  /**
+   * Priority for the entry that has the error.
+   */
+  priority: int
+
+  /**
+   * Node pool for the entry that has the error.
+   */
+  nodePool: string
+
+  /**
+   * Primary error code for the error.
+   */
+  errorCode: !string
+
+  /**
+   * Id of queue entry that has the error.
+   */
+  entryId: string
+
+  /**
+   * Invalidation timestamp for the entry that has the error.
+   */
+  invalidatedAt: datetime
+
+  /**
+   * Node where the entry failed.
+   */
+  computingNodeId: string
+
+  /**
+   * Timestamp when the error was added.
+   */
+  timestamp: datetime = now()
+
+  /**
+   * Complete queue entry in the state it was in when the error occurred.
+   */
+  entry: json
+
+  /**
+   * Details of the error that the entry is for.
+   */
+  detail: InvalidationQueueErrorDetail
+
+  /**
+   * If reviewed, the review for the entry and null otherwise.  All entries in a group being reviewed will have the
+   * same value.
+   */
+  review: InvalidationQueueErrorReview
+
+  /**
+   * Gets the count used by {@link InvalidationQueue.errorReport} (one count per line).
+   *
+   * @param group
+   *           Group spec to apply.
+   * @param filter
+   *           Filter spec to apply.
+   * @param offset
+   *           Starting offset to return entries from.
+   * @param limit
+   *           Maximum number of entries to return.
+   *
+   * @return the requested counts.
+   */
+  @action(group+='monitor')
+  reportCount: function(queueType: !Type,
+                        filter: InvalidationQueueFilterSpec,
+                        group: InvalidationQueueGroupSpec,
+                        offset: int = 0,
+                        limit: int = 100): [InvalidationQueueGroupResult]
+}

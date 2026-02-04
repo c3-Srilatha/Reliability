@@ -1,0 +1,181 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a shareable entity that can be shared between {@link UserGroup}s. As a parametric type,
+ * the first parameter represents the shareable entity itself, the second parameter is the ownership type, and the
+ * third is the share history.
+ */
+type ExMachinaUserGroupShareable<ShareableEntity, Ownership, ShareHistory> {
+
+  /**
+   * Whether this shareable can be accessed by all Ex Machina users
+   */
+  isPubliclyAccessible: boolean
+
+  /**
+   * Whether the shareable entity is currently disabled, preventing use by the members who have access to it.
+   */
+  disabled: boolean
+
+  /**
+   * Used internally to derive the ownership type from the type that mixes ExMachinaUserGroupShareable
+   */
+  ownershipType: private Ownership
+
+  /**
+   * Used internally to derive the share history type from the type that mixes ExMachinaUserGroupShareable
+   */
+  shareHistoryType: private ShareHistory
+
+  /**
+   * Current owner of the shareable entity
+   */
+  currentOwner: User stored calc ownershipHistory[0].from
+
+  /**
+   * A value for displaying the current owner in the UI. For a publicly available entity, uses "C3 AI" as the owner.
+   */
+  displayOwner: string stored calc isPubliclyAccessible ? 'C3 AI' : currentOwner.name
+
+  /**
+   * The last user to modify the entity. For a publicly available entity, uses "C3 AI" as the updater.
+   */
+  lastUpdatedBy: string stored calc isPubliclyAccessible ? 'C3 AI' : meta.updatedBy
+
+  /**
+   * History of all owners of the shareable entity
+   */
+  @db(order='descending(start)')
+  ownershipHistory: [Ownership](to)
+
+  /**
+   * Current groups with which the shareable entity has been shared
+   */
+  @db(order='descending(start)', filter='!exists(end)')
+  activelyShared: [ShareHistory](to)
+
+  /**
+   * History of all teams with which the shareable entity has been shared
+   */
+  @db(order='descending(start)')
+  sharedHistory: [ShareHistory](to)
+
+  /**
+   * Flag that indicates whether logged in user is the current owner of the shareable entity
+   */
+  isOwned: boolean calc isCurrentUser(currentOwner.id)
+
+  /**
+   * Helper method to get the ownership type related to the caller type that mixes ExMachinaUserGroupShareable
+   */
+  getOwnershipType: private inline function(): Type js-server
+
+  /**
+   * Helper method to get the share history type related to the caller type that mixes ExMachinaUserGroupShareable
+   */
+  getShareHistoryType: private inline function(): Type js-server
+
+  /**
+   * Helper method to get the specific caller type that mixes ExMachinaUserGroupShareable
+   */
+  getShareableType: private inline member function(): Type js-server
+
+  /**
+   * Share the shareable entity with the list of user groups
+   *
+   * @param userGroups
+   *          The groups with which to share the shareable entity
+   */
+  shareEntity: private member function(userGroups: [UserGroup]) js-server
+
+  /**
+   * Refreshes ACLs for the given share history objects and shareable entity objects.
+   */
+  refreshData: private function(shareHistoryObjs: [ShareHistory], shareableEntityObjs: [ShareableEntity]) js-server
+
+  /**
+   * Adds an `end` to the provided shares, effectively preventing users of the user groups from accessing the shareable
+   * entity unless they belong to another user group with which the shareable entity has been shared
+   *
+   * @param shares
+   *          The shareable entity shares to end
+   */
+  endShares: member function(shares: [ShareHistory]) js-server
+
+  /**
+   * Given a list of the desired state of the user groups with the shareable entity has been shared, adds new shares,
+   * ends shares which should be ended, and skips shares that should stay the same.
+   *
+   * @param userGroups
+   *          The desired list of userGroups after the API call has completed. If a shareable entity has already been
+   *          shared with a group, it will do nothing. If a shareable entity should no longer be shared with a group,
+   *          it will end the share by internally calling {@link endShares}. Lastly, if the shareable entity should be
+   *          shared with new groups with which it is not already shared, it will call {@link shareshareable entity} on
+   *          the new user groups.
+   */
+  updateShares: member function(userGroups: [UserGroup]): boolean js-server
+
+    /**
+   * Helper function that retries the execution of updateShares on failure. This is a temporary workaround to issues
+   * in the ExMachinaConnectorCredentialUi updateShares call in VAD-18845
+   *
+   * @param userGroups
+   *          The desired list of userGroups after the API call has completed. If a shareable entity has already been
+   *          shared with a group, it will do nothing. If a shareable entity should no longer be shared with a group,
+   *          it will end the share by internally calling {@link endShares}. Lastly, if the shareable entity should be
+   *          shared with new groups with which it is not already shared, it will call {@link shareshareable entity} on
+   *          the new user groups.
+   */
+  updateSharesHelper: member function(userGroups: [UserGroup]): boolean js-server
+
+  /**
+   * Get the list of user groups with which the shareable entity has shared. Due to current limitations with how data
+   * grids merge input arguments, we have a "spec" parameter that is ignored when this is called by the UI.
+   * @param id
+   *          The id of the shareable entity
+   * @param include
+   *          optional include string
+   */
+  @action(group+='read')
+  fetchSharedGroups: function(id: !string, include: string): FetchResult<UserGroup> js-server
+
+  /**
+   * Get the list of user groups with which the shareable entity has not been shared
+   * @param id
+   *          The id of the dataset topic
+   */
+  @action(group+='read')
+  fetchNonSharedGroups: function(id: !string): FetchResult<UserGroup> js-server
+
+  /**
+   * Transfers the ownership of the current shareable entity to a new member by adding an `end` to the current
+   * {@link ownershipType} and creating a new ownership entry for the new member.
+   *
+   * @param newOwner
+   *     The new owner of the shareable entity
+   */
+  transferOwnership: member function(newOwner: User) js-server
+
+  /**
+   * TODO: VAD-16871 - Add a common afterCreate for all shareable types after PLAT-51996 fix
+   * Common logic to run after creation of any types that mixin {@link ExMachinaUserGroupShareable}
+   */
+  @dependency(include='isPubliclyAccessible, meta.createdBy, acl.member.id')
+  postCreate: function(objs: !?[ShareableEntity]): [ObjError] js-server
+
+  /**
+   * Overridden helper method to manually update necessary ACLs whenever shares are updated
+   */
+  updateAdditionalAcls: member function() js-server
+
+  /**
+   * Determine whether to send an email to members with the {@link ExMachinaUserRole.VIEWER} role
+   */
+  shouldSendShareableEntityAvailableEmailToViewers: function(): boolean js-server
+}

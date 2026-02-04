@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Save spec for {@link Genai.Agent.Persistable}
+ */
+type Genai.Agent.Persistable.SaveSpec<S> mixes Spec {
+  /**
+  * The id of the agent if it already exists.
+  */
+  id: string
+
+  /**
+   * Initialization spec for {@link Genai.Agent.Dynamic}
+   */
+  initializationSpec: !S
+
+  /**
+   * Configuration for how this will be shown as a UI drop-down option
+   */
+  uiOptions: Genai.Agent.Tool.Config.UiOptions
+
+  /**
+   * Set of prompt param values that will be injected in the agent's system prompt on initialization.
+   * These values can be extended, as long as the prompt used in the agent's config also references them.
+   * Currently, this is used for storing the "instructions" users can set from the UI for the agent.
+   */
+  promptParamValues: map<!string, string>
+
+  /**
+   * Collection of tools that should be initialized for the agent.
+   * These tools will be available to the agent for query execution,
+   * and for test query execution in the absence of {@link Genai.Agent.Dynamic.TestSpec#tools}.
+   */
+  tools: [Genai.Agent.Dynamic.Tool]
+
+  /**
+   * The name of the LLM client configuration to use for the agent.
+   * Must be a {@link GenaiCore.Llm.Auth#name}.
+   * If not specified, the default LLM client configuration will be used.
+   */
+  llmClientConfigName: string
+}

@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+private type OidcAuthenticationResponse {
+
+  /**
+   * REQUIRED. ID Token.
+   */
+  id_token: !string
+
+  /**
+   * OAuth 2.0 Access Token. This is returned unless the response_type value used is id_token.
+   */
+  access_token: string
+
+  /**
+   * OAuth 2.0 Token Type value. The value MUST be Bearer or another token_type value that the Client has negotiated
+   * with the Authorization Server. Clients implementing this profile MUST support the OAuth 2.0 Bearer Token Usage
+   * [RFC6750] specification. This profile only describes the use of bearer tokens. This is returned in the same cases
+   * as access_token is.
+   */
+  token_type: string
+
+  /**
+   * OAuth 2.0 state value. REQUIRED if the state parameter is present in the Authorization Request. Clients MUST
+   * verify that the state value is equal to the value of state parameter in the Authorization Request.
+   */
+  state: string
+
+  /**
+   * OPTIONAL. Expiration time of the Access Token in seconds since the response was generated.
+   */
+  expires_in: int
+}

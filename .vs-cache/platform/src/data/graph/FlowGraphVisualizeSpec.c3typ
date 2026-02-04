@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type FlowGraphVisualizeSpec mixes Spec {
+
+  /**
+   * static
+   * State if the visualization should be static or interactive. The default is an interactive visualization which
+   * allows clicking on different node and highlighting all nodes that are between the clicked node and the source
+   * nodes
+   */
+  static: boolean
+
+  /**
+   * doNotPreview: specify if the user gets the preview of the flowgraph or not, the default is to show the preview
+   * This field is currently ignored; previews are not shown.
+   */
+  doNotPreview: boolean
+
+  /**
+   * engine used to create the `Digraph`
+   * This field is currently ignored; only mxgraph is being used.
+   */
+  engine: string
+
+  /**
+   * show_nested
+   */
+  show_nested: boolean
+
+  /**
+   * Light Theme
+   * This field is currently ignored; styles can be set in vertexSpecByType.
+   */
+  light: boolean
+
+  /**
+   * The spacing in pixels between rows in the graph layout.
+   */
+  rowSpacing: int
+
+  /**
+   * The spacing in pixels between columns in the graph layout.
+   */
+  columnSpacing: int
+
+  /**
+   * The type names of vertices that should be displayed as inputs.  These vertices
+   * will be laid out along the top row.
+   */
+  inputVertexTypeNames: [string]
+
+  /**
+   * The field name, on a specific vertex type, that might contain a nested graph.
+   * If present, the field value should be an object mixing FlowGraph with an `id` and either:
+   * - `vertices` and `edges` fields.
+   * - a `type` field that is contained in nestedVertexTypeNames.  In this case, the
+   *   nested graph will be fetched.  If the type is not in nestedVertexTypeNames,
+   *   the vertex is not considered to have a nested graph.
+   */
+  nestedVertexFieldName: string
+
+  /**
+   * The type names of objects inside vertices that may need to be fetched as nested graphs.
+   * @see nestedVertexFieldName
+   */
+  nestedVertexTypeNames: [string]
+
+  /**
+   * Vertex-specific configurations (height, width, etc.) by specific vertex type names
+   * (ex. 'MlPipeline.Input').  It should include an empty-string key that contains
+   * the default configuration for types that are not listed.  For now, we are doing
+   * exact type name comparison, so mixins are not checked.
+   */
+  vertexSpecByType: map<string, FlowGraphVisualizeSpec.VertexSpec>
+
+  /**
+   * Port-specific configurations (height, width, etc.) by specific type names of
+   * the associated vertex (ex. 'MlPipeline.Input').
+   * @see vertexSpecByType
+   */
+  portSpecByType: map<string, FlowGraphVisualizeSpec.VertexSpec>
+
+  /**
+   * Style configuration for all edges.  For mxgraph, this is a string.  This could be extended
+   * to specify different styles for edges based on the connected vertices.
+   */
+  edgeStyle: any
+}

@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used by {@link Genai.LlmGuardrails.Manager} to check and sanitize LLM inputs and outputs.
+ */
+type Genai.LlmGuardrails.Processor mixes DefaultInstance {
+  inst: ~ py
+
+  /**
+   * If no fields are populated on the Genai.LlmGuardrails.Processor, it will not be correctly persisted on
+   * {@link Genai.LlmGuardrails.Manager#inputProcessors} or {@link Genai.LlmGuardrails.Manager#outputProcessors},
+   * so this field exists to ensure that all processors are correctly persisted.
+   */
+  name: !string
+
+  /**
+   * Initialize this validator. By default, initialize will do nothing.
+   * @param forceReload
+   *           If true, will re-initialize.
+   */
+  initialize: member function(forceReload: boolean) py
+
+  /**
+   * Processes an LLM prompt, checking for issues and either raising an error
+   * or updating the original prompt.
+   *
+   * @param inputResult
+   *   The LLM input to process.
+   * @return the processed LLM input.
+   */
+  processInput: member function(inputResult: !Genai.LlmGuardrails.Processor.Result): !Genai.LlmGuardrails.Processor.Result
+
+  /**
+   * The values of {@link Genai.Prompt#params} to scan.
+   */
+  promptParamsToScan: [string] = ['query', 'question', 'text']
+
+  /**
+   * Extracts all valid non-empty prompts defined in {@link Genai.LlmGuardrails.Processor#promptParamsToScan}.
+   * If none of the promptParamsToScan are set, it will return the whole inputResult.currentValue as a string.
+   *
+   * @param inputResult
+   *   The input to process.
+   */
+  extractInputValuesToScan: private member function(inputResult: !Genai.LlmGuardrails.Processor.Result): [string] py
+
+  /**
+   * Processes an LLM response, checking for issues and either raising an error
+   * or updating the response.
+   *
+   * @param outputResult
+   *   The LLM output to process.
+   * @return the processed LLM output.
+   */
+  processOutput: member function(outputResult: !Genai.LlmGuardrails.Processor.Result): !Genai.LlmGuardrails.Processor.Result
+}

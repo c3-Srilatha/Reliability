@@ -1,0 +1,151 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to enable acl authorization on a given type. The type that will be acl enabled just needs to mixin
+ * AclEnabled. Details on acl usage can be found at {@link access-control.c3doc Data Access using Acl}
+ *
+ * When mixing in this type, along with Configurable and/or Versionable, Configurable should be mixed in first,
+ * followed by this AclEnabled then Versionable (as appropriate).
+ */
+type AclEnabled {
+
+  /**
+   * List of {@link AclEntry} entries governing who can read/update/remove Objs.
+   */
+  acl: [AclEntry] schema name 'AC'
+
+  /**
+   * Determines the the current user can read this instance. Note that it requires `acl` field to be populated.
+   * If unsure set `getIfAclIsMissing` parameter.
+   *
+   * @param getIfAclIsMissing
+   *        'true' if the instance should be retrieved from the db if the 'acl' field wasn't included when the
+   *        instance was previously retrieved from the db.
+   *
+   * @return `true` if current user can read this instance.
+   */
+  myUserCanRead: inline member function(getIfAclIsMissing: boolean): boolean
+
+  /**
+   * Determines the the current update can read this instance. Note that it requires `acl` field to be populated.
+   * If unsure set `getIfAclIsMissing` parameter.
+   *
+   * @param getIfAclIsMissing
+   *        'true' if the instance should be retrieved from the db if the 'acl' field wasn't included when the
+   *        instance was previously retrieved from the db.
+   *
+   * @return `true` if current user can update this instance.
+   */
+  myUserCanUpdate: inline member function(getIfAclIsMissing: boolean): boolean
+
+  /**
+   * Determines the the current user can remove this instance. Note that it requires `acl` field to be populated.
+   * If unsure set `getIfAclIsMissing` parameter.
+   *
+   * @param getIfAclIsMissing
+   *        'true' if the instance should be retrieved from the db if the 'acl' field wasn't included when the
+   *        instance was previously retrieved from the db.
+   *
+   * @return `true` if current user can remove this instance.
+   */
+  myUserCanRemove: inline member function(getIfAclIsMissing: boolean): boolean
+
+  /**
+   * Determines the the current user can modify the ACL for this instance. Note that it requires `acl` field to
+   * be populated. If unsure set `getIfAclIsMissing` parameter.
+   *
+   * @param getIfAclIsMissing
+   *        'true' if the instance should be retrieved from the db if the 'acl' field wasn't included when the
+   *        instance was previously retrieved from the db.
+   *
+   * @return `true` if current user can read this instance.
+   */
+  myUserCanModifyAcl: inline member function(getIfAclIsMissing: boolean): boolean
+
+  /**
+   * `true` if ACL enforced for current user and the specified type.
+   */
+  isAclEnforcedForMyUser: inline function(type: !Type): boolean
+
+  /**
+   * Gets the default acl for newly created objs of the specified type for my user.  For a type that is currently
+   * enforcing acl (e.g. enabled via {@link EnableAclPrivilege} or {@link Ann.Db#enforceAcl}, if the obj is being
+   * created by anyone other than the authorizer, the default entry will grant the creator full access.  This
+   * default entry will be removed if `populateAcl` is called and that creates entries specified by the
+   * {@link AclPrivilege} entries.
+   *
+   * @param type
+   *        Type to get the default acl for.  If this type does not mixin {@link AclEnabled}, then null will be
+   *        returned.
+   *
+   * @return the default acl for newly created objs of the specified type for my user.
+   */
+  defaultAclForMyUser: inline function(type: !Type): AclEntry
+
+  /**
+   * Populates the acl entries for the specified Objs. The acl entries will be populated based on the
+   * {@link AclPrivilege} entries defined for the type.
+   *
+   * @param objs
+   *        List of objs to populate the acls for. If null, the acls for all entries will be populated.
+   */
+  populateAcl: function(objs: [mixing AclEnabled]): int
+
+  /**
+   * Refreshes acl entries for the specified Objs as determined by the {@link RefreshAclsSpec}. The acl entries
+   * will be refreshed based on the {@link AclPrivilege} entries defined for the type.
+   *
+   * @param spec
+   *          Indicates which objs to refresh acls for along with other options that control the operation.
+   * @return
+   *          If {@link RefreshAclsSpec.async} is true, returns the BatchJob that was created/used for processing the
+   *          request, null otherwise.
+   */
+  refreshAcls: function(spec: RefreshAclsSpec): Obj
+
+  /**
+   * Creates (or updates existing) entry with all but modify ACL permissions.
+   */
+  grantMemberReadUpdateRemove: member function(member: !AccessControlEntity): !mixing AclEnabled
+
+  /**
+   * Merges an acl entry to the acl for an obj but does not persist the changes.  If an existing entry for the
+   * member exists with the same source as the new one, the permissions granted by the new one will be added to
+   * that entry, otherwise a new entry will be created/added.
+   *
+   * @return the obj with the new acl after merging the indicated entry.
+   */
+  mergeAclEntry: inline member function(entry: !AclEntry): !mixing AclEnabled
+
+  /**
+   * Merges acl entries to the acl for an obj but does not persist the changes.  If an existing entry for the
+   * member exists with the same source as the new one, the permissions granted by the new one will be added to
+   * that entry, otherwise a new entry will be created/added.
+   *
+   * @return the obj with the new acl after merging the indicated entry.
+   */
+  mergeAclEntries: inline member function(entries: !?[AclEntry]): !mixing AclEnabled
+
+  /**
+   * @return True if there are {@link AclPrivilege} entries defined for the type.
+   */
+  hasPrivileges: function(): !boolean
+
+  /**
+   * Returns true if the current user is allowed to skip authorization checks to access this instance without checking ACLs.
+   */
+  @action(inline=true)
+  skipAuthz: inline function(): boolean
+
+  /**
+   * This private action is only used to check for ACL access when using Permission with dataPermission
+   */
+  @action(group+='user-admin')
+  modifyAcl: private function() js-server
+}

@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a utility type for {@link FileSourceCollection}s.
+ */
+type FileSourceCollectionManager mixes Value {
+
+  /**
+   * Infers the source type metadata associated to the remote source collection.
+   *
+   * @param sourceSystemName
+   *            The name of the source system for the target source collection.
+   * @param sourceSystemTypeName
+   *            The type name for the target source system of the source collection.
+   * @param sourceCollectionName
+   *            The target source collection name.
+   * @return A json representing the type metadata associated to the remote collection.
+   */
+  remoteCollectionSourceBySourceSystem: inline function(sourceSystemName: !string,
+                                                        sourceCollectionName: !string,
+                                                        credentials: json): TypeMeta js-server
+
+  /**
+   * See {@link FileSourceCollectionManager#remoteCollectionSourceBySourceSystem}
+   *
+   * @param sourceSystemName
+   *            The source system id for the target source collection.
+   * @param sourceCollectionName
+   *            The target source collection name.
+   * @return A json representing the type metadata associated to the remote collection.
+   */
+  remoteCollectionSourceBySourceSystemName: function(sourceSystemName: !string,
+                                                     sourceCollectionName: !string): TypeMeta js-server
+
+  /**
+   * Adds a file to a {@link FileSourceCollection}
+   * @param fileName The file name
+   * @param content The file content
+   * @param sourceCollection The File Source Collection
+   *
+   * @return boolean Returns true if the action completes successfully
+   */
+  addFileToCollection: function(fileName: !string,
+                                content: !string,
+                                sourceCollection: !FileSourceCollection): boolean js-server
+
+  /**
+   * Compares the fields names and data types of the local source collection from the remote version
+   *
+   * @param sourceCollectionName
+   *            name of the source collection
+   * @param localFields
+   *            field types in local source
+   * @param remoteFields
+   *            field types in remote source
+   * @return The source collection type associated to the given source system type name.
+   */
+  localSourceCollectionFieldsMismatchesWithRemote: function(sourceCollectionName: string,
+                                                            localFields: [DeclaredFieldType],
+                                                            remoteFields: [DeclaredFieldType])
+                                                     : map<string, string enum SourceCollectionUiSchemaMismatchError> js-server
+}

@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract base type for pre-compiled Lambda with efficient invocation.
+ *
+ * Subtypes hold language-specific pre-compiled callables that are used directly
+ * when {@link #apply} or {@link #call} is invoked, avoiding the overhead of re-parsing
+ * and evaluating the source code on each invocation.
+ *
+ * Created via {@link Lambda#compile}.
+ *
+ * @see Lambda
+ * @see Lambda.Compiled.Java
+ */
+abstract private type Lambda.Compiled<F: FunctionType> mixes Lambda<F> {
+
+  /**
+   * Returns the pre-compiled callable. Implemented by subtypes for language-specific compilation.
+   */
+  @cache(softRef=true)
+  compiledCallable: private cached abstract member function(): !CallableProtocol
+
+  /**
+   * Override apply to use the pre-compiled callable.
+   */
+  apply: ~
+}

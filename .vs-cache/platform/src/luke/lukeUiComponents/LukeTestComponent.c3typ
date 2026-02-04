@@ -1,0 +1,125 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type representing a UI Component in {@link LukeCore} tests
+ */
+@beta
+type LukeTestComponent {
+
+  /**
+   * The Luke instance attached to this component.
+   */
+  // TODO: use !mixing LukeCore
+  luke: !LukeBrowser
+
+  /**
+   * A parent selector that can be used to distinguish between multiple instances of a component within a page.
+   * This can be leveraged to create 1-to-1 mappings between {@link UITestComponent}s so that functions
+   * called on a component are limited only to the scope of that component in the UI.
+   */
+  parentSelector: string = '.page-content'
+
+  /**
+   * The spinner that masks the component when data is loading
+   */
+  spinner: string = '.fa-spinner'
+
+  /**
+   * Make assertions that collectively decide whether the component is properly rendered.
+   * @example
+   * ```js
+   * function rendered() {
+   *   this.luke.search(this.gridEl).visible().assert('toEqual', true);
+   *   this.luke.searchAll(this.itemEl).attr('length').assert('toBeGreaterThan', 5);
+   *   this.luke.search(this.messageEl).text().assert('toEqual', 'Welcome');
+   * }
+   * ```
+   */
+  rendered: inline member function() js
+
+  /**
+   * Make assertions that collectively decide whether the component is not rendered (not within viewport)
+   */
+  notRendered: inline member function() js
+
+  /**
+   * Make assertions that determine whether or not the component exists. Will make sure each {@link #renderingSelectors}
+   * exists.
+   */
+  exists: inline member function() js
+
+  /**
+   * Make assertions that determine whether or not the component doesn't exists, meaning the {@link parentSelector} should
+   * not exist.
+   */
+  notExists: inline member function() js
+
+  /**
+   * An array of selectors used to determine whether the page/component exist or is rendered.  These selectors will be searched
+   * for within the {@link #parentSelector}.
+   */
+  renderingSelectors: [string]
+
+  /**
+   * The maximum amount of time that Luke will retry an action
+   */
+  timeout: int
+
+  /**
+   * Searches for an element by a css selector inside the parent element selected by {@link #parentSelector}.
+   * @param selector
+   *          The css selector
+   * @param resolveOnFound
+   *          If true, only resolve the node when a dom element is found
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeWebElement} that will be resolved with the search result
+   */
+  search: inline member function(selector: !string, resolveOnFound: boolean, timeout: int): LukeWebElement js
+
+  /**
+   * Searches for all elements that matches a css selector inside the parent element selected by {@link #parentSelector}.
+   * @param selector
+   *          The css selector
+   * @param resolveOnFound
+   *          If true, only resolve the node when at least a dom element is found
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the search result (an array of {@link SeleniumWebElement})
+   */
+  searchAll: inline member function(selector: !string, resolveOnFound: boolean, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Searches for all elements with a selector and returns the first element that has the given text inside the parent element selected by {@link #parentSelector}.
+   * @param selector
+   *          The css selector
+   * @param text
+   *          The text to match
+   * @param resolveOnFound
+   *          If true, only resolve the node when a dom element is found
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeWebElement} that will be resolved with the search result
+   */
+  searchForElementWithText: inline member function(selector: !string,
+                                                   text: !string,
+                                                   resolveOnFound: boolean,
+                                                   timeout: int): LukeWebElement js
+
+  /**
+   * Click on elements on current session only within the component's {@link parentSelector}. Clicks on first element
+   * if found.
+   *
+   * @param  selector
+   *            The search query
+   * @param timeout
+   *          Timeout in seconds for the chain
+   */
+  click: inline member function(selector: !string, timeout: int): LukeAsyncQueueNode js
+}

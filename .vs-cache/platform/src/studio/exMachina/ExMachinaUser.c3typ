@@ -1,0 +1,152 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Note permissions to functions that update members need to be strictly controlled; otherwise, any User may modify
+ * any ExMachinaUser to which they have access.
+ */
+@db(unique=['user'], includeReadCalcs=true)
+entity type ExMachinaUser mixes FeatureEvaluatable schema name 'EXMA' {
+
+  /**
+   * {@link User#id}
+   */
+  id: ~
+
+  /**
+   * {@link User}
+   */
+  user: !User
+
+  /**
+   * The member's default session accessible from the UI. Setting this to null indicates that the user doesn't have a
+   * default session, in which case calls to {@link sessionStatus} will always return "stopped"
+   */
+  session: ExMachinaSession
+
+  /**
+   * The name that a user would like to have
+   */
+  preferredName: string
+
+  /**
+   * The user's full name.
+   * The default is derived from {@link User.firstName} if preferredName has not been set.
+   */
+  name: string stored calc preferredName ? preferredName : concat(user.firstName)
+
+  /**
+   * The user's email, allowing it to be seen by team members despite ACL restrictions.
+   */
+  email: string stored calc user.email
+
+  /**
+   * The user's name and email combined.
+   */
+  recognition: string stored calc concat(name, " <", email, ">")
+
+  /**
+   * The `visitorId` for usage tracking in {@link Pendo}. This will be set either upon initial signup (for new users)
+   * or on first login after the Pendo feature is added to the environment. Since the visitorId is determined
+   * client-side, there is no way to populate this via a migration. Whether this field is populated will determine
+   * whether initial logic to set the "Do Not Process" flag will be run in order to comply with GDPR.
+   */
+  pendoVisitorId: string
+
+  /**
+   * Selected memory size of the service.
+   * The memory size to use when invoking {@link ExMachinaSession#startDefaultForMember}
+   */
+  size: ExMachinaMemorySize
+
+  /**
+   * Selected time after which the service will be shutdown automatically if idle.
+   */
+  autoShutdownPeriod: int
+
+  /**
+   * Maxmimum memory size of the member.
+   */
+  maxSize: !ExMachinaMemorySize
+
+  /**
+   * Whether the user is logged in as the current member. Used to enforce account-level ACLs
+   */
+  current: private boolean
+
+  /**
+   * The ordered list of approved size requests. The latest is the current approval. If there are none,
+   * the account's defaultMaxSize is the size.
+   */
+  @db(order='descending(approvalDate)', filter='approved == true')
+  sizeApprovals: [ExMachinaSessionSizeApprovalRequest](member)
+
+  /**
+   * Updates the max workspace size for an {@link ExMachinaUser}. Used by {@link ExMachinaUserManagement.updateUserMaxWorkspaceSize}
+   *
+   * @param maxSize
+   *           The new maxSize for the user.
+   */
+  @action(group='admin')
+  updateMaxWorkspaceSize: member function(maxSize: !ExMachinaMemorySize) js-server
+
+  /**
+   * Returns the {@link ExMachinaUser} for the current user in the account associated with the current session.
+   * If the {@link ExMachinaUser} does not exist by default, will call upsertDefaultUser
+   *
+   * @param include
+   *           The optional include spec.
+   */
+  @action(group='basic-user')
+  getForCurrentUser: function(include: string): ExMachinaUser js-server
+
+  /**
+   * Upserts a default {@link ExMachinaUser} given a {@link User}
+   */
+  upsertDefaultUser: private function(user: !User): ExMachinaUser js-server
+
+  /**
+   * This will run immediately after login to see if a member's {@link pendoVisitorId} has been set. If the
+   * field is not set, an additional check will be made to determine whether the "Do Not Process" logic needs to run
+   * in order to comply with GDPR.
+   *
+   * @param  visitorId
+   *            The visitor id that has been persisted to Pendo
+   */
+  @action(group='basic-user')
+  setPendoVisitorId: function(visitorId: !string): boolean js-server
+
+  /**
+   * Fetches member and account information to help determine what a user should be able to access and see on the page
+   *
+   * @param memberId
+   *         Optional member id to fetch member/account information for. If not provided, the user's current membership
+   *         will be used.
+   */
+  @action(group='basic-user')
+  userInfo: function(): ExMachinaUserInfo js-server
+
+  /**
+   * Helper function used to by userInfo to get common member account information to all Ex Machina packages
+   */
+  @action(group='basic-user')
+  @dependency(include='user.groups')
+  commonUserInfo: member function(): ExMachinaUserInfo js-server
+
+  /**
+   * Helper function used to by userInfo to determine whether the current user needs data governance
+   */
+  @action(group='basic-user')
+  needsDataGovernance: member function(): boolean js-server
+
+  /**
+   * Determine whether the given {@link User} is a Cluster Admin, Env Admin, or App Admin and should
+   * be an Ex Machina Admin accordingly.
+   */
+  isAdmin: private inline function(user: !User): boolean js-server
+}

@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Allows saving specific versions.  Every update to types that mix this type in will retain a `versionEdit` to
+ * go back to the last saved version.  Also, `versionEdit` entries will be retained to back to any previously
+ * saved version.
+ *
+ * This type is intended to be used for user-interactive types that benefit from an explicit "save" model.  It is
+ * not suitable to be used with types that are largely populated via dataload.
+ *
+ * When mixing in this type, along with Configurable and/or AclEnabled, Configurable should be mixed in first,
+ * followed by AclEnabled then this (as appropriate).
+ */
+type Versionable {
+
+  /**
+   * Timestamp of the last saved version.  Subsequent updates to an instance will retain a `versionEdits` entry
+   * to get back to the state of the instance at this time.  If this is null, there has been no explicit save
+   * and no history will be retained until `updateAndSave` has been called.
+   */
+  @db(systemUpdateOnly=true)
+  lastSavedTimestamp: private datetime
+
+  /**
+   * Number of saved versions.
+   */
+  @db(systemUpdateOnly=true)
+  numSavedVersions: private int = 0
+
+  /**
+   * Maintains the saved version number.  If the latest version isn't saved, this will be `-1`.  As versions
+   * are saved they are assigned saved versions numbers starting at 1.  There will be no gaps between saved
+   * version numbers for saved versions.
+   */
+  @db(systemUpdateOnly=true)
+  savedVersion: int = -1
+
+  /**
+   * Every update to types that mix this type in will retain `versionEdit` entries to enable going back to any
+   * previously saved version.
+   *
+   * Completely and automatically managed by the system.
+   */
+  versionEdits: private [VersionEdit] schema name 'V'
+
+  /**
+   * Saves this version as the latest version.  For more comprehensive cases (e.g. upsert/merge and batch), you
+   * call call those functions on {@link Upsertable} and set the {@link UpsertSpec#saveVersion} to true to save
+   * the upserted input as the latest version.
+   */
+  saveVersion: member function()
+
+  /**
+   * Called by upsert operation.  Updates the obj with new `lastSavedTimestamp`, `numSavedVersions` and `versionEdits`
+   * entries. The `ths` instance is assumed to be fully populated.
+   *
+   * @param srcObj
+   *        Fully populated obj in the state it was in prior to the update.  If null, the obj is being created.
+   * @param spec
+   *        UpsertSpec for the original upsert operation.
+   *
+   * @return The obj with the appropriate `lastSavedTimestamp`, `numSavedVersions` and `versionEdits` fields.
+   */
+  processObj: private member function(srcObj: !?Versionable, spec: !?UpsertSpec): !mixing Versionable
+
+  /**
+   * Gets all saved versions of an object
+   *
+   * @param spec
+   *        Optionally used to specify ordering/filtering/include, etc. for the returned results.  By default,
+   *        the complete objs are returned in descending order of when they were created.  Note that any stored
+   *        calc fields will always have the latest value and read calc fields are not returned.  Also, the include
+   *        may only be used to get a subset of the objs' fields (e.g. you can't traverse external references).
+   */
+  @java(returnWildcardVarBindings=true)
+  allVersions: member function(spec: FetchSpec): stream<mixing Versionable>
+}

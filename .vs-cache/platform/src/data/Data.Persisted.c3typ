@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Internal instance of {@link Data}, backed by persistence in `Feature.Store`'s Data store. By "persisted",
+ * we mean the Data instance is non-ephemeral and can be shared across cluster nodes.
+ */
+@beta
+type Data.Persisted mixes Data.Lazy, DataPushStreamable {
+
+  // Default tableName for Data.Persisted
+  DFLT_TABLE_NAME: private const string = "Data_Persisted"
+
+  DFLT_ROW_COUNT:    const int = 32
+  pushStream:        ~ py
+  stream:            ~ py
+  supportsMultiNode: ~
+  close:             ~
+
+  /**
+   * Holds Metadata on this {@link Data.Persisted}
+   */
+  // TODO: PLAT-61029: Implement metadata field on `Data.Persisted`
+  @reClaim(inherit=true)
+  metadata: property(): !Data.Persisted.Metadata
+
+  toPersistedLocal: ~ py
+
+  /**
+   * Sets default values for a {@link Data.Persisted.PushStreamSpec} based on the given spec.
+   */
+  setDefaultsForPushStreamSpec: function(spec: !Data.PushStreamSpec): !Data.Persisted.PushStreamSpec py
+
+  /**
+   * Returns the filename for the given index and extension.
+   */
+  filenameForIdx: private function(idx: !string, ext: !string): !string py
+
+  /**
+   * Combine an array of {@link Data.Persisted} into one.
+   * @param data
+   *    the Data.Persisted to be combined.
+   * @param tableName
+   *    table name the returned Data.Persisted.
+   * @param id
+   *    id for the returned Data.Persisted.
+   * @param copy
+   *    if set, will copy the files to the target Data.Persisted so the sources are preserved.
+   * @return the combined Data.Persisted
+   */
+  combinePersisted: private function(data: ![Data.Persisted],
+                                     tableName: string,
+                                     id: string,
+                                     copy: boolean): Data.Persisted
+
+  // Helper method that sets default values for a {@link Data.Persisted.StreamSpec} based on the given spec.
+  _setDefaultsForStreamSpec: private function(spec: Data.StreamSpec): Data.Persisted.StreamSpec java | py
+
+  /**
+   * @param baseDir
+   *           the base directory to search for files.
+   * @return the number of files in the baseDir.
+   */
+  numFilesForBaseDir: private function(baseDir: !string): !int
+
+  /**
+   * Upsert the objs into database such that each row corresponds to a single instance of the provided **serType**. Please note that {@link Persistable.createBatch} will be used to create the instances in the db.
+   */
+  @beta
+  upsertToDb: member function(serType: !Type<<Persistable>>, batchSize: int, pyRuntime: string, spec: UpsertSpec)
+}

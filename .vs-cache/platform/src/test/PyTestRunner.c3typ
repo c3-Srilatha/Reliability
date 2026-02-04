@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@deprecated
+entity type PyTestRunner {
+
+  // extends TestRunner type key 'PTR'
+
+  /**
+   * Calls a python function with provided args and returns a test result.
+   * @param testRunnerCode
+   *           Python file, as a string, to run.
+   * @param pythonPath
+   *           Path to python executable to use.
+   * @param funcName
+   *           Name of the function within `testRunnerCode` to call.
+   * @param argMap
+   *           Map of arguments to provide to the called function. All values must be stringified.
+   * @return result of the function call, which must be an {@link TestSuiteResult}
+   */
+  runClientPyCode: private function(testRunnerCode: !string,
+                                    pythonPath: !string,
+                                    funcName: !string,
+                                    argMap: !map<string, string>): !TestSuiteResult
+
+  /**
+   * @param isJep
+   *           Whether the SDK access is for a jep python interpreter.
+   * @param pkgName
+   *           {@link Pkg} name of Pkg to connect to. Should exist under the zoo repository.
+   * @return python code, as a string, for accessing the C3 Python SDK
+   */
+  c3ConnectCode: private function(isJep: boolean, pkgName: string): !string
+}

@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+enum type ExMachinaPdfElementType {
+
+  /**
+   * Render a Visualization based on an ECharts config. The
+   * The corresponding {@link ExMachinaPdfElement#elementConfig} must have the following fields set:
+   *  1. config — The echarts config used to generate visualization. May include function pointers to
+   *              hardcoded functions in the {@link ExMachinaPdf} implementation, used for formatting purposes
+   *  2. height — Desired height of the Visualization to render on the PDF Report
+   *  3. width — Desired width of the Visualization to render on the PDF Report
+   *
+   * The PDF Report generation logic will use those 3 to generate an SVG representing the visualization
+   * Every other field specified as part of the corresponding {@link ExMachinaPdfElement#elementConfig} must be
+   * a valid field on a pdf make element: https://pdfmake.github.io/docs/0.1/document-definition-object/
+   */
+  ECHARTS = 'echarts'
+
+  /**
+   * A text element to be rendered on the PDF
+   */
+  TEXT = 'text'
+
+  /**
+   * A native pdf element that can directly be rendered with pdfmake:
+   * https://pdfmake.github.io/docs/0.1/document-definition-object/
+   */
+  NATIVE = 'native'
+
+  /**
+   * Render a set of {@link ExMachinaPdfElement}s side by side in a column format.
+   * Requires a field named "columns" to be set in the {@link ExMachinaPdfElement#elementConfig}
+   *
+   * Will eventually get transformed to a native pdfmake column element:
+   * https://pdfmake.github.io/docs/0.1/document-definition-object/columns/
+   */
+  COLUMNS = 'columns'
+
+}

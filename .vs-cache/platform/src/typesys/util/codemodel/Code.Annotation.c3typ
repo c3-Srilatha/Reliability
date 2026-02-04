@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Various element can have annotations applied in languages like Java and Ruby.
+ *
+ * ```java
+ * @Override
+ * @Count(15)
+ * @Validate(min=1, max=10, msg="you picked a bad number")
+ * ```
+ */
+@code(js="none", py="none")
+type Code.Annotation mixes Code.Node {
+
+  /**
+   * This class that defines the annotation.
+   */
+  class: member function(): !Code.Class
+
+  /**
+   * The annotation fields, each of which is a name and a value expression.
+   */
+  nameValues: member function(): @indexed map<!string, !Code.Expr>
+
+  /**
+   * The single value not associated with a field.
+   */
+  singleValue: member function(): Code.Expr
+
+  _class:       private !Code.Class
+  _nameValues:  private @indexed map<!string, !Code.Expr>
+  _singleValue: private Code.Expr
+}

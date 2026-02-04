@@ -1,0 +1,24 @@
+Represents the relationship between a ReliabilityAssets in a geographical map.
+This is used to generate the map view of the asset under "Asset Map" page.
+This relation is "valid" whenever it meets the following conditions:
+The from and to are different.
+The from and to are ReliabilityAssets with geographical locations data.
+Additionally this entity has a points field which is used to store the points that are used to draw the line
+between the from and to assets, in case the relation is not a direct line.
+For example, the following diagram shows a relations between 3 assets:
+ Asset 0        @────@
+  ▲   ▲         │    │
+  │   │         │    │
+  │   @─────────@    │
+  │                  ▼
+  │               Asset 2
+  │
+  │
+  │
+  ▼
+Asset 1
+
+In this case, Asset 0 --> Asset 1 has no points(@) and is a direct line. While Asset 0 --> Asset 2 has
+4 points(@) and is not a direct line.
+NOTE: All the connections in this graph are bidirectional, meaning that you can create a single relation
+between Asset 0 and Asset 1 and it will be used to represent the connection in both directions.

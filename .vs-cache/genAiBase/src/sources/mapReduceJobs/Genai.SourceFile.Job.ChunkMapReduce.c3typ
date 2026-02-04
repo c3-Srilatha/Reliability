@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enables parallel/distributed chunking.
+ * #startJob will use the options set in {@link Genai.SourceFile.Chunker.UniversalChunker.Config#mapReduceOptions}.
+ */
+entity type Genai.SourceFile.Job.ChunkMapReduce extends MapReduce<Genai.SourceFile, string, ObjList<Genai.SourceFile>, ObjList<Genai.SourceFile>>
+  type key 'GSFJCMP' {
+
+   /**
+   * Chunks a batch of {@link Genai.SourceFile}s
+   */
+  map: ~ js-server
+
+   /**
+   * Generates combined list of chunked files
+   */
+  reduce: ~ js-server
+
+   /**
+   * Transitions files to "failed" status if chunking fails
+   */
+  failed: ~ js-server
+
+   /**
+   * Triggers automated metadata tagging and indexing of the {@link Genai.SourceFile}s if
+   * #spec.skipProcessChunkingCompletion is not true.
+   */
+  completed: ~ js-server
+
+   /**
+    * Starts map reduce job with provided spec
+    * @param spec
+    *    The spec for the map reduce job
+    * @return the map reduce job.
+    */
+  startJob: function(spec: !Genai.SourceFile.Job.ChunkMapReduceSpec): !Genai.SourceFile.Job.ChunkMapReduce js-server
+
+  /**
+   * Specifies chunker spec, batch size, and whether to index files on job completion
+   */
+  spec: Genai.SourceFile.Job.ChunkMapReduceSpec
+}

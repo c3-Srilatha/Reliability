@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Certain flows are critical to Ex Machina's operation. When they fail/throw an error, we want to actively report the
+ * failures within the daily account alert email {@link ExMachinaAccountAlert}. This enables us to quickly identify
+ * issues and prioritize them, especially if they are billing related. This type should be used sparingly and only for
+ * errors that are urgent, e.g. billing issues, users being unable to sign up, etc.
+ */
+entity type ExMachinaErrorReportEntry mixes TimedValue schema name 'EXMACERE' {
+
+  /**
+   * The function call. E.g. "ExMachinaErrorReportEntry#removeAll"
+   */
+  method: string
+
+  /**
+   * The error message. While we could store a clob instead of a string, which would allow for storing longer error messages,
+   * the goal is to only save the general error signature for reporting and not the entire stack trace.
+   */
+  errorMessage: string
+
+  /**
+   * Local variables used within the function call. Useful for debugging
+   */
+  contextVars: json
+}

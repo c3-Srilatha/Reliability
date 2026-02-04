@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * While {@link ReliabilityMl.CustomPipe}s are used to execute the python classes that contain ML algorithm implementations,
+ * there must exist a system to preserve implemented algorithms such that users may reuse said implementations repeatedly.
+ * This Type contains the implementations of all algorithms that are deemed important enough to warrant repeated use.
+ * Every instance represents a unique algorithm and contains all information necessary to instantiate a
+ * {@link ReliabilityMl.CustomPipe}.
+ */
+extendable entity type ReliabilityMl.CustomPipeFactory schema name 'REL_CSTM_FCTRY' {
+
+  /**
+   * The {@link File} object which contains the python class implementation of the
+   * algorithm.
+   */
+  file: !File
+
+  /**
+   * The {@link file} may contain many classes as part of its internal implementation detail.
+   * However, there still is a single class which contains the overall logic of the algorithm.
+   * This field defines the name of that python class.
+   */
+  className: !string
+
+  /**
+   * Defines all the named arguments to the `__init__` function of the python class defined
+   * by {@link className}.
+   */
+  classKwargs: [ReliabilityMl.CustomPipeKwarg]
+
+  /**
+   * The contents of the {@link file} must be run in a runtime / conda environment appropriate to
+   * the execution requirements of the algorithm. Define the {@link Action.Requirement} in this field.
+   */
+  actionRequirement: !string serialized Action.Requirement
+
+  /**
+   * Defines additional metadata for the instantiation of the {@link ReliabilityMl.CustomPipe}.
+   */
+  convertSpec: MlConvertSpec
+
+  /**
+   * If the class(es) in the python {@link file} either inherit from or employ the use of other
+   * factory implementations, define those dependencies in this field. All the python class names
+   * defined here MUST be instances of {@link ReliabilityMl.CustomPipeFactory}.
+   */
+  inheritsFrom: [string]
+
+  beforeCreate: ~ py
+
+  /**
+   * Based on information in the fields defined on an instance of this Type, instantiate
+   * a {@link ReliabilityMl.CustomPipe} which can be trained/processed.
+   * @returns {@link ReliabilityMl.CustomPipe}.
+   */
+  initializePipe: private member function(): !ReliabilityMl.CustomPipe py
+
+  /**
+   * Helper function to list all the factory/template implementations defined by either
+   * the C3 AI Reliability as out of the box algorithms or the additional implementations
+   * custom-defined in a deployment.
+   */
+  listPublished: function(): [string] py
+}

@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A helper type to fetch all available features corresponding to a {@link ReliabilityAsset} and their contribution values.
+ * Should only be used in Model Configuration workflows.
+ *
+ * See `rel-dev-model-output-features-fetch.c3doc` for more detail about its base type {@link FeatureFetchBase} and its functionality.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type AssetFeaturesFetchHelper mixes FeatureFetchBase {
+
+  /**
+   * An {@link AssetClass}-based fetch for features of an asset. Wrapper for
+   * {@link FeatureFetchBase#fetchFeatures}.
+   * @param spec
+   *         Passed directly as {@link FeatureFetchBase#fetchFeatures} spec argument.
+   * @param assetId
+   *         The ID of the asset we want features for.
+   * @return FetchResultWithTotalCount<AssetFeaturesFetchHelper>
+   */
+  fetchFeaturesForAsset: function(spec: FetchSpec, assetId: !string): FetchResultWithTotalCount<FeatureFetchBase> js-rhino
+
+  /**
+   * Gets the feature names to pass into {@link FeatureFetchBase#fetchFeatures}. As implemented in
+   * base, looks at the asset's associated {@link AssetClass}.
+   */
+  getFeatureNamesForAsset: function(assetId: !string): [string] js-rhino
+
+  /**
+   * An {@link AssetClass}-based fetch for features of an asset, with specific features included/excluded based on selectionFilter. Wrapper for
+   * {@link FeatureFetchBase#fetchFeatures}.
+   * @param spec
+   *         Must have a filter element on id.
+   *         Passed directly as {@link FeatureFetchBase#fetchFeatures} spec argument.
+   * @param assetId
+   *         The ID of the asset we want features for.
+   * @param selectionFilter
+   *         If true, only fetch the filtered id in spec.id, otherwise excluded those from fetch result.
+   * @return FetchResultWithTotalCount<AssetFeaturesFetchHelper>
+   */
+  fetchFeaturesForAssetModelConfig: function(spec: FetchSpec,
+                                             assetId: !string,
+                                             selectionFilter: boolean): FetchResultWithTotalCount<FeatureFetchBase> js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

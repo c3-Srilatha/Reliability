@@ -1,0 +1,720 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that displays data in a grid-like table.
+ */
+@typeScript
+@uiComponentCategorizer(name='Data grid', category='Patterns', aliases=['grid', 'table', 'tabulation'])
+type UiSdlDataGrid mixes UiSdlBaseDataGrid<UiSdlDataGridDataSpec>, UiSdlFilterable, UiSdlSearchable {
+
+  /**
+   * Placeholder text in search bar.
+   */
+  searchBarPlaceHolderText: string = 'UiSdlDataGrid.searchBarPlaceHolderText'
+
+  /**
+   * Determines whether to display the final count of items in the grid returned from fetchCount
+   * When this is set to true, network request to fetchCount is not made. If table is {@link exportable}
+   * with `fuzzyCount === true`, and displaying export warning modal always is not desired,
+   * {@link disableExportWarningModal} can be set to true
+   */
+  fuzzyCount: boolean = false
+
+  /**
+   * If set to `true`, the export warning modal will never be displayed. Can be used together with
+   * {@link fuzzyCount} to disable always displaying the export warning modal on export request
+   */
+  disableExportWarningModal: boolean = false
+
+  /**
+   * Pagination configuration options for the data grid.
+   */
+  paginationConfig: UiSdlDataGridPaginationConfig = {}
+
+  /**
+   * Number formatting spec to be used in the grid.
+   * Individual columns can override this with {@link UiSdlDataGridDataSpecColumnFieldSetting#format}.
+   */
+  numberFormatSpec: UiSdlNumberParamKindFormatSpec = {}
+
+  /**
+   * Determines whether to display all rows in UI (pagination must be false).
+   */
+  fixedRows: boolean = false
+
+  /**
+   * The default page size configuration.
+   * This must be same as {@link UiSdlDataGridPaginationConfig#pageSize}.
+   */
+  defaultPageSize: int = 10
+
+  /**
+   * Specifies whether to render the filter bar subcomponent.
+   */
+  filterBar: boolean = false
+
+  /**
+   * Specifies whether to allow the user to remove and re-add columns in the grid display.
+   */
+  removableColumns: boolean = false
+
+  /**
+   * Defines the number of records that will be skipped by the pager.
+   */
+  paginationDataSkipSize: int = 0
+
+  /**
+   * Used in data grid infinite mode. To enable infinite scroll mode, do not set paginationConfig.
+   * This value represents the index of the top value in the grid in the collection.
+   * This value changes as user scrolls up and down.
+   */
+  dataOffset: int = 0
+
+  /**
+   * The alignment of the row actions in the {@link UiSdlDataGrid}.
+   */
+  rowActionAlignment: string enum('LEFT', 'RIGHT') = 'RIGHT'
+
+  /**
+   * Displays the nested/detail component in full width of the grid.
+   */
+  fullWidthNestedComponent: boolean = false
+
+  /**
+   * Whether grid allows exporting data from the grid to excel.
+   */
+  exportable: boolean = false
+
+  /**
+   * Stores the threshold (exclusive) for which the application will warn the user before exporting a grid to Excel
+   * if it has enough rows that the process will take a long time. If {@link disableExportWarningModal} is set to true,
+   * this field will be ignored.
+   */
+  exportWarningRecordThreshold: int = 20000
+
+  /**
+   * Stores threshold for the row actions to collapse into a modal
+   */
+  rowActionsCollapseThreshold: int = 3
+
+  /**
+   * The spec used for retrieving data used for export, will be exact same as dataSpec.
+   * Developer should not override this field.
+   * Leverage customExport and loadCustomExportDataAction for exporting with an API call.
+   */
+  @uiSdlDataSpec(dataDestinationField='exportDataCollection')
+  exportData: UiSdlDataGridDataSpec
+
+  /**
+   * Should be set to true when using a custom export so the regular export flow will not occur.
+   */
+  customExport: boolean = false
+
+  /**
+   * When the content of the header cell is larger than the width of the cell,
+   * the content will be wrapped to this number of lines and then truncate the rest.
+   * The content will be accessible in a tooltip by hovering over the cell.
+   */
+  headerMaxLinesWhenTruncated: int = 1
+
+  /**
+   * When the content of the cell is larger than the width of the cell,
+   * the content will be wrapped to this number of lines and then truncate the rest.
+   * The content will be accessible in a tooltip by hovering over the cell.
+   */
+  maxLinesWhenTruncated: int = 4
+
+  /**
+   * Holds the data to be exported.
+   */
+  exportDataCollection: [Obj]
+
+  /**
+   * A flag which captures the state of whether or not the user has accepted the warning from the
+   * modal when attempting to export a grid with more than {@link UiSdlDataGrid#exportWarningRecordThreshold} rows.
+   */
+  userHasAcknowledgedExportWarning: boolean = false
+
+  /**
+   * A map that stores the order of columns from left to right.
+   * The keys are column identifiers (strings) and the values are their respective positions (integers).
+   */
+  columnsOrder: private map<string, int> = {}
+
+  /**
+   * A flag that makes the {@link tableActions} always visible even if {@link multipleRowActions} is displayed.
+   */
+  @deprecated(finalVersion="8.6", details = "The default behavior in the future will be to always show the table actions.")
+  tableActionsAlwaysVisible: boolean = false
+
+  /**
+   * Triggered when the user scrolls in the grid in INFINITE_SCROLL mode.
+   *
+   * @param id
+   *        Id of the component.
+   * @param paginationDataSkipSize
+   *        New paginationDataSkipSize value for {@link paginationDataSkipSize}.
+   * @param pageSize
+   *        The number of rows shown in the grid.
+   *
+   * @returns A `SCROLL_CHANGE` action for this instance with the following properties:
+   * - payload.paginationDataSkipSize {int} new paginationDataSkipSize value for {@link paginationDataSkipSize}.
+   * - payload.pageSize {int} the number of rows shown in the grid.
+   * - meta.dataSourceId {string} The `id` of the data source to which the items belong.
+   */
+  @uiSdlActionCreator(actionType='SCROLL_CHANGE')
+  changeScrollAction: function(id: string,
+                               paginationDataSkipSize: !int,
+                               pageSize: !int): UiSdlScrollChangeAction ts-client
+
+  /**
+   * Triggered when the component is unmounted.
+   *
+   * @param id
+   *        Id of the component.
+   */
+  @uiSdlActionCreator(actionType='UNMOUNTED')
+  unmountedAction: function(id: string): UiSdlDataGridUnmountedAction ts-client
+
+  /**
+   * Triggered when the user clicks on the header of a sortable column.
+   *
+   * @param id
+   *        Id of the component.
+   * @param field
+   *        The field to sort on. If null, the existing sort field will be removed.
+   * @param descending
+   *        True to sort in descending order, false to sort in ascending order.
+   * @param sortNullsLast
+   *        If true, null values will come before non-null values. If false, null values will come after non-null values.
+   *
+   * @returns A `SORT_CHANGE` action for this instance with the following properties:
+   * - payload.field {string} The field to sort on. If null, the existing sort field will be removed.
+   * - payload.descending {boolean} True to sort in descending order, false to sort in ascending order.
+   * - payload.sortNullsLast {boolean} If true, null values will come before non-null values. If false, null values will come after non-null values.
+   * - meta.dataSourceId {string} The `id` of the data source to which the items belong
+   */
+  @uiSdlActionCreator(actionType='SORT_CHANGE')
+  changeSortAction: function(id: string,
+                             field: string,
+                             descending: boolean,
+                             sortNullsLast: boolean): UiSdlSortChangeAction ts-client
+
+  /**
+   * Triggered by {@link sortChangeEpic}.
+   *
+   * @param id
+   *        Id of the component.
+   * @param field
+   *        The field to sort on. If null, the existing sort field will be removed.
+   * @param descending
+   *        True to sort in descending order, false to sort in ascending order.
+   *
+   * @returns A `SORT_COLUMN_CHANGE` action for this instance with the following properties:
+   * - payload.field {string} The field to sort on. If null, the existing sort field will be removed.
+   * - payload.descending {boolean} True to sort in descending order, false to sort in ascending order.
+   */
+  @uiSdlActionCreator(actionType='SORT_COLUMN_CHANGE')
+  changeSortColumnAction: member function(id: string,
+                                          field: string,
+                                          descending: boolean): UiSdlSortColumnChangeAction ts-client
+
+  /**
+   * Triggered by {@link scrollChangeEpic}.
+   *
+   * @param id
+   *        Id of the component.
+   * @param paginationDataSkipSize
+   *        New paginationDataSkipSize value for {@link paginationDataSkipSize}.
+   * @param dataOffset
+   *        New dataOffset value for {@link dataOffset}.
+   *
+   * @returns A `SKIP_DATA_OFFSET_CHANGE` action for this instance with the following properties:
+   * - payload.paginationDataSkipSize {int} new paginationDataSkipSize value for {@link paginationDataSkipSize}.
+   * - payload.dataOffset {int} new dataOffset value for {@link dataOffset}.
+   * - payload.componentId {string} current component instance id passed in by {@link scrollChangeEpic}.
+   */
+  @uiSdlActionCreator(actionType='SKIP_DATA_OFFSET_CHANGE')
+  changePaginationSkipSizeDataOffsetAction: function(id: string,
+                                                     paginationDataSkipSize: !int,
+                                                     dataOffset: !int): UiSdlPaginationSkipSizeDataOffsetChangeAction ts-client
+
+  /**
+   * Triggered when users change from one page to another page.
+   *
+   * @param id
+   *           Id of the component.
+   * @param event
+   *           Browser event.
+   * @param ownProps
+   *           Props for this instance.
+   *
+   * @returns A `PAGE_CHANGE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='PAGE_CHANGE')
+  changePageAction: function(id: string, event: any, ownProps: any): UiSdlPageChangeAction ts-client
+
+  /**
+   * Triggered when the user clicks the export button to check the number of records for a type.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `TOTAL_DATA_COUNT` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='TOTAL_DATA_COUNT')
+  countDataAction: function(id: string): UiSdlDataCountAction ts-client
+
+  /**
+   * Triggered when the user clicks the select all button for checklist data grids
+   *
+   * @param id
+   *        Id of the component.
+   *
+   * @returns An `SELECT_ALL_DATA` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SELECT_ALL_DATA')
+  checkboxSelectAllDataAction: function(id: string): UiSdlCheckboxSelectAllDataAction ts-client
+
+  /**
+   * Triggered when the user clicks the clear all button for checklist data grids
+   *
+   * @param id
+   *        Id of the component.
+   *
+   * @returns An `CLEAR_ALL_SELECTED_IDS` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CLEAR_ALL_SELECTED_IDS')
+  checkboxClearAllSelectedIdsAction: function(id: string): UiSdlCheckboxClearAllSelectedIdsAction ts-client
+
+  /**
+   * Triggered when the user clicks the export button to load all data for a type.
+   *
+   * @param id
+   *        Id of the component.
+   * @param typeName
+   *        The data type of the grid's data.
+   *
+   * @returns An `EXPORT_DATA_LOAD` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='EXPORT_DATA_LOAD')
+  loadExportDataAction: function(id: string): UiSdlExportDataLoadAction ts-client
+
+  /**
+   * Used to trigger a custom export call.
+   *
+   * @param id
+   *        Id of the component.
+   * @param typeName
+   *        The data type of the grid's data.
+   *
+   * @returns An `EXPORT_DATA_LOAD` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CUSTOM_EXPORT_DATA_LOAD')
+  loadCustomExportDataAction: function(id: string, c3function: string, c3type: string, c3arguments: json): UiSdlCustomExportDataLoadAction ts-client
+
+  /**
+   * Retrieves the resulting actions for loadExportDataAction and loadCustomExportDataAction
+   *
+   * @param componentId
+   *        Id of the component.
+   * @param c3type
+   *        The type for the export.
+   * @param c3function
+   *       The function for the export.
+   * @param customArguments
+   *      The custom arguments for the export.
+   * @param exportDataSourceId
+   *      The id of the export data source.
+   * @param contextVars
+   *      The context vars
+   * @param dataTransforms
+   *     The data transforms specified in the component dataspec
+  */
+  getExportDataActions: function(componentId: string,
+                                         c3type: string,
+                                         c3function: string,
+                                         customArguments: json,
+                                         exportDataSourceId: string,
+                                         contextVars: map<string, UiSdlDynamicValueSpecParam>,
+                                         dataTransforms: [string]): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggered after the user clicks the export button to clear the export datasource.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns An `EXPORT_DATA_CLEAR` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='EXPORT_DATA_CLEAR')
+  clearExportDataAction: function(id: string): UiSdlExportDataClearAction ts-client
+
+  /**
+   * Triggered after the user clicks the redirect link in a column header
+   *
+   * @param id
+   *        Id of the component.
+   * @param columField
+   *        The column field for the column that was clicked.
+   *
+   * @returns A `CLICK_COLUMN_HEADER` action for this instance with the following properties:
+   * - payload.componentId {string} id of the grid that originated the redirect.
+   * - payload.columField {string} field of the column.
+   */
+  @uiSdlActionCreator(actionType='CLICK_COLUMN_HEADER')
+  clickColumnHeaderAction: function(id: string, columField: string): UiSdlClickColumnHeaderAction ts-client
+
+  /**
+   * Triggered after the user clicks the export button for a grid with more than
+   * {@link UiSdlDataGrid#exportWarningRecordThreshold} rows.
+   *
+   * @param id
+   *        Id of the component.
+   * @param warningModalId
+   *        Id of the warning modal that will be displayed.
+   *
+   * @returns A `WARNING_MODAL_OPEN` action for this instance with the following properties:
+   * - payload.componentId {string} id of the grid that originated the export.
+   * - payload.warningModalId {string} id of the warning modal.
+   */
+  @uiSdlActionCreator(actionType='WARNING_MODAL_OPEN')
+  openWarningModalAction: function(id: string, warningModalId: string): UiSdlWarningModalOpenAction ts-client
+
+  /**
+   * Triggered after the user clicks the primary button of the warning modal.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `WARNING_MODAL_ACKNOWLEDGE` action for this instance with the following properties:
+   * - payload.componentId {string} id of the grid that originated the export.
+   */
+  @uiSdlActionCreator(actionType='WARNING_MODAL_ACKNOWLEDGE')
+  acknowledgeWarningModalAction: function(id: string): UiSdlWarningModalAcknowledgeAction ts-client
+
+  /**
+   * Triggered after the user exits from the warning modal by clicking its primary button.
+   *
+   * @param id
+   *        Id of the component.
+   * @param warningModalId
+   *        Id of the warning modal that will be closed.
+   *
+   * @returns A `WARNING_MODAL_CLOSE` action for this instance with the following properties:
+   * - payload.componentId {string} id of the grid that originated the export.
+   * - payload.warningModalId {string} id of the warning modal.
+   */
+  @uiSdlActionCreator(actionType='WARNING_MODAL_CLOSE')
+  closeWarningModalAction: function(id: string, warningModalId: string): UiSdlWarningModalCloseAction ts-client
+
+  /**
+   * Triggered after the user has exported data after previously acknowledging the warning modal.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `WARNING_MODAL_RESET` action for this instance with the following properties:
+   * - payload.componentId {string} id of the grid that originated the export.
+   */
+  @uiSdlActionCreator(actionType='WARNING_MODAL_RESET')
+  resetWarningModalAction: function(id: string): UiSdlWarningModalResetAction ts-client
+
+  /**
+   * Triggered to synchronize the dataSpec and exportDataSpec so that all filters are carried over.
+   *
+   * @param state
+   *          Redux state.
+   * @param action
+   *          Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlActionCreator(actionType='EXPORT_ARGS_SYNC')
+  syncExportArgumentsAction: function(id: string): UiSdlExportArgumentsSyncAction ts-client
+
+  /**
+   * Listens for actions of type `WARNING_MODAL_ACKNOWLEDGE`.
+   * Updates the internal field {@link userHasAcknowledgedExportWarning} to `true` to show that the user
+   * has in fact acknowledged the warning from the modal by clicking its primary button.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='WARNING_MODAL_ACKNOWLEDGE')
+  acknowledgeWarningModalEffect: private function(state: UiSdlReduxState,
+                                                  action: UiSdlWarningModalAcknowledgeAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `WARNING_MODAL_RESET`.
+   * Updates the internal field {@link userHasAcknowledgedExportWarning} to `false` after the export has
+   * successfully completed so that the modal can be activated again at a later time.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='WARNING_MODAL_RESET')
+  resetWarningModalEffect: private function(state: UiSdlReduxState,
+                                            action: UiSdlWarningModalResetAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SORT_COLUMN_CHANGE` and updates internal
+   * field {@link sortColumn}.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SORT_COLUMN_CHANGE')
+  sortColumnChangeEffect: private inline function(state: UiSdlReduxState,
+                                                  action: UiSdlSortColumnChangeAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `PAGE_CHANGE` and updates internal
+   * field {@link skip}  and {@link pageSize}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='PAGE_CHANGE')
+  pageChangeEffect: private inline function(state: UiSdlReduxState,
+                                            action: UiSdlPageChangeAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SKIP_DATA_OFFSET_CHANGE` and updates internal
+   * fields {@link dataOffset} and {@link paginationDataSkipSize}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SKIP_DATA_OFFSET_CHANGE')
+  paginationSkipSizeDataOffsetChangeEffect: private inline function(state: UiSdlReduxState,
+                                                                    action: UiSdlPaginationSkipSizeDataOffsetChangeAction)
+                                                             : UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type 'EXPORT_ARGS_SYNC' and synchronizes the grid's dataSpec and exportDataSpec
+   * except for offset (defaulted to 0) and limit (defaulted to -1).
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='EXPORT_ARGS_SYNC')
+  exportArgumentsSyncReducer: private inline function(state: UiSdlReduxState,
+                                                      action: UiSdlExportArgumentsSyncAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type 'SET_ALL_SELECTED_IDS' and sets selectedItemIds to the grid's dataSpec with offset (defaulted to 0)
+   * and limit (defaulted to -1).
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SET_ALL_SELECTED_IDS')
+  checkboxSetAllSelectedIdsEffect: private inline function(state: UiSdlReduxState,
+                                                   action: UiSdlCheckboxSetAllSelectedIdsAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type 'CLEAR_ALL_SELECTED_IDS' and clears selectedItemIds to the grid's dataSpec with
+   * offset (defaulted to 0) and limit (defaulted to -1).
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='CLEAR_ALL_SELECTED_IDS')
+  checkboxClearAllSelectedIdsEffect: private inline function(state: UiSdlReduxState,
+                                                      action: UiSdlCheckboxClearAllSelectedIdsAction): UiSdlReduxState ts-client
+
+  filterSubmitEpic:         ~ ts-client
+  advancedFilterSubmitEpic: ~ ts-client
+  searchQueryChangeEpic:    ~ ts-client
+
+  /**
+   * Triggers `TOTAL_DATA_COUNT` action after data grid is initial rendered if fuzzyCount is set to false. Otherwise triggers no actions.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='INITIAL_RENDER')
+  dataGridInitialRenderEpic: private function(actionStream: UiSdlActionsObservable,
+                                              stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+    * Triggers `SKIP_DATA_OFFSET_CHANGE` action when the component is unmounted and component uses infinite scrolling. Otherwise triggers no actions.
+    *
+    * @param actionStream
+    *           Observable action stream.
+    * @param stateStream
+    *           Observable state stream.
+    *
+    * @returns An Observable action stream.
+    */
+  @uiSdlEpic(actionType='UNMOUNTED')
+  dataGridUnmountedEpic: private function(actionStream: UiSdlActionsObservable,
+                                  stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `DATA_CONFIG_UPDATE` and `DATA_REQUEST` actions when user clicks the export button to load all data for a type.
+   * Also triggers `EXPORT_ARGS_SYNC` action if the type of data source is 'Hierarchy'.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='EXPORT_DATA_LOAD')
+  loadExportDataEpic: private function(actionStream: UiSdlActionsObservable,
+                                       stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `DATA_CONFIG_UPDATE` and `DATA_REQUEST` actions when user clicks the export button to load all data for a type.
+   * Also triggers `EXPORT_ARGS_SYNC` action if the type of data source is 'Hierarchy'.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='CUSTOM_EXPORT_DATA_LOAD')
+  loadCustomExportDataEpic: private function(actionStream: UiSdlActionsObservable,
+                                       stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `DATA_RECEIVE` action after the user clicks the export button to clear the export datasource.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='EXPORT_DATA_CLEAR')
+  clearExportDataEpic: private function(actionStream: UiSdlActionsObservable,
+                                        stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `MODAL_OPEN` and `UI_DATA_GRID_COMPONENT_ID_SET` actions when the modal is opened.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='WARNING_MODAL_OPEN')
+  openWarningModalEpic: private function(actionStream: UiSdlActionsObservable,
+                                         stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `MODAL_CLOSE` action when the modal is closed.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='WARNING_MODAL_CLOSE')
+  closeWarningModalEpic: private function(actionStream: UiSdlActionsObservable,
+                                          stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `ARGUMENTS_MERGE` and `DATA_REQUEST` actions when users change from one page to another page.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='PAGE_CHANGE')
+  pageChangeEpic: private function(actionStream: UiSdlActionsObservable,
+                                   stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `ARGUMENTS_MERGE`, `DATA_REQUEST`, `SELECT_ALL_DATA` actions when user selects all checkbox items in grid.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='SELECT_ALL_DATA')
+  checkboxSelectAllDataEpic: private function(actionStream: UiSdlActionsObservable,
+                                   stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+
+  /**
+   * Triggers `ARGUMENTS_MERGE`, `DATA_REQUEST` and `SKIP_DATA_OFFSET_CHANGE` actions.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='SCROLL_CHANGE')
+  scrollChangeEpic: private function(actionStream: UiSdlActionsObservable,
+                                     stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+
+  /**
+   * Triggers `CHANGE_DATA_REQUESTCANCEL` and `SORT_COLUMN_CHANGE` actions to sort column changes.
+   * Also triggers `SKIP_DATA_OFFSET_CHANGE` action is pagination is not enable.
+   *
+   * @param actionStream
+   *           Observable action stream.
+   * @param stateStream
+   *           Observable state stream.
+   *
+   * @returns An Observable action stream.
+   */
+  @uiSdlEpic(actionType='SORT_CHANGE')
+  sortChangeEpic: private function(actionStream: UiSdlActionsObservable,
+                                          stateStream: UiSdlStatesObservable): UiSdlActionsObservable ts-client
+}

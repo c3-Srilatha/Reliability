@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * History of events for a {@link PhysicalAsset}.
+ */
+entity extendable type PhysicalAssetEvent schema name 'PREDMAINT_EVENT' {
+
+  /**
+   * Value for the {@link PhysicalAssetEvent}
+   */
+  value: string
+
+  /**
+   * The responses for this event
+   */
+  responses: [PhysicalAssetEventResponse](event)
+
+  /**
+   * The {@link PhysicalAsset} that the event is associated with.
+   */
+  parent: !PhysicalAsset
+
+  /**
+   * The time at which the event occurred.
+   */
+  timestamp: !datetime = meta.created
+}

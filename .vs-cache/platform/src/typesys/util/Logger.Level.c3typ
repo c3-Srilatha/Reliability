@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Logging levels. These correspond to the logging methods in **Logger**. For example {@link Logger#info} produces
+ * an entry of level #INFO.
+ *
+ * @see Logger
+ */
+enum type Logger.Level {
+
+  ERROR
+
+  WARN
+
+  INFO
+
+  DEBUG
+
+  TRACE
+
+  /**
+   * Test whether the specified test level is the same or higher than the target level. For example, any (non-null)
+   * value will return true for #TRACE, but only `ERROR` will return true for #ERROR.
+   */
+  sameOrHigher: function(test: !?string enum Logger.Level, target: !string enum Logger.Level): boolean
+
+  /**
+   * Test whether the specified test level is the same or lower than the target level. For example, any (non-null)
+   * value will return true for #ERROR, but only `TRACE` will return true for #TRACE.
+   */
+  sameOrLower: function(test: !?string enum Logger.Level, target: !string enum Logger.Level): boolean
+
+  /**
+   * Get the level from a near match (either lower-case or a natural abbreviation).
+   */
+  fromString: function(s: !?string, failIfInvalid: boolean): string enum Logger.Level
+}

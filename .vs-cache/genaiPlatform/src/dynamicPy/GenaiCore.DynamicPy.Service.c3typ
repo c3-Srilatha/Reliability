@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A wrapper around {@link GenaiCore.DynamicPy.Base} to make it easy to serve Python code as a microservice.
+ */
+extendable entity type GenaiCore.DynamicPy.Service mixes SeedData schema name "DPS" {
+
+  /**
+   * The instance that implements the service
+   */
+  pipe: !GenaiCore.DynamicPy.Service.BasePipe
+
+  /**
+   * The route at which the service is deployed, if any
+   */
+  route: string
+
+  /**
+   * The {@link ModelRegistry.Entry} for the model served by this service if any
+   */
+  entry: ModelRegistry.Entry
+
+  /**
+   * Light wrapper around {@link ModelInference#process} to unbox the results of using {@link GenaiCore.DynamicPy.Base#call}.
+   *
+   * @param x
+   *        The input
+   *
+   * @return The output
+   */
+  call: member function(x: any): any py
+
+  /**
+   * Create a new GenaiCore.DynamicPy.Service from a Python file at the given path, which can be either
+   * a local path (on Jupyter) or a file elsewhere in the C3 file system.
+   *
+   * The Python file must have a global function `load` that returns either
+   *     a) a function that takes a single parameter `x`
+   *     b) an instance of a class with a member method that takes only `self` and `x`
+   * That function will be called with the input data `x` when the service is invoked.
+   *
+   * @param filePath
+   *        The path to the Python file, either a local path (on Jupyter) or a file elsewhere in the C3 file system
+   * @param baseSpec
+   *        The spec controlling how the base should be created
+   * @param spec
+   *        The spec controlling whether and how the base should be registered and deployed
+   *
+   * @return The new service
+   */
+  createFromPyFile: function(filePath: !string, baseSpec: GenaiCore.DynamicPy.Base.Spec, spec: GenaiCore.DynamicPy.Service.CreateSpec): !mixing GenaiCore.DynamicPy.Service py
+
+  /**
+   * Create a new GenaiCore.DynamicPy.Service from a previously created {@link GenaiCore.DynamicPy.Base}.
+   * @param base
+   *        The base implementing the service
+   * @param spec
+   *        The spec controlling whether and how the base should be registered and deployed
+   *
+   * @return The new service
+   */
+  createFromPyBase: function(base: !GenaiCore.DynamicPy.Base, spec: GenaiCore.DynamicPy.Service.CreateSpec): !mixing GenaiCore.DynamicPy.Service py
+
+  /**
+   * Cleans up all associated service resources and disables/deletes the service.
+   * @param removeBase
+   *        Whether to `remove` the {@link GenaiCore.DynamicPy.Base} backing the #pipe for this service.
+   */
+  cleanup: private member function(removeBase: boolean) js
+
+  @dependency(include='pipe.id, entry')
+  beforeRemove: ~ js
+}

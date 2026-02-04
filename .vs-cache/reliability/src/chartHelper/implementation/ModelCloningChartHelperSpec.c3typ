@@ -1,0 +1,93 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec with necessary data to plot the `Reliability.CloningModelSensorPreviewChart`
+*/
+type ModelCloningChartHelperSpec mixes Spec {
+  /**
+   * The ids of the entities that will be plotted.
+  */
+  entities: [string]
+
+  /**
+   * The parent {@link ReliabilityAsset} of the the model
+  */
+  parent: ReliabilityAsset
+
+  /**
+   * The {@link ReliabilityMlModel} being cloned, used to retrieve existing {@link ReliabilityMlDatasetPreparationRun}.
+   */
+  baseModel: ReliabilityMlModel
+
+  /**
+   * Selected {@link TimeRange}s to be shaded as training ranges.
+  */
+  trainingDatasetTimeRanges: [TimeRange]
+
+  /**
+   * Selected {@link TimeRange}s to be shaded as validation ranges.
+  */
+  validateDatasetTimeRanges: [TimeRange]
+
+  /**
+   * Selected exclusion rules based on sensor value ({@link ReliabilityDataPreparationRuleMaskSpec}).
+   * Will be used to create time ranges that will shade the exclusions area on the chart together with
+   * `exclusionDates`.
+  */
+  nonOperationalMaskRules: [ReliabilityDataPreparationRuleMaskSpec]
+
+  /**
+   * Selected {@link TimeRange}s to be shaded as exclusion ranges.
+  */
+  exclusionDates: [TimeRange]
+
+  /**
+   * Starting {@link DateTime} for the chart's X-axis.
+  */
+  plotStart: DateTime
+
+  /**
+   * Ending {@link DateTime} for the chart's X-axis.
+  */
+  plotEnd: DateTime
+
+  /**
+   * String representing the {@link Interval} for the chart's data.
+  */
+  interval: string
+
+  /**
+   * Flag to plot existing {@link ReliabilityMlMaskPreparationSpec} from the #baseModel when plotting.
+   */
+  keepPreviousMasks: boolean
+
+  /**
+   * Settings for Control Valves (CV) exclusion masks.
+   * Should include the following properties:
+   * - isAssetNotOperationalMaskSettings: ReliabilityAssetSensorAssociationSpec
+   * - enableMaintenanceDatabaseFilter: boolean
+   *
+   * `isAssetNotOperationalMaskSettings` should include the following fields from {@link ReliabilityAssetSensorAssociationSpec#createExclusionMaskFeature}
+   * (at least the disabled/enabled flags if the masks are disabled)
+   * - extremeValueExclusionDisabled: boolean
+   * - extremeValueBounds: Pair<double, double>
+   * - stpExclusionEnabled: boolean
+   * - stpExclusionPeriodCount: double
+   * - manualModeDisabled: boolean
+   * - almostConstantExclusionEnabled: boolean
+   * - almostConstantExclusionMinDuration: double
+   * - almostConstantExclusionAbsChange: double
+   * - fTFExclusionEnabled: boolean
+   * - fTFExclusionLag: int
+   * - fTFExclusionDelay: int
+   * - fTFExclusionThreshold: double
+  */
+  cvExclusionsSettings: json
+}

@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface that represents a unified "embedding" API for LLMs, based on the OpenAi embeddings API:
+ * {@link https://platform.openai.com/docs/api-reference/embeddings}.
+ * See {@link GenaiCore.Llm.AzureOpenAi.Model} and {@link GenaiCore.Llm.Embedding.Client} as examples
+ * of types implementing this interface.
+ */
+abstract type GenaiCore.Llm.Embedding mixes GenaiCore.Llm.Task {
+
+  /**
+   * For more details on each option, see the API reference for your LLM provider or generally
+   * {@link https://platform.openai.com/docs/api-reference/embeddings}.
+   * To set options that will be used on every call, see {@link GenaiCore.Llm.Task#defaultOptions}.
+   *
+   * **NOTE** If the call to embedding is not going to execute in-engine, then `options['returnJson']` must be true.
+   *
+   * Example
+   * ```py
+   * resp = my_model.embedding(
+   *   input="The quick brown fox jumps over the lazy dog",
+   *   options={
+   *     "dimensions": 1024
+   *   }
+   * )
+   * ```
+   * @param input
+   *          Input text to embed. Can either take in a single string or an array of strings.
+   * @param options
+   *          Additional kwargs for the embedding API. If the specific LLM provider has
+   *          different kwargs than the OpenAi API, then those will also be passed along
+   *          to the native client. To set options that will be used on every call,
+   *          {@see #defaultOptions}.
+   *          **NOTE** If the call to embedding is not going to execute in-engine, then `options['returnJson']` must be true.
+   * @return response in native format if called in-engine and without returnJson set, json otherwise
+   */
+  embedding: inline member function(input: !(string | [!string]), options: json): !json py
+
+  /**
+   * This API is the same as {@link #embedding} and is called from the default implementation of
+   * {@link #embedding}. This function must be overriden by concrete
+   * implementations of {@link GenaiCore.Llm.Embedding}, because {@link #embedding}
+   * has extra boiler-plate implementation that does, for example, logging.
+   *
+   * @param input
+   *          Input text to embed. Can either take in a single string or an array of strings.
+   * @param options
+   *          Additional kwargs for the embedding API. If the specific LLM provider has
+   *          different kwargs than the OpenAi API, then those will also be passed along
+   *          to the native client. To set options that will be used on every call,
+   *          {@see #defaultOptions}.
+   *          **NOTE** If the call to embedding is not going to execute in-engine, then `options['returnJson']` must be true.
+   * @return response in native format if called in-engine and without returnJson set, json otherwise
+   */
+  doEmbedding: inline member function(input: !(string | [!string]), options: json): !json py
+}

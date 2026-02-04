@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@db(datastore='kv',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    compactType=true,
+    shortIdReservationRange=100000,
+    columnarStorage=false)
+/**
+ * Represents a validation contribution within the context of machine learning or reliability modeling.
+ * This entity captures contributions related to model validation, including bounds on the contribution
+ * and other relevant metadata for tracking model performance and reliability.
+ * For details on other information stored in this Type, refer to the documentation on each of the fields of this Type.
+ */
+extendable entity type ReliabilityMl.ValidationContribution mixes TimedDataPoint<ReliabilityMl.ValidationContributionHeader> schema name 'REL_MVC' {
+  /**
+   * Represents the contribution value of the validation, typically a numerical value indicating the importance or impact of the validation.
+   *
+   * `@ts(treatmentPath='parent.treatment')` - Specifies the path to retrieve the treatment value from the parent.
+   */
+  @ts(treatmentPath='parent.treatment')
+  contribution: !double
+
+  /**
+   * The upper bound for the validation contribution.
+   * This defines the maximum allowed value for the contribution and is typically used to set a limit or threshold.
+   * It can be used for validation checks or to enforce certain boundaries on the data.
+   */
+  contributionUpperBound: double
+
+  /**
+   * The lower bound for the validation contribution.
+   * This defines the minimum allowed value for the contribution and is useful for validation checks.
+   * It ensures that the contribution value does not fall below a certain threshold.
+   * This can be useful for validation checks, ensuring that values do not fall below a certain threshold.
+   */
+  contributionLowerBound: double
+}

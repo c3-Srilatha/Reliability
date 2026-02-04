@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Interface that represents a "task" that an LLM can perform. This type can be used to discover supported tasks, via
+ * listing concrete sub-types.
+ * Types of task supported currently:
+ *  - {@link GenaiCore.Llm.Completion}
+ *  - {@link GenaiCore.Llm.Embedding}
+ */
+abstract type GenaiCore.Llm.Task {
+
+  /**
+   * Default values to provide for the task. Caller-provided option values (e.g. `completion#options`)
+   * will be merged and take precedence.
+   */
+  defaultOptions: json
+
+  /**
+   * @param options
+   *          user provided options to the task
+   * @return options merged with {@link #defaultOptions} giving precedence to the former.
+   */
+  mergeDefaultOptions: private inline member function(options: json): !?native py
+
+  /**
+   * @param optionsBatch
+   *          user provided list of options to the task
+   * @return options merged with {@link #defaultOptions} giving precedence to the former.
+   */
+  mergeDefaultOptionsBatch: private inline member function(optionsBatch: [json]): !?native py
+}

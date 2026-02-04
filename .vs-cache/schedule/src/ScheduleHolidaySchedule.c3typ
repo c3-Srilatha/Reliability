@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The association of a holiday to a schedule plus a window of time
+ * for reduced or extended hours for the related holiday
+ * e.g. Holidays that apply to this schedule.
+ * 00:00 to 00:00 means no hours  00:00 to null means all 24 hours of the day
+ * Business Key: schedule+scheduleHoliday+non overlapping effective dates
+ */
+@db(unique=['scheduleCalendar,scheduleHoliday,effectiveDate,effectiveEndDate'])
+entity type ScheduleHolidaySchedule schema name 'SCHD_HLDYSCH' {
+
+  /**
+   * date that the holiday is in effect for the schedule, inclusive
+   */
+  effectiveDate: datetime
+
+  /**
+   * date that the holiday is no longer in effect for the schedule, exclusive
+   */
+  effectiveEndDate: datetime
+
+  /**
+   * time of the day for the associated holiday that is in effect for the schedule
+   * i.e. hours of operation.  inclusive HH:MM - will change to time datatype
+   */
+  startTime: !string
+
+  /**
+   * time of the day for the associated holiday that is no longer in effect for the
+   * schedule.  i.e. hours of operation.  exclusive.  null implies unbounded to end of the day
+   * HH:MM - will change to time datatype
+   */
+  endTime: string
+
+  /**
+   * FK references FROM parents
+   */
+  scheduleCalendar: !ScheduleCalendar
+
+  scheduleHoliday: !ScheduleHoliday
+  name:            ~ not persistable
+}

@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Manages creation and execution of {@link Workflow} required for starting and monitoring a {@link MlModel.Monitor.Group}.
+ * {@link MlModel.Monitor.GroupResult#startWorkflow} creates a new instance of {@link MlModel.Monitor.GroupRun}.
+ */
+@deprecated(finalVersion='8.4', details='use MlModel.Monitor.BatchGroupRun instead')
+type MlModel.Monitor.GroupRun extends MlWorkflowCoordinatable<MlModel.Monitor.Result> type key 'MMGR' {
+
+  /**
+   * {@link MlModel.Monitor.GroupResult} for executing a {@link MlModel.Monitor.Group} that this run belongs to.
+   */
+  groupResult: !MlModel.Monitor.GroupResult
+
+  generateNextResults:          ~ py
+  startResult:                  ~ py
+  completeResult:               ~ py
+  customSummaryFieldsForResult: ~ py
+}

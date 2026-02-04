@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract type in charge of providing the method for generating a pdf report and the file where the report will be stored
+ */
+abstract type ReliabilityReportHelper<RRS: ReliabilityReportSpec, REP: ReliabilityReport> {
+
+  /**
+   * Must be implemented by types that require a report to be generated.
+   * It creates the required {@link PdfComponent}s and sends them to {@link PdfGenerationSpec} in order to generate the report
+   * @param reportSpec
+   *    Allows to configure user preferences in the report
+   */
+  generateReport: abstract member function(reportSpec: !RRS): ReliabilityReportResult
+
+  /**
+   * Calls {@link generateReport} and wraps the resulting report into a {@link ReliabilityReport} entity.
+   */
+  generateReportEntity: abstract member function(reportSpec: !RRS): REP js-rhino
+}

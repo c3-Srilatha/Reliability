@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Information of a single test function within a test file.
+ */
+type JenkinsTestCase {
+
+  /**
+   * How many consecutive builds this test has failed. Age gets reset to 0 if the status is set to "FIXED"
+   * That is if age is a decently high number like 5, it is most likely a regression.
+   */
+  age: int
+
+  /**
+   * The path of the test file this test function belongs to.
+   * The path is separated by periods instead of slashes like a url.
+   */
+  className: string
+
+  /**
+   * time in seconds to run the test
+   */
+  duration: double
+
+  /**
+   * Error Message
+   */
+  @ser(name='errorDetails')
+  errorMsg: string
+
+  /**
+   * Stacktrace
+   */
+  @ser(name='errorStackTrace')
+  stackTrace: string
+
+  /**
+   * Which build number the test started failing
+   */
+  failedSince: int
+
+  /**
+   * Name of the test function (for platform) or description of the test (for apps).
+   */
+  name: string
+
+  /**
+   * Whether or not test was skipped
+   */
+  skipped: boolean
+
+  /**
+   * The status of the test
+   */
+  status: string enum JenkinsTestStatus
+
+  /**
+   * Standard Error
+   */
+  stderr: string
+
+  /**
+   * Standard Output
+   */
+  stdout: string
+}

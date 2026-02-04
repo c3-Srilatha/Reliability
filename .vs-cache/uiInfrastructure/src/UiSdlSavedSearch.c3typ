@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Allows saving search queries for FetchSpec that are used in different components, like UiSdlFilterPanel.
+ *
+ * By default the access to this type is controled by the `privateSearch` field and the entity meta.created. To
+ * customize the access rules, applications can define their own ACLs for this type.
+ */
+@seed(userUpdatable=true, userRemovable=true)
+entity extendable type UiSdlSavedSearch mixes UiSdlSearchSpec, AclEnabled, SeedData type key 'SVD_SRCH' schema name 'UISDL_SVDSRCH' {
+
+  name: !~
+
+  /**
+   * Description of this search.  Helpful for giving more details about the includes, filters, projections
+   */
+  description: string
+
+  /**
+   * Whether or not this is a global or private search. When true, only the user that created the saved search
+   * will be able to see it. This behavior can be overridden by enabling ACLs for this type.
+   */
+  privateSearch: boolean
+
+  /**
+   * React component metadataID for which this saved search should be applied
+   */
+  metadataId: string
+
+  /**
+   * A stringified version of the filter values associated with this saved search (for use if deserialization is necessary).
+   */
+  serializedFilterFieldValues: string
+
+  /**
+   * User that created this saved search.
+   */
+  createdByUser: User(id, meta.createdBy)
+
+}

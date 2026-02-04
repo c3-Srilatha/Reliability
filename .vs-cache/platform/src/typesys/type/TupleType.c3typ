@@ -1,0 +1,149 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * "Tuples" are simple structures that don't require a full type declaration. They are useful to declare structure for
+ * a function parameter without having to define a type for that single use.
+ *
+ * Tuples can either be named or not. If named, the syntax uses braces like a JSON object:
+ * ```type
+ * { key: string, count: int, dim: Dimension }
+ * ```
+ * This kind of tuple can be thought of as an anonymous type, with only data fields.
+ *
+ * If unnamed, it uses parenthesis like Python:
+ * ```type
+ * (string, int, Dimension)
+ * ```
+ * This kind of tuple can be thought of as an array of fixed length with different types specified for each element.
+ *
+ * Note that if the tuple has only a single type, use a trailing comma: `(string,)` (again like Python).
+ *
+ * It is also possible to declare an _any tuple_ using the `tuple` syntax. These refer to any type of tuple (named or
+ * unnamed and with any set of fields). Of course, instances of abstract tuples are not possible, but instance of any
+ * concrete tuple type will be allowed.
+ *
+ * Note that tuples are not easily reusable nor can they have methods, so they're not a good choice for something
+ * like a "complex number" which should be both. If you find yourself using the same tuple declaration multiple times,
+ * that suggests a type might be preferable.
+ */
+type TupleType mixes ValueType {
+
+  /**
+   * Whether or not the tuple has names for each field or whether they can only be indexed.
+   */
+  @dsl(suppress=true)
+  named: boolean
+
+  /**
+   * The declared field types. For simple tuples, this will never be empty but for named tuples with mixins it may be.
+   */
+  fieldTypes: [TupleFieldType]
+
+  /**
+   * Get an field type by name. If this is not a named tuple, this may be the zero-based index.
+   */
+  fieldType: member function(name: !string, failIfMissing: boolean): TupleFieldType java | js
+
+  /**
+   * Get a field type by index (declaration order).
+   */
+  fieldType: member function(index: !int, failIfMissing: boolean): TupleFieldType java | js
+
+  /**
+   * If this tuple was declared using the `tuple` syntax, instances could be any tuple (name or unnamed and with any
+   * set of fields).
+   */
+  isAnyTuple: member function(): boolean java | js | py-client
+
+  /**
+   * Converts provided field values based on the corresponding field type. For index based i.e. non-named tuples expects
+   * keys in the map to be string representation of field index. Returned map is indexed based on field order in this
+   * tuple type.
+   */
+  convertFields: member function(fields: !?map<string, any>, failIfInvalid: boolean): @indexed map<string, any>
+
+  /**
+   * Converts provided field values based on the corresponding field type. Returned map is indexed based on field order
+   * in this tuple type and keys are set to string representation of field index.
+   */
+  convertFields: member function(fields: !?[any], failIfInvalid: boolean): @indexed map<string, any>
+
+  /**
+   * Convert the current TupleType to an equivalent CollectionType representation
+   * e.g. for named tuples, it will convert to MapType otherwise ArrayType
+   */
+  toCollectionType: member function(): CollectionType
+
+  /**
+   * Name to be used in serialization for a `Tuple#type`.
+   * By default returns "type" but if this tuple type has a field declared by name `type` then returns `$type`.
+   */
+  typeSerName: cached property(): !string java | js | py-client
+
+  /**
+   * Creates an instance of named TupleType from `<string, ValueType>` pairs of arguments
+   */
+  of: function(nameValueTypePairs: any ...): !TupleType
+
+  /**
+   * Creates an instance of TupleType from map<string, ValueType> using keys for {@link TupleFieldType#name} and values
+   * for {@link TupleFieldType#valueType}
+   */
+  @call(stayInEngine={py: true})
+  fromMap: function(map: @indexed !map<string, ValueType>): !TupleType java | py
+
+  /**
+   * Creates an instance of TupleType from [ValueType] using values for {@link TupleFieldType#valueType}.
+   */
+  fromArray: function(array: ![ValueType]): !TupleType
+
+  /**
+   * Create a named tuple type from the specified type's fields.
+   */
+  fromFields: function(type: !Type): !TupleType
+
+  /**
+   * Create an unnamed tuple type from the specified type's field value types.
+   */
+  fromFieldValues: function(type: !Type): !TupleType
+
+  /**
+   * Create a tuple type from the specified type's field value types.
+   */
+  fromTupleFieldTypes: function(tupleFieldTypes: ![TupleFieldType]): !TupleType
+
+  /**
+   * Type for any tuple; i.e. equivalent of `tuple` DSL syntax
+   */
+  ofAny: cached function(): !TupleType
+
+  /**
+   * Get the tuple type for a tuple instance.
+   *
+   * @param v the tuple instance
+   * @param failIfInvalid if not a tuple, throw an exception instead of returning null
+   */
+  ofTuple: function(v: !?any, failIfInvalid: boolean): TupleType java | js | py-client
+
+  guessType:           ~: TupleType java | js | py
+  instanceType:        ~
+  isAssignableFrom:    ~ java | js | py-client
+  isAssignableValue:   ~ java | js | py-client
+  isA:                 ~ java | js | py-client
+  isSame:              ~ java | js
+  isSameValue:         ~ java | js | py-client
+  makeValue:           ~ java | js | py-client
+  valueFromJson:       ~ java | js | py-client
+  valueToJson:         ~ java | js | py-client
+  valueToTypedJson:    ~ java | js | py-client
+  dataFieldTypeNames:  ~
+  isPersistSerialized: ~
+  serializedValueType: ~
+  valueConverter:      ~
+}

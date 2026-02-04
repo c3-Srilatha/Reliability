@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * configuration for generating data migration sql via Db.genDataMigrationSql
+ */
+type DataMigrationSpec mixes Spec {
+
+  /**
+   * list of sql scripts that should be executed before the data migration;
+   *
+   * e.g. you can defined stored procedures or functions here
+   */
+  beforeSqls: [string]
+
+  /**
+   * configuration for generating data migration sql for a single entity type
+   */
+  migrations: [EntityDataMigration]
+
+  /**
+   * list of seed data entity types in current release that used to be reference data
+   */
+  seedDataEntities: [Type]
+
+  /**
+   * list of sql scripts that should be executed after the data migration;
+   *
+   * you can performs cleanup or additional data population here
+   */
+  afterSqls: [string]
+}

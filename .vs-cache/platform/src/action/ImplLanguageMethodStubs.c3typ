@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for generating `methodStubs` for given typeMeta.
+ */
+abstract type ImplLanguageMethodStubs {
+
+  /**
+   * @return the method stubs for declared or overridden methods in given typemeta.
+   *
+   * @param meta
+   *           the type to generate stubs for
+   * @param delegate
+   *           use super to call Java instead of throwing an error
+   */
+  methodStubs: function(meta: !TypeMeta, delegate: boolean): string
+
+  /**
+   * @return a block prepended to all generated files
+   */
+  preamble: private function(): string
+
+  /**
+   * Build a stub function declaration as multiple lines. All lines, including the last one, should end with newlines.
+   *
+   * @param type
+   *        the type
+   * @param methodName
+   *        name of the method
+   * @param isMember
+   *        if this is a member method
+   * @param fixed
+   *        the parameters that are the same in all overloads
+   * @param requiredCount
+   *        the number of the sharedOverloadParams parameters that must be specified by the caller
+   * @param remaining
+   *        the name for any remaining parameters that vary by overload or are varargs
+   * @param delegate
+   *        use super to call Java instead of throwing an error
+   * @return stub function declaration
+   */
+  stub: private abstract function(type: !TypeMeta,
+                                  methodName: !string,
+                                  isMember: boolean,
+                                  fixed: [string],
+                                  requiredCount: int,
+                                  remaining: string,
+                                  delegate: boolean): string
+
+  /**
+   * @return a block appended to all generated files
+   */
+  postamble: private function(): string
+
+  /**
+   * @return the single-line comment prefix
+   */
+  comment: private abstract function(): !string
+
+  /**
+   * @return the language as listed in {@link ImplLanguage}.
+   */
+  language: private abstract function(): !string
+}

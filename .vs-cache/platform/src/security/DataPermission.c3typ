@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Metadata type used to define access control for specific resource.
+ * Refer to the topic on {@link access-control.c3doc.md Access Control} for usage information.
+ */
+type DataPermission mixes AccessControl {
+
+  /**
+   * Expression to be passed to the action for additional visibility filtering
+   */
+  condition: string
+
+  /**
+   * To see if the dataPermission could be applied to the action (i.e. method) in a type
+   *
+   * @param typeName
+   *            type name the action belongs to.
+   * @param action
+   *            name of the action (or method).
+   * @return data permission expression id applicable, otherwise null
+   */
+  conditionFor: inline member function(typeName: !string, action: !string): string
+}

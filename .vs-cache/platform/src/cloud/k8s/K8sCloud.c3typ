@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+type K8sCloud mixes CloudProvider {
+
+  /**
+   * Url contacted to verify if k8s deployed in google
+   */
+  GKE_METADATA_URL: private const string = "http://metadata.google.internal/computeMetadata/v1/instance/id"
+
+  /**
+   * Url contacted to verify if k8s deployed in azure
+   */
+  AKS_METADATA_URL: private const string = "http://169.254.169.254/metadata/instance?api-version=2021-05-01"
+
+  /**
+   * Url contacted to verify if k8s deployed in aws
+   */
+  EKS_METADATA_URL: private const string = "http://169.254.169.254/latest/meta-data/"
+
+  setDefaultCredentials: member function(cred: !CloudCredentials)
+  isGke:                 cached member function(): boolean
+  isAks:                 cached member function(): boolean
+  isEks:                 cached member function(): boolean
+  isOnPrem:              private cached member function(): boolean
+
+  /**
+   * Retrieves the appropriate cloud access token based on the k8s cloud provider.
+   *
+   *
+   * @return A cloud access token for the specific cloud environment (GKE, AKS, EKS).
+   *         Returns null if no cloud token is found.
+   */
+  @action(group='cluster-admin')
+  k8sCloudAccessToken: member function(): K8sToken
+}

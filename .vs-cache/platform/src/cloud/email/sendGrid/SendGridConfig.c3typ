@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type SendGridConfig mixes Config, Singleton {
+
+  /**
+   * {@link SendGrid#isValidEmail} makes an internal API request to 
+   * {@link SendGridEmailAddressValidationApi#validateEmailAddress}. If the validation verdict is part of these accepted
+   * validation verdicts, {@link SendGrid#isValidEmail} returns true. If {@link acceptedEmailValidationScore} is 
+   * defined, that value overrides the list of accepted verdicts.
+   */
+  acceptedEmailValidationVerdicts: [string enum('Valid', 'Risky', 'Invalid')] = ['Valid', 'Risky']
+
+  /**
+   * {@link SendGrid#isValidEmail} makes an internal API request to 
+   * {@link SendGridEmailAddressValidationApi#validateEmailAddress}. If the validation score is greater than or equal to
+   * this value, {@link SendGrid#isValidEmail} returns true. If this value is undefined or null, the list of 
+   * {@link acceptedEmailValidationVerdicts} is used.
+   */
+  acceptedEmailValidationScore: double
+}

@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The {@link ExMachinaInstance#settings} that are never edited directly by the user, because these are used for billing.
+ */
+private entity type ExMachinaInstance.Settings mixes ExMachinaClusterSettings schema name "EMIS" {
+  /**
+   * The parent {@link ExMachinaInstance} which used these settings
+   */
+  instance: ExMachinaInstance(settings)
+
+  /**
+   * Amount of executor memory to allocate to overhead.
+   */
+  executorMemoryOverhead: !string
+
+  /**
+   * Amount of driver memory to allocate to overhead.
+   */
+  driverMemoryOverhead: !string
+
+  /**
+   * The Spark memory size
+   * Note: this may not match the actual values if the fields of the persisted ExMachinaMemorySize have changes since
+   * the ExMachinaInstance.Settings was created.
+   */
+  memorySize: !ExMachinaMemorySize
+
+  /**
+   * The image used for the driver pod
+   */
+  image: string
+
+  /**
+   * Namespace that will be used for running the driver and executor pods
+   */
+  sparkK8sNamespaceName: string
+
+  /**
+   * Assemble ExMachinaInstance.Settings from the given ExMachinaMemorySize
+   */
+  fromMemorySize: function(memorySize: !ExMachinaMemorySize): !ExMachinaInstance.Settings js-server
+
+  /**
+   * Convert the instance settings to an ExMachina_Config
+   */
+  toExMachina_Config: member function(): !ExMachina_Config js-server
+
+  /**
+   * Compute the total VCpuHour usage based on the provided start and end times and the cluster settings
+   */
+  computeVCpuHours: member function(startTime: !datetime, endTime: !datetime): !double js-server
+}

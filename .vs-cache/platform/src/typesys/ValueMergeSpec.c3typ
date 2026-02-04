@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This spec is the optional argument used to control the behavior when merging values.
+ *
+ * @see Value#mergeValues
+ */
+type ValueMergeSpec mixes ValuesEqualSpec {
+
+  /**
+   * If true, throw an error if a value in the merged object already exists in the original object. Otherwise the
+   * value in the merged object overrides the one in the original object.
+   *
+   * For Obj values, this applies to each field. For arrays, this applies to each element that is itself equal.
+   * For Maps, this applies to each key. For all collections, empty collections are treated as null (not specified).
+   */
+  dontAllowOverride: boolean
+
+  /**
+   * If true, attempt to convert fields to the correct value type and throw an error if conversion fails. Otherwise,
+   * an error will be thrown if the values are not isCoercible (assignment compatible). Conversion is potentially
+   * expensive so this is off by default.
+   */
+  convert: boolean
+
+  /**
+   * Control the merging of references (inner Obj values), both as individual values and collection elements.
+   *  - `REPLACE` indicates the object is replaced wholesale (other object wins).
+   *  - `MERGE` indicates fields are merged individually.
+   *
+   * If you want objects to win as-is, use `REPLACE` (the default):
+   * ```
+   * merge({ id: '1a2b' }, { name: 'Jack' }) -> { name: 'Jack' }
+   * ```
+   *
+   * If you want merging of corresponding fields in the object, use `MERGE`:
+   * ```
+   * merge({ id: '1a2b' }, { name: 'Jack' }, MERGE) -> { id: '1a2b', name: 'Jack' }
+   * ```
+   */
+  references: string enum ReferenceMerge = REPLACE
+
+  /**
+   * Control the merging of inner array, sets and maps (nested collections).
+   *  - `REPLACE` indicates the collection is replaced wholesale (other collection wins).
+   *  - `CONCAT` indicates the elements in the other collection are added after the original values.
+   *    For maps and sets acts like `MERGE`.
+   *  - `MERGE` indicates collection elements are merged individually by key. For arrays, the key is the index
+   *    and for maps the key is the map key. Sets are merged by value.
+   *
+   * If you want non-empty collections to win as-is, use `REPLACE` (the default):
+   * ```
+   * merge([1], [2]) -> [2]
+   * ```
+   *
+   * If you want all members of both collections in the result, use `CONCAT`:
+   * ```
+   * merge([1], [2], CONCAT) -> [1, 2]
+   * ```
+   *
+   * If you want merging of corresponding (by key) values in the collection, use `MERGE`:
+   * ```
+   * merge([1], [2], MERGE) -> [2]
+   * merge([{ id: '1a2b' }], [{ name: 'Jack' }], MERGE) -> [{ id: '1a2b', name: 'Jack' }]
+   * ```
+   *
+   * Note that the last example assumes ValuesEqualSpec#useId is true as well (matching Identifiable objects by id).
+   * And the last two examples with Objs assume #references = `MERGE`.
+   */
+  collections: string enum CollectionMerge = REPLACE
+
+  @beta
+  paths: private map<string, string enum CollectionMerge>
+}

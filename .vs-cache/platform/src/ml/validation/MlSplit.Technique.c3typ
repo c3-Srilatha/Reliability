@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract base Type, defining an generator interface to generate training and validation subsets from data, and
+ * scoring metrics for scoring a model on the validation data set.  Part of a {@link Hpo.ExperimentBase}.
+ * See the [Wikipedia Cross Validation article](https://en.wikipedia.org/wiki/Cross-validation_(statistics))
+ * for a description of different techniques to split data into train / validate sets.
+ * Some of the MlSplit validation techniques supported are the following:
+ * 1. {@link MlSplit.Custom}
+ * 2. {@link MlSplit.Holdout}
+ * 3. {@link MlSplit.KFold}
+ *
+ * Note: care should be taken when re-using an {@link MlSplit.Technique}. User should ensure that {@link #initSplits}
+ * is called on the new x/y data.
+ */
+// TODO: PLAT-40162 Investigate if validation should be a part of HPO or a part of the train API on MlPipe itself.
+abstract type MlSplit.Technique<DX, DY> {
+
+  /**
+   * How to combine scores across the k runs of a validation technique (k different train/validate data splits), when
+   * reporting a single score back to {@link Hpo.ExperimentBase} for a set of hyperparameters.
+   */
+  scoreSummary: string enum("mean", "median", "maximum", "minimum") = "mean"
+
+  /**
+   * Whether to shuffle data before generating subsets.
+   */
+  shuffle: boolean
+
+  /**
+   * A seed value to generate reproducible splits if {@link #shuffle} is true.
+   */
+  seed: int
+
+  /**
+   * The current train / validation split of the input and target output data. This field will be null on initialization
+   * and if this field is null after at least one call to {@link #nextSplit}, then all splits have been
+   * exhausted. To reset, use {@link #resetSplits}.
+   */
+  currentSplit: MlSplit<DX, DY>
+
+  /**
+   * Initializes the state of the generator with input and target output data. This must be called before
+   * {@link #nextSplit}.
+   *
+   * @param x
+   *           Data to split into two `input` sets for {@link MlPipe#train} and {@link MlPipe#score}.
+   * @param y
+   *           Data to split into two `targetOutput` sets for @link MlPipe#train} and {@link MlPipe#score}.
+   */
+  // TODO: PLAT-46087 remove inline claim
+  initSplits: inline member function(x: !DX, y: DY): !mixing MlSplit.Technique py
+
+  /**
+   * Make an empty {@link MlSplit} with the inherited DX and DY variable bindings.
+   */
+  makeSplit: private member function(): !MlSplit<DX, DY> py
+
+  /**
+   * Retrieve and set the next train / validate data set split.
+   *
+   * @return the validator with the field {@link #currentSplit} set to the current train/validate data set split, and
+   * its internal state is updated to generate the next split. If all splits have been exhausted, {@link #currentSplit}
+   * will be set to null.
+   */
+  nextSplit: abstract member function(): !mixing MlSplit.Technique
+
+  /**
+   * Resets the state of the generator. The sequence of splits returned prior to resetting the generator are maintained,
+   * so the order is guaranteed to be the same for the next sequence of calls to {@link nextSplit}.
+   */
+  resetSplits: abstract member function(): !mixing MlSplit.Technique
+
+  /**
+   * Undo the initialization of this {@link MlSplit.Technique}. This can be used to ensure that users do not
+   * accidentally re-use this technique with the unintended initialization data.
+   * This is particularly important since `DX`/`DY` can involve {@link Data}, which is in-memory and transient.
+   */
+  deinitialize: member function(): !mixing MlSplit.Technique py
+
+  /**
+   * Helper function to assert the lengths of x and y data are exactly equal.
+   */
+  checkDataLen: private member function(x: !native, y: native) py
+
+  /**
+   * Traverses given data and converts all {@link Data} to `pd.DataFrame`.
+   */
+  convertToNative: private function(data: native): native py
+
+  /**
+   * Computes and returns shapes of data.
+   *
+   * @param data
+   *           the data to compute shape one. Supports {@link Data} and `pd.DataFrame`, as well as
+   *           common collection types like {@link Map} and {@link Tuple}.
+   * @param defaultKey
+   *           the key to use if `data` input does not have a key.
+   * @return map of `data` collection key (or `defaultKey` if not a collection) to corresponding shape of data.
+   */
+  calculateShape: private function(data: native, defaultKey: string): map<string, [int]> py
+}

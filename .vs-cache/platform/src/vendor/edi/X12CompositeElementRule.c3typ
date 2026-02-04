@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Composite element rule is a rule specifying how to process composite segment element of a specific segment.
+ */
+entity type X12CompositeElementRule type key 'X12CESR' schema name 'X12_COMP_EL_R' {
+
+  /**
+   * name of the element that is being checked by the rule.
+   */
+  el: string
+
+  /**
+   * aet of element values allowed by the rule.
+   */
+  values: [string] schema suffix 'VAL'
+
+  /**
+   * usage of every specific element. 'Not Used' if any record is present.
+   */
+  elementUsage: map<string, string> schema suffix 'USG'
+
+  /**
+   * c3typ name to map on in case the rule worked.
+   */
+  nm: !string
+
+  /**
+   * name of the segment.
+   */
+  segmentName: string
+}

@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of all resources required for Ray to be functional.
+ */
+@beta
+@cloud(cloudFunc='ray')
+type Ray mixes CloudService<Ray.Config>, DefaultInstance {
+
+  RAY_PING_GCS_RPC_SERVER_MAX_RETRIES:    const string = "5"
+  RAY_GCS_SERVER_REQUEST_TIMEOUT_SECONDS: const string = "10"
+  forId:                                  ~
+  ensureService:                          ~
+  stop:                                   ~
+  terminate:                              ~
+
+  /**
+   * @return necessary hostname and port info to connect to a {@link Ray.Cluster}
+   */
+  address: function(): string
+
+  /**
+   * @return verification that Ray is ready to serve requests
+   */
+  isReady: function(): boolean
+
+  /**
+   * @return an instance of {@link Ray.Cluster} for the current environment.
+   */
+  currentCluster: private member function(): !Ray.Cluster
+
+  /**
+   * Updates permissions to the ray service account
+   */
+  syncCredentials: private function()
+
+  /**
+   * @return list of Ray nodes that are up and running.
+   */
+  nodes: function(): [string] py-modin-server
+
+  /**
+   * Get the current total cluster resources.
+   * This information could become stale as nodes are added to or removed from the cluster.
+   *
+   * @return current total cluster resources.
+   */
+  clusterResources: function(): map<string, any> py-modin-server
+
+  /**
+   * Get the current available cluster resources.
+   * This is different from {@link Ray#clusterResources} in that the function will return idle resources over total resources.
+   * This information could become stale as tasks start and finish.
+   *
+   * @return current available cluster resources.
+   */
+  availableResources: function(): map<string, any> py-modin-server
+
+  actor: function(a: !Type): Ray.ActorHandle
+  task:  function(t: !Type, func: !string, args: [any], kwargs: map<string, any>): Ray.Ref
+  task:  function(action: lambda(): any): Ray.Ref
+}

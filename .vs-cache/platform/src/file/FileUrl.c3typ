@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represent URL that is valid for use in FileSystem.
+ *
+ * @see Url
+ */
+type FileUrl mixes Url {
+
+  /**
+   * Mount in the parent FileSystem.
+   */
+  mount: string
+
+  /**
+   * Constructs file url for a given FileSystem from raw i.e. un-encoded path components.
+   */
+  makeFromFs: function(fs: !FileSystem, mount: string, parts: !?string ...): !FileUrl
+
+  /**
+   * Makes sure if input path is fully qualified URL then is has a 'file' scheme; if path is relative then forms
+   * fully qualified URL using 'file' scheme. Note that "path" here means OS independent '/' separated path
+   * with parts already URL encoded.
+   */
+  fromEncodedPath: inline function(encodedPath: !string): !FileUrl
+
+  /**
+   * Creates FileUrl from OS specific local file path. If relative path is given assumes it's a path from root.
+   */
+  fromLocalFilePath: inline function(localFilePath: !string): !FileUrl
+
+  /**
+   * @return new file name with default file extension for this content type and (optionally) content encoding.
+   */
+  fileNameWithDefaultExt: inline function(fileName: !string,
+                                          contentType: string,
+                                          contentEncoding: string enum ContentEncoding): !string
+
+  /**
+   * @return File that serves this URL.
+   */
+  file: inline member function(): File
+
+  /**
+   * @return FileSystem that serves this URL.
+   */
+  fs: inline member function(): FileSystem
+
+  /**
+   * Normalized form of the represented URL, see {@link java.net.URI.normalize()}. ex. '/foo/../bar' -> '/bar'
+   */
+  normalize: inline member function(): !FileUrl
+
+  /**
+   * return FileUrl from Java Url object.
+   */
+  fromJavaURL: function(url: @java(class='java.net.URL') !native): !FileUrl
+
+  /**
+   * whether the url is for a local file
+   */
+  // TODO: PLAT-27805: Remove once FileSystem has been migrated and this is not needed
+  isLocal: private function(url: !string): !boolean
+
+  /**
+   * @return checks if the url is for S3
+   */
+  isS3: inline member function(): boolean
+
+  /**
+   * @return checks if the Url ends with a path separator `/`
+   */
+  endsWithPathSeparator: inline member function(): boolean
+
+  /**
+   * Create a Java file object from the absolute path in this URL.
+   */
+  toLocalJavaFile: private inline member function(): @java(class="java.io.File") !native
+}

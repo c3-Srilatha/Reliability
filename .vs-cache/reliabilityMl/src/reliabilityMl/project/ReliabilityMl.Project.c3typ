@@ -1,0 +1,442 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a machine learning project used for asset reliability modeling. This includes the configuration
+ * for model templates, asset filters, alerting, inference periods, and other functionalities such as validation, classification, and reporting.
+ * The project enables users to manage and deploy machine learning models that predict asset reliability and performance
+ * over time.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+extendable entity type ReliabilityMl.Project mixes ReliabilityMl.Project.ModelValidationUiOptions, ExemptFromFacilityFilter schema name 'REL_MLP' {
+
+  /**
+   * Unique identifier for the project. This ID is used to reference the project in other parts of the system.
+   */
+  id: !~
+
+  /**
+   * The name of the project. By default, this is set to the value of the `id`.
+   */
+  name: !~ = id
+
+  /**
+   * A description of the project, providing an explanation of the project's objective or use case.
+   * This description will be displayed in the UI.
+   */
+  description: !string
+
+  /**
+   * The filter used to determine which assets are relevant for this project. This field is serialized and represents
+   * the criteria for selecting assets that are considered in the reliability analysis.
+   */
+  assetFilter: !string serialized Filter
+
+  /**
+   * While the {@link modelTemplates} contain implementations of ML algorithms,
+   * under a given project, they must all output the same `algorithmOutputs`,
+   * i.e., these column names in the output dataframes of the models must
+   * always exist for all models in the {@link modelTemplates}, that do not correspond
+   * to alert columns. Each template may, however, additionally output as many other
+   * dataframe columns as is necessary.
+   */
+  algorithmOutputs: [string]
+
+  /**
+   * While the {@link modelTemplates} contain implementations of ML algorithms,
+   * under a given project, they must all output the same `alertOutputs`,
+   * i.e., these column names in the output dataframes of the models must
+   * always exist for all models in the {@link modelTemplates}, that correspond
+   * to alert columns. Each template may, however, additionally output as many other
+   * dataframe columns as is necessary.
+   */
+  alertOutputs: ![string]
+
+  /**
+   * While the {@link modelTemplates} contain implementations of ML algorithms,
+   * under a given project, they must all output the same `primaryModelOutputs`,
+   * i.e., these column names in the output dataframes of the models must
+   * always exist for all models in the {@link modelTemplates}. Each template
+   * may, however, additionally output as many other dataframe columns as is
+   * necessary.
+   */
+  primaryModelOutputs: [string]
+
+
+  /**
+   * The name of the primary model output that will be displayed in the UI for this project.
+   * This should be one of the `primaryModelOutputs` defined for the project.
+   */
+  displayedModelOutput: string
+
+  /**
+   * The name of the primary model output that will be used to normalize the contributions.
+   * This should be one of the `primaryModelOutputs` defined for the project.
+   *
+   * Should be used for projects that have a primary model output that is the normalized version of another primary
+   * model output. For example, the `reliabilityRiskWithResidualDiagnostics` project has a `riskScoreNormalized` primary
+   * model output that contributions are normalized to.
+   *
+   * The project should also have contributions that sum up to the non-normalized primary model output.
+   *
+   * This field only influences how {@link ReliabilityModelOutputsTimedDataQuery} queries contributions.
+   * So, anywhere contributions are plotted in the UI, they will be normalized to the value of this field (if provided).
+   */
+  modelOutputToNormalizeContributions: string
+
+  /**
+   * All the allowable {@link ModelTemplate}s for this project. Only these
+   * models will be allowed to be trained and deployed under this project. This
+   * is to ensure consistency in the outputs of the models under a given project.
+   */
+  modelTemplates: ![string serialized ModelTemplate]
+
+  /**
+   * The default {@link ModelTemplate} to use when creating a new model under this project.
+   */
+  defaultModelTemplate: !string serialized ModelTemplate
+
+  /**
+   * Lambda function that defines the retraining workflow for this project.
+   * When invoked with a {@link ReliabilityMlModel}, it should return a {@link Workflow}
+   * object that specifies the steps and logic required to retrain the model.
+   *
+   * Use this to customize how model retraining is orchestrated, including data preparation and training.
+   */
+  retrainingWorkflowLambda: Lambda<function(model: !ReliabilityMlModel): !Workflow>
+
+  /**
+   * Lambda function to select which models should be retrained automatically.
+   * All champion models of the project will be provided as input to this function.
+   * This function takes a list of {@link ReliabilityMlModel} as input and returns a list of {@link ReliabilityMlModel}
+   * specifying the models to be retrained.
+   * Customize this lambda to define your model selection logic for automated retraining workflows.
+   */
+  filterModelsForAutoRetrainingLambda:Lambda<function(models: ![ReliabilityMlModel]): [ReliabilityMlModel]>
+
+  /**
+   * When set to true, this project is eligible for automatic model retraining.
+   * Only projects with `enableAutomaticRetraining = true` will have their champion models
+   * considered and passed to {@link ReliabilityMl.Project#filterModelsForAutoRetrainingLambda} for selection.
+   */
+  enableAutomaticRetraining: boolean = false
+
+  /**
+   * This field defines the feature specific outputs and metadata that the {@link ReliabilityMlModel}s
+   * associated with this project will generate. This map should follow the structure below where:
+   *
+   * - `FEATURE_OUTPUT_NAME` is the key to reference each output.
+   * - `POSTFIX_TO_APPEND` is the postfix that is added to feature id when setting the {@link ReliabilityMl.PredictionHeader#name}
+   * (see type documentation for more information about feature outputs persistence).
+   * - `DISPLAY_VALUE_SHOWN_IN_THE_APP` is the displayed value for that feature output (in the application UI.)
+   * - `UNIT_OF_THE_FEATURE_OUTPUT` is the unit id of the feature output. If not provided, the unit will be inferred from the
+   * corresponding feature output. Note that this is only used when plotting the feature output in the UI.
+   *
+   * {
+   *    "FEATURE_OUTPUT_NAME": {
+   *       "postfix": `POSTFIX_TO_APPEND`
+   *       "display": `DISPLAY_VALUE_SHOWN_IN_THE_APP`
+   *       "unitId": `UNIT_OF_THE_FEATURE_OUTPUT`
+   *    }
+   * }
+   *
+   * An example:
+   * {
+   *    "reconstructions": {
+   *       "postfix": "_reconstruction"
+   *       "display": "Reconstruction"
+   *    },
+   *    "residuals": {
+   *       "postfix": "_residual"
+   *       "display": "Residual"
+   *       "unitId": "dimensionless"
+   *    }
+   * }
+   *
+   */
+  featureOutputs: map<string,map<string,string>>
+
+  /**
+   * Implement this {@link Lambda} function to modify the inferencePeriod for which inference
+   * should be run for a given {@link ReliabilityAsset}. If provided, this function will be
+   * called in the {@link getInferencePeriodForAsset} function. If not provided, the default
+   * behavior is to simply return the input `inferencePeriod`.
+   *
+   * For example, this function can be used to update the default `inferencePeriod`, such that
+   * inference is run for a given asset from after it's latest persisted prediction in the
+   * database.
+   */
+  getInferencePeriodForAssetLambda: Lambda<function(
+    asset: !ReliabilityAsset,
+    inferencePeriod: !TimeRange,
+    project: !ReliabilityMl.Project,
+    statusLabel: string enum MlModel.Route.Status.Label
+  ): !TimeRange>
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate {@link ReliabilityAssetAlert}s for
+   * your {@link ReliabilityMl.Project}.
+   *
+   * In order to properly display feature contributions in the UI, be sure to populate the
+   * {@link ReliabilityAssetAlert#featureContributionMap}.
+   */
+  processAlertsForAssetLambda: Lambda<function(
+    project: !ReliabilityMl.Project,
+    asset: !ReliabilityAsset,
+    timeRange: !TimeRange,
+    model: ReliabilityMlModel,
+    doNotPersist: boolean
+  ): [ReliabilityAssetAlert]>
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate {@link ReliabilityAssetValidationAlert}s for
+   * your {@link ReliabilityMl.Project}.
+   *
+   * Be sure to populate all the needed fields in the {@link ReliabilityAssetValidationAlert} object.
+   */
+  processValidationAlertsForAssetLambda: Lambda<function(
+    project: !ReliabilityMl.Project,
+    asset: !ReliabilityAsset,
+    timeRange: !TimeRange,
+    model: !ReliabilityMlModel,
+    doNotPersist: boolean
+  ): [ReliabilityAssetValidationAlert]>
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate and return a
+   * {@link ReliabilityMlModel.ClassificationScore} for your {@link ReliabilityMl.Project},
+   * for a given {@link ReliabilityMlModel} and {@link ReliabilityAsset}.
+   *
+   * NOTE: `referenceModelOutput` and `comparisonModelOutput` contains the model's predictions and
+   * feature contributions for the asset, generated for the referenceTimeRange and comparisonTimeRang passed into the post training
+   * or model monitoring job. They should be used to compare the model's performance over the two periods, to generate the
+   * classification score.
+   * You can also use the dataset preparation run to evaluate the features and masks on your input data, if that is
+   * required for the classification logic that you choose to implement.
+   */
+  classifyModelForAssetLambda: Lambda<function(
+    project: !ReliabilityMl.Project,
+    model: !ReliabilityMlModel,
+    asset: !ReliabilityAsset,
+    datasetPreparationRun: ReliabilityMlDatasetPreparationRun,
+    referenceModelOutput: !ReliabilityMl.ModelOutput,
+    comparisonModelOutput: !ReliabilityMl.ModelOutput
+  ): ReliabilityMlModel.ClassificationScore>
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate and return a {@link File} that contains
+   * a report for a given {@link ReliabilityMlModel} and {@link ReliabilityAsset}, for your {@link ReliabilityMl.Project}.
+   *
+   * NOTE: `referenceModelOutput` and `comparisonModelOutput` contains the model's predictions and
+   * feature contributions for the asset, generated for the referenceTimeRange and comparisonTimeRange passed into the post training job.
+   * You can also use the dataset preparation run to evaluate the features and masks on your input data, if that is required for the
+   * reporting logic that you choose to implement.
+   */
+  reportModelForAssetLambda: Lambda<function(
+    project: !ReliabilityMl.Project,
+    model: !ReliabilityMlModel,
+    asset: !ReliabilityAsset,
+    datasetPreparationRun: ReliabilityMlDatasetPreparationRun,
+    referenceModelOutput: !ReliabilityMl.ModelOutput,
+    comparisonModelOutput: !ReliabilityMl.ModelOutput
+  ): !File>
+
+  /**
+   * Reference to the wrapped {@link MlProject}. The id of the {@link MlProject}
+   * and its corresponding {@link ReliabilityMl.Project} will be the same.
+   */
+  project: private MlProject
+
+  /**
+   * Validate if the {@link ReliabilityMl.Project} object is acceptable.
+   * Performs the below checks:
+   * 1. Are all {@link ModelTemplate}s upserted?
+   * 2. Is the `defaultModelTemplate` one among the provided {@link ModelTemplate}s?
+   * 3. Do all provided {@link ModelTemplate}s have the same `primaryModelOutputs` as is defined on the {@link ReliabilityMl.Project}?
+   *
+   * If the answer to any of the above questions is `NO`, then the validation
+   * fails.
+   */
+  validate: private member function() py
+
+  /**
+   * Helper function to create a {@link ReliabilityMl.Project}. It {@link validate}s
+   * that all provided arguments are compatible with the project the user intends to
+   * create.
+   */
+  createProject: function(
+    id: !string,
+    name: !string,
+    description: !string,
+    assetFilter: !string serialized Filter,
+    featureOutputs: map<string, map<string, string>>,
+    displayedModelOutput: string,
+    algorithmOutputs: [string],
+    alertOutputs: ![string],
+    modelTemplates: ![string serialized ModelTemplate],
+    defaultModelTemplate: !string serialized ModelTemplate,
+    getInferencePeriodForAssetLambda: Lambda<function(asset: !ReliabilityAsset, inferencePeriod: !TimeRange, project: !ReliabilityMl.Project, statusLabel: string enum MlModel.Route.Status.Label): !TimeRange>,
+    processAlertsForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, asset: !ReliabilityAsset, timeRange: !TimeRange, model: ReliabilityMlModel, doNotPersist: boolean): [ReliabilityAssetAlert]>,
+    processValidationAlertsForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, asset: !ReliabilityAsset, timeRange: !TimeRange, model: !ReliabilityMlModel, doNotPersist: boolean): [ReliabilityAssetValidationAlert]>,
+    classifyModelForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, model: !ReliabilityMlModel, asset: !ReliabilityAsset, datasetPreparationRun: ReliabilityMlDatasetPreparationRun, referenceModelOutput: !ReliabilityMl.ModelOutput, comparisonModelOutput: !ReliabilityMl.ModelOutput): ReliabilityMlModel.ClassificationScore>,
+    reportModelForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, model: !ReliabilityMlModel, asset: !ReliabilityAsset, datasetPreparationRun: ReliabilityMlDatasetPreparationRun, referenceModelOutput: !ReliabilityMl.ModelOutput, comparisonModelOutput: !ReliabilityMl.ModelOutput): !File>,
+    addModelOutputsForModelValidationChartLambda: Lambda<function(model: any, datasetPreparationRun: any, datasetData: any): any>,
+    getThresholdsForModelValidationChartLambda: Lambda<function(model: any): any>,
+    getAlertThresholdsLambda: Lambda<function(model: any): any>,
+    processAlertSimilarityLambda: Lambda<function(alert: !ReliabilityAssetAlert): any>
+  ): !ReliabilityMl.Project py
+
+
+  /**
+   * Post-creation of the {@link ReliabilityMl.Project}, there may be a need
+   * to edit some of its characteristics. This is the helper function to edit
+   * these routines. Note that not all attributes of a project may be
+   * updated. To change these attributes, a new project will have to be created.
+   */
+  updateProject: member function(
+    assetFilter: string serialized Filter,
+    modelTemplates: [string serialized ModelTemplate],
+    defaultModelTemplate: string serialized ModelTemplate,
+    getInferencePeriodForAssetLambda: Lambda<function(asset: !ReliabilityAsset, inferencePeriod: !TimeRange, project: !ReliabilityMl.Project, statusLabel: string enum MlModel.Route.Status.Label): !TimeRange>,
+    processAlertsForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, asset: !ReliabilityAsset, timeRange: !TimeRange, model: ReliabilityMlModel, doNotPersist: boolean): [ReliabilityAssetAlert]>,
+    processValidationAlertsForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, asset: !ReliabilityAsset, timeRange: !TimeRange, model: !ReliabilityMlModel, doNotPersist: boolean): [ReliabilityAssetValidationAlert]>,
+    classifyModelForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, model: !ReliabilityMlModel, asset: !ReliabilityAsset, datasetPreparationRun: ReliabilityMlDatasetPreparationRun, referenceModelOutput: !ReliabilityMl.ModelOutput, comparisonModelOutput: !ReliabilityMl.ModelOutput): ReliabilityMlModel.ClassificationScore>,
+    reportModelForAssetLambda: Lambda<function(project: !ReliabilityMl.Project, model: !ReliabilityMlModel, asset: !ReliabilityAsset, datasetPreparationRun: ReliabilityMlDatasetPreparationRun, referenceModelOutput: !ReliabilityMl.ModelOutput, comparisonModelOutput: !ReliabilityMl.ModelOutput): !File>
+  ): !ReliabilityMl.Project py
+
+  /**
+   * Helper function to add {@link ModelTemplate}s to the list of model templates
+   * already defined on the {@link ReliabilityMl.Project}.
+   */
+  addModelTemplates: member function(
+    modelTemplates: ![string serialized ModelTemplate]
+  ): !ReliabilityMl.Project py
+
+  /**
+   * Helper function to create a replica of this {@link ReliabilityMl.Project}.
+   * This will create a new project with many of the same attributes as the
+   * original project. However, some attributes may be changed.
+   */
+  replicate: member function(
+    id: !string,
+    name: !string,
+    description: string,
+    assetFilter: string serialized Filter,
+    modelTemplates: [string serialized ModelTemplate],
+    defaultModelTemplate: string serialized ModelTemplate
+  ): !ReliabilityMl.Project py
+
+  /**
+   * @inheritdoc
+   */
+  beforeCreate: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  beforeRemove: ~ py
+
+  /**
+   * This function returns the modified inference period for a given asset, provided an input
+   * inference period. For example, instead of running inference on the provided inference
+   * time period, the function may be modified such that inference may be run for a given asset
+   * starting from the timestamp of its latest persisted prediction in the database.
+   *
+   * However, do NOT modify this function directly. Instead, provide a {@link Lambda} in the
+   * {@link getInferencePeriodForAssetLambda}. This function will run that {@link Lambda}, if
+   * provided. Else, the default behavior is to simply return the `inferencePeriod`.
+   */
+  getInferencePeriodForAsset: member function(
+    asset: !ReliabilityAsset,
+    inferencePeriod: !TimeRange,
+    statusLabel: string enum MlModel.Route.Status.Label,
+    overrideInferencePeriodForInference: boolean
+  ): !TimeRange py
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate {@link ReliabilityAssetAlert}s for
+   * your {@link ReliabilityMl.Project}.
+   *
+   * However, do NOT modify this function directly. Instead, provide a {@link Lambda} in the
+   * {@link processAlertsForAssetLambda}. This function will run that {@link Lambda}, if
+   * provided. Else, the default behavior will not generate any alerts.
+   */
+  processAlertsForAsset: member function(
+    asset: !ReliabilityAsset,
+    timeRange: !TimeRange,
+    model: ReliabilityMlModel,
+    doNotPersist: boolean
+  ): [ReliabilityAssetAlert] py
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate {@link ReliabilityAssetValidationAlert}s for
+   * your {@link ReliabilityMl.Project}.
+   *
+   * However, do NOT modify this function directly. Instead, provide a {@link Lambda} in the
+   * {@link processValidationAlertsForAssetLambda}. This function will run that {@link Lambda}, if
+   * provided. Else, the default behavior will not generate any alerts.
+   */
+  processValidationAlertsForAsset: member function(
+    asset: !ReliabilityAsset,
+    timeRange: !TimeRange,
+    model: !ReliabilityMlModel,
+    doNotPersist: boolean
+  ): [ReliabilityAssetValidationAlert] py
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate and return a
+   * {@link ReliabilityMlModel.ClassificationScore} for your {@link ReliabilityMl.Project},
+   * for a given {@link ReliabilityMlModel} and {@link ReliabilityAsset}.
+   *
+   * NOTE: `referenceModelOutput` and `comparisonModelOutput` contains the model's predictions and
+   * feature contributions for the asset, generated for the referenceTimeRange and comparisonTimeRange passed into the post training
+   * or model monitoring job. They should be used to compare the model's performance over the two periods, to generate the
+   * classification score.
+   * You can also use the dataset preparation run to evaluate the features and masks on your input data, if that is
+   * required for the classification logic that you choose to implement.
+   *
+   * However, do NOT modify this function directly. Instead, provide a {@link Lambda} in the
+   * {@link classifyModelForAssetLambda}. This function will run that {@link Lambda}, if provided. Else, the default
+   * behavior will not generate any classification scores.
+   */
+  classifyModelForAsset: member function(
+    model: !ReliabilityMlModel,
+    asset: !ReliabilityAsset,
+    datasetPreparationRun: ReliabilityMlDatasetPreparationRun,
+    referenceModelOutput: !ReliabilityMl.ModelOutput,
+    comparisonModelOutput: !ReliabilityMl.ModelOutput
+  ): ReliabilityMlModel.ClassificationScore py
+
+  /**
+   * Implement this {@link Lambda} function to implement the logic to generate and return a {@link File} that contains
+   * a report for a given {@link ReliabilityMlModel} and {@link ReliabilityAsset}, for your {@link ReliabilityMl.Project}.
+   *
+   * NOTE: `referenceModelOutput` and `comparisonModelOutput` contains the model's predictions and
+   * feature contributions for the asset, generated for the referenceTimeRange and comparisonTimeRange passed into the post training job.
+   * You can also use the dataset preparation run to evaluate the features and masks on your input data, if that is required for the
+   * reporting logic that you choose to implement.
+   *
+   * However, do NOT modify this function directly. Instead, provide a {@link Lambda} in the
+   * {@link reportModelForAssetLambda}. This function will run that {@link Lambda}, if provided. Else, the default
+   * behavior will not generate any reports.
+   */
+  reportModelForAsset: member function(
+    model: !ReliabilityMlModel,
+    asset: !ReliabilityAsset,
+    datasetPreparationRun: ReliabilityMlDatasetPreparationRun,
+    referenceModelOutput: !ReliabilityMl.ModelOutput,
+    comparisonModelOutput: !ReliabilityMl.ModelOutput
+  ): !File py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

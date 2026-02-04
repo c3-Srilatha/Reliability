@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Reusable epic for any {@link UiSdlDiagram} that should have its UI blocked when it is updated or laid out.
+ * Consumers must `"payloadStrategy": "MERGE"` a `loaderListComponentId` to the triggering action payloads.
+ * The triggering actions are:
+ *  - {@link UiSdlDiagram#updateAndExecuteLayoutAction}
+ *  - {@link UiSdlDiagram#completeExecuteLayoutAction}
+ *  - {@link UiSdlDiagram#clearRenderQueueAction}
+ */
+@typeScript
+type BlockDiagramOnUpdateAndExecuteLayoutEpic mixes UiSdlEpic {
+
+  updateAndExecuteLayoutAction: function(diagramId: string, shapeUpdates: [UiSdlDiagramUpdate]): !UiSdlReduxAction
+
+  epic: ~
+}

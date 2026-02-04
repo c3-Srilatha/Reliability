@@ -1,0 +1,147 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Hash base type for producing checksums (message digests) of data. It will be mixed by different hash algorithms.
+ */
+abstract type Hash mixes Singleton {
+
+  /**
+   * @return instance based on hashing algorithm name.
+   */
+  fromAlgorithm: inline function(algorithm: !string): Hash
+
+  /**
+   * @return instance of CKSum
+   */
+  cksum: final inline function(): !CKSum
+
+  /**
+   * @return instance of CRC32
+   */
+  crc32: final inline function(): !CRC32
+
+  /**
+   * @return instance of MD5
+   */
+  md5: final inline function(): !MD5 java | js | py
+
+  /**
+   * @return instance of Murmur
+   */
+  murmur: final inline function(): !Murmur
+
+  /**
+   * @return instance of SHA-1
+   */
+  sha1: final inline function(): !SHA1 java | js | py
+
+  /**
+   * @return instance of SHA-256
+   */
+  sha256: final inline function(): !SHA256 java | js | py
+
+  /**
+   * @return instance of SHA-512
+   */
+  sha512: final inline function(): !SHA512 java | js | py
+
+  /**
+   * @return instance of Argon2
+   */
+  argon2: final inline function(): !Argon2 java | js | py
+
+  /**
+   * Tell the name of hash algorithm
+   *
+   * @return the name of Hash Algorithm
+   */
+  algorithm: abstract inline member function(): !string
+
+  /**
+   * Check if the hash algorithm is cryptographically secure
+   *
+   * @return true if cryptographically secure, and false otherwise
+   */
+  isCryptograhicallySecure: abstract inline member function(): !boolean
+
+  /**
+   * The most fundamental function produces a binary sum of a block of binary data.
+   *
+   * @param value
+   *           input value with arbitrary data
+   * @return binary digest
+   */
+  hashBinary: abstract inline member function(value: !?binary): !binary
+
+  /**
+   * Hash the contents of the specified file.
+   *
+   * @param file existing file
+   * @return binary hash value
+   */
+  hashFile: inline member function(file: !File): !binary
+
+  /**
+   * Hash the contents of the specified file.
+   *
+   * @param file existing file
+   * @return hexadecimal string
+   */
+  hashFileHex: inline member function(file: !File): !string
+
+  /**
+   * @return hash based on byte stream. This is useful when hashing things that will not fit in memory.
+   */
+  hashByteStream: abstract member function(stream: !ByteStream): !binary
+
+  /**
+   * @return hash based on character stream. This is useful when hashing things that will not fit in memory.
+   */
+  hashCharStream: member function(stream: !CharStream): !binary
+
+  /**
+   * @return hash based on a stream of strings. This is useful when hashing things that will not fit in memory.
+   */
+  hashStringStream: member function(stream: !?stream<?string>): !binary
+
+  /**
+   * Produce a sum of a block of binary data and encode it as a hexadecimal string.
+   *
+   * @param value
+   *           input value with arbitrary data
+   * @return hexadecimal string
+   */
+  hashHex: inline member function(value: !?binary): !string
+
+  /**
+   * Produce a hash sum of a string value. The input data will be converted to binary using the UTF-8 encoding.
+   *
+   * @param value
+   *           input value as string
+   * @param base64
+   *           if true result will be encoded using Base64 encoding otherwise it will be hexadecimal.
+   * @return string digest
+   */
+  hashString: inline member function(value: !?string, base64: boolean): !string
+
+  /**
+   * Produce a hash sum of a Content value, encode it as a base64 string.
+   */
+  hashContent: inline member function(value: !?Content, base64: boolean): !string
+
+  /**
+   * Produce a hash of an int value.
+   */
+  hashInt32: inline member function(value: !int32): !int32
+
+  /**
+   * Produce a hash of a long int value.
+   */
+  hashInt: inline member function(value: !int): !int
+}

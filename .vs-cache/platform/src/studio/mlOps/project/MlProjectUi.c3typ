@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Ui representation of {@link MlProject}.
+ * The {@link #id} of this {@link MlProjectUi} is the same as the corresponding {@link MlProject}.
+ */
+type MlProjectUi mixes WithName, WithUniqueId {
+
+  /**
+   * Returns the fetch count of all {@link MlProject}
+   */
+  fetchCount: function(fetchSpec: FetchSpec): int js-server
+
+  /**
+   * Name of the subject type of the {@link MlProject}
+   */
+  subjectType: string
+
+  /**
+   * Creates a {@link MlProjectUi} instance from the give {@link MlProject}.
+   *
+   * Callers should ensure that the following fields are populated:
+   * - {@link MlProject#id}
+   * - {@link MlProject#subjectType}
+   */
+  from: function(mlProject: !MlProject): !MlProjectUi js-server
+
+  /**
+   * Returns all {@link MlProject} in form of {@link MlProjectUi}
+   */
+  mlProjectUis: function(): !?[MlProjectUi] js-server
+
+  /**
+   * @return all subject types by name
+   * @param mlProjectUis
+   *           The {@link MlProjectUi}s to return the subject types for. Assumes subjectType is populated.
+   * @param includeAllIfEmpty
+   *           Defines behavior if `mlProjectUis` is not specified, or empty. Include all the possible {@link MlSubject},
+   *           not just those associated with a {@link MlProject}.Added as a part of this API for ease of use with UI
+   *           Framework (where 1 API is expected).
+   */
+  mlSubjectTypes: function(mlProjectUis: ?[MlProjectUi], includeAllIfEmpty: boolean): !?[string] js-server
+
+  /**
+   * @param mlProjectUis
+   *           The {@link MlProjectUi}s to return the feature sets for.
+   * @param includeAllIfEmpty
+   *           Defines behavior if `mlProjectUis` is not specified, or empty. If true, returns all {@link Feature.Set}s.
+   *           If false, returns only feature sets that are used all models.
+   */
+  featureSetUis: function(mlProjectUis: ?[MlProjectUi], includeAllIfEmpty: boolean): !?[FeatureUi.Set] js-server
+
+  /**
+   * @param mlProjectUis
+   *           The {@link MlProjectUi}s to return the models for. If specified, returns all {@link MlModel}
+   *           that are in the specified projects. If not specified, or empty, then returns all
+   *           {@link MlModel}s.
+   * @param include
+   *            The include string relative to {@link MlModel}. The corresponding fields will be populated
+   *            on the returned {@link MlModelUi}.
+   */
+  mlModelUis: function(mlProjectUis: ?[MlProjectUi], include: ?string): !?[MlModelUi] js-server
+}

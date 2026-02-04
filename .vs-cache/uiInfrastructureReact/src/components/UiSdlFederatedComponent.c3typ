@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Provides an interface to render a Webpack federated module within an SDL application.
+ */
+@beta
+@uiComponentCategorizer(name='Federated component', category='Components', hide=true)
+type UiSdlFederatedComponent mixes UiSdlComponent<UiSdlNoData> {
+  /**
+   * The path to the remoteEntry.js file. Should be relative to the server root; this cannot be a full
+   * https url, as that could cause CORS issues.
+   * Example: if the remoteEntry.js file was at [package]/ui/content/remoteEntry.js, the remoteEntryUrl
+   * would be './remoteEntry.js'
+   */
+  remoteEntryUrl: !string
+
+  /**
+   * The name of the component to be imported. This should match what is in the "exposed" field in the federated
+   * module's configuration.
+   */
+  componentName: !string
+
+  /**
+   * The name of the federated module. This should match what is in the "name" field in the federated module's
+   * configuration.
+   */
+  federatedModuleName: !string
+
+  /**
+   * Optional: if a custom renderer is desired, the name of the type should be added as a
+   * configuration option.
+   * TODO: UI-12676
+   *
+   * rendererName: string
+   */
+}

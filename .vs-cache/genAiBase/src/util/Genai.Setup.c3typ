@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util Type for simplified configuration of GenAi apps
+ */
+type Genai.Setup {
+    /**
+     * Sets unstructured configs and prompts to use specified model.
+     *
+     * @param modelConfigName
+     *         Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} to use for all unstructured REA query configs
+     */
+    setUnstructuredConfig: function(modelConfigName: !string) js-rhino
+
+    /**
+     * It enables the `genai-test-indexing` {@link CronJob} to active state. Additionally it enables the alerts to be
+     * emailed to the users when the indexing takes too long or fails, via the {@link Genai.Alert#alertLongRunningIndexAction}
+     * and {@link Genai.Alert#alertFailedIndexAction}
+     *
+     * @param emailRecipients
+     *        Array of email addresses that will recieve the alerts when indexing fails
+     */
+    enableAlerting: function(emailRecipients: [string]) js-rhino
+
+    /**
+     * Disables the `genai-test-indexing` {@link CronJob}. Additionally it disables the email alerts when the indexing takes too long or fails, via the {@link Genai.Alert#alertLongRunningIndexAction}
+     * and {@link Genai.Alert#alertFailedIndexAction}
+     */
+    disableAlerting: function() js-rhino
+
+    /**
+     * Clears all Configs starting with `Genai.` at the specified override level
+     *
+     * @param override
+     *           The override level to clear configs.
+     * @param includeLlmConfigs
+     *           If this is set to true, then all Genai.Llm types will be cleared as well.
+     *           By default, unless running in Jarvis, we do not clear values and secrets on Genai.Llm types,
+     *           since those Configs contain secrets that are needed for accessing LLMs,
+     *           and clearing them would make re-running tests on development environments frustrating.
+     *
+     * @return the Config types that were cleared.
+     */
+    clearGenaiConfigs: function(
+        override: ConfigOverride = ConfigOverride.APP,
+        includeLlmConfigs: boolean
+    ): [Type] js-rhino
+}

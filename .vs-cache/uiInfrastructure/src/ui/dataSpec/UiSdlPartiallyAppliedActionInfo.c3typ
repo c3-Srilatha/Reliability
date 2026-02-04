@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Wraps a PartiallyAppliedAction and an actionId.
+ * The actionId is determined by the component's data spec and there is no defined pattern.
+ */
+@typeScript
+type UiSdlPartiallyAppliedActionInfo mixes WithContextVars, WithDataTransforms, WithTunnelConfiguration {
+
+  /**
+   * An ID for this partially applied action that will become a part of the data source id (UiSdlDataRedux)
+   * that is created for this partially applied action (this is done in `UiSdlComponent`).
+   * If left blank, the actionId will be the name of the `UiSdlComponent` field for the
+   * `UiSdlComponentDataSpec` that generated the `UiSdlPartiallyAppliedActionInfo`.
+   * You can utilize the `actionId`'s presence in the data source id to backtrace which data source id is
+   * associated with which `PartiallyAppliedAction`. See {@link UiSdlForm#doDataMerge} as an example of backtracing.
+   */
+  actionId: string = ''
+
+  /**
+   * The partially applied action to execute
+   */
+  partiallyAppliedAction: !PartiallyAppliedAction
+}

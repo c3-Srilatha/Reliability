@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Metadata associated with a {@link Genai.Source}.
+ * Results from a similarity search can be filtered out based on a metadata field's value.
+ * Filters can be passed in to a query via {@link Genai.Query.Operator.Types}
+ * or through {@link Genai.Query#filters} field.
+ */
+type Genai.SourceFile.Metadata {
+  /**
+   * The name of the original file. Includes the file extension.
+   */
+  fileName: !string
+
+  /**
+   * The extension type of the original file.
+   */
+  fileType: !?string
+
+  /**
+   * The person who created the contents of the file.
+   */
+  author: string
+
+  /**
+   * When the contents of the file were created.
+   */
+  date: datetime
+
+  /**
+   * All {@link Genai.SourceFile.Metadata.Tag}s that have been set on a {@link Genai.Source}.
+   */
+  tags: [Genai.SourceFile.Metadata.Tag]
+
+  /**
+   * The {@link Genai.SourceFile.Metadata.Tag}s that have been banned from a {@link Genai.Source}.
+   */
+  bannedTags: [Genai.SourceFile.Metadata.Tag]
+}

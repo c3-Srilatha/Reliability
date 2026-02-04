@@ -1,0 +1,130 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Miscellaneous APIs to help during testing.
+ */
+type GenAiPlatformTestApi {
+
+  /**
+   * Name of the sentence transformer model: {@link https://huggingface.co/mixedbread-ai/mxbai-embed-large-v1}
+   */
+  MXBAI: const string = "mixedbread-ai/mxbai-embed-large-v1"
+
+  /**
+   * Sample query for an embedder
+   */
+  SAMPLE_QUERY: const string = "Represent this sentence for searching relevant passages: A man is eating a piece of bread"
+
+  /**
+   * @return whether the current app is a Jarvis executor.
+   */
+  isRunningInJarvis: inline function(): !boolean py
+
+  /**
+   * @param modelTypePrefix
+   *          name of the model provider type to use.
+   * @param modelName
+   *          name of the model to use.
+   * @return a completion client for the given model type. If not used in Jarvis, default auths must already be set.
+   *          If modelName is not provided, a default for the model type will be used.
+   */
+  clientForModelType: inline function(modelTypePrefix: !string enum GenaiPlatformProvider, modelName: string): !GenaiCore.Llm.Completion.Client py
+
+  /**
+   * @param modelTypePrefix
+   *          name of the model provider type to use.
+   * @param modelName
+   *          name of the model to use.
+   * @return a embedding client for the given model type. If not used in Jarvis, default auths must already be set.
+   *          If modelName is not provided, a default for the model type will be used.
+   */
+  embeddingClientForModelType: inline function(modelTypePrefix: !string enum GenaiPlatformProvider, modelName: string): !GenaiCore.Llm.Embedding.Client py
+
+  /**
+   * @param modelTypePrefix
+   *          name of the model provider type to use.
+   * @param modelName
+   *          name of the model to use.
+   * @return a completion client for the given model type. If not used in Jarvis, default auths must already be set.
+   *          If modelName is not provided, a default for the model type will be used.
+   */
+  batchClientForModelType: inline function(modelTypePrefix: !string enum GenaiPlatformProvider, modelName: string): !GenaiCore.Llm.Completion.Client py
+
+  /**
+   * @return the default dataset mount for testing, e.g. "gcs://c3--mle/datasets/" or "gcs://c3--datasets/mle/"
+   */
+  defaultDatasetMount: cached function(): !string serialized Url py
+
+  /**
+   * Returns the default model name for the given model type prefix and LLM task.
+   *
+   * @param modelTypePrefix
+   *          name of the model provider type to use.
+   * @param llmTask
+   *          the LLM task for which to get the default model name.
+   * @return the default model name for the given model type prefix and LLM task.
+   */
+  defaultModelName: inline function(modelTypePrefix: !string enum GenaiPlatformProvider, llmTask: string enum GenaiCore.Llm.Task.Enum = COMPLETION): !string py
+
+  /**
+   * Returns the default auth instance (without secrets) for the given model type prefix and LLM task.
+   *
+   * @param modelTypePrefix
+   *          name of the model provider type to use.
+   * @param llmTask
+   *          the LLM task for which to get the default model name.
+   * @return the default auth for the given model type prefix and LLM task.
+   */
+  defaultAuth: inline function(modelTypePrefix: !string enum GenaiPlatformProvider, llmTask: string enum GenaiCore.Llm.Task.Enum = COMPLETION): !GenaiCore.Llm.Auth py
+
+  /**
+   * @return tuples used for testing GenaiCore.DynamicPy.Base, Engine, and Service.
+   */
+  dynamicPyTestTuples: inline function(): native py
+
+  /**
+   * @return example init arguments for an embedder.
+   */
+  embedderInitKwargs: cached inline function(): json py
+
+  /**
+   * @return a test user with `Role` `GenaiCore.BaseUser`.
+   */
+  testBaseUser: cached inline function(): !User py
+
+  /**
+   * Checks that a tool has the correct fields.
+   *
+   * @param tool
+   *          The tool to check
+   * @param toolFileName
+   *          The name of the file containing the expected values for the tool's fields
+   */
+  checkToolFields: inline function(tool: !GenaiCore.Tool, toolFileName: !string) py
+
+  /**
+   * Gets all of the ids for the entities of the given types. Used in conjunction with {@link removeNewEntitiesForTypes}
+   * to remove all entities of the given types that were created during the test.
+   *
+   * @param types
+   *          The types for which to get the ids
+   * @return A map of type to a list of ids for the entities of that type
+   */
+  preTestEntityIdsForTypes: inline function(types: ![Type]): !map<Type, [string]> py
+
+  /**
+   * Removes all entities of the given types whose ids are **NOT** in the given map. Used in conjunction with
+   * {@link preTestEntityIdsForTypes} to remove all entities of the given types that were created during the test.
+   *
+   * @param idsByType
+   *          A map of type to a list of ids for the entities of that type
+   */
+  removeNewEntitiesForTypes: inline function(idsByType: !map<Type, [string]>) py
+}

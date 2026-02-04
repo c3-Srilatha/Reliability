@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * JavaToC3FieldMapper helps to extract fields from java classes with different field accessor patterns.
+ *
+ * @see JavaGetSetToC3FieldMapper
+ * @see JavaGetSetWithToC3FieldMapper
+ * @see JavaGetWithToC3FieldMapper
+ */
+type JavaToC3FieldMapper {
+
+  /**
+   * {@link JavaToC3FieldMappingResult} containing all the field types and new references found in the java class
+   */
+  c3FieldTypes: abstract function(spec: !JavaToC3TypeSpec): JavaToC3FieldMappingResult
+
+  /**
+   * converts c3 reference type value to runtime java type
+   *
+   * @see Ann.Java#runtimeClassName
+   * @see ValueType#convertToJavaRuntime
+   */
+  toJava: abstract function(c3Obj: !Obj): @java(class='java.lang.Object') native
+
+  /**
+   * converts java object to c3 reference type value
+   *
+   * @see Ann.Java#runtimeClassName
+   * @see ValueType#convertToJavaRuntime
+   */
+  fromJava: abstract function(javaObj: @java(class='java.lang.Object') native): Obj
+
+  /**
+   * Returns true if a given java class is a candidate to be mapped by the mixing field mapper
+   *
+   * @param javaClassName
+   *           name of the java class
+   */
+  canMap: abstract function(javaClassName: !string): !boolean
+}

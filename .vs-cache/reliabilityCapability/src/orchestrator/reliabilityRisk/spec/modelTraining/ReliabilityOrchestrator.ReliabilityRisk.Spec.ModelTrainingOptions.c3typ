@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+  * Defines training options for {@link ReliabilityRiskMlModel}s within the reliability risk workflow.
+  * This type specifies how models are created, evaluated, validated, reported, and registered.
+  */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+type ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTrainingOptions {
+
+  /**
+   * Use this field to specify the {@link BatchJobOptions} that should be used for the distributed creation of
+   * {@link ReliabilityRiskMlModel}s, which will subsequently be trained.
+   */
+  modelCreationJobOptions: BatchJobOptions
+
+  /**
+   * Use this field to specify the {@link MlModel.Evaluation.Spec} that should be used for the distributed classification of trained
+   * {@link ReliabilityRiskMlModel}s
+   */
+  modelEvaluationSpec: MlModel.Evaluation.Spec
+
+  /**
+   * Specify whether to classify the models after they are trained. By default this field is set to False,
+   * meaning models will be classified after training.
+   */
+  doNotClassify: !boolean = false
+
+  /**
+   * Specify whether to validate the models after they are trained. By default this field is set to False,
+   * meaning models will be validate after training.
+   */
+  doNotValidate: !boolean = false
+
+  /**
+   * Use this field to specify the {@link BatchJobOptions} that should be used for the distributed validation of
+   * {@link ReliabilityRiskMlModel}s, if {@link #doNotValidate} is set to Fals.e
+   */
+  modelValidationJobOptions: BatchJobOptions
+
+  /**
+   * Specify whether to generate model validation reports for the models after they are trained. By default
+   * this field is set to False, meaning that model reports will be generated after model validation.
+   * NOTE: If this field is set to False, then the {@link #doNotValidate} field MUST also be False.
+   */
+  doNotGenerateValidationReports: !boolean = false
+
+  /**
+   * Use this field to specify the {@link BatchJobOptions} that should be used for the distributed generation of
+   * {@link ReliabilityMlModelReport}s, if {@link #doNotGenerateValidationReports} is set to False.
+   */
+  modelReportingJobOptions: BatchJobOptions
+
+  /**
+   * Specify whether to register models into the model registry service after they are trained. By default this field
+   * is set to False, meaning models will be registered after training.
+   */
+  doNotRegister: !boolean = false
+
+  /**
+   * Use this field to specify the {@link BatchJobOptions} that should be used for the distributed registering of
+   * models into the Model Registry service.
+   */
+  registerModelsJobOptions: BatchJobOptions
+
+}

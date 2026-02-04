@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Entity type to represent metadata to enable {@link SymmetricCipher} to decrypt data encryption keys during decrypt
+ * requests. Upon receiving a decrypt request, {@link SymmetricCipher} queries this table to fetch encrypted
+ * data encryption key, decrypts it using active key encryption key and returns decrypted value.
+ */
+@db(index+=['kekId'])
+private entity type EncryptedDek mixes Cached schema name 'ENCRYPTED_DEK' {
+
+  /**
+   * Data Encryption Key Identifier
+   */
+  dekId: !string
+
+  /**
+   * Key encryption key identifier
+   */
+  kekId: !string
+
+  /**
+   * Data encryption key encrypted under key encryption key
+   */
+  encryptedDek: !Ciphertext
+}

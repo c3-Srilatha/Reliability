@@ -1,0 +1,1447 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This class defines the methods available for any stream of data that represents a time series.
+ * It is designed around normalized data, although not all implementations will provide complete
+ * and fast implementations of the normalized semantics.
+ */
+// TODO: PLAT-24282 Ann.ser @ser(include="this,start,end,data...")
+inline type Timeseries<E> mixes TimeseriesBase<E, TimeseriesInfo>, TimeseriesStdLib<E>, TimeseriesInfoBase {
+
+  // PLAT-40707: Fix typescript generation for nested types
+  // / **
+  // * Timeseries evaluation time details
+  // * /
+  // type Eval {
+  // / **
+  // * Active binding names during Timeseries evaluations
+  // * /
+  // enum type BindingNames {
+  // / **
+  // * Contains context about the metric evaluation. Structure available in bindings is of type {@link MetricContext}
+  // * Accessible via $metric in expressions
+  // * /
+  // METRIC = "metric"
+  // }
+  // }
+  unit: ~
+
+  /**
+   * Internal representation of data points for this time series
+   */
+  _data: private [E] schema suffix 'DATA'
+
+  /**
+   * Internal representation to indicate the cardinality of the Timeseries
+   */
+  _kind: private string enum Timeseries.TimeseriesKind
+
+  /**
+   * Total number of points between start and end
+   *
+   * @return The number of points in the timeseries
+   */
+  count: ~ java | js
+
+  /**
+   * Only return the minimum number of data points to represent this timeseries. If the time series is an identity
+   * time series, this will return 1 object in the array. If it is an empty time series, this will return 0 elements
+   * else if it is a regular time series, this will return the same no of points as {@link Timeseries.data} function
+   * The responsibility of handling emptiness and single valued behavior is on the user of this function.
+   *
+   * If you want the array to contain as many elements as in between start & end at normalized interval use #expandedData
+   *
+   * @see expandedData
+   */
+  @ui(display=line, x=0, y=0, w=12, h=4)
+  data: member function(): [E]
+
+  /**
+   * Only return the minimum number of data points to represent this timeseries. If the time series is an identity
+   * time series, this will return 1 object in the array. If it is an empty time series, this will return 0 elements
+   * else if it is a regular time series, this will return the same no of points as {@link Timeseries.data} function
+   * The responsibility of handling emptiness and single valued behavior is on the user of this function.
+   *
+   * If you want the array to contain as many elements as in between start & end at normalized interval use #expandedData
+   *
+   * @see expandedData
+   */
+  optimizedData: member function(): [E]
+
+  /**
+   * @inheritDoc
+   * NOTE: only to be used when accessing data within a for loop for which we don't want to check isEmpty, isIdentity
+   * or regular every time
+   */
+  expandedData: ~
+
+  /**
+   * @inheritDoc
+   * NOTE: only to be used when accessing data within a for loop for which we don't want to check isEmpty, isIdentity
+   * or regular every time
+   */
+  doubleData: ~
+
+  /**
+   * Calculated value for each data point indicating if the data point is missing or available
+   *
+   * @return The array of booleans for each data point indicating if the data point is missing or available
+   * Will return null if no values are missing to optimize for memory. @see safeMissing for expanded non null array
+   */
+  missing: member function(): [boolean]
+
+  /**
+   * Non null missing array
+   * @see missing
+   */
+  safeMissing: member function(): ![boolean]
+
+  /**
+   * Addition of all the values per grain of the input timeseries with the current timeseries
+   *
+   * @param timeseries All the timeseries that need to be added to the current timeseries
+   * @return The handle to a Timeseries<E> which is an addition of all the input timeseries
+   */
+  sum: member function(timeseries: !?[Timeseries<E>]): !Timeseries<E>
+
+  /**
+   * Average of all the values per grain of the input timeseries including the current timeseries
+   *
+   * @param timeseries All the timeseries that need to be added to the current timeseries
+   * @return The handle to a Timeseries<E> which is an addition of all the input timeseries
+   */
+  avg: member function(timeseries: !?[Timeseries<E>]): !Timeseries<E>
+
+  avg: member function(timeseries: !?Timeseries<E>): !Timeseries<E>
+
+  /**
+   * Minimum of all the values per grain of the input timeseries including the current timeseries
+   *
+   * @param timeseries All the timeseries that we need to compute the minimum for
+   * @return The handle to a Timeseries<E> which is has the minimum value per grain against current / input timeseries
+   */
+  min: member function(timeseries: !?[Timeseries<E>]): !Timeseries<E> java | js
+
+  min: member function(timeseries: !?Timeseries<E>): !Timeseries<E> java | js
+
+  /**
+   * Maximum of all the values per grain of the input timeseries including the current timeseries
+   *
+   * @param timeseries All the timeseries that we need to compute the maximum for
+   * @return The handle to a Timeseries<E> which is has the maximum value per grain against current / input timeseries
+   */
+  max: member function(timeseries: !?[Timeseries<E>]): !Timeseries<E> java | js
+
+  max: member function(timeseries: !?Timeseries<E>): !Timeseries<E> java | js
+
+  /**
+   * AND all the timeseries
+   * @param timeseries Timeserieses to be and'ed
+   * @return point-wise boolean AND of all input timeseries
+   */
+  and: member function(timeseries: !?[Timeseries<E>]): !Timeseries<E>
+
+  and: member function(timeseries: !?Timeseries<E>): !Timeseries<E>
+
+  /**
+   * OR all the timeseries
+   * @param timeseries Timeserieses to be or'ed
+   * @return point-wise boolean OR of all input timeseries
+   */
+  or: member function(timeseries: !?[Timeseries<E>]): !Timeseries<E>
+
+  or: member function(timeseries: !?Timeseries<E>): !Timeseries<E>
+
+  /**
+   * Convert the timeseries to the desired unit
+   *
+   * @param unitId Id of unit to which conversion is desired
+   * @return timeseries converted to unitId
+   */
+  convertToUnit: member function(unitId: !string): !Timeseries<E>
+
+  /**
+   * Cast the timeseries to the desired unit without changing magnitude
+   *
+   * @param unitId Id of unit to which timeseries has to be casted
+   * @return timeseries casted to unitId (no change in magnitude)
+   */
+  treatAsUnit: member function(unitId: !string): !Timeseries<E>
+
+  /**
+   * Convert timeseries to an interval up / down specified by aggregation function
+   *
+   * @param interval Interval to which timeseries has to be converted
+   * @param AggOp one of SUM|AVG|MIN|MAX|MEAN|PREVIOUS
+   * @return timeseries up/down converted to specified interval using specified AggOp
+   */
+  toInterval: member function(interval: !string, aggOp: !string): !Timeseries<E>
+
+  toPeriod: ~
+
+  /**
+   * Aggregate all values of a timeseries into scalar
+   *
+   * @param AggOp one of SUM|AVG|MIN|MAX
+   * @param prorate default false. scale value if prorate is true.
+   * @return identity timeseries (scalar value obtained by aggregating all points of timeseries)
+   */
+  aggregate: member function(aggOp: !string, prorate: boolean): !Timeseries<E>
+
+  /**
+   * Point-wise addition of the two timeseries
+   *
+   * @param timeseries input timeseries
+   * @return timeseries whose values are point-wise addition of input with self
+   */
+  add: member function(timeseries: !Timeseries<E>): !Timeseries<E>
+
+  /**
+   * Point-wise subtraction of the two timeseries
+   *
+   * @param timeseries input timeseries
+   * @return timeseries whose values are point-wise subtraction of input with self
+   */
+  subtract: member function(timeseries: !Timeseries<E>): !Timeseries<E>
+
+  /**
+   * Point-wise multiplication of the two timeseries
+   *
+   * @param timeseries input timeseries
+   * @return timeseries whose values are point-wise multiplication of input with self
+   */
+  multiply: member function(timeseries: !Timeseries<E>): !Timeseries<E>
+
+  /**
+   * Point-wise division of the two timeseries
+   *
+   * @param timeseries input timeseries
+   * @return timeseries whose values are point-wise division of input with self
+   */
+  divide: member function(timeseries: !Timeseries<E>): !Timeseries<E>
+
+  /**
+   * Point-wise raise to the power of value from the input.timeseries data points. If input is:
+   * 1) a timeseries, then each point from the timeseries will be used with the current timeseries instance.
+   * 2) a number, then the same will be used with the current timeseries instance.
+   */
+  pow: member function(other: !(Timeseries<E> | number)): !Timeseries<E> java
+
+  /**
+   * Point-wise negation of the timeseries
+   *
+   * @return timeseries whose values are point-wise negated
+   */
+  negate: member function(): !Timeseries<E>
+
+  /**
+   * All parameters except the first are optional.
+   * One amongst parameters 'resetOnTimeseries' and 'resetOnValue' can be provided at any given point
+   *
+   * @param AggOp
+   *          Aggregation function to be applied when rolling. one of SUM|AVG|MIN|MAX
+   * @param resetOnTimeseries
+   *          Timeseries to be used as resetting trigger (reset if point's value is true (not-zero))
+   * @param resetOnValue
+   *          Reset rolling value on seeing a point whose value is equal to this parameter
+   * @param resetToTs
+   *          Timeseries to be used to use as the reset value when reset occurs
+   * @param resetToValue
+   *          When resetting, reset to this parameter's value, if specified
+   * @param resetAfter
+   *          Reset rolling value after every N points where N is this parameter
+   * @param resetDropThreshold
+   *        resetDropThreshold when specified, if absolute difference between current and previous point drops below this parameter's value,
+   *        set new value to current point,else set it to difference between current and previous point
+   * @param rollOverThreshold
+   *        by default it is false, If true, value after drop is roll over distance from previous point.
+   *        If false, value after drop is the point's value.
+   * @return timeseries which represents rolling aggregation of this timeseries based on above parameters
+   */
+  rolling: member function(aggOp: !string,
+                           resetOnTimeseries: Timeseries<E>,
+                           resetOnValue: double,
+                           resetToTs: Timeseries<E>,
+                           resetToValue: double,
+                           resetAfter: int,
+                           resetDropThreshold: double,
+                           rollOverThreshold: boolean): !Timeseries<E>
+
+  /**
+   * @param AggOp
+   *          Aggregation function to be applied when rolling. one of SUM|AVG|MIN|MAX|DIFF
+   * @param windowSpec
+   *         {@link WindowSpec} used to create window
+   * @return timeseries which represents rolling aggregation of this timeseries based on above parameters
+   */
+  rolling: member function(aggOp: !string, windowSpec: !WindowSpec): !Timeseries<E>
+
+  /**
+   * Records the first step of selecting the window of a rolling (a.k.a. moving) window operation in an intermediate
+   * structure that can perform further operations on the values in the window.  Each element field is operated on
+   * independently of the other fields, rather than operating on each element as a whole (equivalent to calculating
+   * on each column in a 2D table independently when there are multiple columns).
+   *
+   * For a general description and examples of what are rolling window operations, see
+   * [pandas.DataFrame.rolling](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.rolling.html)
+   * which is very similar to this method.
+   *
+   * @param data
+   *           Input data.
+   * @param window
+   *           Size of the moving window.  An integer represents a fixed number of non-missing values in the window,
+   *           while a {@link Period} represents the time period of each window, and is only valid for datetime-like
+   *           indices.
+   * @param minValues
+   *           Minimum number of non-missing values in a window required for the final result of an
+   *           operation on the returned {@link CollectionRolling} to have a value for the window.
+   *           Otherwise, the final result for the window is null or NaN.  "Non-missing value" here refer to an
+   *           individual element field, not the entire element.
+   *           When `window` is a {@link Period}, the default value of this parameter is 1.  Otherwise, this parameter
+   *           defaults to the size of the window.
+   * @param on
+   *           The name of a datetime-like element field (equivalent to datetime-like column on a 2D table) on which to
+   *           calculate the rolling window, rather than the index.  If this is not the name of a datetime-like element
+   *           field (e.g. an integer element field), this method argument will be ignored.
+   * @return an intermediate structure that records the rolling operation, for performing subsequent actions.
+   */
+  rolling: member function(window: !(int | Period | WindowSpec),
+                           minValues: int,
+                           spec: DataTimeseriesSpec): CollectionRolling<E>
+
+  /**
+   * Returns a timeseries/collection where the value of every data point is computed by aggregating every "step'th"
+   * point in the window starting at "offset" and spanning "span" data points.
+   *
+   * Example: `rolling(AVG, sum(normalized.data.quantity), -20, 21, 3)`
+   *
+   * @param agg
+   *           Name of the aggregation function.
+   * @param data
+   *           Input data.
+   * @param offset
+   *           Start point in the window.
+   * @param span
+   *           Number of points to span from the offset.
+   * @param step
+   *           Step of the window.
+   * @return a timeseries/collection where the value of every data point is computed by aggregating every "step'th"
+   *         point in the window starting at "offset" and spanning "span" data points.
+   */
+  rolling: member function(agg: !string enum AggOp, offset: !int, span: !int, step: int): Timeseries<E>
+
+  // TODO: string enum AggOp should be replaced by AggOp.
+  // TODO: PLAT-30140 - Consolidate with Timeseries
+
+  /**
+   * Returns a timeseries where every value is computed by taking the difference between current and previous point.
+   *
+   * It has 1 optional argument : resetDropThreshold ==> If the difference ends up being negative (its a drop) and the absolute magnitude of drop is greater than or equal to resetDropThreshold,
+   * the value for that point is not the diff but the value itself.
+   *
+   * For the second example, if resetDropThreshold is 10000 and we had 10003 followed by 1, the value will be 1 and not -10002. If we had 10003 followed by 4,
+   * the value will be -9999.
+   *
+   * Example: `rollingDiff(sum(normalized.data.quantity))`, `rollingDiff(sum(normalized.data.quantity), 10000)`
+   *
+   * @param timeseries
+   *        timeseries input
+   * @param resetDropThreshold
+   *        resetDropThreshold when specified, if absolute difference between current and previous point drops below this parameter's value,
+   *        set new value to current point,else set it to difference between current and previous point
+   * @param rollOverThreshold
+   *        by default it is false, If true, value after drop is roll over distance from previous point.
+   *        If false, value after drop is the point's value.
+   * @return timeseries which represents rolling diff of this timeseries based on above parameters.
+   */
+  rollingDiff: member function(resetDropThreshold: double, rollOverThreshold: boolean): !Timeseries<E>
+
+  /**
+   * Is a timeseries whose values are missing percentages for every point
+   *
+   * @return timeseries whose values are missing percentage for every point
+   */
+  missingTimeseries: member function(): !Timeseries<double>
+
+  /**
+   * @param timeComponent one of YEAR,MONTH,DAY,HOUR,MINUTE,SECOND,DAYOFYEAR,DAYOFWEEK
+   * @return timeseries whose values are specified timeComponent of point's datetime
+   */
+  timeComponent: member function(timeComponent: !string): !Timeseries<double>
+
+  /**
+   * Computes the specified statistic across all available points in timeseries
+   *
+   * @param statsFunction SUM,MEAN,MIN,MAX,MEDIAN,VARIANCE,STDDEV,PERCENTILE
+   * @param n optional input for PERCENTILE calculation
+   * @return computed statistic value
+   */
+  stat: member function(statsFunction: !string enum AggOp, n: double): !Timeseries
+
+  /**
+   * CEIL -> Round towards positive infinity
+   * FLOOR -> Round towards negative infinity
+   *
+   *
+   * @param roundingFunction CEIL,FLOOR
+   * @return timeseries with values rounded based on specified parameter
+   */
+  round: member function(roundFunction: string, scale: int32): !Timeseries<E>
+
+  /**
+   * Equality Comparisons. We follow these rules :
+   * NaN operator X = X operator NaN = FALSE
+   * Inf operator X = X operator Inf = FALSE
+   *
+   *
+   * @param ts input timeseries with which comparison is desired
+   * @param equalityOperator EQ,NE,GT,GTE,LT,LTE
+   * @return timeseries whose values are point-wise equality operator comparison between self and input
+   */
+  equality: member function(ts: !Timeseries<E>, equalityOperator: !string): Timeseries<E>
+
+  /**
+   * @return timeseries whose values are 0(false) if the value is unavailable, 1(true) otherwise
+   */
+  exists: member function(): !Timeseries<double>
+
+  /**
+   * @return timeseries with values square rooted
+   */
+  sqrt: member function(): !Timeseries<E>
+
+  /**
+   * @return timeseries with values cube rooted
+   */
+  cubeRoot: member function(): !Timeseries<E>
+
+  /**
+   * Computes nth root
+   * n = 1 is same as self
+   * n = 2 is same as sqrt
+   * n = 3 is same as cuberoot
+   *
+   *
+   * @param n desired root value
+   * @return timeseries with values n'th rooted
+   * @throws Exception if n == 0
+   */
+  nthRoot: member function(n: !int32): !Timeseries<E>
+
+  /**
+   * @return timeseries with values natural(Base E) log'ed
+   */
+  log: member function(): !Timeseries<E>
+
+  /**
+   * @return timeseries with values Base 10 log'ed
+   */
+  log10: member function(): !Timeseries<E>
+
+  /**
+   * @return timeseries with values absoluted (sign dropped)
+   */
+  abs: member function(): !Timeseries<E>
+
+  /**
+   * @return timeseries with new values being 'e to the power old-value'.
+   */
+  exp: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with trigonometric sine function applied to input values
+   */
+  sin: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with trigonometric cosine function applied to input values
+   */
+  cos: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with trigonometric tangent function applied to input values
+   */
+  tan: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with trigonometric arc sine function applied to input values
+   */
+  asin: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with trigonometric arc cosine function applied to input values
+   */
+  acos: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with trigonometric arc tangent function applied to input values
+   */
+  atan: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in radians
+   * @return timeseries with values converted to an approximately equivalent angle measured in degrees
+   */
+  toDegrees: member function(): !Timeseries<E>
+
+  /**
+   * @param  input timeseries of angle values in degrees
+   * @return timeseries with values converted to an approximately equivalent angle measured in radians
+   */
+  toRadians: member function(): !Timeseries<E>
+
+  /**
+   * @param start timeseries start
+   * @param end timeseries end
+   * @param grain timeseries grain
+   *
+   * @return timeseries whose values are start timestamps of grain-aligned
+   * points within specified range. It always produces dates in TimeZone NONE
+   */
+  startTimeseries: function(start: !datetime, end: !datetime, interval: !string): !Timeseries<E>
+
+  /**
+   * @param start timeseries start
+   * @param end timeseries end
+   * @param grain timeseries grain
+   *
+   * @return timeseries whose values are end timestamps of grain-aligned
+   * points within specified range. It always produces dates in TimeZone NONE
+   */
+  endTimeseries: function(start: !datetime, end: !datetime, interval: !string): !Timeseries<E>
+
+  /**
+   * Converts the list of objects into a timeseries
+   * @param objs
+   *            The list of objects to be used to create a timeseries as a stream
+   * @param tsSpec
+   *            This contains the fields & time range required to take decisions while converting the objects to a timeseries
+   * @return a normalized timeseries from the given list of objects
+   */
+  fromObjStream: function(objs: !?stream<Obj>, spec: !EvalTimeseriesSpec): !Timeseries
+
+  /**
+   * If no min and max values are specified, it first finds min and max of the timeseries.
+   * It then scales every value to a number between 0 and 1 proportionally based on min and max values.
+   *
+   * newValue = (oldValue - min) / (max - min)
+   *
+   * If a data point is completely missing (fully gap, fully unavailable, or part gap part unavailable), we
+   * do not use him for calculations. Their scaled value is always 0.
+   *
+   * @param obj Handle to the timeseries
+   * @param min optional min value to be used
+   * @param max optional max value to be used
+   *
+   * @return timeseries with values between 0 and 1
+   */
+  scaleMinMax: member function(min: double, max: double): !Timeseries<E>
+
+  /**
+   * It first finds mean and stddev of the timeseries. Assuming normal distribution,
+   * it then scales every value to its normal value based on mean and stddev values.
+   *
+   * newValue = (oldValue - mean) / stddev
+   *
+   * If a data point is completely missing (fully gap, fully unavailable, or part gap part unavailable), we
+   * do not use him for calculations. Their scaled value is always 'mean'.
+   *
+   * @param obj Handle to the timeseries
+   *
+   * @return timeseries with values normally distributed based on mean and stddev
+   */
+  scaleStandard: member function(): !Timeseries<E>
+
+  /**
+   * For each interval, it linearly interpolates value of timeseries 'obj' towards value of timeseries 'to'
+   * based on value of timeseries 'scale'
+   *
+   * newValue = (1-scale) * oldValue + scale * to
+   *
+   * If a data point is completely missing (fully gap, fully unavailable, or part gap part unavailable), we
+   * do not use him for calculations. Their scaled value is always 'oldValue'.
+   *
+   * @param obj timeseries to be lerped
+   * @param to  timeseries towards which we lerp
+   * @param scale timeseries representing scale (values have to be between 0 and 1)
+   *
+   * @return timeseries with values linearly interpolated
+   */
+  lerp: member function(to: !Timeseries, scale: !Timeseries): !Timeseries
+
+  /**
+   * Chops timeseries based on a time range.
+   * @param start
+   *           slice start
+   * @param end
+   *           slice end
+   * @return sliced timeseries based on specified start and end
+   */
+  slice: member function(slicedStart: !datetime, slicedEnd: !datetime): !Timeseries<E>
+
+  /**
+   * Extends and or chops timeseries based on specified parameters.
+   *
+   * @param start
+   *        extension start
+   * @param end
+   *        extension end
+   * @return extended and or chopped timeseries based on specified start and end
+   */
+  extendAndOrChop: member function(start: !datetime, end: !datetime): !Timeseries<E>
+
+  /**
+   * Convert the given timeseries into a specific zone.
+   * @param timeZone
+   *            Desired time zone {@see TimeZone}
+   * @return series converted in the desired time zone. Note, the number of data points returned per day (at interval finer
+   * than day) may vary depending on day light saving changes. The expectation is for the user to ensure
+   * in their expressions that other series (if any) are also in the same time zone while doing time series math
+   */
+  convertToTimeZone: member function(timeZone: !TimeZone): !Timeseries<E>
+
+  /**
+   * Assume timeseries to have a particular zone. This api will just replace the zone of the current time series to the
+   * desired zone
+   * @param timeZone
+   *            Desired time zone {@see TimeZone}
+   * @return series in the desired time zone. Note this will just change the time zone of the source time series and
+   * will not perform any additional checks on the day light savings to adjust the number of data points
+   */
+  treatAsTimeZone: member function(timeZone: !TimeZone): !Timeseries<E>
+
+  /**
+   * Chops timeseries based on chunker timeseries, sections obj into sections where chunker is truthy
+   */
+  chunk: member function(chunker: !Timeseries<double>): [Timeseries<E>] java | js
+
+  /**
+   * Concat two timeseries
+   */
+  concat: function(fst: !mixing Timeseries, othr: !mixing Timeseries): !mixing Timeseries
+
+  /**
+   * @param tsArray
+   *        timeseries to be aggregated
+   * @param statName
+   *        name of the stat to be computed
+   * @param n
+   *        input for percentile calculation only, ignored for other stats
+   * @return point-wise 'statName' calculation of all input timeseries
+   */
+  rollup: function(tsArry: ![mixing Timeseries], statName: string enum AggOp, n: double): !Timeseries
+
+  /**
+   * Function to interpolate data within the given timeseries. We support various forms of interpolation techniques
+   * viz.
+   * 1. ZERO - interpolate 0 values in place of data / gaps/ missing/ unavailable - DEFAULT
+   * 2. LINEAR - linearly interpolate values in place of data / gaps/ missing/ unavailable
+   * 3. PREVIOUS - interpolate immediate previous value that is not 0 (data) / not a gap (GAPS) / not unavailable
+   * (UNAVAILABLE) / available (MISSING)
+   * 4. NEXT - interpolate immediate next value that is not 0 (data) / not a gap (GAPS) / not unavailable (UNAVAILABLE)
+   * / available (MISSING)
+   * Please note : Values are only interpolated if the interval is a complete gap / complete unavailable/ complete
+   * missing / or value 0
+   * If they are partially available, values will not be interpolated for those intervals
+   * Interpolation can be performed on
+   * 1. MISSING - only interpolates values that are missing
+   * 2. DATA - only interpolates values where the value of the interval is 0
+   *
+   * @param interpolatorType
+   *        The kind of interpolation technique to apply. Should be one of LINEAR/ ZERO/ PREVIOUS/
+   *        NEXT
+   * @param performOn
+   *        the kind of data interpolation should be applied on. Should be one of DATA/MISSING
+   * @return a timeseries where required values are interpolated according to interpolator type specified
+   */
+  interpolate: inline member function(interpolatorType: !string, performOn: !string): !Timeseries<double>
+
+  /**
+   * Analyze the time series to detect positive and negative changes using CUSUM (Cumulative Sum). This method uses the
+   * availability for the the weight (ω). Missing points are ignored.
+   *
+   * Sn+1 = max(0, Sn + xn ωn)
+   *
+   * Here _xn_ is the difference between two successive timeseries values and _ωn_ is the availability of the point
+   * in [0..1]. E.g. the deltas are scaled by how confidently the value is known.
+   *
+   * @param threshold CUSUM _threshold_ parameter (must be positive)
+   * @return dates in time series identified as changes
+   * @see https://en.wikipedia.org/wiki/CUSUM
+   */
+  cusumDates: member function(threshold: double = 1): [datetime]
+
+  /**
+   * Generate a linear regression of the time series using Ordinary Least Squares. If there are too few points,
+   * the return value is null; otherwise it is an object with the intercept (α) and slope (β) as well as other
+   * meta-information. Note that the _x_ observations are the indexes into the time series, so are independent of the
+   * interval. Missing points are ignored.
+   *
+   * @see https://en.wikipedia.org/wiki/Ordinary_least_squares
+   */
+  leastSquares: member function(): LeastSquaresResult
+
+  /**
+   * Convert, if possible to a double timeseries otherwise throws exception
+   */
+  toDoubleTimeseries: member function(): Timeseries<double>
+
+  dataPointType: ~
+
+  /**
+   * Computes emptiness based on both gaps and unavailable information.
+   *
+   * @return true if its an empty timeseries.
+   */
+  isEmpty: member function(): boolean
+
+  /**
+   * @return true if its an identity timeseries.
+   */
+  isIdentity: member function(): boolean
+
+  /**
+   * @return value if this is an identity timeseries.
+   */
+  identityValue: member function(): E
+
+  /**
+   * @return if current timeseries can be converted to double timeseries
+   */
+  isConvertibleToDoubleTimeseries: member function(): boolean
+
+  /**
+   * @return Time information
+   */
+  timeInfo: member function(): !TimeInfo
+
+  /**
+   * @return timeseries whose values are availability percentage for every point (computed using unavailableRanges and
+   *         gapRanges).
+   *         <p>
+   *         available = ( 1 - unavailable - gap )
+   */
+  availableTimeseries: member function(): !Timeseries<double>
+
+  /**
+   * @return new timeseries with provided time zone
+   */
+  withTimeZone: member function(timeZone: TimeZone): !Timeseries<E>
+
+  /**
+   * @return new timeseries with provided time info.
+   *         Note: If time info is changed incompatible to the original length of the time series an error will be
+   *         generated
+   */
+  withTimeInfo: member function(timeInfo: !TimeInfo): !Timeseries<E>
+
+  /**
+   * @param other
+   *        input timeseries
+   * @return timeseries whose values are point-wise remainder from division of input with self
+   */
+  modulo: member function(other: !Timeseries<E>): !Timeseries<E>
+
+  /**
+   * if a point is 0 (false), resultant point will be 1 (true)
+   * if a point is non-zero (true), resultant point will be 0 (false)
+   *
+   * @return timeseries with values point-wise not'ted
+   */
+  not: member function(): !Timeseries<double>
+
+  /**
+   * Applies ternary operator point-wise.
+   * <p>
+   * <li>If a point is true, its new value is 'trueValue'.
+   * <li>If a point is false, its new value is 'falseValue'.
+   *
+   * @param trueValue
+   *        new value for a point if its true.
+   * @param falseValue
+   *        new value for a point if its false.
+   * @return timeseries of param's data-type.
+   */
+  ternary: member function(trueValue: !any, falseValue: !any): !Timeseries
+
+  /**
+   * Based on the specified period and operator, a new timeseries is returned whose points are obtained by applying the
+   * period to the interval of every point. The application of the period is governed by the operator.
+   * <p>
+   * Formula : (point's interval) operator (period)
+   * <p>
+   * Example : a yearly point divided by a period of one day would yield 365 for non-leap years (2010-01-01T00:00:00 to
+   * 2011-01-01T00:00:00) / P1D = 365.
+   * <p>
+   * If operator is ADD or SUBTRACT, return type is DateTimeTimeseries.
+   * <p>
+   * If operator is MULTIPLY, DIVIDE or MODULO, return type is DoubleTimeseries.
+   *
+   * @param period
+   *        input Period.
+   * @param operator
+   *        mathematical operator to be applied. Supported values are ADD,SUBTRACT,MULTIPLY,DIVIDE,MODULO.
+   * @return
+   */
+  applyPeriod: member function(period: !Period, operator: !string): !Timeseries
+
+  /**
+   * @return a boolean timeseries indicating if the value is infinity or nan
+   */
+  isInfinityOrNaN: member function(): !Timeseries<double>
+
+  /**
+   * Extends timeseries based on specified parameters.
+   *
+   * @param start
+   *        extension start
+   * @param end
+   *        extension end
+   * @return extended timeseries based on specified start and end
+   */
+  extend: member function(start: !datetime, end: !datetime): !Timeseries<E>
+
+  /**
+   * Slices the time series only to the available range from the beginning and the end
+   *
+   * @return sliced time series based on availability
+   */
+  slicedAvailableTimeseries: member function(): !Timeseries<E>
+
+  /**
+   * @param value
+   *        value to be used for filling in missing values (gap or unavailable).
+   * @param spec
+   *        see {@link FillMissingSpec} for available specifications
+   * @return timeseries that has missing values (gap or unavailable) filled with the specified value (scaled based on
+   *         gap or unavailable percentage). resultant timeseries is fully available.
+   */
+  fillMissing: ~ java
+
+  /**
+   * Returns a time series with the missing information as returned by the missing timeseries. The data part of input timeseries remains the same
+   *
+   * Example:
+   *
+   * TS.data:
+   *
+   * ```
+   *    1       2       3       4
+   * |-------|-------|-------|------|
+   * t1      t2      t3      t4     t5
+   * ```
+   *
+   * TS.missing:
+   *
+   * ```
+   *   false   false   false   false
+   * |-------|-------|-------|-------|
+   * t1      t2      t3      t4      t5
+   * ```
+   *
+   * `withMissing(TS, missing(TS)/2)`:
+   *
+   * ```
+   *     1       2       3       4
+   * |-------|-------|-------|-------|
+   * t1      t2      t3      t4      t5
+   * ```
+   *
+   * The above `withMissing(TS, missing(TS)/2)` is calculated as follows:
+   * ```
+   *     0       25      5       10
+   * |-------|-------|-------|-------|
+   * t1      t2      t3      t4      t5
+   *
+   * @param timeseries
+   *        input time series
+   * @param missing
+   *        value to be used for missing values (usually Timeseries or identity double value)
+   * @return A time series that has missing values filled with the missing Timeseries
+   */
+  withMissing: member function(missing: any): !Timeseries<E>
+
+  /**
+   * For each point in TS, if percent missing satisfies the specified equality operator condition based on specified
+   * percent value, it makes that point fully missing.
+   *
+   * @param equality
+   *        Operator to be applied. Permissible values are ED,NQ,LT,LTE,GT,GTE.
+   * @param percent
+   *        percent value (0 <= value <= 100).
+   * @return new timeseries with skipped (fully not available) data points.
+   */
+  skipIfMissing: member function(equality: string, percent: !byte): !Timeseries<E>
+
+  /**
+   * For each point in TS, get its integer representation and obtain the "bitIndex" parameter value.
+   *
+   * @param bitIndex
+   *        bit index (starting with 0 and increasing towards MSB).
+   * @return timeseries of bit (0 or 1).
+   */
+  bit: member function(bitIndex: !int): !Timeseries<double>
+
+  /**
+   * @param weatherTimeseries
+   *        The weather timeseries that should be used to remove the weather component from input timeseries.
+   * @param heatingCoolingCoeffs
+   *        The heating and cooling coefficients calculated as a part of model generation for the input timeseries.
+   * @param gapThreshold
+   *        Is used to return the input timeseries if the gaps are greater than this threshold.
+   * @return a timeseries whose values are weather normalized
+   */
+  weatherIndependentTimeseries: member function(weatherTimeseries: !Timeseries,
+                                                heatingCoolingCoeffs: [double],
+                                                gapThreshold: byte): !Timeseries
+
+  window: function(agg: !string enum AggOp,
+                   ts: lambda(timeInfo: !TimeInfo): !Timeseries,
+                   offset: double,
+                   span: double,
+                   step: double,
+                   timeInfo: TimeInfo): !Timeseries
+
+  operationalWindow: function(agg: !string enum AggOp,
+                              dataTs: lambda(timeInfo: !TimeInfo): !Timeseries,
+                              operationalTs: lambda(timeInfo: !TimeInfo): !Timeseries,
+                              operationalOffset: double,
+                              operationalSpace: double,
+                              timeInfo: TimeInfo): !Timeseries
+
+  /**
+   * API to evaluate a timeseries with custom time info
+   *
+   * @param agg
+   *        Aggregation function to be used in order to aggregate / dis aggregate resultant data in original period
+   * @param overrideInterval
+   *        Overridden interval for evaluating ts
+   * @param ts
+   *        Timeseries to be evaluated
+   * @param overrideStart
+   *        Overridden start date for evaluating ts
+   * @param overrideEnd
+   *        Overridden end date for evaluating ts
+   * @param queryTimeInfo
+   *        Original info to which the result will be converted
+   * @return TS aggregated / disaggregated to the queryTimeInfo after evaluating it at overriden period
+   */
+  eval: function(agg: !string enum AggOp,
+                 interval: !string enum Interval,
+                 ts: lambda(timeInfo: !TimeInfo): !Timeseries,
+                 start: any,
+                 end: any,
+                 timeInfo: TimeInfo): !Timeseries
+
+  /**
+   * Generates a sine wave timeseries using following formula:
+   * <p>
+   * y(t) = amplitude * sin(2 * PI * frequency * t + phase )
+   *
+   * @param timeInfo
+   *        timeseries time info.
+   * @param waveStart
+   *        timestamp of the wave start i.r. where it is at first 0 value.
+   * @param amplitude
+   *        peak deviation of the value from zero.
+   * @param frequency
+   *        in oscillations (cycles) per second.
+   * @param phase
+   *        (in radians) where in its cycle the oscillation is at t = 0.
+   * @return timeseries representing a sine wave.
+   */
+  sineWave: function(timeInfo: !TimeInfo,
+                     waveStart: datetime,
+                     amplitude: number,
+                     frequency: number,
+                     phase: number): !Timeseries
+
+  /**
+   * Generates a square wave timeseries using specified start and end
+   * Grain is determined based on specified timeComponent
+   * A point's value is 1 if that point's datetime falls within the specified range, 0 otherwise
+   * Here are the supported timeComponent values with allowed values for pulseStart and pulseEnd :
+   * HOUR - 0 to 23
+   * DAYOFWEEK - 1 to 7
+   * DAYOFYEAR - 1 to 365/366
+   *
+   * @param start
+   *        timeseries start
+   * @param end
+   *        timeseries end
+   * @param timeComponent
+   *        timeComponent value to be used for determining grain of result timeseries
+   * @param timeZone
+   *        timeZone of result timeseries
+   * @param pulseStart
+   *        index inclusive
+   * @param pulseEnd
+   *        index exclusive
+   * @return timeseries representing a square pulse signal based on above parameters
+   */
+  squareWave: function(timeInfo: !TimeInfo, timeComponent: !string, pulseStart: !int32, pulseEnd: !int32): !Timeseries
+
+  /**
+   * @return total number of available points in every interval in the timeseries
+   */
+  countTimeseries: member function(): !Timeseries<double>
+
+  /**
+   * Generates a timeseries with random values using specified start and end
+   *
+   * @param timeInfo
+   *        the time info of the timeseries (start, end, interval, timezone)
+   * @param origin
+   *        the lower bound for random value (inclusive)
+   * @param bound
+   *        the upper bound for random value (exclusive)
+   * @return timeseries with values uniformly distributed between the lower and upper limits.
+   */
+  randomTimeseries: function(timeInfo: !TimeInfo, origin: !double, bound: !double): !Timeseries
+
+  /**
+   * Generates a timeseries with random values using specified start and end
+   *
+   * @param timeInfo
+   *        the time info of the timeseries (start, end, interval, timezone)
+   * @param spec
+   *        random options
+   * @return timeseries with values generated as per the spec
+   */
+  randomTimeseries: function(timeInfo: !TimeInfo, spec: Timeseries.RandomSpec): !Timeseries
+
+  /**
+   * The function will generate a Timeseries recursively, using a minimum of 2
+   * double arrays and initial values(s). The data points in the series is
+   * generate as x_(n) = Array1[n] + Array2[n] * x_(n-1) + Array3[n] * x_(n-2)
+   * + ... . The first point generated will be x_(0), and it requires the
+   * initial values x_(-1), x_(-2), ... .";
+   *
+   * @param timeInfo
+   *        the time info for the timeseries
+   * @param initialValues
+   * @param doubleArray
+   * @return
+   */
+  linearRecurrenceTimeseries: function(ti: TimeInfo, initialValues: [double], doubleArray: [[double]]): !Timeseries
+
+  /**
+   * @param xLat
+   *        representing xLat co-ordinates
+   * @param xLong
+   *        representing xLong co-ordinates
+   * @param yLat
+   *        representing yLat co-ordinates
+   * @param yLong
+   *        representing yLong co-ordinates
+   * @return
+   */
+  haversineDistance: function(xLat: Timeseries, xLong: Timeseries, yLat: Timeseries, yLong: Timeseries): !Timeseries
+
+  /**
+   * Compute correlation between two time series
+   *
+   * @param kind
+   *        Kind of correlation desired {@see CorrelationKind}
+   * @param y
+   *        Timeseries against which correlation needs to be computed
+   * @return correlation coefficient between two time series
+   */
+  correlation: member function(kind: !string enum CorrelationKind, ts: !Timeseries): !Timeseries
+
+  /**
+   * A Pearson correlation is a number between -1 and 1 that indicates the extent to which two variables are linearly
+   * related.
+   * The Pearson correlation is also known as the “product moment correlation coefficient” (PMCC) or simply
+   * “correlation”.
+   *
+   * @param ts
+   *        Timeseries against which correlation needs to be computed
+   * @return the pearson correlation (identity) in between the given and the input ts
+   */
+  pearsonCorrelation: member function(ts: !Timeseries): !Timeseries
+
+  /**
+   * Function to registerReadInterpolator, specifically, for data that is monotonically increasing.
+   * (e.g.register reads)
+   * Values will be interpolated based on values of the next non-zero data point.
+   * Zero values before the first non zero data point will all be kept as 0s. Similarly points after the last non-zero
+   * data points will be kept as 0s.
+   * Example:
+   * (10)                                      x      x
+   * (3)                  x
+   * (2)    x
+   * |------|------|------|------|------|------|------|------|
+   * 0      1      2      3      4      5      6      7      8
+   *
+   * results in:
+   *
+   * 0d    0.5d   0.5d   7/3d   7/3d   7/3d    0d     0d     0d
+   * |------|------|------|------|------|------|------|------|
+   * 0      1      2      3      4      5      6      7      8
+   *
+   * @param ts
+   *        input timeseries on which rolling diff needs to be applied
+   * @param resetValue
+   *        reset drop threshold value based on the operation above.
+   *        e.g. reset the value to current value when
+   *        1. PERCENT value of drop is 5%
+   *        2. value of drop is Greater than Equal to (GTE) 0
+   *        3. value of drop is Greater than (GT) 0
+   * @param resetOper
+   *        reset operation to be applied on the value. Should be one of PERCENT / GTE, GT
+   * @param rolloverMax
+   *        max value allowed for the timeseries after which it rolls over. The following formula will be used
+   *        when a rollover after this value happens:
+   *        nextValue = (rolloverMax - currentValue) + nextValue
+   * @return a timeseries which has values interpolated for monotonically increasing timeseries
+   */
+  registerReadInterpolator: member function(resetOper: string,
+                                            resetThreshold: double,
+                                            rolloverMax: double): !Timeseries
+
+  /**
+   * Compute a single representative truth value based on data
+   * If all data values are falsy, result is false
+   * If all data values are truthy, result is true
+   * Else result is null
+   */
+  // TODO: @typesys(allowEmpty=true) boolean
+  truthValue: member function(): @typesys(allowEmpty=true) [boolean]
+
+  /**
+   * @param resetTimeseries
+   *        Reset timeseries for flushing the value of running sum. If set, from that point onwards the running sum
+   *        will be reset to 0
+   * @param width
+   *        No of intervals before gamma = decay
+   * @param decay
+   *        After width interval the reduction in value will be decay
+   * @return a timeseries where each value is computed as the exponential decay at that point
+   */
+  exponentialDecay: member function(reset: Timeseries, width: int32, decay: double): !Timeseries
+
+  /**
+   * @param width
+   *        No of intervals before gamma = decay
+   * @return a timeseries where each value is computed as the linear decay at that point
+   */
+  linearDecay: member function(width: !int32): !Timeseries
+
+  /**
+   * Function to remove outliers from the given timeseries
+   * By applying a moving median window and a moving median absolute deviation we define moving upper and lower
+   * outlier bounds outside of which we consider data points to be outliers that need to be cleaned.
+   * Default for span is 30 and threshold is 3
+   * Logic: TS > window(‘MEDIAN’, TS, -span, span, 1) - threshold * 1.48 * window(‘MEDIAN’, abs(TS - window(‘MEDIAN’,
+   * TS, -span, span, 1)), -span, span, 1) ? (TS < window(‘MEDIAN’, TS, -span, span, 1) + threshold*1.48 *
+   * window(‘MEDIAN’, abs(TS - window(‘MEDIAN’, TS, -span, span, 1)), -span, span, 1) ? TS : 0) : 0
+   *
+   * @param ts
+   *        Input timeseries on which outliers needs to be removed
+   * @param span
+   *        No of intervals for moving window
+   * @param threshold
+   *        for standard deviation
+   * @return Outlier removed timeseries
+   */
+  removeOutliers: member function(span: int32, threshold: double): !Timeseries
+
+  /**
+   * @return the earliest AVAILABLE data. This means that if some part at the beginning of the series is missing
+   *         then we return the first value from the beginning where missing value is non 1.
+   */
+  earliestAvailableValue: member function(): !Timeseries
+
+  /**
+   * @return the latest AVAILABLE data. This means that if some part at the end of the series is missing
+   *         then we return the first value from the end where missing value is non 1.
+   */
+  latestAvailableValue: member function(): !Timeseries
+
+  /**
+   * @param timeserieses
+   *        The array of timeseries that need to be stitched
+   * @param timeInfo
+   *        Time info for the new stitched timeseries
+   * @return stitched timeseries
+   */
+  stitch: function(timeserieses: [Timeseries], timeInfo: TimeInfo): !Timeseries
+
+  /**
+   * API to create a timeseries with unavailable of a given percentage with a specified value and unit
+   *
+   * @param ti
+   *        Time information about the timeseries to be created
+   * @param missingPercent
+   *        Percentage of missing desired in the result, value between 0 & 100
+   * @param dataValue
+   *        Value of the data point while keeping gaps - Values will be same in all intervals
+   * @param dataUnitId
+   *        Unit for the values
+   * @return Timeseries with the above mentioned specs
+   */
+  makeMissing: function(ti: TimeInfo, missingPercent: !byte, value: !double, unit: Unit): !Timeseries
+
+  /**
+   * @return default unavailable value
+   */
+  getDefaultUnavailableValue: cached member function(): any
+
+  /**
+   * API to provide a view on top of the timeseries. This does not create a new timeseries structure but just provides
+   * a thin view on top of the original timeseries.
+   *
+   * @param slicedStart
+   *        Start date of the view (should be more than or equal to start)
+   * @param slicedEnd
+   *        End date of the view (should be less than or equal to end)
+   * @return a view of the timeseries
+   */
+  view: member function(slicedStart: !datetime, slicedEnd: !datetime): !Timeseries<E>
+
+  /**
+   * Compare two timeseries and output the field that is different. Returns null if all values are the same
+   */
+  compare: member function(other: !Timeseries<E>): string
+
+  /**
+   * Produce an ASCII chart of the timeseries with the specified overall height, width corresponding to the number
+   * of X values and with the specified events marked on the X axis.
+   */
+  asciiChart: member function(height: !int32, events: [datetime]): string
+
+  /**
+   * Generates timeseries from specified value(s). Think of it as a packaging method i.e. Constructors
+   * Values generated as a result of this method will be normalized values i.e. length of the values array should match
+   * the length of the Timeseries as computed by the input TimeInfo
+   *
+   * @param timeInfo
+   *        time information for a timeseries.
+   * @param value
+   *        optional value.
+   * @return timeseries based on input value.
+   */
+  fromValues: function(tsInfo: !TimeseriesInfo, values: Collection<any>, unit: Unit): !Timeseries
+
+  fromValues: function(timeInfo: !TimeInfo,
+                       values: Collection<any>,
+                       unit: Unit,
+                       missing: Collection<boolean>): !Timeseries
+
+  fromValue: function(timeInfo: !TimeInfo, value: any, unit: Unit): !Timeseries
+
+  /**
+   * Returns a Timeseries with TimeInfo constructed via {@link TimeInfo#fromValueCount} based on just the input values
+   * passed in. For Timeseries<double>, input values containing null will automatically be converted to values with missing
+   * for downstream computation
+   *
+   * E.g.
+   * ```js
+   *  Let's assume today (now) is 2020-10-10T14:23:12
+   *  Timeseries.fromValues([1,2,null,5])
+   * =>  {"_data":[1,2,0,5], "tsInfo": { start:"2010-10-06", end:"2010-10-10", interval:"DAY", missing: [false,false,true,false]} }
+   * ```
+   */
+  fromCollection: function(values: Collection<any>, spec: TimeseriesFromCollectionSpec): !Timeseries
+
+  /**
+   * @return new timeseries info with provided availability.
+   */
+  withAvailability: ~
+
+  /**
+   * Shifts the timeseries in the time domain to specified start. This shifts start, end, gapRanges, estimateRanges and
+   * unavailableRanges.
+   *
+   * @param start
+   *        datetime to which timeseries has to be shifted.
+   */
+  shift: ~
+
+  /**
+   * Constructs a dynamic type by converting numeric fields into Timeseries fields and preserving the date time field
+   * on which Timeseries is constructed. If startField is null, then no date time fields are available on the resultant Type
+   * If input type is {@link Partitionable} then the partition key field will also be present as a part of the result
+   * type
+   *
+   * E.g. Timeseries.toDynType(AnimalHealthReading, "start")
+   * ```type
+   *   @db(partitionkeyField="parent")
+   *   type AnimalHealthReading mixes Partitionable<string> {
+   *     start: datetime
+   *     heartRate: double
+   *     wbcCount: int
+   *     parent: string
+   *   }
+   *
+   * //=> Resultant type:
+   *  @db(partitionkeyField="parent")
+   *  type Obj_<DynamicTypeSuffix> mixes Partitionable<string> {
+   *     start: datetime
+   *     heartRate: Timeseries<double>
+   *     wbcCount: Timeseries<double>
+   *     parent: string
+   *  }
+   * ```
+   */
+  typeToTsDynType: private function(type: !Type, startField: string, groupField: string): !Type
+
+  /**
+   * Constructs a flattened type from the existing dynamic type by converting Timeseries fields into numeric fields
+   * preserving the date time field on which Timesries was constructed. Only numeric fields will be returned if no
+   * datetime fields are available on the dynamic Timeseries type.
+   * If input type is {@link Partitionable} then the partition key field will also be present as a part of the result
+   * type
+   */
+  tsDynTypeToType: private function(dynType: !Type): !Type
+
+  /**
+   * Converts the input indexed by partitionKey & field name to rows of dynamic Timeseries type @see tsDynTypeToType
+   *
+   * If partition key index is null, then it is assumed that the dynTsType is not {@link Partitionable} and the resultant
+   * object will not contain the field
+   *
+   * E.g.
+   * ```js
+   * dynTsType=
+   *  @db(partitionkeyField="parent")
+   *  type Obj_<DynamicTypeSuffix> mixes Partitionable<string> {
+   *     start: datetime
+   *     heartRate: Timeseries<double>
+   *     wbcCount: Timeseries<double>
+   *     parent: string
+   *  }
+   *
+   * rows = <partition_key1, <heartRate, {_data:[1,2,3], tsInfo: {start:"2010-01-01", end:"2010-01-03", interval:"DAY"}}>>
+   *
+   * Timeseries.toTsFieldObjs(dynTsType, rows)
+   * =>
+   * [{ "parent": "partition_key1", heartRate: {_data:[1,2,3], tsInfo: {start:"2010-01-01", end:"2010-01-03", interval:"DAY"} }]
+   */
+  tsFieldObjs: private function(dynTsType: !Type, rows: map<any, map<string, Timeseries>>): [Obj]
+
+  /**
+   * Converts the input objs with Timeseries fields to rows of dynamic type. If input objs are not objs with Timeseries
+   * fields, the same Array will be returned
+   *
+   * If partition key index is null, then it is assumed that the dynTsType is not {@link Partitionable} and the resultant
+   * object will not contain the field
+   *
+   * User can also provide the targetType, if they already have that information. In absence of it, a dynamic type using
+   * {@link #tsDynTypeToType} will be created and used.
+   * E.g.
+   * ```js
+   * type=
+   *  @db(partitionkeyField="parent")
+   *  type Obj_<DynamicTypeSuffix> mixes Partitionable<string> {
+   *     start: datetime
+   *     heartRate: double
+   *     wbcCount: double
+   *     parent: string
+   *  }
+   *
+   * rows = { parent: "partition_key1", "heartRate" : {_data:[1,2,3], tsInfo: {start:"2010-01-01", end:"2010-01-03", interval:"DAY"} }
+   *
+   * Timeseries.objsFromTsFields(rows)
+   * =>
+   * [{ "parent": "partition_key1", heartRate: 1, start:"2010-01-01" },
+   *  { "parent": "partition_key1", heartRate: 2, start:"2010-01-02" },
+   *  { "parent": "partition_key1", heartRate: 3, start:"2010-01-03" }]
+   */
+  objsFromTsFields: private function(rows: [Obj], spec: ObjsFromTsSpec): [Obj]
+
+  /**
+   * Converts the `numeric` columns on the given Collection into Timeseries columns. Currently non-numeric columns will be dropped from the
+   * result
+   *
+   * Note: here the data is already assumed to be grouped by Timeseries headers (if there are no header fields, it is
+   * assumed that the entire Collection is for the same Timeseries)
+   *
+   * E.g.
+   * ```js
+   * col = [{ "a" : 0.9, "b" : 1, "c": "foo", "d": "2010-01-01", "e": true  },
+   *        { "a" : 1.1, "b" : 2, "c": "bar", "d": "2010-01-02", "e": false  },
+   *        { "a" : 2.1, "b" : 3, "c": "foo", "d": "2010-01-03", "e": false  }]
+   *
+   * // fromTsFieldSpec using a period of 1 month on field "d" as the date index of the resulting Timeseries
+   * r = Timeseries.fromTsFieldSpec(col, {"a": { aggFunc: "SUM" }, "b": { aggFunc: "AVG" }}, { startExpr:"d", interval:"DAY"})
+   * => [{ "a": {"_data":[0.9,1.1,2.1], "tsInfo": { start:"2010-01-01", end:"2010-01-03", interval:"DAY"} },
+   *       "b": {"_data":[1,2,3], "tsInfo": { start:"2010-01-01", end:"2010-01-03", interval:"DAY"} }]
+   *
+   * @param data
+   *            Input Collection from which Timeseries needs to be constructed
+   * @param tsFieldSpec
+   *            Timeseries field spec for individual fields indicating how to construct the Timeseries
+   *            E.g. {"a": { aggFunc: "SUM" }}
+   * @param spec
+   *            Timeseries spec determining the time range / date time index common across all ts fields
+   * @return structure where only numeric columns are converted to Timeseries
+   */
+  tsFieldsFromSpec: private function(data: Collection<any>,
+                                     tsFieldSpec: map<string, TimeseriesFieldSpec>,
+                                     spec: TimeseriesSpecBase): map<string, Timeseries>
+
+  /**
+   * Generates mask Timeseries from the input Timeseries. If keep is set to true, then mask Timeseries will
+   * be inverse of the dates / time range passed in the filter. Useful for asOf handling in which case you want to keep
+   * the values in the range
+   */
+  convertToMask: private member function(keep: boolean): !Timeseries<!double>
+
+  /**
+   * Apply mask and return Data.Column with timestamp and values
+   * @param cols
+   *            Columns to return in the result
+   * @param mask
+   *            Filter to apply Timeseries -> this should be
+   *            Anything that is in this date range will be masked out (removed) from the end result
+   * @return apply filtering and return the columns
+   */
+  applyMask: private member function(cols: ![string], mask: !Timeseries<!double>): [Data.Column]
+
+  max: member function(spec: AggSpec): E java | js
+  max: member function(comparator: !lambda(a: E, b: E): @comparator int32): E java | js
+  min: member function(spec: AggSpec): E java | js
+  min: member function(comparator: !lambda(a: E, b: E): @comparator int32): E java | js
+  all: member function<R>(spec: AggSpec): R java | js
+  agg: member function(aggFunc: !string enum AggOp, percentile: double): E java | js
+  agg: member function<R>(spec: !?AggSpec, aggregator: !lambda(a: R, b: E): R): R java | js
+  agg: member function<R>(spec: !?AggSpec, op: !AggOp): R java | js
+
+  agg: member function<T, R>(spec: !?AggSpec,
+                             folder: !lambda(accumulator: T, e: E): T,
+                             aggregator: !lambda(aggregated: R, e: T): R): R java | js
+
+  timestampAt: ~ java | js
+  valueAt:     ~ java | js
+  interval:    inline member function(): !string enum Interval java | js
+  timeZone:    inline member function(): TimeZone java | js
+  size:        ~ java | js
+  at:          member function(index: !int): E java | js | py
+
+  /**
+   * Returns a new Timeseries type bound to the given value type
+   */
+  typeOf: cached function(vt: ValueType): !Type
+
+  toString: ~
+  eq:       member function<R>(other: !?any): Timeseries<R>
+  gt:       member function<R>(other: !?any): Timeseries<R>
+  ge:       member function<R>(other: !?any): Timeseries<R>
+  lt:       member function<R>(other: !?any): Timeseries<R>
+  le:       member function<R>(other: !?any): Timeseries<R>
+  ne:       member function<R>(other: !?any): Timeseries<R>
+}

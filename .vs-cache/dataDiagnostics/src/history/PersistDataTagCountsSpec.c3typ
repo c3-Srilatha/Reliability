@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the manner and scope with which {@link DataTagCountHistory} instances will be persisted inside
+ * {@link DataTagCountHistory#persistCounts}.
+ */
+type PersistDataTagCountsSpec mixes Spec {
+
+  /**
+   * The {@link CronJob} on the {@link DataTagBase} or {@link DataTag} instances that should have counts persisted.
+   * Usually refers to the {@link CronJob} which called the {@link PopulateDataTagsBatchJob}.
+   */
+  cronJob: CronJob
+
+  /**
+   * Whether or not the counts should only be persisted for data tags which have {@link DataTagBase#enabled} set
+   * to true.
+   */
+  enabledTagsOnly: boolean
+
+  /**
+   * Whether or not the persisting of the {@link DataTagCountHistory}s based on potentially large scans of tables
+   * should happen in separate {@link AsyncAction}s inside of {@link DataTagCountHistory#persistCounts}.
+   */
+  isAsync: boolean
+}

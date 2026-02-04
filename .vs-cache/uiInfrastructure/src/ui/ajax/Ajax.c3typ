@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Implementation of Ajax functions for communication with c3 server
+ */
+@typeScript
+type Ajax {
+
+  /**
+   * Returns an RxJS ajax observable for a particular server side API.
+   * @param siteId
+   *           The site id for which to retrieve the tunnel configuration.
+   * @param state
+   *           Redux state
+   * @param typeName
+   *           the action type
+   * @param actionName
+   *           the action name
+   * @param actionArguments
+   *           the action arguments
+   * @param timeoutSecs
+   *            the number of seconds before the tunneled request will timeout
+   * @param tunnelConfiguration
+   *           The optional tunnel configuration to provide.  If provided this will take precedence over the one found
+   *            from the {@link UiSdlSite} matching the {#siteId} param
+   *
+   * @return an ajax UiSdlObservable that resolves to the request response
+   * @see https://github.com/Reactive-Extensions/RxJS-DOM/blob/master/doc/operators/ajax.md#returns
+   */
+  tunneledAjax: member function(siteId: string,
+                                state: !UiSdlReduxState,
+                                typeName: string,
+                                actionName: string,
+                                actionArguments: map<string, any>,
+                                timeoutSecs: int,
+                                tunnelConfiguration: UiSdlTunnelConfiguration): !UiSdlObservable<any> ts-client
+
+  /**
+   * Returns an RxJS ajax observable for a particular server side API.
+   * @param typeName the action type
+   * @param actionName the action name
+   * @param actionArguments the action arguments
+   * @param tunnelConfiguration the optional tunnelConfiguration
+   *
+   * @return an ajax UiSdlObservable that resolves to the request response
+   * @see https://github.com/Reactive-Extensions/RxJS-DOM/blob/master/doc/operators/ajax.md#returns
+   */
+  ajax: private function(typeName: string,
+                         actionName: string,
+                         actionArguments: map<string, any>,
+                         tunnelConfiguration: UiSdlTunnelConfiguration): !UiSdlObservable<any> ts-client
+}

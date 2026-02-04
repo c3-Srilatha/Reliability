@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Namespace for all observability inner types.
+ * @see Observability.Trace
+ * @see Observability.Span
+ */
+@beta
+type Observability {
+
+  /**
+   * Returns all trace type names and corresponding record type names in this application
+   * This is used by UI for setting up trace summary.
+   *
+   * @returns a {@link Map}, whose keys are trace type names and values are respective record type names.
+   */
+  traceToRecordMapping: private function(): !map<string, string> py
+
+  /**
+   * Returns the default trace record type name.
+   * This is used by UI for setting up trace summary.
+   *
+   * @returns default trace record type
+   */
+  defaultTraceRecordType: private function(): !string py
+
+  /**
+   * Returns a list of {@link Observability.Tracer}s in this application
+   * @returns list of tracers
+   */
+  tracers: function(): ![Type<<Observability.Tracer>>] py
+
+  /**
+   * Returns a list of {@link Observability.Trace} types in this application
+   * @returns list of trace types
+   */
+  traceTypes: function(): ![Type<<Observability.Trace>>] py
+
+  /**
+   * Remove all instances of persisted {@link Observability.Trace}s older than {@link Observability.Tracer.Config#traceRecordTtl}.
+   * Called by `observability-record-cleanup` {@link CronJob}.
+   * Look at the {@link Observability.Tracer.Config} for configuration.
+   */
+  cleanUp: function() py
+}

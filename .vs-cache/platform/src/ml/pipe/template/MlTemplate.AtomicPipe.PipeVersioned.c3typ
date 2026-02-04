@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A template pipe to allow having multiple versions of atomic pipes.
+ *
+ * This pipe is useful for supporting multiple versions (that runs in different runtimes) of same pipe.
+ * For example SklearnPipe is extending this type, and uses Sklearn1 and Sklearn2 as implementations.
+ *
+ * Use this pipe if you need to support all models operational, but keep all newly created models to use new version of pipe.
+ *
+ * @see SklearnPipe
+ *
+ * `BT` Base type which can be used as {@link #implementationType}. Used by {@link #guessImplementationType}.
+ * `DIT` Default (latest) implementation type. Should be subtype of `BT`. Used by {@link #defaultImplementationType}.
+ */
+abstract entity type MlTemplate.AtomicPipe.PipeVersioned<BT: MlAtomicPipe, DIT: BT, DX, DY, DO> extends MlTemplate.AtomicPipe<DX, DY, DO> {
+
+  /**
+   * Stores type of underlying pipe.
+   *
+   * Used by {@link #generatePipe} to construct underlying pipe.
+   */
+  implementationType: private string serialized Type<<BT>>
+
+  /**
+   * Sets {@link #implementationType} based on {@link #defaultImplementationType}.
+   */
+  beforeMake: ~ py
+
+  /**
+   * Returns `DIT` type.
+   */
+  defaultImplementationType: private inline function(): !string serialized Type<<DIT>> py
+
+  /**
+   * Try to guess implementation type based on current {@link ImplLanguage.Runtime runtime} and subtypes of `BT`.
+   *
+   * Method selects subtype of `BT` and that is compatible with current {@link ImplLanguage.Runtime runtime}.
+   *
+   * If no such type found {@link #defaultImplementationType default implementation type} will be used.
+   *
+   * Can be used from `convert` to determine {@link #implementationType}.
+   *
+   * @return type that best matches current runtime.
+   */
+  guessImplementationType: private inline function(): string serialized Type<<BT>> py
+
+  /**
+   * Creates underlying pipe based on {@link #implementationType} type and
+   *
+   * @see #defaultImplementationType
+   * @see #guessImplementationType
+   */
+  generatePipe: ~ py
+
+  /**
+   * Always returns `true` as this {@link MlTemplate.AtomicPipe}` has underlying pipe.
+   */
+  hasUnderlyingPipe: ~ py
+
+  doTrain:                    ~ py
+  doProcess:                  ~ py
+  nativeModel:                ~ py
+  convert:                    ~ py
+  withHyperparams:            ~ py
+  trainSync:                  ~ py
+  saveModel:                  ~ py
+  loadModel:                  ~ py
+  convertPipeInputsToNative:  ~ py
+  convertNativeToNative:      ~ py
+  convertNativeToPipeOutputs: ~ py
+  nativeInputFormats:         ~ py
+}

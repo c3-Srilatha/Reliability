@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An abstract type representing an action vertex which has been visited/transformed by the PkgInference algorithm.
+ * Vertices mixing PkgInference.Vertex.Processed are suitable to be used as "parent" vertices in subsequent
+ * transformations, as they are able to propagate the required information to their children.
+ */
+@beta
+abstract type PkgInference.Vertex.Processed mixes Workflow.Vertex, PkgInference.Vertex.WithDataReference {
+
+  /**
+   * Representation of {@link Transform#projection} stored as a map for access to convenient APIs.
+   */
+  projection: map<string, string>
+
+  /**
+   * @see Transform#condition
+   */
+  condition: string
+
+  /**
+   * Source type of the {@link PkgInference.Vertex.Source} vertex that this vertex ultimately descends from
+   */
+  source: Type
+
+  /**
+   * Interval over which metrics are computed. Used for inferring {@link EvalMetricsSpec}s in
+   * {@link PkgInference.Metadata.Collector}
+   */
+  interval: string enum Interval
+
+  /**
+   * Parent vertex of the PkgInference.Vertex.Processed.
+   */
+  parentId: string
+
+  /**
+   * For a given column on this vertex, return the name of its parent metric - ie, the name of the metric which a
+   * compound metric over this column would refer to.
+   *
+   * Case (1): The column is not ready to have a metric evaluated over it yet.
+   *           Returns: ParentMetricNameResult(isReady = false, name = null)
+   * Case (2): The column has no parent metric; a metric computed over this column would be a {@link SimpleMetric}
+   *           Returns: ParentMetricNameResult(isReady = true, name = null)
+   * Case (3): The column has a parent metric; a metric computed over this column would be a {@link CompoundMetric}
+   *           Returns: ParentMetricNameResult(isReady = true, name = <name of parent metric>)
+   *
+   * @see PkgInference.ParentMetricNameResult
+   */
+  parentMetricName: member function(column: !string, pi: !PkgInference): !PkgInference.ParentMetricNameResult
+
+  /**
+   * Helper method which returns this vertex's {@link PkgInference.Vertex.Processed} parent vertex.
+   */
+  parentVertex: member function(pi: !PkgInference): !PkgInference.Vertex.Processed
+
+  /**
+   * Helper method to create a subtype of {@link PkgInference.Vertex.Processed} by inheriting fields from the given
+   * parent. The created vertex is intended to replace the given {@link Workflow.Action}
+   */
+  fromParent: function(parent: !PkgInference.Vertex.Processed,
+                       action: !Workflow.Action,
+                       pi: !PkgInference): !mixing PkgInference.Vertex.Processed
+
+  /**
+   * Subtype-specific helper method for creating a {@link PkgInference.Vertex.Processed}. Intended to be overridden by
+   * subtypes to add subtype-specific logic to vertex creation. Called by
+   * {@link PkgInference.Vertex.Processed#fromParent}, passing in the created PkgInference.Vertex.Processed as
+   * newVertex. If not overridden by subtype, default behavior is to simply return newVertex.
+   */
+  doFromParent: private function(newVertex: !mixing PkgInference.Vertex.Processed,
+                                 parent: !PkgInference.Vertex.Processed,
+                                 action: !Workflow.Action): !mixing PkgInference.Vertex.Processed
+
+  /**
+   * Supplies field values if missing when vertex is created:
+   * id: random string
+   * name: type_id
+   * inTypes: {in: any}
+   * outTypes: {out: any}
+   */
+  beforeMake: ~
+}

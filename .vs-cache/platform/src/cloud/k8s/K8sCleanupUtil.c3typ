@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A K8s cloud util type for cleanup purposes
+ */
+type K8sCleanupUtil {
+
+  /**
+   * Clean all failed resources in the cluster that are generated during the lifetime of the
+   * {@link App} {@link Env} , can run only on c3-c3
+   * @param batchSize
+   *         Batch size for fetching pods.
+   * @param waitInSec
+   *         Seconds to wait between each batch
+   */
+  removeFailedPods: function(batchSize: int = 50, waitInSec: int = 5)
+
+  /**
+   * Clean all orphaned resources belonging to the c3 cluster that are considered "safe to remove"
+   * based on their {@link CloudResource.OrphanReason}.
+   * @param safeOrphanReasons
+   *         List of {@link CloudResource.OrphanReason}s that are considered safe to remove
+   */
+  @action(group+='cluster-admin')
+  cleanupOrphanResources: function(safeOrphanReasons: [string enum CloudResource.OrphanReason])
+
+  /**
+   * Schedule a {@link CronJob} to remove orphaned resources belonging to the c3 cluster that are considered
+   * "safe to remove" based on their {@link CloudResource.OrphanReason}.
+   * @param cronSchedule
+   *         The cron schedule for the cron job
+   * @param safeOrphanReasons
+   *         List of {@link CloudResource.OrphanReason}s that are considered safe to remove
+   * @return {@link CronJob} that is created
+   */
+  @action(group+='cluster-admin')
+  scheduleCleanupOrphanResourcesCron: function(cronSchedule: !CronSchedule,
+                                               safeOrphanReasons: [string enum CloudResource.OrphanReason]): !CronJob
+
+  /**
+   * Cancels the {@link CronJob} to remove orphaned resources belonging to the c3 cluster that are considered
+   * "safe to remove" based on their {@link CloudResource.OrphanReason}.
+   */
+  @action(group+='cluster-admin')
+  cancelCleanupOrphanResourcesCron: function()
+
+  /**
+   * Invalidate all {@link Env}s based on custom and extendable logic
+   * @param invalidateEnvSpec
+   *         {@link K8sCleanupUtil.InvalidateEnvSpec} that contains the logic to invalidate {@link Env}s
+   * @return {@link BatchError} that contains the errors that occurred during the invalidation
+   */
+  @action(group+='cluster-admin')
+  invalidateEnvsForCleanup: function(invalidateEnvSpec: !K8sCleanupUtil.InvalidateEnvSpec): BatchError
+
+  /**
+   * Schedule a {@link CronJob} to invalidate all {@link Env}s based on custom and extendable logic
+   * @param cronSchedule
+   *         The cron schedule for the cron job
+   * @param invalidateEnvSpec
+   *         {@link K8sCleanupUtil.InvalidateEnvSpec} that contains the logic to invalidate {@link Env}s
+   * @return {@link CronJob} that is created
+   */
+  @action(group+='cluster-admin')
+  scheduleInvalidateEnvsForCleanup: function(cronSchedule: !CronSchedule,
+                                             invalidateEnvSpec: !K8sCleanupUtil.InvalidateEnvSpec): !CronJob
+
+  /**
+   * Cancels the {@link CronJob} to invalidate all {@link Env}s based on custom and extendable logic
+   */
+  @action(group+='cluster-admin')
+  cancelInvalidateEnvsForCleanup: function()
+}

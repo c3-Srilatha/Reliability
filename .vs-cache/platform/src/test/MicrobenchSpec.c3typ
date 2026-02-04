@@ -1,0 +1,257 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration options for running a performance-centric unit test, controlling how the test is executed. All have
+ * defaults for ease of use. {@link Microbench} will force the test lambda to run repeatedly until the thresholds are met.
+ * By doing this, if the action being tested is an extremely short one, the lambda can run long enough to avoid swamping
+ * the operation being tested.
+ *
+ * Note that tests can fail if regressions are detected under certain circumstances:
+ *  - epic branches
+ *  - where there are sufficient history runs in the base branch (#safeBaseBranch, #maxHistoryBuilds)
+ *  - where there are sufficient current runs in the current branch (#currentBranch, #minCurrentBuilds)
+ *  - where the failures exceed specified thresholds (#failingStdDev, #failingPctChange)
+ *  - where the history values show a relatively low dispersion (#failingSigmaFrac)
+ *
+ * @see Microbench
+ */
+type MicrobenchSpec mixes Spec {
+
+  /**
+   * If not specified directly, this name is used for the test. Note that a name is necessary to record the test
+   * in the PerfMetric database and for printing results.
+   */
+  name: string
+
+  /**
+   * The outermost testing loop with results printed for each run. If there are more than 2 runs, the best is also
+   * printed.
+   */
+  numRuns: !int32 = 5
+
+  /**
+   * The target iteration(s) that defines the KPI together with other factors, e.g. 1000 means measuring an action
+   * running 1000 times.
+   *
+   * Note that this many times of iteration is independent from the actual iterations when the action is being measured,
+   * and the testing framework* will scale the result to this target iteration. As a special case, tuning #runTime to 0
+   * can guarantee that the testing framework will only execute the action once.
+   */
+  numIterations: !int = 1
+
+  /**
+   * The minimum desired time per run in seconds.
+   */
+  runTime: double = 5.0
+
+  /**
+   * The maximum desired execution time, in seconds, per test (including the overhead of measuring performance,
+   * calculating results, etc). If running the test #numRuns times is longer than this time, the test ends immediately
+   * after the run that times out and skips remaining runs.
+   */
+  maxTime: double = 300.0
+
+  /**
+   * If true, do not cap the total execution time with #maxTime. Instead, only keep the restriction of running the
+   * lambda for at least #runTime time.
+   */
+  doNotCapMaxTime: boolean
+
+  /**
+   * The historical threshold measures for these tests. If the measurements taken all beat the measurements here, fewer
+   * runs are executed to speed up the overall time. The key is the test name being run and the value is the summary
+   * of the history for that test.
+   */
+  resultsToBeat: map<string, MicrobenchResult>
+
+  /**
+   * If true, do not print results to standard output.
+   */
+  doNotPrint: boolean
+
+  /**
+   * If true, record only the number of objects allocated. When enabled, elapsed time is theoretically greater than
+   * actual due to the overhead of recording object allocation count for every single java.lang.Object allocation.
+   *
+   * @see MicrobenchResult#memAllocations
+   * @see MicrobenchResult#allocatedMem
+   */
+  measureMemAllocations: boolean
+
+  /**
+   * If true, measure only the intrinsic size of the value returned from the test (if any), not traversing references
+   * it has to other objects.
+   *
+   * @see MicrobenchResult#retainedMem
+   * @see #measureMemory
+   */
+  measureRetainedShallow: boolean
+
+  /**
+   * If true, measure the full size of memory used by the value returned from the test (if any). This will be the deep
+   * size unless #measureRetainedShallow is true.
+   *
+   * @see MicrobenchResult#retainedMem
+   * @see #measureRetainedShallow
+   */
+  measureMemory: boolean
+
+  /**
+   * If true, track garbage collection.
+   *
+   * @see MicrobenchResult#gcTime
+   * @see MicrobenchResult#gcOldGen
+   */
+  measureGC: boolean
+
+  /**
+   * If true, do not log results to performance metrics DB.
+   *
+   * @link PerfMetric
+   */
+  doNotReport: boolean
+
+  /**
+   * If true, do not generate html report nor write the report to local file system
+   */
+  doNotGenerateHtmlReport: boolean
+
+  /**
+   * If true, fork a new process for each test run.
+   */
+  fork: boolean
+
+  /**
+   * Lambda called with the result for each test run, immediately after it completes.
+   *
+   * @param n 1-based index of test run
+   * @param of total number of test runs
+   * @param result raw results of a single run
+   */
+  runCallback: lambda(n: !int32, of: !int32, result: !MicrobenchResult)
+
+  /**
+   * If provided will be passed to {@link MicrobenchResultSet#loadTestHistory}.
+   *
+   * @see MicrobenchResultSet.LoadHistorySpec
+   */
+  loadHistorySpec: MicrobenchResultSet.LoadHistorySpec
+
+  /**
+   * Provide a list of measures to assert on.
+   */
+  assertOn: [string] = measureMemAllocations ? [ 'memAllocations' ] : [ 'time' ]
+
+  /**
+   * The minimum number of builds from the base branch considered to perform regression check.
+   */
+  minHistoryBuilds: !int = 5
+
+  /**
+   * The maximum number of builds from the base branch considered as "history" samples for evaluating regressions.
+   * This is large, but not huge, to get a reasonable number of samples without reaching too far into the dim past.
+   */
+  maxHistoryBuilds: !int = 100
+
+  /**
+   * The minimum number of runs of this test in the current branch to perform regression check.
+   *
+   * @see #safeBaseBranch
+   */
+  minCurrentBuilds: !int = 3
+
+  /**
+   * The maximum number of builds from the current branch considered as "current" samples for evaluating regressions.
+   * This is intentionally small so fixed regressions expire quickly.
+   */
+  maxCurrentBuilds: !int = 6
+
+  /**
+   * Threshold standard deviations to attach warning on build report. This _and_ #warningPctChange must both be
+   * exceeded (or null).
+   */
+  warningStdDev: double = 3.0
+
+  /**
+   * Threshold percentage change from the average to attach warning on build report. This _and_ #warningStdDev
+   * must both be exceeded (or null).
+   */
+  warningPctChange: double = 0.15
+
+  /**
+   * Threshold standard deviations to perform regression check. This _and_ #failingPctChange must both be exceeded
+   * (or null).
+   */
+  failingStdDev: double = 4.0
+
+  /**
+   * Threshold percentage changes from the average to perform regression check. This _and_ #failingStdDev must both be
+   * exceeded (or null).
+   *
+   * If any of these are exceeded, the test will fail, and the message will include a token with the highest one
+   * exceeded, such as "(>66%)".
+   */
+  failingPctRanges: [!double] = [0.33, 0.66, 0.99]
+
+  /**
+   * Threshold percentage change from the average to perform regression check. This _and_ #failingStdDev must both be
+   * exceeded (or null).
+   *
+   * Note that this returns the minimum value in #failingPctRanges, or null.
+   */
+  failingPctChange: property(): double java | js | py
+
+  /**
+   * The maximum ratio of one standard deviation to the average for the history values to perform regression check.
+   * If null, the noisyness of the history data is ignored.
+   */
+  failingSigmaFrac: double = 0.1
+
+  /**
+   * For KPI test comparisons, the base branch may be specified explicitly. Otherwise, it is guessed from the current
+   * branch name. Other than certain well-known patterns, this guess will be "develop".
+   *
+   * @see #safeBaseBranch
+   */
+  baseBranch: string
+
+  /**
+   * Get the current Git branch name. This should never return null in a development environment nor in a normal
+   * CI environment, but will return null in production environments.
+   */
+  currentBranch: function(failIfNone: boolean): string
+
+  /**
+   * Guess the base branch for the current branch. If specified in #baseBranch that is used, otherwise it is guessed
+   * based on the current branch:
+   *  - _base_: same branch
+   *  - epic/…/base: _base_
+   *  - release-hotfix/…: `release`
+   *  - hotfix/…: `master`
+   *  - otherwise `develop`
+   *
+   * "Base" branches are: `develop`, `release`, `master`.
+   *
+   * @see #currentBranch
+   * @see #isBaseBranch
+   */
+  safeBaseBranch: member function(): !string
+
+  /**
+   * Normally, regressions only cause tests to fail in epic branches. This flag can be used to enable regression
+   * failures in any branch.
+   */
+  forceRegressionCheck: boolean
+
+  /**
+   * Whether or not this KPI test should fail on regressions (if other criteria are met as well). This is normally true
+   * only for epic branches, but may also be forced by setting #forceRegressionCheck.
+   */
+  shouldRegressionCheck: member function(): boolean
+}

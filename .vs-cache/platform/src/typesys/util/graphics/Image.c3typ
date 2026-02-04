@@ -1,0 +1,171 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 type holding an Image. Also provides simple way of authoring images.
+ *
+ * Mixing ArrayLikePyProtocol to make image to be convertable to Array.
+ */
+// TODO: Move ArrayLikePyProtocol mixes to native when https://c3energy.atlassian.net/browse/PLAT-38022 is fixed.
+abstract type Image mixes VisualMedia, HtmlRenderable, PyReprProtocol, PyReprHtmlProtocol, ArrayLikePyProtocol {
+
+  /**
+   * Url of the source image file. In-memory content may not match content stored in the file system, but we keep this
+   * reference to know what is source was.
+   */
+  contentLocation: string
+
+  /**
+   * Read Image from file. If prefix is {@link Data#LOCAL_FOLDER_PREFIX}, then the file will be loaded from
+   * the local process of the caller of this function, as opposed to from the C3 {@link FileSystem}.
+   * @param file
+   *    url of the file to instantiate an Image from.
+   * @param failIfMissing
+   *    iff set, then function will fail if a file cannot be found at the provided url.
+   * @return the instantiated Image.
+   */
+  fromFile: function(file: !string serialized Url, failIfMissing: boolean): Image java | py
+
+  /**
+   * Read Image from binary
+   * If `mediaType` is not specified, an attempt will be made to auto-detect the image type.
+   * Supported formats are: SVG (should be passed explicitly), JPEG, PNG, BMP, WBMP, GIF.
+   */
+  fromMediaContent: function(img: !binary, mediaType: string serialized MediaType, url: string serialized Url): !Image
+
+  /**
+   * @return a C3 Image from a Java native image.
+   */
+  fromBufferedImage: private inline function(bi: @java(class="java.awt.image.BufferedImage") native,
+                                             spec: ImageOperSpec): !Image
+
+  /**
+   * @return a copy of the image converted to ImageContent
+   */
+  toImageContent: member function(): !ImageContent
+
+  /**
+   * Saves image to the specified directory. Filename is taken from #contentLocation
+   */
+  save: member function(file: !string serialized Url, mediaType: string serialized MediaType)
+
+  /**
+   * Image type
+   *
+   * @see readMetadata
+   * @see safeImageType
+   */
+  imageType: property(): !string enum ImageType
+
+  /**
+   * Returns MediaType of the Image
+   */
+  mediaType: abstract property(): !string enum MediaType
+
+  /**
+   * @return the [Data URI](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) containing this image
+   */
+  dataUrl: cached property(): !string serialized Url java | py
+
+  /**
+   * @return name of image file without extension if name is known. Otherwise null will be returned.
+   */
+  fileNameNoExt: cached property(): string
+
+  /*
+   * Creates an image based on provided drawing instructions.
+   *
+   * instruction argument should be set to an array of JS objects where each object represents
+   * single drawing instruction. Currently supported instructions are:
+   *   "color" - value should be a string representing hex [A]RGB value - e.g. "#FF0000" for red
+   *             "#E0FF0000" for 50% transparent red
+   *   "point" - value should be an array of x position, y position and optional options
+   *             where options is a JS object
+   *
+   * TODO: createImage : function(string id, int width, int height, json instructions): !mixing Image
+   *
+   * First creates an image based on provided drawing instructions then saves it as tiles.
+   *
+   * TODO: createTiles : function([Tile] tiles, int width, int height, json instructions): !mixing Image
+   */
+
+  /**
+   * Render image as HTML.
+   */
+  renderer: ~ js-client
+
+  /**
+   * Draws a list of {@link BoundingBox} on a copy of this image.
+   */
+  draw: abstract member function(boxes: ![BoundingBox], spec: BoundingBoxDrawingSpec): !Image
+
+  /**
+   * Scale with scaling factor.
+   *
+   * @param scale
+   *           Scaling factor. Should be positive number.
+   */
+  scale: abstract member function(scale: !double): !Image
+
+  /**
+   * Scale the image to the newWidth and newHeight
+   *
+   * @param newWidth
+   *           New width of the image. Should be positive number.
+   * @param newHeight
+   *           New height of the image. Should be positive number.
+   */
+  resize: abstract member function(newWidth: !int32, newHeight: !int32): !Image
+
+  /**
+   * Crop the image at the topLeft or bottomRight values provided.
+   *
+   * `topLeftX + width` should be smaller or equal than the image's width and `topLeftY + height` smaller or equal than the image's height.
+   * Otherwise error will be thrown.
+   */
+  crop: abstract member function(topLeftX: !int32, topLeftY: !int32, width: !int32, height: !int32): !Image
+
+  /**
+   * Flip image. If no parameter is given will flip horizontally.
+   */
+  flip: abstract member function(vertically: boolean): !Image
+
+  /**
+   * Rotate image.
+   */
+  rotate: abstract member function(angle: !int32 enum(90, 180, 270)): !Image
+
+  /**
+   * Convert image to grayscale.
+   */
+  toGrayscale: abstract member function(): !Image
+
+  /**
+   * Return color of the pixel encoded as ARGB.
+   * (0, 0) is a top-left corner.
+   * Throw an error if coordinates are out of range.
+   */
+  rgb: abstract member function(x: !int32, y: !int32): !int32
+
+  /**
+   * @return an array of integer pixels row-to-row, with each pixel encoded as ARGB.
+   */
+  rgbData: abstract member function(): ![int32]
+
+  /**
+   * @return binary data for this Image with specified MediaType.
+   */
+  rawBinary: member function(mediaType: string serialized MediaType): !binary
+
+  /**
+   * Do not generate java signatures for these methods and instead implement in py
+   */
+  _repr_: ~ py
+
+  _reprHtml_: ~ py
+}

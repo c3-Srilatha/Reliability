@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type holding URI of models in {@link ModelRegistry} that an application is dependent on.
+ * See {@link ModelRegistry.Entry.uri} for definition of URI.
+ * Instances of this type are also provided to registry admin to facilitate export/import of models
+ * across different Model Registry Services. It is recommended to provide the full json of this type instance rather than
+ * just `id` to registry admin for export/import to work correctly.
+ * One of `uri`, `uriFilter` or `uriToId` must be provided.
+ */
+@beta
+entity type ModelRegistry.ModelDependency {
+
+  // List of {@link ModelRegistry.Entry.uri}s that an application is dependent on.
+  uris: [string]
+
+  /*
+   * Filter representing {@link ModelRegistry.Entry.uri}s that an application is dependent on.
+   * One such example is
+   * ```
+   * f = Filter.make()
+   * f = f.contains('uri', 'DiagramParser/Classifier')
+   * ```
+   */
+  uriFilter: string serialized Filter
+
+  /*
+   * Map of @link ModelRegistry.Entry.uri}s to user-supplied DB ids.
+   * The map keys are used by {@link ModelRegistryService#exportModels}.
+   * Values are used by {@link #ensureModels} to load models into application, if needed.
+   */
+  uriToId: map<string, string>
+
+  /*
+   * This method loads the models represented by `uri` or `uriFilter` or `uriToId` into the current application.
+   * This step assumes that the models are already registered in the Model Registry, and have been imported to the
+   * {@link ModelRegistryService} that this client application is interfacing with.
+   * If `uriToId` is supplied, then the models are loaded into DB of current application with the ids provided in the map values.
+   * Returns map of @link ModelRegistry.Entry.uri}s loaded into application and respective ids assigned during loading from {@link ModelRegistry}.
+   * If models are already loaded, then the map values will inform the user that the models are already loaded.
+   */
+  ensureModels: member function(): !map<string, string>
+
+  beforeCreate: ~
+}

@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents the status of a deployed {@link MlModel.Route}.
+ *
+ * @see MlModel
+ * @see MlModel.Route#status
+ */
+type MlModel.Route.Status mixes TimedIntervalValue {
+
+  CHAMPION_FILTER: const string = "label == 'CHAMPION'"
+
+  /**
+   * Label of the status, used to determine if the {@link MlModel} is active or not, and if it computes the
+   * "primary" predictions, i.e. the predictions used by the end user of the application.
+   *
+   * @see MlModel.Route.Status.Label#CHAMPION
+   */
+  label: !string enum MlModel.Route.Status.Label
+
+  /**
+   * Additional tags for the status to allow for custom deployment strategies.
+   */
+  tags: [string]
+
+  /**
+   * True when the model can serve predictions.
+   */
+  isActive: property(): !boolean java | js | py
+
+  /**
+   * True when the {@link label} is {@link MlModel.Route.Status.Label#CHAMPION CHAMPION}.
+   */
+  isChampion: property(): !boolean java | js | py
+}

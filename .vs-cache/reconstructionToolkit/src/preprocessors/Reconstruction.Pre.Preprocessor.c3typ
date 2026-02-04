@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides an interface for users to attach a pre-processor to their central reconstruction pipe.
+ * This type is intended to be mixed-in by developers with the primary method {@link #precede} overridden to provide
+ * users with a convenience API to construct a larger {@link MlPipeline} that connects the pre-processor to the central
+ * pipe.
+ */
+type Reconstruction.Pre.Preprocessor mixes Reconstruction.Processor {
+
+  /**
+   * Generate a new {@link MlPipeline} that connects this pre-processor to the specified {@link MlPipe}. The resulting
+   * pipeline may or may not include additional pipes and introduce new inputs, but should not change any outputs of the
+   * `pipe`. The output of the pre-processor should, either directly or indirectly, connect to one or more input ports
+   * of the `pipe`. Developers must override this method to orchestrate the creation of the new, larger
+   * {@link MlPipeline}.
+   * @param pipe
+   *           The {@link MlPipe} whose inputs should be pre-processed by this instance. In the returned
+   *           {@link MlPipeline}, the pipe will come after the pre-processor.
+   *           DEVELOPER NOTE: It is the developer's responsibility to perform any necessary validation to avoid returning
+   *           an incorrect pipeline.
+   * @param kwargs
+   *           A map of keyword arguments to configure the output {@link MlPipeline}.
+   *           DEVELOPER NOTE: It is the developer's responsibility to expose any keyword argument names and types
+   *           through proper documentation.
+   */
+  precede: abstract member function(pipe: !(MlPipe | map<string, MlPipe>), kwargs: map<string, any>): !MlPipeline
+
+  /**
+   * Connect the `pre` pipeline to the `center` pipe using the `trainingMap` and `processMap` to determine which outputs
+   * of `pre` get connected to which inputs of `center`. If `processMap` is specified, then this method will employ
+   * {@link MlPipe#train_var} to train the `center` pipe on the outputs in `trainingMap` and {@link MlPipe#process_var}
+   * to process the `center` pipe on the outputs in `processMap`. If only `trainingMap` is populated, then this method
+   * will use the outputs in `trainingMap` for all operations on the `center` pipe (i.e. training, processing, scoring).
+   * This method accepts the following `kwargs`:
+   * - `mergePipelines`: If set, do not wrap `center` in a nested pipeline and directly merge the `center` and `post` pipes.
+   * - `keepOutputs`: If set, keep the outputs of `center` that are also being connected to `post`.
+   *
+   * @param pre
+   *          The pipeline that orchestrates pre-processing steps.
+   * @param center
+   *          The center pipe.
+   * @param trainingMap
+   *          A map of outputs in `pre` to use as training inputs to `center`. If `processMap` is not specified, then
+   *          this map will be used for all pipeline operations.
+   * @param processMap
+   *          A map of outputs in `pre` to use as inference, scoring, and interpret inputs to `center`.
+   * @param kwargs
+   *          A map of keyword arguments to configure the returned {@link MlPipeline}
+   */
+  connect: function(pre: !MlPipeline,
+                    center: !MlPipe,
+                    trainingMap: !map<string, string>,
+                    processMap: map<string, string>,
+                    kwargs: map<string, any>): !MlPipeline py
+
+  /**
+   * Raise an `AssertionError` if the `pipe` does not have the `input` in its declared input `DX` Type. If the `pipe`
+   * has a single input, the only possible input key is `x`.
+   */
+  validate: function(pipe: !MlPipe, inputKeys: ![string]) py
+}

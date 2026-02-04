@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specification for an individual event on a {@link UiSdlTimeseriesLineBarChart},
+ * including a timestamp and various fields to be displayed in the tooltip.
+ */
+@typeScript
+type UiSdlTimeseriesLineBarChartEventSeriesDataSpec mixes UiSdlFieldBasedDataSpec {
+
+  /**
+   * A label for this event series, to be displayed at the top of the tooltip
+   * shown when hovering over an event.
+   */
+  seriesLabel: string
+
+  /**
+   * Filter string to filter fetched events.
+   */
+  filter: string
+
+  /**
+   * The field containing the timestamp value used to position this event on
+   * the x-axis of the chart.
+   */
+  timestamp: !UiSdlFieldBasedDataSpecSetting
+
+  /**
+   * The y-axis position at which this event series should be displayed.
+   * If it is a Dimension value: it will display the event on a y-axis from a
+   * metric-based series if possible. If not possible, it try to choose between
+   * BOTTOM and TOP based on comparisons with any existing y-axes. If such a
+   * comparison can't be done, it will fall back to BOTTOM.
+   * To configure it in a json file, include a "type" field specifying the type
+   * alongside other fields for the referenced type.
+   * For example:
+   *     "yValue": {
+   *       "type": "UiSdlTimeseriesLineBarChartEventRelativePosition",
+   *       "relativePosition": "BOTTOM"
+   *     }
+   */
+  yValue: UiSdlTimeseriesLineBarChartEventRelativePosition | Dimension = {type: 'UiSdlTimeseriesLineBarChartEventRelativePosition', relativePosition: 'BOTTOM'}
+
+  /**
+   * The default color to be shown for this data series.
+   */
+  color: string enum UiSdlChartColor = DARK_BLUE
+
+  /**
+   * A list of fields to be shown in the tooltip when hovering on one of these events.
+   */
+  tooltipAdditionalFields: [UiSdlTimeseriesLineBarChartTooltipAdditionalFieldDataSpecSetting]
+
+  /**
+   * The symbol to use for the event marker.
+   * {@see https://echarts.apache.org/v4/en/option.html#series-line.data.symbol}
+   */
+  symbol: string enum UiSdlChartSymbol = CIRCLE
+
+  /**
+   * The size of symbol.
+   * {@see https://echarts.apache.org/v4/en/option.html#series-line.data.symbolSize}
+   */
+  symbolSize: string enum('SMALL', 'MEDIUM', 'LARGE') = 'SMALL'
+
+  /**
+   * The size of the tooltip.
+   */
+  tooltipSize: string enum('xs', 'sm', 'md', 'lg', 'xl') = 'sm'
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is the base type for all annotations. Annotations are defined as inner types of {@link Ann}, such as
+ * {@link Ann.Db} and used without that prefix and with the first letter lower-cased: `@db`.
+ *
+ * If the annotation is used without any arguments, it indicates a _marker_ annotation.
+ *
+ * One or more fields can be specified in parenthesis: `@db(shortId=true, shortIdPrefix='x_')`.
+ *
+ * For annotations that define a field name "_value_" or use the `@annotation(value=true)` on one of their fields,
+ * the shortcut, value-only syntax may also be used: `@xyz(`_value_`)`.
+ *
+ * @see Annotatable
+ * @see Ann.Annotation
+ */
+abstract type Annotation {
+
+  /**
+   * The special field name which will receive the shortcut, value-only syntax value. If a field with this name is
+   * defined on the annotation, the value-only syntax may be used: `@xyz(`_value_`)`.
+   *
+   * @see Ann.Annotation#value
+   */
+  VALUE_ONLY_FIELD: const string = '_value_'
+
+  /**
+   * Name as specified in the annotation usage.
+   */
+  annDeclaredName: private member function(): !string java | js
+
+  /**
+   * If true, the annotation is not inherited by mixins.
+   */
+  noInherit: boolean
+
+  /**
+   * Whether this annotation type has a field named "_value_" or annotates one of its fields with
+   * `@annotation(value=true)`.
+   */
+  hasValueField: function(): boolean
+
+  /**
+   * If this annotation type has a field named "_value_" or annotates one of its fields with `@annotation(value=true)`,
+   * returns the name of that field.
+   *
+   * @param failIfNone if true and there is no such field, an error is thrown
+   */
+  valueFieldName: cached function(failIfNone: boolean): string
+
+  /**
+   * If this annotation type has a field named "_value_" or annotates one of its fields with `@annotation(value=true)`,
+   * returns the value of that field in this instance of the annotation.
+   *
+   * @param failIfNone if true and there is no such field, an error is thrown
+   */
+  valueFieldValue: member function(failIfNone: boolean): any
+}

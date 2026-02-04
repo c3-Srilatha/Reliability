@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Number of successful queries ({@link Genai.Query.Result#failed is not}), test cases, and chats triggered by a given user
+ */
+type Genai.Query.ResultCount {
+  /**
+   * {@link User} who triggered the query
+   */
+  user: !User
+
+  /**
+   * Number of successful queries triggered by the given user from the main search
+   */
+  queryCount: !int
+
+  /**
+   * Number of test cases run by the given user from the model configuration page
+   */
+  testCaseCount: !int
+
+  /**
+   * Number of queries within chat triggered by the given user
+   */
+  chatCount: !int
+
+  /**
+   * This method will return the query consumed by users in descending order. The `spec` enables
+   * the method to return paginated results. When the `spec` is not provided, the method will
+   * return the queries made by all the users.
+   */
+  usage: function(spec: Genai.Query.ResultCount.Spec): !FetchResult<Genai.Query.ResultCount.Usage> js-rhino
+
+  /**
+   * This method will return the number of users that made queries in a given time period. When the
+   * time frame is not provided, it will return the count of all users that made queries.
+   */
+  userCount: function(start: datetime, end: datetime): !int js-rhino
+
+  /**
+   * This method returns the total query count, which is calculated as the sum of
+   * #queryCount, #testCaseCount, and #chatCount.
+   */
+  totalQueryCount: inline member function(): !int js-rhino
+
+  /**
+   * Returns query counts by {@link Genai.Query.Type} for a user, triggered between the given dates (start and end inclusive).
+   * Only returns counts for successful queries (i.e. where {@link Genai.Query.Result#failed} is not true)
+   * If no dates are provided, it will return all query counts for the {@link User#myUser}
+   *
+   * @return for the user
+   */
+  myQueryCount: function(start: datetime, end: datetime): Genai.Query.ResultCount js-rhino
+
+  /**
+   * Returns query counts by {@link Genai.Query.Type} for all users, triggered between the given dates (start and end inclusive)
+   * Only returns counts for successful queries (i.e. where {@link Genai.Query.Result#failed} is not true)
+   * If no dates are provided, it will return all query counts for all users
+   *
+   * @return a list of {@link Genai.Query.ResultCount}s for all users who triggered the queries (each user will have a separate entry in the list)
+   */
+  allQueryCount: function(start: datetime, end: datetime): [Genai.Query.ResultCount] js-rhino
+
+  /**
+   * This utility method calculates the total number of queries triggered by all users between the given dates (start and end inclusive).
+   * Only returns counts for all successful queries (i.e. where failed is not true) in the {@link Genai.Query.Type}.
+   * If no dates are provided, the method will return the total query count in the app.
+   */
+  aggregateAllQueryCount: function (start: datetime, end: datetime): !int js-rhino
+
+  /**
+   * Helper function that returns a {@link Filter} that can be used to query for {@link Genai.Query.Result}s, triggered between the given dates (start and end inclusive)
+   */
+  timeRangeFilter: private function(start: datetime, end: datetime): Filter js-rhino
+
+  /**
+   * Helper function that returns a list of {@link Genai.Query.ResultCount} based on the given list of {@link Genai.Query.Result}s.
+   */
+  queryCountResult: private function(generativeAiResults: ![Genai.Query.Result]): ![Genai.Query.ResultCount] js-rhino
+}

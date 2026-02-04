@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Batch job for uploading and downloading model files between Model Registry Service and Model Registry Proxy.
+ */
+private type ModelRegistry.RegisterLoadBatchJob extends BatchJob<ModelRegistry.RegisterLoadBatchJob, ModelRegistry.RegisterLoadSpec, ModelRegistry.RegisterLoadBatchJobBatch> type key 'MRBJ' {
+
+  /**
+   * Map of source and destination urls for file transfer between Model Registry Service and Model Registry Proxy.
+   * Key is source url and value is destination url.
+   */
+  srcToDest: !map<string, string>
+
+  /**
+   * True if the batch job has to upload files from Model Registry Proxy to Model Registry Service.
+   */
+  isUpload: !boolean
+
+  /**
+   * Spec for configuring the file upload/download
+   */
+  spec: !ModelRegistry.RegisterLoadSpec
+}

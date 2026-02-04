@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to dispatch file requests
+ * The file url should be url encoded to make sure all special characters in the "file url" are transported to the
+ * server without any modifications. So, the following is how the request URL should be constructed:
+ * AppUrl + "/file/" + Encoded file url. e.g
+ *  ```js
+ *  var appUrl = "https://myapp.c3.com"
+ *  var fileUrl = "s3://myFileWhich I want to manipulate.txt";
+ *  var requestUrl = appUrl + "/file/" + UrlEncoder.encode(fileUrl);
+ *  requestUrl
+ *  ```
+ * The above-generated requestUrl should be used when communicating with the C3 app.
+ *
+ * @see ApiUrl#file
+ */
+@restful(endpoint='file')
+type FileApi mixes Restful {
+
+  handle: ~
+}

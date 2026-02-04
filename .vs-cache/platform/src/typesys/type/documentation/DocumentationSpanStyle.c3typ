@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * What style the Markdown span represents. These are basically HTML elements, since Markdown is generally translated
+ * into HTML for rendering.
+ *
+ * @see DocumentationSpan
+ */
+enum type DocumentationSpanStyle {
+
+  /**
+   * Undecorated span of text.
+   */
+  PLAIN
+
+  /**
+   * Ordinary emphasis (italic).
+   */
+  EM
+
+  /**
+   * Extra emphasis (bold).
+   */
+  STRONG
+
+  /**
+   * Strikethrough.
+   */
+  STRIKE
+
+  /**
+   * Monospace.
+   */
+  CODE
+
+  /**
+   * A reference to another page.
+   *
+   * @see DocumentationReference
+   */
+  LINK
+
+  /**
+   * A reference to an external image.
+   *
+   * @see DocumentationReference
+   */
+  IMAGE
+
+  /**
+   * Inline math equation.
+   */
+  MATH
+
+  /**
+   * Hard line break (no content).
+   */
+  BR
+
+  /**
+   * Extract the rendering style from a span object. If the obj is null or has no style, null is returned.
+   * If failIfInvalid is true, a missing or invalid style throws an appropriate error.
+   *
+   * @param obj DocumentationSpan obj to extract style from
+   * @param failIfInvalid if true, error is thrown if obj is null, has no style, or the style is invalid
+   *
+   * @see DocumentationSpan
+   * @see #toValue
+   */
+  fromObj: function(obj: Obj, failIfInvalid: boolean): string
+}

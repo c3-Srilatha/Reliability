@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used during the SAML login flow to both pass back to C3 AI Platform, the access control information and allow customized operations through SAML Assertion Attributes
+ */
+abstract type SamlSignOn mixes Value {
+
+  /**
+   * If the Identity Provider (IdP), sends in the SSO SAML assertion with access control information embedded in to SAML attributes, the C3 platform will invoke this function passing a map of the SAML Attributes so that the customer code can map their access control to an array of C3 UserGroup Ids.
+   * The C3 platform will use these UserGroup Ids to synchronize the user's (NameID) UserGroup membership (will be added to groups the user belongs to and removed from groups the user no longer belongs to).
+   * This action is invoked during the SAML login flow.
+   *
+   * @param assertion
+   *        This is a map of SAML Assertion Attributes (Maps attribute name to a list of SamlAssertionAttribute)
+   *
+   * @return  A list of groups the user belongs to
+   */
+  userGroupIds: function(assertion: !map<string, [SamlAssertionAttribute]>): [string]
+
+  /**
+   * This action can be implemented by customers to process Saml Assertion Attributes during the login flow. Note that the performance of this function will directly affect the login experience of their users.
+   *
+   * @param assertion
+   *        This is a map of SAML Assertion Attributes (Maps attribute name to a list of SamlAssertionAttribute)
+   */
+  onLogin: function(assertion: !map<string, [SamlAssertionAttribute]>)
+}

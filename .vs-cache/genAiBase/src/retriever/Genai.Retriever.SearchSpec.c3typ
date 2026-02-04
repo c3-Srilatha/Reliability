@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the arguments with which to call {@link Genai.Retriever#similaritySearch}.
+ *
+ * The similarity search is composed of up to three separate retrievals:
+ * 1. A standard vector search using `searchQuery`.
+ * 2. A metadata-filtered search if `metadataFilter` is set and `numMetadataPassages > 0`.
+ * 3. A keyword-filtered search if `keywordFilter` is set and `numKeywordPassages > 0`.
+ *
+ * The results of all applicable searches are appended together in the final result.
+ */
+type Genai.Retriever.SearchSpec mixes Spec {
+
+    /**
+     * The query being compared to the {@link Genai.SourcePassage} indexed content
+     * in the vector store
+     */
+    searchQuery: !Genai.Query | !string
+
+    /**
+     * The number of similar passages to be returned by the similarity search
+     */
+    k: int = 5
+
+    /**
+     * Whether to include the {@link Genai.SourceFile.Metadata} in the results of the similarity search
+     */
+    includeFileMetadata: boolean
+
+    /**
+     * If true, {@link Genai.Retriever.SimilaritySearchResult#score} will be the raw non-normalized score.
+     */
+    doNotNormalizeScore: boolean
+
+    /**
+     * Spec for MMR (Maximal Marginal Relevance) post-processing of the similarity search results
+     * to support summarization.
+     */
+    mmrSpec: Genai.Retriever.MmrSpec
+
+    /**
+     * Filter to apply to the {@link Genai.SourcePassage} metadata.
+     * If set and `numMetadataPassages` > 0, a metadata-filtered similarity search will be performed
+     * and its results will be appended to the overall results.
+     */
+    metadataFilter: string
+
+    /**
+     * The number of passages to be returned by the similarity search
+     * that match the metadata filter
+     */
+    numMetadataPassages: int = 0
+
+    /**
+     * Filter to apply to the {@link Genai.SourcePassage} keyword.
+     * If set and `numKeywordPassages` > 0, a keyword-filtered similarity search will be performed
+     * and its results will be appended to the overall results.
+     */
+    keywordFilter: string
+
+    /**
+     * The number of passages to be returned by the similarity search
+     * that match the keyword filter
+     */
+    numKeywordPassages: int = 0
+
+    /**
+     * parallelRun is default by false
+     * to run fetches parallely
+     */
+    parallelRun: boolean
+}

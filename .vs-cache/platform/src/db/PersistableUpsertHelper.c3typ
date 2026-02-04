@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper functions for persistable types that override upsert behavior.
+ */
+type PersistableUpsertHelper mixes Value {
+
+  /**
+   * Override to perform customized upsert logic.
+   *
+   * @param state
+   *        Current upsert state.
+   *
+   * @return The appropriate result (e.g. ObjList, Persistable<?>, etc) depending on the upsert operation.
+   */
+  doUpsert: abstract inline function(state: !native): any
+
+  /**
+   * Override to perfrom the 'unremove' operation.
+   *
+   * @param obj
+   *        Obj to unremove.
+   *
+   * @return The unremoved Obj, if any and null otherwise.
+   */
+  doUnremove: optional inline function(obj: !PersistableWritable): PersistableWritable
+}

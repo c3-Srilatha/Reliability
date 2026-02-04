@@ -1,0 +1,74 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A single exportable PDF asset report. May contain information about one or more assets.
+ */
+entity type ReliabilityAssetReport extends ReliabilityReport mixes FilterableByFacility type key 'RLBLTY_ASST_RPRT' {
+
+  /**
+   * @inheritdoc
+   */
+  spec: !ReliabilityAssetReportSpec
+
+  /**
+   * The assets whose information is in the report.
+   */
+  assets: [ReliabilityAsset]
+
+  /**
+   * The {@link ReliabilityAssetReportJob job} used to generate the report.
+   */
+  job: ReliabilityAssetReportJob(report)
+
+  /**
+   * Status for job used to generate the report
+   */
+  status: JobStatusEnum not persistable
+
+  /**
+   * {@link Facility} that the Report belongs to.
+   */
+  facility: Facility
+
+  /**
+   * Fetch {@link ReliabilityAssetReport} and includes an extra field for this job status
+   * @param spec
+   *         spec to fetch {@link ReliabilityAssetReport}
+   * @return FetchResult for {@link ReliabilityAssetReport} including status field
+   */
+  fetchWithStatus: function(spec: !FetchSpec): !FetchResult<ReliabilityAssetReport> js-rhino
+
+  /**
+   * Return the number of reports that have append a job based on the given specification.
+   * @param spec
+   *         spec to fetch {@link ReliabilityAssetReport}
+   * @return The number of reports after applying the given spec.
+   */
+  fetchCountWithStatus: function(spec: FetchFilterSpec): !int js-rhino
+
+  /**
+   * Generates a {@link ZipFile ZIP file} based on {@link File files} from the
+   * given reports.
+   * @param reports
+   *         The reports to include in the ZIP file.
+   * @return The {@link File#apiEndpoint API endpoint} for this file.
+   */
+  getZipUrl: function(reports: ![ReliabilityAssetReport]): string js-rhino
+
+  /**
+   * When a report is removed, remove the associated {@link ReliabilityAssetReportJob job}.
+   */
+  afterRemove: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["facility"]
+}

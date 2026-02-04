@@ -1,0 +1,116 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The `@annotation` annotation marks a type as being an annotation on a piece of metadata.
+ *
+ * Here's an example:
+ *
+ * ```c3typ
+ * @annotation(appliesTo=['field'])
+ * type Ann.Precious {
+ *   howMuch: int
+ * }
+ * ```
+ *
+ * This creates the `@precious` annotation with an optional field, so these usages are valid:
+ * ```type
+ * type Example {
+ *   @precious
+ *   emeralds: int
+ *
+ *   @precious(howMuch=9)
+ *   rubies: int
+ * }
+ * ```
+ *
+ * Annotation types are used extensively by the platform, but can also be defined by applications.
+ * Any type annotated with the @annotation annotation becomes itself an annotation and can be used
+ * by any packages that the depend on the package it is defined in.
+ *
+ * Note that annotations have also been called "extensions" since they are ways to extend the metadata
+ * beyond the minimal structure.
+ *
+ * Annotation types are kept separate from regular types to avoid confusion, because they are inner types
+ * of the {@link Ann} type. When searching for them in documentation, prefix then with "Ann." to find them.
+ * For example, this annotation is named "Ann.Annotation".
+ *
+ * For annotations that typically have only a single field, there is a shortcut, value-only syntax for using that
+ * annotation. This works if the field is named "_value_" or #value is set by annotation.
+ *
+ * @see Annotatable
+ */
+@annotation(appliesTo=['type'])
+type Ann.Annotation mixes Annotation {
+
+  /**
+   * Which kinds of structure this annotation is applicable to. This will one or more of:
+   *  - `type` for a type declaration
+   *  - `field` for any field declaration
+   *  - `function` for a method declaration
+   *  - `valueType` for a (value) type within another declaration
+   */
+  // TODO: PLAT-34674 Create enum type for Ann.Annotation.appliesTo
+  appliesTo: [string]
+
+  /**
+   * Whether this annotation can be changed by a mixin type.
+   * If not, types inherit annotations, but cannot change them.
+   */
+  @beta
+  allowsOverride: boolean
+
+  /**
+   * Whether this annotation can be changed by a remix type.
+   * If not, remix types inherit annotations, but cannot change them.
+   */
+  @beta
+  allowsRemixOverride: boolean
+
+  /**
+   * Whether this annotation can be only be specified in the original field declaration.
+   * If not, annotations can be added to override fields.
+   */
+  declarationOnly: boolean
+
+  /**
+   * Map of "pills" added to documentation to flag special features of the type or field. Each key in the map is the
+   * text of a pill and the corresponding value is an expression which is evaluated to determine whether the pill is
+   * shown or not.
+   *
+   * The keys (pill text) should be lower case and short. For example, some built-in pills are "required" and
+   * "abstract".
+   */
+  docPills: map<string, string>
+
+  /**
+   * Whether this Annotation is configurable.
+   *
+   * @see TypeAnnotationConfig
+   */
+  configurable: boolean
+
+  /**
+   * If specified on an annotation field, this indicates that this field may be used as the "value" field of the
+   * short-form annotation. Only a single field on each annotation may be marked this way.
+   *
+   * For example:
+   * ```type
+   * type Ann.Puppy mixes Annotation {
+   *   @annotation(value=true)
+   *   cuteness: int
+   * }
+   * ```
+   *
+   * Then the short annotation may be used: `@puppy(11)` is equivalent to `@puppy(cuteness=11)`.
+   *
+   * Note that if the annotation has a field named "_value_", this behavior is enabled and the annotation is not
+   * required.
+   */
+  value: boolean
+}

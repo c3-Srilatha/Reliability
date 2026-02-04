@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Additional files (input data, pickled models, etc) stored on a Jupyter server
+ */
+private entity type JupyterFile extends JupyterContent type key 'FILE' {
+
+  format:             ~
+  jupyterContentType: ~ = 'file'
+
+  /**
+   * This method is used to generate the json needed to seed a `JupyterFile` object which points to an image in
+   * metadata store. It is assumed that the image is (or will be) stored at the path specified by `metadataFilePath`.
+   * @param metadataFilePath
+   *                  Path of image in metadata store. For example, if a file is located
+   *                  `c3server/repo/server/platform/resource/some/dirs/image.jpg`, this argument's value should be
+   *                  `meta://platform/resource/some/dirs/image.jpg`.
+   *
+   * @param jupyterPath
+   *                  Optional argument to specify the path (including filename) at which this image will be available
+   *                  in Jupyter tree view. If not specified, the {@link Pkg.File#encodedSubPath} will be used.
+   *                  In the example above, the `encodedSubPath` would be `some/dirs/image.jpg`.
+   *
+   * @return A json `JupyterFile` object which the user may seed.
+   *
+   * It is recommended that you store your images in a sub-directory of
+   * `/{package}/resource/`. As a result, the `metadataFilePath` argument should start with
+   * `meta://{package}/resource/`. Not following this suggestion (in conjunction with not giving a value
+   * for `jupyterPath`) will affect the location of this image in Jupyter tree view.
+   */
+  jsonForSeedData: function(metadataFilePath: !string, jupyterPath: string): json js-server
+
+  /**
+   * @return the notebook json as string saved in externalFile.url
+   */
+  readContent: member function(): string | binary py
+
+  /**
+   * Field to pass content in and out to type system calls. WARNING: this field should be never be used for heavy payload
+   * as it can cause JVM to crash.
+   */
+  content: private string | binary
+
+  /**
+   * Moves any JupyterFile with path prefix srcPrefix to dstPrefix.
+   *
+   * @param srcPrefix
+   *                path prefix to source file(s).
+   * @param dstPrefix
+   *                path prefix to destination file(s).
+   * @return number files copied
+   *
+   * Example with relative paths:
+   *    JupyterFile.migrateFiles("files", "jupyter/files")
+   *        externalFile field's url "s3://c3--default-mount-name/files/test.txt"
+   *        becomes "s3://c3--default-mount-name/jupyter/files/test.txt"
+   *
+   * Example with absolute paths:
+   *    JupyterFile.migrateFiles("/c3--old-mount-ml-prod", "/c3--new-mount/fs/ml/prod")
+   *        externalFile field's url "s3://c3--old-mount-ml-prod/jupyter/files/test.txt"
+   *        becomes "s3://c3--new-mount/fs/ml/prod/jupyter/files/test.txt"
+   */
+  migrateFiles: private function(srcPrefix: !string, dstPrefix: !string): !int
+}

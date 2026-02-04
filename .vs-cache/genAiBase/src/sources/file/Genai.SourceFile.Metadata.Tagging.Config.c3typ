@@ -1,0 +1,173 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config used in the Automatic Metadata Extraction process.
+ */
+type Genai.SourceFile.Metadata.Tagging.Config mixes DefaultInstance, Named, Config, Genai.ParentConfig {
+
+  /**
+   * The name of the {@link Genai.UnstructuredQuery.Engine.ModelConfig} to be used for the process of metadata tagging.
+   */
+  model: !string
+
+  /**
+   * The number of entities to extract.
+   */
+  numEntities: !int = 5
+
+  /**
+   * The number of themes to extract.
+   */
+  themes: !int = 6
+
+  /**
+   * The number of examples to extract.
+   */
+  examples: !int = 2
+
+  /**
+   * The natural language processing model to use.
+   */
+  nlp: !string = 'en_core_web_sm'
+
+  /**
+   * The number of initial pages to process.
+   */
+  numInitialPassages: !int = 16
+
+  /**
+   * The number of final pages to process.
+   */
+  numFinalPassages: !int = 8
+
+  /**
+   * The number of maximum tokens to process.
+   */
+  numMaxTokens: !int = 2000
+
+  /**
+   * List of filter catergories to use.
+   */
+  filterEntityCategories: ![string]
+
+  /**
+   * Prompt to use for the entity labeling process of {@link Genai.SourceFile}.
+   * The prompt consist of a string with instructions, examples, and information
+   * of the analyzed file. The string needs to contains the following placeholders:
+   * themes - The number of themes to extract.
+   * examples - The number of examples to extract.
+   * string_lda - The string to use for the LDA model.
+   */
+  topicLabelingPrompt: !Genai.Prompt
+
+  /**
+   * The prompt to use for the metadata extraction of {@link Genai.SourceFile}.
+   * The prompt consist of a string with instructions, examples, and information
+   * of the analyzed file. The string needs to contains the following placeholders:
+   * fields_list - The list of fields to be extracted.
+   * example_json_string - An example of the JSON string to be extracted.
+   * passage - The passage to be analyzed.
+   * num_tags - The number maximum of tags to be extracted.
+   */
+  metadataExtractionPrompt: !Genai.Prompt
+
+  /**
+   * The prompt used to fix and invalid JSON generated in the metadata extraction
+   * of a {@link Genai.Prompt}.
+   */
+  fixJsonPrompt: !Genai.Prompt
+
+  /**
+   * The number of maximum tags to extract.
+   */
+  numTags: !int = 3
+
+  /**
+   * The number of maximum keywords to extract.
+   */
+  numKeywords: !int = 2
+
+  /**
+   * The number of documents used to identify filter categories. Keeping this number low improves latency on the first step.
+   * The second phase (automated metadata tagging) will run on all documents of the active project regardless of this sample size.
+   * If set to -1, identifyFilterCategories will run on all documents of the user's active project.
+   */
+  documentSampleSize: !int = 10
+
+  /**
+   * The number of documents to process in a batch when performing automated tagging in all source files.
+   */
+  documentBatchSize: !int = 2000
+
+  /**
+   * The name of the field to correspond to the category name ("date") that
+   * will be converted to a datetme.
+   */
+  dateFieldName: !string = 'date'
+
+  /**
+   * Categories to use for the seeded categories.
+   */
+  seededCategories: ![string]
+
+  /**
+   * The list of fields to omit from the metadata extraction.
+   */
+  blacklistFields: ![string]
+
+  /**
+   * The {@link Genai.Prompt} to use for the clustering of the metadata.
+   */
+  clusteringPrompt: !Genai.Prompt
+
+  /**
+   * Set the config with the specified name as the default for the app
+   * (via {@link Genai.SourceFile.Metadata.Tagging.DefaultConfig}).
+   */
+  setDefault: function(configName: !string) js-rhino
+
+  /**
+   * Enable automatic metadata tagging for {@link Genai.SourceFile#process}.
+   */
+  disableMetadataTagging: boolean
+
+  inst: ~ js-rhino
+
+  childConfigFields: ~ js
+
+  /**
+   * Chunked passages might overlap when merged.
+   * Setting this to `false` will compute overlap between consecutive ordered chunks.
+   * Might be computationally expensive for larger values of `numInitialPassages` and/or `numFinalPassages`
+   * when the actual overlap, as specified by the chunking configs below, is small.
+   *
+   * Relates to:
+   * - {@link Genai.SourceFile.TextSplitter.Spec#chunkOverlap}
+   * - {@link Genai.SourceFile.Chunker.MultimodalPdf.TextChunkerSpec#splitOverlap}
+   * - {@link Genai.SourceFile.Chunker.MsftX.Config#unstructuredChunkingSpec}
+   * - `text_parser_spec` in {@link Genai.SourceFile.Chunker.Mew3.Config#pipelineSpec}
+   */
+  allowOverlapInExtractedText: boolean
+
+
+  /**
+   * Will update tags for previously indexed files without having to reindex them with the verbalization
+   * of the new tag embedded.
+   */
+  allowRetaggingWithoutReindexing: boolean
+
+
+/**
+ * When true, pre-indexed files are excluded from **automatic** metadata tagging.
+ * When false, pre-indexed files are included in tagging, and reindexing behavior
+ * is determined by {#allowRetaggingWithoutReindexing}.
+ */
+  skipPreindexedFilesForTagging: boolean
+}

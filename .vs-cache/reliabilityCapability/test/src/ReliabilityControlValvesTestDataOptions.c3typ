@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type as an input argument for {@link ReliabilityControlValvesTestData#loadTestData} to create basic test data for Reliability Control Valves.
+ */
+type ReliabilityControlValvesTestDataOptions {
+
+  /**
+   * If true, {@link ReliabilityControlValvesTestData#removeTestData} will not be run before loading data.
+   */
+  doNotRemoveData: boolean
+
+  /**
+   * The default target tag for the {@link ReliabilityAsset}s to be created.
+   *
+   * **NOTE**: The provided {@link ExpectedSensor} must be specified in {@link ReliabilityMlControlValvesConfig#targetExpectedSensors}.
+   * If not, the field will be ignored and will be set randomly according to the config.
+   */
+  defaultTargetTag: ExpectedSensor
+
+  /**
+   * The start time of the {@link Sensor} measurement data to be generated.
+   */
+  start: DateTime
+
+  /**
+   * The start time of the {@link Sensor} measurement data to be generated.
+   */
+  end: DateTime
+
+  /**
+   * The interval of the {@link Sensor} measurement data to be generated.
+   * Every measurement's `start` time will be one `interval` greater than the previous measurement.
+   */
+  interval: Interval = Interval.FIVE_MINUTE
+
+  /**
+   * The number of external {@link Sensor}s to create in each plant.
+   *
+   * `External` implies that the Sensor is not associated via a {@link ReliabilityAssetSensorRelation}
+   * with a control valve {@link ReliabilityAsset}.
+   */
+  numExternalSensorsInPlant: int = 20
+
+  /**
+   * The number of {@link Sensor}s per plant to be created with the same measurement values.
+   * This is useful for analyzing the correlation values.
+   *
+   * **NOTE**: This value will clamp to 0 or {@link #numExternalSensorsInPlant}.
+   */
+  numSensorsPerPlantWithSameMeasurementValues: int = 18
+
+  /**
+   * The constant value to be used for the measurement of the `external` {@link Sensor}s configured to be specified
+   * with the same value. This value will be padded with random noise in the interval (0, 1] as external sensors
+   * with exact measurements are ruled out when generating correlations.
+   */
+  constantSensorMeasurementValue: double = 50
+}

@@ -1,0 +1,145 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Sankey chart component that displays data flows
+ */
+@typeScript
+@uiComponentCategorizer(name='Sankey chart', aliases=['Data Flow Chart'], category='Data Visualization')
+type UiSdlSankeyChart mixes UiSdlComponent<UiSdlSankeyChartDataSpec>, UiSdlHeight, UiSdlChartColorConfig {
+
+  /**
+   * The specification used for retrieving data displayed by the chart.
+   */
+  @uiSdlDataSpec(dataDestinationField='data')
+  dataSpec: ~
+
+  /**
+   * Holds the data to display in the chart.  Should be a graph and then use a transform to convert to what Sankey wants
+   */
+  data: UiSdlSankeyChartData
+
+  /**
+   * Chart header
+   */
+  header: UiSdlComponentTitle
+
+  height: ~ = 400
+
+  /**
+   * Ability to download as csv, PNG or JPEG
+   */
+  exportable: boolean = true
+
+  /**
+   * The set of actions that don't depend on nodes or edges, e.g., export.
+   * Listen to triggers of the Sankey actions through `CHART_ACTION_CLICK_${actionSuffix}`.
+   */
+  chartActions: [UiSdlActionGroup]
+
+  /**
+   * The number of actions to display on the chart header.
+   */
+  chartActionsCollapseThreshold: int = 2
+
+  /**
+   * Automatic overlapping reduction will order chart nodes within each level to best avoid overlapping.
+   * Setting this to `false` will show the nodes in the order they are returned.
+   */
+  overlapReduction: boolean = true
+
+  /**
+   * Currently clicked node {@link UiSdlSankeyChartNodeDataSpec#id id}.
+   */
+  currentlyClickedNode: private string
+
+  // TODO PLAT-61876: Add tooltipConfig: UiSdlTooltipBaseSettings to control size of the tooltip
+
+  /**
+   * Currently clicked edge, an array of size 2. `currentlyClickedEdge[0]` as the source node {@link UiSdlSankeyChartNodeDataSpec#id id}
+   * and `currentlyClickedEdge[1]` as the target node {@link UiSdlSankeyChartNodeDataSpec#id id}.
+   */
+  @constraint(condition='!exists(currentlyClickedEdge) || count(currentlyClickedEdge) == 2')
+  currentlyClickedEdge: private [string]
+
+  /**
+   * Triggered when an edge in the Sankey chart is clicked
+   *
+   * @param id
+   *            Id of the component.
+   * @param source
+   *            The {@link UiSdlSankeyChartNodeDataSpec#id id} of the node that is the source of the edge clicked.
+   * @param target
+   *            The {@link UiSdlSankeyChartNodeDataSpec#id id} of the node that is the target of the edge clicked.
+   *
+   * @returns an `EDGE_CLICK` action for this instance with the following properties:
+   * - payload.componentId - {string} The `id` of the component who dispatches the action.
+   * - payload.source - The {@link UiSdlSankeyChartNodeDataSpec#id id} of the source of the edge that is clicked.
+   * - payload.target - The {@link UiSdlSankeyChartNodeDataSpec#id id} of the target of the edge that is clicked.
+   */
+  @uiSdlActionCreator(actionType='EDGE_CLICK')
+  clickEdgeAction: function(id: string, source: string, target: string, sourceId: string, targetId: string): UiSdlSankeyChartEdgeClickAction ts-client
+
+  /**
+   * Listens for actions of type `EDGE_CLICK` and updates the {@link currentlyClickedEdge} value
+   * If a node is selected, it is deselected as you can only click one node or edge at a time.
+   * If the clicked edge is already selected, that edge is deselected and {@link currentlyClickedEdge} is set to undefined.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='EDGE_CLICK')
+  edgeClickReducer: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlSankeyChartEdgeClickAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when an node in the Sankey chart is clicked
+   *
+   * @param id
+   *           Id of the component.
+   * @param node
+   *           The {@link UiSdlSankeyChartNodeDataSpec#id id} of the node that is clicked.
+   *
+   * @returns a `NODE_CLICK` action for this instance with the following properties:
+   * - payload.componentId - {string} The `id` of the component who dispatches the action.
+   * - payload.node - The {@link UiSdlSankeyChartNodeDataSpec#id id} of the node that is clicked
+   */
+  @uiSdlActionCreator(actionType='NODE_CLICK')
+  clickNodeAction: function(id: string, node: string): UiSdlSankeyChartNodeClickAction ts-client
+
+  /**
+   * Listens for actions of type `NODE_CLICK` and updates the {@link currentlyClickedNode} value.
+   * If an edge is selected, it is deselected as you can only click one node or edge at a time.
+   * If the clicked node is already selected, that node is deselected and {@link currentlyClickedNode} is set to undefined.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='NODE_CLICK')
+  nodeClickReducer: private function(state: !UiSdlReduxState,
+                                     action: !UiSdlSankeyChartNodeClickAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggers an action.
+   *
+   * @param id
+   *           Id of the component.
+   * @param actionSuffix
+   *           The suffix of the action that should be triggered.
+   * @returns a `CHART_ACTION_CLICK_${actionSuffix}` action
+   */
+  @uiSdlActionCreator(actionType='CHART_ACTION_CLICK_${actionSuffix}')
+  triggerChartActionsAction: function(id: string,
+                                      actionSuffix: string): UiSdlReduxAction<UiSdlComponentActionPayload> ts-client
+}

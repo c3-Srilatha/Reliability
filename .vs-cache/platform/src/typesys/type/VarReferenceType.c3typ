@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A variable reference is an unbound generic variable associated with a type or function parameter.
+ *
+ * Within the declaration of `type Foo<X>`, references to `X` are variables, since they have not
+ * yet been bound.
+ *
+ * When another type binds the parameter: `type Bar mixes Foo<Cat>`, the references within
+ * the Foo type to the "X" variable become bound to the Cat type.
+ *
+ * ```
+ * type Foo<X> {
+ *   herd: [X]
+ * }
+ *
+ * type Bar mixes Foo<Cat>
+ * ```
+ *
+ * Bar.herd will be `[Cat]` because all references to the parametric variable "X" in Foo (and
+ * any mixins) will be bound to "Cat" within Bar.
+ */
+type VarReferenceType mixes ValueType, Nameable {
+
+  name: !~
+
+  /**
+   * If the variable reference has a restriction, that will limit the types that can be bound.
+   * For example: `type Foo<X: Mammal>` can only be bound to a type that `isA(Mammal)`.
+   *
+   * @see Type#isA
+   */
+  restriction: ValueType
+
+  /**
+   * @return `true` is this variable reference has a restriction, that will limit the types that can be bound.
+   */
+  hasRestriction: member function(): boolean
+
+  /**
+   * @return restriction of this variable reference type or {@link AnyType}
+   */
+  restrictionOrAny: property(): !ValueType
+
+  fromString:    ~
+  valueFromJson: ~ java | py | js
+  valueToJson:   ~ java | py | js
+  isEmptyValue:  ~ java | py | js
+}

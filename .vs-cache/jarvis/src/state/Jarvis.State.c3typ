@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * States of Jarvis step and build
+ */
+enum type Jarvis.State {
+
+  /**
+   * Scheduled but has not yet picked up by Jarvis Executor
+   */
+  PENDING
+
+  /**
+   * Used exclusively for executors. Describes an executor that is having infrastructure brought up or is being
+   * configured.
+   */
+  INITIALIZING
+
+  /**
+   * Used exclusively for {@link Jarvis.Step}. The step is assigned to an executor but it has yet to be
+   * begin its execution.
+   */
+  ASSIGNED
+
+  /**
+   * Being executed on one of Jarvis Executors; note, intermediate result can be produced during execution
+   */
+  RUNNING
+
+  /**
+   * The execution is being terminated because it has timed out. When the termination is complete a corresponding
+   * status of {@link Jarvis.Status#TIMED_OUT} will be set on the respective result.
+   */
+  TIMING_OUT
+
+  /**
+   * The execution is in the process of being aborted. When the abortion is complete, the state will transition
+   * to DONE and a corresponding Result object with status ABORTED will be created.
+   */
+  ABORTING
+
+  /**
+   * At this point, this build or step will not be picked up by an executor. It does not indicate a successful or
+   * failed run.
+   */
+  DONE
+
+  /**
+   * Determines whether or not this state is in the process of terminating.
+   */
+  isTerminating: function(state: string enum Jarvis.State): boolean
+
+  /**
+   * Determines whether or not this state can be terminated.
+   */
+  isTerminable: function(state: string enum Jarvis.State): boolean
+}

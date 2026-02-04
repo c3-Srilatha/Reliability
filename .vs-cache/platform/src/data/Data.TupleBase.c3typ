@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Parent type for all Tuple representations of a C3 Data. Each Data.Tuple subtype represents a single column of data
+ * in a pandas DataFrame. They are specifically used for Data backed by tuples (e.g. Data constructed from `eval`).
+ * Different Data.Tuple subtypes have specialized ser/deser optimizations to improve data transfer time between the
+ * client and the server
+ */
+abstract private type Data.TupleBase {
+
+  /**
+   * Name of the corresponding column in the Data
+   */
+  columnName: !string
+
+  /**
+   * ValueType of the contents of the Data.Tuple
+   */
+  valueType: !ValueType
+
+  /**
+   * create a Data.TupleBase of the correct subtype given a turboPyArray, column name, and valueType
+   */
+  fromArray: private function(colName: !string, valueType: !ValueType, arr: native): Data.TupleBase py-server
+
+  /**
+   * Convert the Data.TupleBase to a binary representation
+   */
+  to_binary: private abstract member function(): !binary py-server
+
+  /**
+   * Convert a binary representation to an array of Data.TupleBase
+   */
+  array_from_binary: private function(data: !binary): [Data.TupleBase] py
+
+  /**
+   * Convert a binary representation to a single Data.TupleBase
+   */
+  from_binary: private function(bytes: !binary): Data.TupleBase py
+}

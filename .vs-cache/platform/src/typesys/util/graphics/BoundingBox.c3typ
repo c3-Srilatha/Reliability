@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 type that represents a rectangle using the cv2 coordinate system where (0, 0) is the top left corner.
+ */
+type BoundingBox mixes ArrayLikePyProtocol {
+
+  /**
+   * Class of the object framed by the bounding box. Optional
+   */
+  detectedClass: string
+
+  /**
+   * Probability that the object detected is of a given class. Optional
+   */
+  confidenceScore: float
+
+  /**
+   * Left most point. Should be >= 0
+   */
+  // @constraint(condition='$ > -1')
+  x: !int
+
+  /**
+   * Top most point. Should be >= 0
+   */
+  // @constraint(condition='$ > -1')
+  y: !int
+
+  /**
+   * Width of the bounding box. Should be > 0
+   */
+  // @constraint(condition='$ > -1')
+  width: !int
+
+  /**
+   * Height of the bounding box. Should be > 0
+   */
+  // @constraint(condition='$ > -1')
+  height: !int
+
+  /**
+   * @returns a list of coordinates following the cv2 convention that is [y, y + height, x, x + width]
+   */
+  toCv2: member function(): ![int] js | py | java
+
+  /**
+   * @returns a BoundingBox from a list of coordinates following the cv2 convention that is [y, y + height, x, x + width]
+   */
+  fromCv2: function(coordinates: ![int]): !BoundingBox js | py | java
+
+  /**
+   * @returns a copy of the BoundingBox with its coordinates scaled.
+   */
+  scale: member function(scale: !double): !BoundingBox java | py
+
+  /**
+   * Takes a list of BoundingBox and returns a new list of these BoundingBox scaled
+   */
+  scaleBatch: function(boxes: ![BoundingBox], scale: !double): ![BoundingBox] java | py
+}

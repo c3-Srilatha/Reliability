@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Produce JavaScript source code that loads types in the JS SDK client environment.
+ *
+ * @see ServerConnection
+ */
+type Remote.JsTypeLoader mixes Remote.TypeLoader {
+
+  /**
+   * Construct the source file snippets for a single type. These consist of both manually-authored source code for a
+   * type and generated pre- and postambles.
+   *
+   * @param type type to load
+   * @param bootstrap true for the bootstrap slug
+   * @param spec type loading options
+   */
+  _sources: private member function(requestedType: !Type,
+                                    bootstrap: boolean,
+                                    spec: Remote.TypeLoaderSpec): [!Pair<!string, !string>]
+
+  /**
+   * Construct the preamble snippet(s) for loading a set of types.
+   *
+   * @param type type to load
+   * @param bootstrap true for the bootstrap slug
+   * @param requestedTypes all requested types
+   * @param bootstrap true if bootstrap slug
+   */
+  _preamble: private member function(requestedTypes: [Type],
+                                     bootstrap: boolean,
+                                     spec: Remote.TypeLoaderSpec): [!Pair<!string, !string>]
+
+  /**
+   * Construct the postamble snippet(s) for loading a set of types.
+   *
+   * @param type type to load
+   * @param bootstrap true for the bootstrap slug
+   * @param requestedTypes all requested types
+   * @param bootstrap true if bootstrap slug
+   */
+  _postamble: private member function(requestedTypes: [Type],
+                                      bootstrap: boolean,
+                                      spec: Remote.TypeLoaderSpec): [!Pair<!string, !string>]
+
+  bootstrapSourceMap: ~
+  loadTypeSourceMap:  ~
+  loadTypesSourceMap: ~
+  sourceMapPointer:   ~
+}

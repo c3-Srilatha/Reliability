@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Implements only major.minor part of a semantic version as specified at http://semver.org/.
+ */
+inline type SemanticVersion.MajorMinor mixes StringSerializable {
+
+  /**
+   * Major version is incremented when there are incompatible API changes
+   */
+  majorVersion: !int
+
+  /**
+   * Minor version is incremented when a functionality is added in a backwards-compatible manner
+   */
+  minorVersion: !int
+
+  /**
+   * Parse given string into SemanticVersion.MajorMinor, if it is valid.
+   *
+   * @param version
+   *           to be parsed as SemanticVersion.
+   * @param failIfInvalid
+   *           when true, will throw error if version can not be parsed as SemanticVersion.
+   */
+  fromString: function(s: !?string, failIfInvalid: boolean): mixing SemanticVersion.MajorMinor
+
+  toString: ~
+
+  /**
+   * Converts this SemanticVersion.MajorMinor to SemanticVersion.
+   */
+  toSemanticVersion: member function(): !SemanticVersion
+
+  /**
+   * returns > 0 if context is semantically greater than 'other'
+   * returns < 0 if context is semantically less than 'other'
+   */
+  compareTo: member function(other: !?string): !int32
+
+  compareTo: member function(other: !?SemanticVersion.MajorMinor): !int32
+
+  /**
+   * @return true, if the version is in a valid format.
+   */
+  isValid: inline function(version: !?string): boolean
+
+  /**
+   * @return true, if the version is valid and strictly MAJOR.MINOR, i.e. no PATCH, pre-release, nor build.
+   */
+  isStrictlyMajorMinor: inline function(version: !?string): boolean
+}

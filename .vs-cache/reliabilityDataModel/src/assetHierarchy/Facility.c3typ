@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a facility in a potential hierarchy (denormalized) of facilities
+ */
+@db(unique=['name'])
+@denorm(target='FacilityHierarchyDenorm')
+remix entity type Facility extends FixedAsset mixes AssetOnboardingMeta, AclEnabled, FacilityAccessManager, ExemptFromFacilityFilter {
+
+  /**
+   * The relations to the parent facilies of a given facility.
+   */
+  parentRelations: [FacilityHierarchicalRelation](to)
+
+  /**
+   * The relations to the children facilies of a given facility.
+   */
+  childRelations:  [FacilityHierarchicalRelation](from)
+
+  /**
+   * Field to track when this facility was last updated in the asset hierarchy
+   */
+  configurationLastUpdated: datetime
+
+  /**
+   * Gets the direct parent associated with this {@link Facility}.
+   */
+  parent: Facility calc exists(parentRelations) ? parentRelations[0].from : null
+
+  /**
+   * Removes an instance of a {@link Facility}
+   * @param deleteDescendents
+   *        If set to true, deletes all descendent {@link ReliabilityAsset}s of the {@link Facility}
+   *        If set to false, does not delete descendents of the {@link Facility}
+   */
+  removeFacilityFromHierarchy: member function(deleteDescendents: boolean = true) js-rhino
+
+  /**
+   * This field indicates whether the asset hierarchy setup has been completed for this facility.
+   */
+  isHierarchyComplete: boolean
+
+  /**
+   * This field indicates the current status of the asset hierarchy setup.
+   */
+  hierarchyStatus: string enum FacilityHierarchyStatus stored calc isHierarchyComplete ? FacilityHierarchyStatus.HIERARCHY_COMPLETE : FacilityHierarchyStatus.HIERARCHY_INCOMPLETE
+
+  /**
+   * This field is used by the UI to show the translated value of {@link hierarchyStatus}.
+   */
+  displayHierarchyStatus: string translate by hierarchyStatus
+
+  /**
+   * This method updates the hierarchy status of this facility.
+   * @param markAsComplete
+   *        Denotes if the hierarchy status shuold be marked as complete.
+   */
+  updateHierarchyStatus: member function(markAsComplete: boolean) js-rhino
+}

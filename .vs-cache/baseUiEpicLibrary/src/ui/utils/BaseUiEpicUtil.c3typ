@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is a type housing utility functions to be used by other epics.
+ */
+@typeScript
+type BaseUiEpicUtil {
+
+  /**
+   * This function helps to return a combined observable containing refresh actions
+   * of each dataSourceId that is passed, along with it's relevant data transforms.
+   * @param state 
+   *        current redux state
+   * @param dataSourceIds 
+   *        an array of data source ids for the components whose refresh actions need to be returned
+   *
+   * For example, if you want to refresh actions of EXAMPLE_GRID and EXAMPLE_TABPANEL, you would call this as
+   * getRefreshActions(state, [EXAMPLE_GRID_dataSpec_ds, EXAMPLE_TABPANEL_dataSpec_ds]),
+   * Note that, dataSources of GRID and TABPANEL have '_dataSpec_ds' suffix.
+   */
+  getRefreshActions: function(state: !UiSdlReduxState, dataSourceIds: [string]): !any ts-client
+
+  /**
+   * The function helps to make a `remove` ajax call on a given type.
+   * @param payload for the ajax call
+   *
+   * For example, payload to remove a given UploadedFileCollection type with a given id would be:
+   * ```
+   * payload: {
+   *  typeName: "UploadedFileCollection",
+   *  enitityId: 'UP001'
+   * }
+   * ```
+   */
+  removeEntityUtil: function(payload: !any): !any ts-client
+
+   /**
+   * The function helps to make a `merge` ajax call on a given type with given mergeSpec.
+   * @param payload for the ajax call
+   *
+   * For example, payload to merge a given UploadedFileCollection with `userDismissed` as `true` would be:
+   * ```
+   * payload: {
+   *  typeName: "UploadedFileCollection",
+   *  mergeSpec: {
+   *    this: {
+   *      id: entityId,
+   *      userDismissed: true,
+   *    },
+   *  }
+   * }
+   * ```
+   */
+  mergeEntityUtil: function(payload: !any): !any ts-client
+}

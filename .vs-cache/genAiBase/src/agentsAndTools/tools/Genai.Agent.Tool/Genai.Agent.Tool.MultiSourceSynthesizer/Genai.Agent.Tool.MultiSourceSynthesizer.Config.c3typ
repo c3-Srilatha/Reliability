@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config for {@link Genai.Agent.Tool.MultiSourceSynthesizer}
+ */
+type Genai.Agent.Tool.MultiSourceSynthesizer.Config mixes DefaultInstance, Identified, Config, Genai.Agent.Tool.ConfigBase, Genai.Agent.Tool.FunctionCalling.Config {
+  /**
+   * The name of the {@link Genai.Agent.Toolkit} this tool has access to.
+   * If you want to run multiple tools present in QueryOrchestrator's toolkit, those tools should be present in this toolkit as well.
+   * IMPORTANT: If selected tools from `Genai.Query#toolsOverride` are not present in this toolkit, an error will be thrown.
+   *
+   */
+  toolkitName: !string
+
+  /**
+   * By default, the synthesizer will get the data sources/information from all of its available tools and use only that data
+   * to get an answer from the LLM. If `useSourceAnswers` is true, then all of the synthesizer's tools will independently
+   * attempt to answer the user's question and the synthesizer will use only the answers and rationales (and not the data that
+   * produced them) from all of the tools to get an answer.
+   */
+  useSourceAnswers: boolean
+
+  /**
+   * By default, the synthesizer will get the data sources/information from all of its available tools and use that data to get the synthesized answer.
+   * If set to true, the synthesizer will `run` each tool so that each can also provide its own answer. The synthesizer's answer will still be composed from the raw data retrieved and not the sub-tools answers.
+   */
+  produceSubtoolAnswers: boolean
+
+  /**
+   * By default, the synthesizer will iterate through either the subtool runs or the retrieve data runs for available tools in sequence.
+   * If set to true, the synthesizer will either run subtools or retrieve data in parallel,
+   * using threading found in {@link Genai.PyUtil#runLambdaTasksInParallel}
+   */
+  useParallelization: boolean
+
+  /**
+   * By default, the synthesizer will include all of its tools' outputs when generating the final answer.
+   * If `sourceFilteringPrompt` is provided, then the synthesizer will use an llm to decide whether each of its tools'
+   * outputs is potentially relevant to the user's question and only include those which are when generating the final answer.
+   */
+  sourceFilteringPrompt: Genai.Prompt
+
+  /**
+   * The LLM model used to answer the question. Must correspond to a {@link Genai.UnstructuredQuery.Engine.ModelConfig}.
+   */
+  llmModelName: string = "azureGpt4"
+
+  /**
+   * The template prompt used for generating the LLM-based answer
+   */
+  answerPrompt: !Genai.Prompt
+
+  /**
+   * The template prompt used for describing the user query
+   */
+  queryDescriptionPrompt: !Genai.Prompt
+
+  inst: ~ js
+}

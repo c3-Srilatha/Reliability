@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type AzureGenericChildResource<T: AzureGenericResource> mixes AzureGenericResource {
+
+  RESOURCE_NAME_DELIMITER: const string = '/'
+
+  /**
+   * The parent resource that this child belongs to. Use #safeParent to retrieve this value.
+   */
+  parent: private !T
+
+  /**
+   * The parent resource that this child belongs to.
+   */
+  safeParent: member function(): T
+
+  /**
+   * The type of the parent.
+   */
+  parentType: function(): !Type
+
+  /**
+   * The name of the parent resource.
+   */
+  parentResourceName: member function(): !string
+
+  /**
+   * Parses the #resourceName in the following format: "<childName>/<parentResourceName>" into a
+   * pair where:
+   * fst: child name
+   * snd: parent name
+   */
+  parseResourceName: private inline function(resourceName: !string): !Pair<string, string>
+
+  /**
+   * Constructs the #resourceName in the following format: "<childName>/<parentResourceName>"
+   *
+   * @param childName
+   *           Name of the child resource
+   * @param parentName
+   *           Name of the parent resource
+   * @return the #resourceName in the format: "<childName>/<parentName>"
+   */
+  makeResourceName: private function(childName: !string, parentName: !string): !string
+
+  /**
+   * Constructs the unique parent resource name from the Azure native object.
+   *
+   * @param impl
+   *        The Azure native resource object on which to perform the conversion.
+   */
+  parentResourceNameFromImpl: private function(impl: @java(class="java.lang.Object") native): !string
+
+  /**
+   * Represents the uniquely identifiable child resource in the format: <childName>/<parentName>
+   */
+  resourceName: ~
+
+  generateResourceName: ~
+  toImpls:              ~
+  toImpl:               ~
+  fromImpl:             ~
+  upsertResource:       ~
+  getResource:          ~
+  destroyResource:      ~
+  listResources:        ~
+}

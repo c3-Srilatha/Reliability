@@ -1,0 +1,76 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Annotation used to specify constraints on a field or function.
+ *
+ * Some of these are explicitly specified using the constraint annotation and some are implicitly created from DSL
+ * syntax.  For example, the exclamation point in a field declaration maps to `@constraint(required=true)`.
+ */
+@annotation(appliesTo=['type', 'field', 'value-type', 'function', 'param'])
+type Ann.Constraint mixes Annotation {
+
+  @annotation(appliesTo=['value-type'])
+  @beta
+  unique: [string]
+
+  @deprecated(finalVersion='8.4')
+  category: string
+
+  @deprecated(finalVersion='8.4')
+  filter: [string]
+
+  @deprecated(finalVersion='8.4')
+  description: string
+
+  /**
+   * If provided this condition expression will be evaluated for a given instance and if result is not `true` then
+   * instance will be deemed invalid.
+   *
+   * `@constraint(condition)` annotation can be applied to a type, a field, a parameter, or a value type. If it is specified
+   * on a field then expression has to contain reference to this field or to `$` which is equivalent.
+   * - when the constraint is applied to a type, the expression scope is the instance of the type
+   * - when applied to a field, the expression scope is the instance of the type and specific value of the field is bound
+   *    to $ variable
+   * - when applied to a parameter, the expression scope is action arguments and specific value of the parameter is bound
+   *    to $ variable
+   * - when applied to a value type, $ is a value and scope is depending if parent is a field or a method
+   *
+   * example usage:
+   * - foo: map<@constraint(condition='"A" <= $ && $ <= "Z"]') string, @constraint(condition='$ > 42') int>
+   * - bar: positive: constraint(condition='$ > 0') int
+   * - baz: function(increment: @constraint(condition='$ > 0') int): int
+   *
+   * #message could be used to provide custom error message.
+   */
+  @annotation(appliesTo=['field', 'type', 'value-type', 'param'])
+  condition: string
+
+  /**
+   * Custom error message template for #condition constraint violation. See {@link Template} for more information
+   */
+  message: string
+
+  readOnly:   boolean
+  createOnly: boolean
+  writeOnce:  boolean
+
+  /**
+   * If defined, this string field is limited to the specified length.
+   */
+  length: int
+
+  /**
+   * The field or function parameter must have a value to be valid, specified using the exclamation point syntax:
+   * ```type
+   *   where: !Location
+   * ```
+   */
+  @deprecated(finalVersion='7')
+  required: boolean
+}

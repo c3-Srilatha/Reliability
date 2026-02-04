@@ -1,0 +1,151 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AWS Elastic MapReduce service proxy.
+ */
+@cloud(hasResourceArn=false,
+       hasResourceId=true,
+       hasResourceName=false,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='emr')
+type AwsEmr mixes AwsResource, AwsVpcMember, AwsSubnetMember, AwsKeyPairMember, AwsIamRoleMember, AwsIamInstanceProfileMember, AwsSecurityGroupsMemberMaster, AwsSecurityGroupsMemberSlave, AwsSecurityGroupMemberService, DefaultInstance {
+
+  /**
+   * False by default. If true, the cluster automatically terminated after finishing jobs;
+   * otherwise, the cluster would keep running
+   */
+  autoTerminate: boolean
+
+  /**
+   * False by default. If true, the cluster automatically terminated after finishing jobs;
+   * otherwise, the cluster would keep running
+   */
+  terminationProtection: boolean
+
+  /**
+   * Software release label, such as emr-5.x.x
+   */
+  release: string
+
+  /**
+   * Aws Emr out of box application softwares such as Ganglia, Spark, Hive, and so on. If you do not specify anything here, it will
+   * install Ganglia, Spark, Hadoop, and Zeppelin by default.
+   */
+  applications: [string]
+
+  /**
+   * Application softwares developed by C3, such as exMachina
+   */
+  c3Applications: [string]
+
+  /**
+   * Address to store logging
+   */
+  logging: string
+
+  /**
+   * True by default. If true, all users can see this Emr cluster; otherwise, only the creator can see this Emr cluster.
+   */
+  visibleToAllUsers: boolean
+
+  /**
+   * False by default. if set true, debugging is enabled for steps; otherwise, debugging is disabled for Steps
+   */
+  debugging: boolean = false
+
+  /**
+   * Master, Core, and Task machine types and counts
+   */
+  instanceGroups: ![AwsEmrInstanceGroup]
+
+  /**
+   * Actions for bootstrap
+   */
+  bootstraps: [AwsEmrBootstrap]
+
+  /**
+   * Steps to be executed in the Emr cluster
+   */
+  steps: [AwsEmrStep]
+
+  /**
+   * State of the Emr cluster.
+   */
+  clusterState: string enum AwsEmrClusterState
+
+  /**
+   * The cluster state.
+   */
+  state: string
+
+  /**
+   * Availability zone of the Emr cluster. Note that Emr cluster can only belong to one availability zone
+   */
+  availabilityZone: string
+
+  /**
+   * Private field record the requested InstanceGroup.
+   */
+  requestedInstanceGroups: private [AwsEmrInstanceGroup]
+
+  /**
+   * Private field record the requested Steps.
+   */
+  requestedSteps: private [AwsEmrStep]
+
+  /**
+   * Upsert Elbs for the Emr Cluster
+   */
+  @deprecated(details='use upsertElb instead')
+  upsertElbs: member function(): [string]
+
+  /**
+   * Upsert Urls for the Emr Cluster
+   */
+  @deprecated(details='use upsertUrl instead')
+  upsertUrls: member function(): [string]
+
+  /**
+   * Upsert Elb for the Emr Cluster
+   */
+  upsertElb: member function(spec: EmrEndpointSpec): string
+
+  /**
+   * Upsert Url for the Emr Cluster
+   */
+  upsertUrl: member function(spec: EmrEndpointSpec): string
+
+  /**
+   * Start a Emr Cluster with Ganglia, Zeppelin, Spark, and Hadoop installed
+   */
+  start: function()
+
+  /**
+   * Gives the instance of AwsEmr to use for the given service type.
+   *
+   * @param serviceName
+   *          the name of the {@link ExternalCloudService} type (e.g. exmac for ExMachina).
+   * @param autoIncrementSeq
+   *          should auto increment the seq on the id.
+   * @return appropriate instance of AwsEmr to use.
+   *          e.g. AwsEmr.fromServiceName("exmac") returns an instance of AwsEmr with id "dev-ml-emr-exmac-01"
+   */
+  fromServiceName: function(serviceName: !string, autoIncrementSeq: boolean): !AwsEmr
+
+  /**
+   * Gives the domain of the current cluster.
+   */
+  clusterDomain: function(): !string
+
+  /**
+   * Compares current cluster state to provided value.
+   */
+  isInEmrState: member function(state: !?string enum AwsEmrClusterState): boolean
+}

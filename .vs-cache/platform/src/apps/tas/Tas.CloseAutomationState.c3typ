@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Stored information about the last run of the Jira Ticket Closing Automation for the next run to use.
+ */
+@db(versionHistory=true)
+entity type Tas.CloseAutomationState mixes Identified {
+
+  /**
+   * The name of the branch, such as "develop", "release", or "master"
+   */
+  id: ~
+
+  /**
+   * The SHA of the last commit looked at by the automation.
+   */
+  lastCommit: !string
+
+  /**
+   * The timestamp of the last commit looked at. NOT the timestamp of the last run of the automation.
+   * The next run of the automation will look at commits after this timestamp.
+   */
+  timeOfLastCommit: !datetime
+
+  /**
+   * Information about the last run of the automation.
+   */
+  lastRun: JobHistory
+}

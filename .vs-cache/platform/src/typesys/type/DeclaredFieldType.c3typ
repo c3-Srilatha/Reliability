@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents field type declaration metadata.
+ */
+type DeclaredFieldType mixes FieldTypeBase, NameableValueType, DslCommented {
+
+  /**
+   * Whether this field is inherited i.e. declared with `~` value type.
+   */
+  isInherited: member function(): boolean
+
+  /**
+   * Declared value type of this field type. Could be null or partial if this is an inherited field or method.
+   */
+  valueType: ~
+
+  /**
+   * DeclaredFieldType.toString will build a simplified DSL type declaration string. This will not include any
+   * comments and the line will not be wrapped.
+   *
+   * @see #fromString
+   */
+  toString: ~
+
+  /**
+   * DeclaredFieldType.toString will build a DSL type declaration string. The spec allows control over formatting
+   * options.
+   *
+   * @see #fromString
+   */
+  toString: member function(spec: !DslPrintSpec): !string
+}

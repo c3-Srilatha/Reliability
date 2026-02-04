@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type exposing the relevant methods to help with the decision of the optimal strategy for fetching the {@link Feature.Store.Block}s.
+ */
+private type FeatureEvaluatable.Bin.Strategy.Candidate mixes Mutable {
+
+  /**
+   * Binning Strategy associated with the blocks
+   */
+  strategy: !FeatureEvaluatable.Bin.Strategy
+
+  /**
+   * A set of subject ids being queried and to find optimal binning strategy for
+   */
+  subjectIds: !set<string>
+
+  /**
+   * subject to bin mapping obtained after fetching the bins for a specific strategy
+   * @see FeatureEvaluatable.Bin.Strategy#bins
+   */
+  subjectBinMap: map<string, int>
+
+  /**
+   * Total number of selected blocks of blocks satisfying the query.
+   */
+  blocks: int
+
+  /**
+   * Total "inMemory" size of the selected blocks.
+   */
+  inMemorySize: int
+
+  /**
+   * Compute bins for the {@link #subjectIds} and update {@link #subjectBinMap} with that information
+   */
+  computeBins: member function(): !FeatureEvaluatable.Bin.Strategy.Candidate
+
+  /**
+   * Retrieve {@link Feature.Store.Block} metadata to decide the most optimal candidate.
+   */
+  fetchBlockMeta: member function(blocksBaseFilter: !Filter): !mixing FeatureEvaluatable.Bin.Strategy.Candidate
+
+  /**
+   * @return an array of {@link FeatureEvaluatable.Bin}s from the current strategy candidate
+   */
+  toBins: member function(): ![FeatureEvaluatable.Bin]
+
+  /**
+   * @return the optimal candidate from the input using the above properties like {@link #totalBlocks}, {@link #totalMemSize}.
+   */
+  optimal: function(candidates: ![mixing FeatureEvaluatable.Bin.Strategy.Candidate])
+             : !mixing FeatureEvaluatable.Bin.Strategy.Candidate
+}

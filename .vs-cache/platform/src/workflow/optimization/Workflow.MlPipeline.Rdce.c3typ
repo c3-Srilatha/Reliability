@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The {@link Workflow.MlPipeline.Rdce} optimization eliminates every pair of redundant {@link`Data} conversions in an
+ * {@link MlPipeline} workflow. Specifically, this optimization replaces every pair of
+ * {@link MlAtomicPipe#convertNativeToPipeOutputs} and {@link MlAtomicPipe#convertPipeInputsToNative} actions with a
+ * single {@link MlAtomicPipe#convertNativeToNative} action.
+ * For example, if we have the following workflow:
+ * ```
+ * beforeDoAfterProcess ---------- convertNativeToPipeOutputs \
+ *                                                             \
+ *                                                              --- convertPipeInputsToNative --- beforeAndDoTrain
+ *                                                             /
+ * beforeDoAfterProcess ---------- convertNativeToPipeOutputs /
+ * ```
+ * {@link Workflow.MlPipeline.Rdce#optimize} will produce the following workflow:
+ * ```
+ * beforeDoAfterProcess \
+ *                       \
+ *                        --- convertNativeToNative --- beforeAndDoTrain
+ *                       /
+ * beforeDoAfterProcess /
+ * ```
+ * Currently, {@link Workflow.MlPipeline.Rdce} will not optimize a pair of conversions if the following conditions are present:
+ * - The {@link MlAtomicPipe#convertPipeInputsToNative} action has a `x` or `y` input port with an incoming edge
+ *   from a vertex that is not a {@link Workflow.Action} or is not a {@link MlAtomicPipe#convertNativeToPipeOutputs}
+ *   action.
+ */
+type Workflow.MlPipeline.Rdce mixes Workflow.Optimization {
+
+  optimize: ~ py
+}

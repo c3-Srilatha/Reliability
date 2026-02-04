@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link Spec} to orchestrate a model monitoring Workflow on {@link ReliabilityRiskMlModel}.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+type ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelMonitoring mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  name: ~ = 'ReliabilityRisk_ModelMonitoring'
+
+  /**
+   * Which {@link ReliabilityRiskMlModel}s to monitor. If specified, it will take precedence over
+   * {@link #modelFilter} or the {@link #assetFilter} + {@link #statusLabels} combination.
+   */
+  models: [ReliabilityRiskMlModel]
+
+  /**
+   * The {@link MlModel.Evaluation.Spec} that should be used for model evaluation.
+   */
+  evaluationSpec: MlModel.Evaluation.Spec
+
+  /**
+   * Specify a filter for which {@link ReliabilityRiskMlModel}s to monitor. If specified, it will take precedence over
+   * the {@link #assetFilter} + {@link #statusLabels} combination
+   */
+  modelFilter: string serialized Filter
+
+  /**
+   * Use this field along with the {@link #statusLabels} field do directly define the {@link ReliabilityAsset}s whose models
+   * should be monitored, as well as the deployment status of the models that should be monitored for each asset. By default,
+   * the default combination will monitor the `CHAMPION` models for the assets that have their `sensorRelations` field populated.
+   */
+  assetFilter: string = 'exists(sensorRelations)'
+
+  /**
+   * Specify a filter on the deployment status of the {@link ReliabilityRiskMlModel}s that should be monitored, for the assets
+   * that correspond to the provided {@link #assetFilter}.
+   */
+  statusLabels: [MlModel.Route.Status.Label] = [MlModel.Route.Status.Label.CHAMPION]
+
+  /**
+   * The {@link ReliabilityRiskMlModel.MonitoringScoreSpec} that should be used for model monitoring.
+   */
+  spec: ReliabilityRiskMlModel.MonitoringScoreSpec
+
+  createWorkflow: ~ py
+
+  /**
+   * Starts a model classification Workflow.
+   */
+  startModelMonitoringWorkflow: member function(): !WorkflowExecutorRun py
+}

@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Actions (type methods) implemented in JavaScript run as an external Node.js process. This allows specification
+ * of packages available through NPM so as to easily use third-party libraries in action implementations.
+ *
+ * A Node.js app built with these dependencies:
+ *
+ * ```json
+ * {
+ *   "name": "example",
+ *   "version": "1.0.0",
+ *   "description": "an example app",
+ *   "main": "index.js",
+ *   "dependencies": {
+ *     "async": "^2.1.4",
+ *     "request": "^2.79.0"
+ *   }
+ * }
+ * ```
+ *
+ * Can be implemented by associating the source code (contents of `index.js`) with the type action function.
+ * For example, if the type name "Example" and the function name was "example", the code in `Example.js`
+ * must implement a function named "example" that implements the behavior of the action function.
+ *
+ * Note that multiple functions on the type may be implemented by Node.js, each as a separate JavaScript
+ * function in the same type-specific file (`Example.js`).
+ *
+ * Then the NPM dependencies are bundled into a named set and defined on the containing C3 metadata package as
+ * a distinct "runtime". For example, the NPM dependencies above might be used to define a new runtime
+ * in metadata dir, e.g. metadata/ImplLanguage.Runtime/js-node-example.json:
+ *
+ * ```json
+ * {
+ *   "id": "js-node-example",
+ *   "name": "js-node-example",
+ *   "language": "JavaScript",
+ *   "runtime": "Node.js",
+ *   "modules": {
+ *     "async": "^2.1.4",
+ *     "request": "^2.79.0"
+ *   }
+ * }
+ * ```
+ *
+ * By default, the "js-node.json" environment is used, which must also be defined by the C3 metadata package.
+ * The runtime can be associated with the explicit syntax:
+ *
+ * ```c3typ
+ *   example: function(arg: string): string js node-example
+ * ```
+ *
+ * @see https://en.wikipedia.org/wiki/Node.js
+ * @see https://en.wikipedia.org/wiki/Npm_(software)
+ */
+type Ann.Nodejs mixes Ann.ImplLanguage, Annotation {
+
+  /**
+   * Whether the function should be called in an asynchronous manner.
+   * If true, an additional final argument argument is passed which is a function
+   * of one argument, to which the return value is passed.
+   *
+   * ```c3typ
+   *   @nodejs(async=true)
+   *   calculate: function(spec: CalculationSpec): CalculationResult
+   * ```
+   *
+   * In JavaScript the declared arguments will be specified as usual,
+   * plus a final function argument (often called "next"):
+   *
+   * ```js
+   * function calculate(spec, next) {
+   *   // some asynchronous expression that will call your function at the end
+   *   complexCalculation(spec.a, spec.b, function(err, result) {
+   *     if (err)
+   *       throw err;
+   *     next(result);
+   *   });
+   * }
+   * ```
+   *
+   * Otherwise, the function should return its result as normal.
+   */
+  async: boolean
+
+  /**
+   * Whether the C3 type system is required.  Off by default, this can be enabled if
+   * the C3 type system is needed.  This will also result in loading the types for the
+   * current env and app.
+   *
+   * If not enabled, the local C3 type system is not available and no calls may
+   * be made back to the server.
+   */
+  typeSystem: boolean
+
+  /**
+   * True if this method can support custom runtimes, other than the one it claims. This is used for special cases
+   * such as tester endpoints where the runtime isn't known at authoring time.
+   */
+  customRuntime: private boolean
+}

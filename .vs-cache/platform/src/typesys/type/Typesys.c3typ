@@ -1,0 +1,169 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base marker type for all type-system implementation and related types.
+ */
+abstract final type Typesys mixes WithType {
+
+  /**
+   * The metadata path where the parent type's declaration file is located:
+   * Format: /<package>/[gen|test]/src/<pkg-sub-path>/<name>.c3typ
+   * E.g. for the given package folder structure:
+   * ```
+   * myRepo
+   *  |
+   *  -  myPkg
+   *      |
+   *      -  src
+   *          |
+   *          - folder1
+   *              |
+   *              - folder2
+   *                  |
+   *                  - SomeType1.c3typ
+   *          - SomeType3.c3typ
+   *      -  test
+   *          |
+   *           - src
+   *              |
+   *              - SomeType2.c3typ
+   *      -  gen
+   *          |
+   *           - src
+   *              |
+   *              - SomeType4.c3typ
+   * ```
+   * For SomeType1.c3typ will return -> /myPkg/src/folder1/folder2/SomeType1.c3typ
+   * For SomeType3.c3typ will return -> /myPkg/src/SomeType3.c3typ
+   * For SomeType2.c3typ will return -> /myPkg/test/src/SomeType2.c3typ
+   * For SomeType4.c3typ will return -> /myPkg/gen/src/SomeType4.c3typ
+   *
+   * @see #package
+   * @see #pkgSubPath
+   */
+  pkgPath: property(): !Pkg.Path
+
+  /**
+   * The name of the package where this type was declared.
+   *
+   * For example, if package "app", depends on "industry", which depends on "foundation", provisioning app will bring
+   * in the types in the industry and foundation packages as well. This means that the `package` of the Location
+   * type will be foundation, even if it gets remixed by industry (or even app).
+   *
+   * @see #pkg
+   * @see #pkgPath
+   * @see #pkgSubPath
+   */
+  package: cached property(): !string
+
+  /**
+   * The version of the package where this type was declared.
+   */
+  packageVersionMajorMinor: cached property(): !SemanticVersion.MajorMinor
+
+  /**
+   * Dot (".") separated relative path of the folder where this type's declaration file is located in the package
+   * E.g. for the given structure
+   * ```
+   * myRepo
+   *  |
+   *  -  myPkg
+   *      |
+   *      -  src
+   *          |
+   *          - folder1
+   *              |
+   *              - folder2
+   *                  |
+   *                  - SomeType1.c3typ
+   *          - SomeType3.c3typ
+   *      -  test
+   *          |
+   *           - src
+   *              |
+   *              - SomeType2.c3typ
+   *      -  gen
+   *          |
+   *           - src
+   *              |
+   *              - SomeType4.c3typ
+   * ```
+   * For SomeType1.c3typ will return -> folder1/folder2
+   * For SomeType3.c3typ will return -> "" (empty string)
+   * For SomeType3.c3typ will return -> "" (empty string)
+   * For SomeType4.c3typ will return -> "" (empty string)
+   *
+   * @see #pkgPath
+   * @see #package
+   */
+  pkgSubPath: cached property(): !string
+
+  /**
+   * Source file Pkg.Path a C3 Type declaration [.c3typ].
+   */
+  @dsl(suppress=true)
+  declaredPkgPath: private string
+
+  /**
+   * Pkg where this type was declared, note could be different then #pkg.
+   */
+  declaredPkg: property(): !Pkg
+
+  @dsl(suppress=true)
+  @deprecated(finalVersion='8.5', description='Use pkgPath instead')
+  metadataPath: property(): string
+
+  /**
+   * Source line number in a C3 Type declaration [.c3typ] file starting with 1 where this metadata element is declared.
+   */
+  @dsl(suppress=true)
+  declaredSrcLine: private int32
+
+  /**
+   * Source character position in a line in a C3 Type declaration [.c3typ] file starting with 1 where this metadata
+   * element is declared.
+   */
+  @dsl(suppress=true)
+  declaredSrcCharInLine: private int32
+
+  /**
+   * C3 application package this Type System element _belongs_ to; note that this maybe different from the package
+   * where this type-system element was declared.
+   *
+   * @see #package
+   */
+  @ser(hidden=true)
+  @constraint(readOnly=true)
+  pkg: !Pkg
+
+  /**
+   * SDK json representing instance of this type
+   */
+  @ser(hidden=true)
+  json: private @java(class='c3.platform.typesys.type.Typesys.Json') native
+
+  /**
+   * Convert the internal object representation of this instance to SdkJson for an efficient loading of type at
+   * execution time.
+   */
+  toTypesysJson: private member function(): !Typesys.Json
+
+  /**
+   * @return package for built-in Type System; this could be different from #pkg() when package is loaded from a disk
+   *         for code gen
+   */
+  typesys: private member function(): !Pkg
+
+  /**
+   * @return an instance with the #declaredSrcLine and #declaredSrcCharInLine fields unset.
+   */
+  withoutDeclaredSrcPos: private member function(recursive: boolean): !mixing Typesys
+
+  replaceType: abstract ~
+}

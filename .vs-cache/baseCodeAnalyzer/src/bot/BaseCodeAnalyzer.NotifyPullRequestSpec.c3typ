@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec to be passed into the {@link BaseCodeAnalyzer#notifyPullRequest} function.
+ */
+type BaseCodeAnalyzer.NotifyPullRequestSpec mixes BaseCodeAnalyzer.Metadata {
+
+  /**
+   * The array of code analysis results computed through {@link BaseCodeAnalyzer#analyzeCodeChanges}.
+   * These results are processed in the {@link BaseCodeAnalyzer#notifyPullRequest} function and the subset
+   * of code analysis comments applicable to the code changes made in the pull request are posted.
+   */
+  results: [BaseCodeAnalysis.Result]
+
+  /**
+   * The processed results for the base branch. These results are used get the delta in metric values between
+   * the base branch and commit for which code analysis is being run.
+   */
+  baseBranchResults: [BaseCodeAnalysis.Result.Processed]
+
+  /**
+   * By default, the code analyzer posts a maximum of 10 inline comments on a pull request.
+   * The maximum comment count can be configured to be any number greater than 0.
+   */
+  maxCodeAnalyzerCommentCount: int = 10
+
+  /**
+   * Boolean to indicate whether the `reportResultsToCodeAnalytics` configuration is enabled.
+   * If enabled, internal error messages will not be surfaced in the summary message since these will tracked
+   * automatically.
+   */
+  isReportResultsEnabled: boolean = false
+}

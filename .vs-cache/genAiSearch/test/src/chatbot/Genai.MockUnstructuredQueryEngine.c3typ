@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This fake chat bot can be plugged into the UI in order to increase the
+ * speed of the UI development so that the developer does not have to wait
+ * for Engine restarts when syncing files. Mocks the backend with dummy data
+ * creation.
+ */
+type Genai.MockUnstructuredQueryEngine mixes Genai.UnstructuredQuery.Engine {
+  inst: ~ js
+  onEngineThreadStart: ~ js
+  initialize: ~ js
+  query: ~ js-rhino
+  chatQuery: ~ js-rhino
+
+  /**
+   * Helper function to populate mocked {@link Genai.SourceFile}s
+   */
+  upsertSourceFiles: function(sourceFileNames: [string]): [Genai.SourceFile] js-rhino
+}

@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An interface for creating a {@link Workflow} that starts the {@link RefreshCalcFieldsBatchJob} to refresh
+ * stored calculated fields on the types specified in {@link #specs}.
+ */
+@beta
+type ReliabilityOrchestrator.ReliabilityRisk.Spec.RefreshCalcFields mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  /**
+   * This name is used to uniquely identify the workflow for refreshing calculated fields in the system.
+   */
+  name: ~ = 'ReliabilityRisk_RefreshCalcFields'
+
+  /**
+   * The list of {@link RefreshCalcFieldsSpec}s that specify the types to refresh stored calculated fields on.
+   */
+  specs: ![RefreshCalcFieldsSpec] = [
+    {'objTypeRef': 'Facility'},
+    {'objTypeRef': 'FacilityHierarchicalRelation'},
+    {'objTypeRef': 'ReliabilityAsset'},
+    {'objTypeRef': 'ReliabilityAssetHierarchicalRelation'},
+    {'objTypeRef': 'ReliabilityAssetSensorRelation'},
+    {'objTypeRef': 'Sensor'},
+    {'objTypeRef': 'PointPhysicalMeasurementSeries'},
+    {'objTypeRef': 'AssetClass'},
+    {'objTypeRef': 'ExpectedSensor'},
+    {'objTypeRef': 'FailureModeLibrary'},
+    {'objTypeRef': 'FailureMode'},
+    {'objTypeRef': 'FailureModeLineItem'}
+  ]
+
+  /**
+   * Validation function to ensure that all required conditions are met before the refresh process begins.
+   */
+  validate: ~ py
+
+  /**
+   * Pre-validation function to perform any necessary checks or transformations before the main validation
+   * process starts.
+   */
+  preValidate: ~ py
+
+  /**
+   * Post-validation function to carry out any actions or logging after the validation process has been completed.
+   */
+  postValidate: ~ py
+
+  /**
+   * The main function to create a {@link Workflow} for the refresh operation. This will trigger the
+   * {@link RefreshCalcFieldsBatchJob}, which is responsible for refreshing the calculated fields on
+   * the specified object types.
+   */
+  createWorkflow: ~ py
+}

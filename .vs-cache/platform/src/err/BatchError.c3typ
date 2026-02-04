@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error with multiple messages or multiple causes.
+ */
+inline type BatchError mixes Error {
+
+  /**
+   * Source of errors
+   */
+  errors: ![Error]
+
+  /**
+   * @return new instances from provided errors
+   */
+  fromErrors: function(errors: ![Error]): !mixing BatchError
+
+  /**
+   * Aggregates the provided Error(s) to a textual form.
+   * These Error(s) are usually underlying Error(s) that conceptually belong to a BatchError. The Error(s) are grouped
+   * by the underlying root Java cause that led to them (e.g., EOFException, NullPointerException, etc.). Specifically,
+   * the fully qualified class name, e.g., "java.lang.EOFException" is used to identify the different causes. If, for any
+   * reason, the root Java cause cannot be identified, the Error's message is used as a key for the grouping. For each
+   * group with known cause, the stacktrace of the 1st error is reported as a representative stacktrace for that group.
+   *
+   * Example: Assume that the following Error(s) are given:
+   *    - 2 Error(s) with root Java cause EOFException.
+   *    - 3 Error(s) with root Java cause NullPointerException.
+   *    - 1 Error with unknown root Java cause but with message "Error 3 message"
+   * The above Error(s) will be aggregated as 3 groups: one for EOFException, one for NullPointerException, and one for
+   * message "Error 3 message".
+   *
+   * @param errors
+   *    The collection of errors to format.
+   * @param includeStacktraces
+   *    Whether to include the Java stacktraces of provided errors.
+   * @return aggregated error messages (and optionally stacktraces) in textual form
+   */
+  formatErrors: private function(errors: ![Error], includeStacktraces: boolean): string
+
+  /**
+   * @return True if ANY of the errors is of the specified type.
+   */
+  isAnyError: member function(errorType: !Type): boolean
+
+  /**
+   * @return True if ALL of the errors are of the specified type
+   */
+  isAllError: member function(errorType: !Type): boolean
+
+  toJavaException:        ~
+  isDbRetryable:          ~
+  isDbRetryableForUpsert: ~
+  isDbRetryableForMerge:  ~
+  isVersionConflict:      ~
+}

@@ -1,0 +1,114 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * A tool that invokes a specific C3 type method.
+ * Note that through the target method itself or either #invokeMethod or
+ * {@link Genai.Agent.Tool.C3Method.Config#invokeMethodOverrideLambda} an answer or user-update message is expected.
+ */
+type Genai.Agent.Tool.C3Method mixes Genai.Agent.Tool<Genai.Agent.Tool.C3Method.Config> {
+
+  run: ~ py-query_orchestrator
+
+  /**
+   * Given a method, return the metadata instance of the C3Method tool and its config.
+   *
+   * **NOTE**: If the method has more than one overload, then overload must be specified.
+   *
+   * @param typ
+   *           The type of the method
+   * @param methodName
+   *           The name of the method
+   * @param overload
+   *           The index of the overload to use (if the method has more than one overload)
+   * @param spec
+   *           The spec controlling other options for creating the tool
+   *
+   * @return a tuple of the tool instance and its corresponding config
+   */
+  fromMethodName: function(typ: !Type, methodName: !string, overload: int, spec: Genai.Agent.Tool.C3Method.Spec):
+                                                      !(Genai.Agent.Tool.C3Method, Genai.Agent.Tool.C3Method.Config) py
+
+
+  /**
+   * Given a {@link MethodType}, return the metadata instance of the C3Method tool and its config.
+   *
+   * @param methodTypeRef
+   *           Reference to the target methodType
+   * @param spec
+   *           The spec controlling other options for creating the tool
+   *
+   * @return a tuple of the tool instance and its corresponding config
+   */
+  fromMethodType: function(methodTypeRef: !MethodTypeRef, spec: Genai.Agent.Tool.C3Method.Spec):
+                                                      !(Genai.Agent.Tool.C3Method, Genai.Agent.Tool.C3Method.Config) py
+
+  /**
+   * Given a {@link MethodType}, return a prompt that has the method and parameter documentation and
+   * requires only the runtime-filled `query` parameter.
+   *
+   * **NOTE** The default prompt template (into which method and parameter documentation is inserted) is
+   *          `Genai.Prompt.forId("default_c3method_tool_generate_args_prompt")`
+   *
+   * @param methodTypeRef
+   *           Reference to the target methodType
+   *
+   * @return a prompt that has the method and parameter documentation
+   */
+  promptFromMethodType: private function(methodTypeRef: !MethodTypeRef): !Genai.Prompt py
+
+  /**
+   * Given the user's query and the in-progress result, generate the filled prompt that will be sent to the LLM to
+   * generate the arguments for the method call.
+   *
+   * The optional `config` parameter can be used for experimentation (to bypass retrieving the tool's config)
+   * and to improve performance in #run by passing the config directly instead of retrieving in each step
+   */
+  fillPrompt: private inline member function(searchQuery: !Genai.Query,
+                                             inProgressResult: !Genai.Query.Result,
+                                             config: Genai.Agent.Tool.C3Method.Config): !string py-query_orchestrator
+
+  /**
+   * Given the filled prompt, invoke the LLM and parse its output to generate the arguments for the method call.
+   *
+   */
+  generateArgs: private inline member function(prompt: !string, inProgressResult: !Genai.Query.Result,
+                                               config: Genai.Agent.Tool.C3Method.Config): !string py-query_orchestrator
+
+  /**
+   * Given the function arguments from methodArgsFromLlmResponse, invoke the method and return the result wrapped in a
+   * {@link Genai.Agent.Tool.Output} object.
+   */
+  invokeMethod: private inline member function(argsMap: !?map<string, any>, inProgressResult: !Genai.Query.Result,
+                                                   config: Genai.Agent.Tool.C3Method.Config): any py-query_orchestrator
+
+  /**
+   * Given the result of the method call, return the {@link Genai.Agent.Tool.Output} object.
+   */
+  toolOutputFromMethodResult: private inline member function(result: any, inProgressResult: !Genai.Query.Result,
+                                                             config: Genai.Agent.Tool.C3Method.Config):
+                                                                         !Genai.Agent.Tool.Output py-query_orchestrator
+
+  /**
+   * A reference to the {@link MethodType} corresponding to this C3Method tool.
+   */
+  methodType: !MethodTypeRef
+
+  /**
+   * A helper function to validate whether the given methodType is valid for the default implementation of this tool.
+   * In particular, this method checks that
+   *    1. all parameters are primitive types
+   *    2. the method and all parameters have documentation
+   *
+   * Exposed for testing purposes.
+   */
+  validateMethodType: private inline function(methodType: !MethodType) py
+}

@@ -1,0 +1,155 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec Type for {@link BaseCodeAnalysis.VersionDiff.Metric#scanTypeMeta}.
+ *
+ * All lambdas should return an array of {@link BaseCodeAnalysis.Metric.Message}s that
+ * will be grouped by Type into {@link BaseCodeAnalysis.Metric.Result}s. If any lambda
+ * isn't provided, no action will be taken for that kind of change.
+ */
+type BaseCodeAnalysis.VersionDiff.Metric.ScanTypeMetaSpec mixes Spec {
+
+  /**
+   * The code of the metric results are being generated for.
+   */
+  metricCode: !string enum BaseCodeAnalysis.Metric.Code
+
+  /**
+   * {@link Enum} Types are unique since their fields are always constant and don't
+   * have an explicit {@link ValueType}. Because of this, several metrics are irrelevant
+   * to {@link Enum} Types and can be skipped such as:
+   *
+   *   - {@link BaseCodeAnalysis.VersionDiff.Metric.SchemaChange}
+   *   - {@link BaseCodeAnalysis.VersionDiff.Metric.ValueTypeChange}
+   *   - {@link BaseCodeAnalysis.VersionDiff.Metric.ValueModifierChange}
+   *
+   * If true, exclude all {@link Enum} Types and fields from the scan.
+   */
+  skipEnum: boolean = false
+
+  /**
+   * A lambda to be called for each [added](BaseCodeAnalysis.VersionDiff.TypeMetaChanges#added)
+   * Type with its current Type metadata.
+   */
+  addedTypeLambda: lambda(curTypeInfo: !BaseCodeAnalysis.TypeInfo): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each [removed](BaseCodeAnalysis.VersionDiff.TypeMetaChanges#removed)
+   * Type with its previous Type metadata.
+   */
+  removedTypeLambda: lambda(prevTypeInfo: !BaseCodeAnalysis.TypeInfo): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for all Types that were [touched](BaseCodeAnalysis.VersionDiff.TypeMetaChanges#touched)
+   * between the two versions. If a Type has been [renamed](BaseCodeAnalysis.VersionDiff.TypeMetaChanges#revised),
+   * [curTypeInfo](BaseCodeAnalysis.VersionDiff.CompareTypesSpec#curTypeInfo) will be correctly
+   * populated with the renamed Type and [typeRevisionDetails](BaseCodeAnalysis.VersionDiff.CompareTypesSpec#typeRevisionDetails)
+   * will be provided.
+   */
+  changedTypeLambda: lambda(compareTypesSpec: BaseCodeAnalysis.VersionDiff.CompareTypesSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each [added](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#added)
+   * field with its current field metadata and the Type it was added to.
+   */
+  addedFieldLambda: lambda(
+    curFieldMeta: !DeclaredFieldType,
+    curTypeInfo: !BaseCodeAnalysis.TypeInfo
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each [removed](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#removed)
+   * field with its previous field metadata and the Type it was removed from.
+   */
+  removedFieldLambda: lambda(
+    prevFieldMeta: !DeclaredFieldType,
+    prevTypeInfo: !BaseCodeAnalysis.TypeInfo
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for all fields that were neither [added](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#added)
+   * nor [removed](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#removed) between the two versions.
+   * If a field or the field's Type has been [renamed](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#revised),
+   * [curFieldMeta](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#curFieldMeta) and
+   * [curTypeInfo](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#curTypeInfo) will be correctly
+   * populated with the renamed field and [fieldRevisionDetails](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#fieldRevisionDetails)
+   * will be provided.
+   *
+   * If any of the rules from {@link BaseCodeAnalysis.VersionDiff.Metric#calculateResults} necessitate
+   * resolving [inherited fields](InheritedValueType) ahead of time, they will have already been resolved
+   * before being passed to this lambda. This means that if [curFieldMeta](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#curFieldMeta)
+   * or [prevFieldMeta](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#prevFieldMeta) are inherited,
+   * only parts that are explicitly part of that declaration should be compared.
+   */
+  changedFieldLambda: lambda(compareFieldsSpec: BaseCodeAnalysis.VersionDiff.CompareFieldsSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each [added](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#added)
+   * method with its current method metadata and the Type it was added to.
+   */
+  addedMethodLambda: lambda(
+    curMethodMeta: !DeclaredFieldType,
+    curTypeInfo: !BaseCodeAnalysis.TypeInfo
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each [removed](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#removed)
+   * method with its previous method metadata and the Type it was removed from.
+   */
+  removedMethodLambda: lambda(
+    prevMethodMeta: !DeclaredFieldType,
+    prevTypeInfo: !BaseCodeAnalysis.TypeInfo
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for all methods that were neither [added](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#added)
+   * nor [removed](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#removed) between the two versions.
+   * If a method or the method's Type has been [renamed](BaseCodeAnalysis.VersionDiff.TypeMetaChangesBase#revised),
+   * [curFieldMeta](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#curFieldMeta) and
+   * [curTypeInfo](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#curTypeInfo) will be correctly
+   * populated with the renamed method and [fieldRevisionDetails](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#fieldRevisionDetails)
+   * will be provided.
+   *
+   * Any analysis of individual {@link FunctionParam}s should be done in #addedParamLambda,
+   * #removedParamLambda, and #changedParamLambda. Only analysis of the overall function
+   * declaration and [return type](MethodType#returnType) should be done in this lambda.
+   *
+   * If any of the rules from {@link BaseCodeAnalysis.VersionDiff.Metric#calculateResults} necessitate
+   * resolving [inherited methods](InheritedValueType) ahead of time, they will have already been resolved
+   * before being passed to this lambda. This means that if [curFieldMeta](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#curFieldMeta)
+   * or [prevFieldMeta](BaseCodeAnalysis.VersionDiff.CompareFieldsSpec#prevFieldMeta) are inherited,
+   * only parts that are explicitly part of that declaration should be compared.
+   */
+  changedMethodLambda: lambda(compareMethodsSpec: BaseCodeAnalysis.VersionDiff.CompareFieldsSpec): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each added method parameter with its current Type metadata.
+   */
+  addedParamLambda: lambda(
+    curParamMeta: !FunctionParam,
+    curFieldMeta: !DeclaredFieldType,
+    curTypeInfo: !BaseCodeAnalysis.TypeInfo
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for each removed method parameter with its previous Type metadata.
+   */
+  removedParamLambda: lambda(
+    prevParamMeta: !FunctionParam,
+    prevFieldMeta: !DeclaredFieldType,
+    prevTypeInfo: !BaseCodeAnalysis.TypeInfo
+  ): [BaseCodeAnalysis.Metric.Message]
+
+  /**
+   * A lambda to be called for all method parameters that were neither added nor removed
+   * between the two versions.
+   */
+  changedParamLambda: lambda(compareParamsSpec: BaseCodeAnalysis.VersionDiff.CompareParamsSpec): [BaseCodeAnalysis.Metric.Message]
+}

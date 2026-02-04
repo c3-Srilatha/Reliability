@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Each time we check a condition event DFE, we record the last time so that we don't check
+ * too frequently.
+ */
+@db(unique=['dfeTypeId,start,end'])
+entity type EventDFELastEval schema name 'ANALCON_EVELEVAL' {
+
+  /**
+   * DFE type ID
+   */
+  dfeTypeId: !int
+
+  /**
+   * start of the time range
+   */
+  start: !datetime
+
+  /**
+   * end of the time range (exclusive)
+   */
+  end: !datetime
+
+  /**
+   * required last evaluation time
+   */
+  evalTime: !datetime
+
+  /**
+   * required number of evaluations total
+   */
+  evalCount: !int
+}

@@ -1,0 +1,86 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility type to set up the wind turbine gen AI demo.
+ */
+type Genai.TestSetupUtil {
+  /**
+   * Single function to set up the demo.
+   */
+  run: function(): string js-client
+
+  /**
+   * Sets whitelisted data model to either 'readiness' or 'windturbine'.
+   */
+  setWhitelistedDataModel: private function(dataModelName: string, directory: string) js-rhino
+
+  /**
+   * Sets up the unstructured tool for the demo, setting up a {@link Genai.Retriever.Dense}.
+   * @param doNotCleanUp
+   *           Whether to avoid resetting unstructured configs before setup.
+   * @param doNotKillInterpreters
+   *           Whether to avoid killing Python interpreters after setup.
+   */
+  setupUnstructuredTool: function(doNotCleanUp: boolean, doNotKillInterpreters: boolean) js
+
+  /**
+   * Cleans up the unstructured tool configurations and data so that running #setupUnstructuredTool
+   * leaves the unstructured toon in a functional state.
+   * @param doNotKillInterpreters
+   *           Whether to avoid killing Python interpreters after cleanup.
+   */
+  cleanUnstructuredTool: function(doNotKillInterpreters: boolean) js
+
+  /**
+   * Sets up a {@link Genai.Retriever.Dense} retriever using a pre indexed index stored in indexZipUrl.
+   * @param indexZipUrl
+   *           The URL to the index zip file to use as index in the retriever created.
+   */
+  setupDenseRetriever: function(indexZipUrl: string): !Genai.Retriever.Dense js
+
+  /**
+   * Sets up the {@link Genai.SourceCollection} for the app.
+   */
+  setupSourceCollection: function(): !Genai.SourceCollection js
+
+  /**
+   * Sets up the {@link Genai.SourceFile}s for the app.
+   * @param filesFolderUrl
+   *           The URL to the folder containing the source files to be set up.
+   * @param passagesFolderUrl
+   *           The URL to the folder containing the passages to be set up. These files sould have been produced by a previous chunking process.
+   * @param sourceCollection
+   *           The source collection to which the source files should be added.
+   */
+  setupSourceFiles: function(filesFolderUrl: !string, passagesFolderUrl: !string, sourceCollection: !Genai.SourceCollection): ![Genai.SourceFile] js
+
+  /**
+   * Sets up the {@link Genai.Agent.Tool.EvalQuery} for the app with the whiteListedDataModel provided.
+   * @param dataModelName
+   *           The data model name to use for the eval query tool. It should be stored under `resource/whitelistedDataModels` in a JSON format.
+   * @param misAppId
+   *           The id of the app hosting the MIS service to use for the eval query tool.
+   * @param doNotCleanup
+   *           Wheter the eval query tool should be cleaned up before setup.
+   * @param directory
+   *           the base directory from which to start for loading files.
+   * @param doNotKillInterpreters
+   *           Whether to avoid killing Python interpreters after setup.
+   */
+  setupEvalQueryTool: function(dataModelName: !string = 'windturbine', misAppId: string = 'gkev8genai-centralmis-service', doNotCleanup: boolean, directory: string, doNotKillInterpreters: boolean) js
+
+  /**
+   * Cleans up the {@link Genai.Agent.Tool.EvalQuery} configurations and data so that running #setupEvalQueryTool
+   * leaves the eval query tool in a functional state.
+   * @param doNotKillInterpreters
+   *           Whether to avoid killing Python interpreters after setup.
+   */
+  cleanEvalQueryTool: function(doNotKillInterpreters: boolean) js
+}

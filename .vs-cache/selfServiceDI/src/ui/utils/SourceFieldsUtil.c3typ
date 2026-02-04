@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility functions for fetching and managing source field types and metadata.
+ */
+@typeScript
+type SourceFieldsUtil {
+
+  /**
+   * Gets edit source meta based on data connector type (CDC flow).
+   * For SqlSourceSystem, use remote type meta cache; otherwise use local type meta cache.
+   *
+   * This function handles all standard operations:
+   * 1. Gets selected data connector from state
+   * 2. Determines data connector type
+   * 3. Returns appropriate edit source meta based on CDC flow
+   *
+   * @param state
+   *         The current redux state
+   * @param sourceName
+   *         The source type name
+   * @returns The edit source meta for the given source type
+   */
+  getEditSourceMetaForSourceCollection: function(state: !UiSdlReduxState, sourceName: string): any ts-client
+
+  /**
+   * Fetches fields from editSourceMeta including all mixin fields when sourceMeta doesn't exist in backend.
+   * This is a special case where the source exists only in editTypeMetaCache (not upserted yet).
+   * The API call fetchFieldsForTransformSourceOrTargetType (fetchFieldTypesForTypeName) doesn't work because the source isn't in Pkg.Store yet.
+   *
+   * This function efficiently collects all declaredFieldTypes from:
+   * 1. editSourceMeta's own declaredFieldTypes
+   * 2. All mixins listed in declaredMixinRefTypes (fetched from editTypeMetaCache)
+   *
+   * @param state
+   *         The current redux state
+   * @param editSourceMeta
+   *         The edit source meta from editTypeMetaCache
+   * @param sourceName
+   *         The source type name
+   * @returns Observable of source field types array
+   */
+  fetchFieldsFromEditSourceMetaWithMixins: function(state: !UiSdlReduxState,
+                                                    editSourceMeta: any,
+                                                    sourceName: string): any ts-client
+
+  /**
+   * Gets source fields observable, handling both normal and special cases.
+   *
+   * This function handles all standard operations:
+   * 1. Gets editSourceMeta using getEditSourceMetaForSourceCollection (CDC flow aware)
+   * 2. Gets sourceMeta from typeMetaCache
+   * 3. Handles special case: When sourceMeta doesn't exist in backend but editSourceMeta exists in state
+   *    (e.g., when creating a new sourceCollection), gets all fields including mixin fields.
+   * 4. Normal case: Fetches fields via API using the source type name.
+   *
+   * @param state
+   *         Current redux state
+   * @param source
+   *         Source type name/identifier
+   * @returns Observable of source field types array
+   */
+  getSourceFieldsObservable: function(state: !UiSdlReduxState, source: string): any ts-client
+}

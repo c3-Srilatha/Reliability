@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spark execution planner is used by Spark engine to determine result schema when retrieving data from
+ * C3 DB engine.
+ */
+@beta
+type Data.Spark.Planner {
+
+  /**
+   * Generates execution plan for distributed reading of feature set given by id
+   * @param id
+   *        Feature set id
+   * @param batchSize
+   *        Maximal number of subjects to be included into single read partition
+   */
+  readFeatureSetPlan: function(id: !string, batchSize: !int32): [Data.Spark.ReadFeatureSetPartition]
+
+  /**
+   * Returns schema for feature set with given id using Arrow schema json format.
+   */
+  readFeatureSetSchema: function(id: !string): string
+
+  /**
+   * Returns evaluate operation schema for given projections using Arrow schema json format.
+   */
+  evaluateResultSchema: function(typeName: !string, projection: !string): string
+
+  /**
+   * Returns fetch operation schema for given includes using Arrow schema json format.
+   */
+  fetchResultSchema: function(typeName: !string, include: !string): string
+}

@@ -1,0 +1,132 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enumeration of all known Azure regions.
+ */
+enum type AzureRegion {
+
+  /**
+   * Azure Cloud - Americas
+   */
+  US_WEST = 'westus'
+
+  US_WEST2 = 'westus2'
+
+  US_CENTRAL = 'centralus'
+
+  US_EAST = 'eastus'
+
+  US_EAST2 = 'eastus2'
+
+  US_NORTH_CENTRAL = 'northcentralus'
+
+  US_SOUTH_CENTRAL = 'southcentralus'
+
+  US_WEST_CENTRAL = 'westcentralus'
+
+  CANADA_CENTRAL = 'canadacentral'
+
+  CANADA_EAST = 'canadaeast'
+
+  BRAZIL_SOUTH = 'brazilsouth'
+
+  /**
+   * Azure Cloud - Europe
+   */
+  EUROPE_NORTH = 'northeurope'
+
+  EUROPE_WEST = 'westeurope'
+
+  UK_SOUTH = 'uksouth'
+
+  UK_WEST = 'ukwest'
+
+  /**
+   * Azure Cloud - Asia
+   */
+  ASIA_EAST = 'eastasia'
+
+  ASIA_SOUTHEAST = 'southeastasia'
+
+  JAPAN_EAST = 'japaneast'
+
+  JAPAN_WEST = 'japanwest'
+
+  AUSTRALIA_EAST = 'australiaeast'
+
+  AUSTRALIA_SOUTHEAST = 'australiasoutheast'
+
+  INDIA_CENTRAL = 'centralindia'
+
+  INDIA_SOUTH = 'southindia'
+
+  INDIA_WEST = 'westindia'
+
+  KOREA_CENTRAL = 'koreacentral'
+
+  KOREA_SOUTH = 'koreasouth'
+
+  /**
+   * Azure China Cloud
+   */
+  CHINA_NORTH = 'chinanorth'
+
+  CHINA_EAST = 'chinaeast'
+
+  CHINA_NORTH2 = 'chinanorth2'
+
+  CHINA_EAST2 = 'chinaeast2'
+
+  /**
+   * Azure German Cloud
+   */
+  GERMANY_CENTRAL = 'germanycentral'
+
+  GERMANY_NORTHEAST = 'germanynortheast'
+
+  GERMANY_WEST_CENTRAL = 'germanywestcentral'
+
+  GERMANY_NORTH = 'germanynorth'
+
+  /**
+   * Azure Government Cloud
+   */
+  GOV_US_VIRGINIA = 'usgovvirginia'
+
+  GOV_US_IOWA = 'usgoviowa'
+
+  GOV_US_ARIZONA = 'usgovarizona'
+
+  GOV_US_TEXAS = 'usgovtexas'
+
+  GOV_US_DOD_EAST = 'usdodeast'
+
+  GOV_US_DOD_CENTRAL = 'usdodcentral'
+
+  /**
+   * Detect if region is government
+   */
+  isGov: inline function(region: !string enum AzureRegion): boolean
+
+  /**
+   * Detect if region is China
+   */
+  isChina: inline function(region: !string enum AzureRegion): boolean
+
+  /**
+   * Detect if region is Germany
+   */
+  isGermany: inline function(region: !string enum AzureRegion): boolean
+
+  /**
+   * Determines the appropriate azure environment information, like region-specific endpoints, for a region.
+   */
+  environmentForRegion: inline function(region: string enum AzureRegion)
+                                 : @java(class="com.microsoft.azure.AzureEnvironment") native
+}

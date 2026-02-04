@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+remix type AssetClass mixes UserGeneratable, AssetOnboardingImportTracking {
+
+  /**
+   * The parent of this asset class to be displayed in the UI.
+   */
+  displayParent: AssetClass stored calc exists(parentAssetClassRelations) ? parentAssetClassRelations[0].parent : null
+
+  /**
+   * This icon is used to represent assets that belongs to this class on "Asset Map" page.
+   *
+   * **NOTE**: This icon string should be a valid icon name from the SDL icon library, additionally if not icon is
+   *           provided, the nodes in the map will be empty.
+   */
+  mapIcon: string
+
+  /**
+   * Ion Cesium Asset Model to use for this asset class.
+   */
+  mapModel: string
+}

@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type to link a diagram, which is used a `UiSdlImage` to a {@link ReliabilityAsset}
+ */
+@db(index+=['asset'])
+entity type AssetDocument mixes UserInformation, FilterableByFacility schema name 'SBSTM_DGRM' {
+
+  /**
+   * Description of the document.
+   */
+  description: string
+
+  /**
+   * The relative URL of attached document used by File API to upload and download document. Starts with `/file/`.
+   */
+  fileUrl: string
+
+  /**
+   * The {@link ReliabilityAsset} associated with this document.
+   */
+  asset: !ReliabilityAsset
+
+  /**
+   * File containing image for the Subsystem
+   */
+  imageFile: File
+
+  /**
+   * Used to populate AssetDocument#fileUrl upon creation
+   */
+  beforeCreate: ~ js-rhino
+
+  /**
+   * Used to populate AssetDocument#fileUrl upon update
+   */
+  beforeUpdate: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  facilityFilterPaths: const ~ = ["asset.facility"]
+}

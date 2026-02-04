@@ -1,0 +1,156 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * An engine type to handle loading and keeping columns that are used for string fuzzy matching as part of eval spec generation.
+ */
+type Genai.Agent.Tool.Util.StringFuzzyMatcher mixes Engine<Genai.Agent.Tool.Util.StringFuzzyMatcher.Deployment, Engine.DeploySpec>, DefaultInstance {
+    /**
+     * Name of the fuzzy matcher.
+     */
+    // Can be used to prevent StringFuzzyMatcher from being considered 'empty'. Workaround for PLAT-88121
+    name: string
+
+    inst: ~ py-query_orchestrator
+
+    /**
+     * Returns the string fuzzy matcher specified in the initialization spec by name.
+     */
+    forSpec: function(spec: !Genai.Agent.Tool.Util.StringFuzzyMatcher.InitializationSpec): !Genai.Agent.Tool.Util.StringFuzzyMatcher py-query_orchestrator
+
+    /**
+     * Refreshes the cached values for the specified fields. If `typesAndFields` is not provided, refreshes all fields currently cached.
+     */
+    refreshCachedValues: member function(typesAndFields: map<string, [string]>) py-query_orchestrator
+
+    /**
+     * Clears all values from memory.
+     */
+    clearCache: private member function() py-query_orchestrator
+
+    /**
+     * Removes the specified types from memory.
+     */
+    evictTypes: private member function(types: ![Type]) py-query_orchestrator
+
+    /**
+     * Removes the specified fields from memory.
+     */
+    evictFields: private member function(typesAndFields: !map<string, [string]>) py-query_orchestrator
+
+    /**
+     * Load all values for specified fields into memory. The format of `typesAndFields` is a map from type name to a list of field names.
+     * If `forceReload` is true, reloads the fields even if they are already loaded (e.g. to update the values in memory).
+     */
+    loadFields: private member function(typesAndFields: !map<string, [string]>, forceReload: boolean) py-query_orchestrator
+
+    /**
+     * Load the specified fields for the specified type into memory. If `fields is empty or not provided, loads all `string` fields on `type`.
+     * If `forceReload` is true, reloads the fields even if they are already loaded (e.g. to update the values in memory).
+     */
+    loadFieldsForType: private member function(type: !Type, fieldNames: [string], forceReload: boolean) py-query_orchestrator
+
+    /**
+     * Return a map from type name to a list of field names for the fields that are currently loaded into memory.
+     */
+    currentFields: private member function(): map<string, [string]> py-query_orchestrator
+
+    /**
+     * Returns the closest match for `input` from all values of `fieldName` on `type`.
+     */
+    fuzzyMatchFieldValue: member function(sourceType: !Type, fieldName: !string, input: !string): [string] py-query_orchestrator
+
+    /**
+     * Retrieves the k most similar values to the input stored under the fieldName for the sourceType.
+     */
+    retrieveMostSimilarValues: member function(sourceType: !Type, fieldName: !string, input: !string, k: int=10): [string] py-query_orchestrator
+
+    /**
+     * Performs fuzzy matching on all string constants in expressions/filters in the provided projection string and returns the adjusted projection string.
+     */
+    fuzzyMatchProjectionString: member function(sourceType: !Type, inputString: !string): !string py-query_orchestrator
+
+    /**
+     * Performs fuzzy matching on all string constants in expressions/filters in the provided filter string and returns the adjusted filter string.
+     */
+    fuzzyMatchFilterString: member function(sourceType: !Type, inputString: !string): !string py-query_orchestrator
+
+    /**
+     * Returns the names of all types that have been loaded into memory.
+     */
+    typeGlobals: member function(): ![string] py-query_orchestrator
+
+    /**
+     * Returns true if the global variables have been set.
+     */
+    areGlobalsSet: member function(): !boolean py-query_orchestrator
+
+    /**
+     * Resets the global variables in the engine process.
+     */
+    resetGlobals: member function() py-query_orchestrator
+
+    /**
+     * Internal implementation of `initialize` to set the global variables in the engine process.
+     *
+     * @param spec
+     *      Configuration spec for the fuzzy matcher
+     * @param force
+     *      If true, forces the engine to re-initialize even if it is already initialized with the same spec
+     *      This can also be used to re-initialize with a different graph if the fuzzy matcher's current spec had
+     *      `ignoreNonForceInitializations` set true.
+     */
+    doInitialize: private member function(spec: !Genai.Agent.Tool.Util.StringFuzzyMatcher.InitializationSpec, force: boolean) py-query_orchestrator
+
+    /**
+     * Initialize the engine according to the provided spec.
+     *
+     * @param spec
+     *      Configuration spec for the fuzzy matcher
+     * @param force
+     *      If true, forces the engine to re-initialize even if it is already initialized with the same spec
+     *      This can also be used to re-initialize with a different graph if the fuzzy matcher's current spec had
+     *      `ignoreNonForceInitializations` set true.
+     */
+    initialize: member function(spec: !Genai.Agent.Tool.Util.StringFuzzyMatcher.InitializationSpec, force: boolean): !Genai.Agent.Tool.Util.StringFuzzyMatcher py-query_orchestrator
+
+    /**
+     * Update the data model graph held by this instance. If `fieldsToLoad` is provided, the specified fields will be pre-loaded.
+     * The format of `fieldsToLoad` is a map from type name to a list of field names.
+     */
+    updateDataModelGraph: member function(dataModelGraph: !Genai.StructuredData.DataModelGraph, fieldsToLoad: map<string, [string]>) py-query_orchestrator
+
+    /**
+     * Performs fuzzy matching on the projection and filter strings in the provided spec
+     *
+     * @param structuredQuerySpec
+     *      The spec to fuzzy match
+     * @return containing the matched spec
+     */
+    fuzzyMatchSpec: member function(structuredQuerySpec: !Genai.StructuredQuery.Spec): !Genai.Agent.Tool.Util.Output py-query_orchestrator
+
+    /**
+     * Private debugging function to clear the low-level LRU caches.
+     */
+    clearLruCaches: private member function() py-query_orchestrator
+
+    /**
+     *  Triggered by the cron job `genai-refresh-fuzzy-matcher-cache` to check if fuzzy matcher is running and refresh all cached values.
+     */
+    refreshCacheIfRunning: member function() py-query_orchestrator
+
+    /**
+     * Private test function to get number of keys in field vector db
+     */
+    getNumKeysFieldVectorDb: private member function(): !int py-query_orchestrator
+
+    // TODO: GEN-9666 methods/configs for getting/setting max size in terms of memory and/or fields
+}

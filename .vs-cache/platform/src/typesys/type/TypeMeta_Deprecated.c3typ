@@ -1,0 +1,612 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Additional metadata for entity types.
+ *
+ * @see TypeMeta#db
+ */
+// TODO: PLAT-105143 Remove TypeMeta_Deprecated
+abstract type TypeMeta_Deprecated mixes Typesys {
+
+  /**
+   * Additional metadata specific to entity types.
+   */
+  db: cached member function(failIfNotEntityType: boolean): TypeMeta.Db
+
+  /**
+   * @return True if type mixes NoSystemCols
+   */
+  isNoSystemCols: cached member function(): boolean
+
+  // @return True if type mixes {@link PersistableUpsertHelper}
+  isPersistableUpsertHelper: cached member function(): boolean
+
+  // @return True if type mixes {@link InvalidationDisabled}
+  isInvalidationDisabled: cached member function(): boolean
+
+  // @return True if type mixes {@link NoMetaOverride}
+  isNoMetaOverrideType: cached member function(): boolean
+
+  /**
+   * Returns true if the type mixes {@link Searchable}
+   */
+  isSearchable: cached member function(): boolean
+
+  /**
+   * @return true if this type has a hierarchy denorm target.
+   * Beneficial since Type system cache does not cache null values
+   */
+  isHierDenormTarget: cached member function(): boolean
+
+  /**
+   * @return true if the type is in the KV datastore and persistence can be optimized persisting the input raw values
+   *         (e.g no boxing of primitive values for fields with the "any" value type.
+   */
+  canPersistKvRaw: cached member function(): boolean
+
+  /**
+   * @return True if the type has the field `id` and it's persistable.
+   */
+  hasPersistableId: member function(): boolean
+
+  /**
+   * @return True if the type has the field `name` and it's persistable.
+   */
+  hasPersistableName: member function(): boolean
+
+  /**
+   * @return True if the type has the field `meta` and it's persistable.
+   */
+  hasPersistableMeta: cached member function(): boolean
+
+  /**
+   * @return True if the type (or one of its base types) has generic bindings
+   */
+  hasPersistableTypeWithBindings: cached member function(): boolean
+
+  /**
+   * @return true if the type has a viewFilter or viewInclude specified
+   */
+  hasViewIncludeOrFilter: cached member function(): boolean
+
+  hasShortId: cached member function(): boolean
+
+  /**
+   * @return True if instances of this type should persist the specific type bindings.  Note that for types that extend
+   * this type and specify the bindings in the type definition will return false.
+   */
+  persistTypeWithBindings: cached member function(): boolean
+
+  /**
+   * @return false if duplicates should be removed when persisting instances of this type
+   */
+  persistDuplicates: member function(): boolean
+
+  /**
+   * @return True if the type is configured to retain a history of edits to each obj.
+   */
+  keepVersionHistory: cached member function(): boolean
+
+  /**
+   * @return Table name for non-external entity types (e.g. includes "C3_2_" prefix).
+   */
+  rootC3TableName: cached member function(): string
+
+  /**
+   * @return a map of all tables used for persisted collections, keyed by the field path for the collection field.
+   */
+  collectionTables: cached member function(): map<string, string>
+
+  /**
+   * @param unique
+   *        If true, return unique indexes else non-unique indexes.
+   *
+   * @return list of indexes defined for this type in the @db(index) extension.
+   */
+  indexes: cached member function(unique: boolean): [Db.Index]
+
+  /**
+   * @return the value specified in {@link Ann.Db#datastore} (if any) or overridden in the Db.Domain.  This will
+   *         currently be "kv" for data persisted in the KV store, null by default for data persisted in the c3 managed
+   *         relational datastore, or the name of a specific datastore.
+   */
+  datastore: member function(): string
+
+  /**
+   * The datastore to maintain a parallel synchronized copy of the data for the type, typically to a system like
+   * Redshift for advanced analytic querying capabilities.
+   */
+  @beta
+  secondaryDatastore: cached member function(): string
+
+  /**
+   * @return the {@link PgPartitionDef} for the type if it is defined and valid.
+   */
+  @beta
+  pgPartition: cached member function(): PgPartitionDef
+
+  /**
+   * @return list of unique indexes defined for this type in the db extension. Each entry will be an array of fields in
+   * the unique index.  Index fields can optionally refer to a field of an included reference and that's why FieldPath
+   * is used
+   */
+  uniqueConstraints: cached member function(): [[FieldPath]]
+
+  shortIdPrefix:           cached member function(): string
+  shortIdSuffixType:       cached member function(): string
+  shortIdReservationRange: cached member function(): int
+
+  /**
+   * @return set of all fields used in any of the unique field sequences
+   */
+  allUniqueConstraintFields: cached member function(): set<FieldPath>
+
+  /**
+   * @return List of all collection fields (including nested) that are persisted in this type.
+   */
+  persistableCollectionFields: cached member function(): [FieldPath]
+
+  /**
+   * @return list of all fields that have the textSearchField db annotation. For Postgres, a full text search index
+   *         will be created
+   */
+  textSearchFields: cached member function(): [FieldPath]
+
+  /**
+   * @return the list of fields comprising the primary key. If the type has a composite key, it will be the fields
+   *         defined in the key type. Otherwise the id field will be returned for persistable types. For
+   *         non-persistable fields, an empty array is returned.
+   */
+  primaryKeyFields: cached member function(): [FieldPath]
+
+  /**
+   * @return The set of all read calc fields in this type
+   */
+  readCalcFields: cached member function(): [FieldPath]
+
+  /**
+   * Gets the set of all stored calc fields in this type and, optionally, any of its extension base types
+   */
+  storedCalcFields: cached member function(inclExtBaseFields: boolean): [FieldPath]
+
+  /**
+   * Gets the set of all stored calc fields that specify a fixed period for recalc in this type and, optionally, any of
+   * its extension base types
+   */
+  periodicCalcFields: cached member function(inclExtBaseFields: boolean): [FieldPath]
+
+  /**
+   * Gets the set of all stored calc fields that specify a fixed schedule for recalc in this type and, optionally, any
+   * of its extension base types
+   */
+  scheduledCalcFields: cached member function(inclExtBaseFields: boolean): [FieldPath]
+
+  /**
+   * Gets the set of all fields in this type and, optionally, any of it's extension base types that have
+   * the @db(timedValueHistoryField) annotation
+   *
+   * @param inclExtBaseFields
+   *        true indicates that fields defined in extension base types for the type should be included. False
+   *        means that only fields defined in the type itself should be returned.
+   * @return the set of all fields in this type and, optionally, any of it's extension base types that have the
+   * @db(timedValueHistoryField) annotation
+   */
+  timedValueFields: cached member function(inclExtBaseFields: boolean): [string]
+
+  /**
+   * Gets the set of all fields in this type and, optionally, any of it's extension base types that are the field
+   * referenced in a @db(timedValueHistoryField) annotation for a timed value field
+   *
+   * @param inclExtBaseFields
+   *        true indicates that fields defined in extension base types for the type should be included. False
+   *        means that only fields defined in the type itself should be returned.
+   * @return the set of all fields in this type and, optionally, any of it's extension base types that are the field
+   *         referenced in a @db(timedValueHistoryField) annotation for a timed value field
+   */
+  timedValueHistoryFields: cached member function(inclExtBaseFields: boolean): map<string, string>
+
+  /**
+   * Get the timed value history field for the specified timed value field.
+   *
+   * @param field
+   *        The timed value field.
+   *
+   * @return The timed value history field for the specified timed value field.  If the specified field is not a timed
+   *         value field, or is not associated with a history field, null is returned.
+   */
+  timedValueFieldForHistoryField: cached member function(field: !string): string
+
+  /**
+   * Gets the set of all fields in this type and, optionally, any of it's extension base types that have
+   * the @db(timedCharacteristicHistoryField) annotation
+   *
+   * @param inclExtBaseFields
+   *        true indicates that fields defined in extension base types for the type should be included. False
+   *        means that only fields defined in the type itself should be returned.
+   * @return the set of all fields in this type and, optionally, any of it's extension base types that have the
+   * @db(timedCharacteristicHistoryField) annotation
+   */
+  timedCharacteristicFields: cached member function(inclExtBaseFields: boolean): [string]
+
+  /**
+   * Gets the set of all fields in this type and, optionally, any of it's extension base types that are the field
+   * referenced in a @db(timedCharacteristicHistory) annotation for a timed characteristic field
+   *
+   * @param inclExtBaseFields
+   *        true indicates that fields defined in extension base types for the type should be included. False
+   *        means that only fields defined in the type itself should be returned.
+   * @return the set of all fields in this type and, optionally, any of it's extension base types that are the field
+   *         referenced in a @db(timedCharacteristicHistoryField) annotation for a timed characteristic field
+   */
+  timedCharacteristicHistoryFields: cached member function(inclExtBaseFields: boolean): map<string, string>
+
+  /**
+   * Get the timed characteristic history field for the specified timed characteristic field.
+   *
+   * @param field
+   *        The timed characteristic field.
+   *
+   * @return The timed characteristic history field for the specified timed characteristic field.  If the specified
+   *         field is not a timed characteristic field, or is not associated with a history field, null is returned.
+   */
+  timedCharacteristicFieldForHistoryField: cached member function(field: !string): string
+
+  /**
+   * @return a map of timed value parent types/fields grouped by source type.
+   */
+  timedValuesParent: cached member function(): map<string, [string]>
+
+  /**
+   * Returns a map of timed characteristic parent types/fields grouped by source type.
+   */
+  timedCharacteristicsParent: cached member function(): map<string, [string]>
+
+  /**
+   * @return List of all fields that specify the {@link Ann.Db#include} annotation.
+   */
+  fieldsWithInclude: cached member function(): [FieldPath]
+
+  /**
+   * Map, keyed by types that have fkey fields with this type as a reference type, where each element is the list of
+   * the fkey field names.
+   */
+  fkeyParents: cached member function(): map<Type, [string]>
+
+  /**
+   * @return calc field backward dependencies for a type
+   */
+  calcBwdDeps: private cached member function(): [TypeBackwardDep]
+
+  /**
+   * @return calc field backward dependencies for all calc fields of a type
+   */
+  calcBwdDepsByPathKey: private cached member function(): map<string, TypeBackwardDep>
+
+  /**
+   * @return calc field backward dependencies for only calc fields that depend on a specific type
+   */
+  calcBwdDepsForType: private cached member function(type: !TypeMeta): [TypeBackwardDep]
+
+  /**
+   * @return a calc field expression rewritten to replace type casting with typeIdent checks.  Note this only returns
+   *         a rewritten expression if there were replaced type casts.
+   *
+   * FOR INTERNAL USE ONLY
+   */
+  rewrittenCalcFieldExpr: private cached member function(origExpr: !string)
+                                                  : @java(class="c3.platform.expr.ast.ExprNode") native
+
+  /**
+   * Determines the set of fields that trigger invalidation for the specified queue.
+   *
+   * @param queueType
+   *        Queue type to check invalidation for.
+   * @param includeBaseTypes
+   *        If true, base type fields will also be included.
+   * @param includeExtensionTypes
+   *        If true, extension types will also be included.
+   * @param ignoreSelfDeps
+   *        If true, self deps (e.g. deps that have no parent) will be ignored.
+   * @param forBeforeUpdate
+   *        If true, only looking for deps that should be triggered during the beforeUpdate phase.
+   *
+   * @return the set of fields that trigger invalidation for the specified queue
+   */
+  triggeringFields: private member function(queueType: !Type,
+                                            includeBaseTypes: boolean,
+                                            includeExtensionTypes: boolean,
+                                            ignoreSelfDeps: boolean,
+                                            forBeforeUpdate: boolean): set<string>
+
+  /**
+   * Determines the set of fields that trigger invalidation for the specified key.
+   *
+   * @param key
+   *        key describing trigger scenario
+   *
+   * @return the set of fields that trigger invalidation for the specified key.
+   */
+  _triggeringFields: private cached member function(scenario: !string): set<string>
+
+  /**
+   * @return the hierarchy denorm type for this type's hierarchy
+   */
+  hierDenormTarget: private cached member function(): HierDenormTarget
+
+  /**
+   * @return acl backward dependencies for a type
+   */
+  aclBwdDeps: private member function(): [TypeBackwardDep]
+
+  /**
+   * Called by platform when a Persistable type is accessed to ensure that its schema is up to date.
+   *
+   * @return true if the schema was updated in this JVM/app
+   */
+  validateSchema: private member function(): boolean
+
+  /**
+   * Called by platform when a Kv type is accessed to ensure that its schema is up to date.
+   *
+   * @return true if the schema was updated in this JVM/app (result of first call is cached return value).
+   */
+  validateKvSchema: private cached member function(): boolean
+
+  /**
+   * Called by {@link validateSchema} to validate the schema for a type and all its extension types.
+   *
+   * @return true if the schema was updated in this JVM for the type and current app code (result of first call is
+   *         cached return value).
+   */
+  doValidateSchema: private member function(): boolean
+
+  /**
+   * @return List of all fields that the db engine enforces constraints on.
+   */
+  dbEngineConstraintFields: private cached member function(newRecord: boolean): [FieldType]
+
+  /**
+   * @return true if all of the db engine constraint fields are "simple" (e.g. don't involve included references).
+   */
+  useSimpleDbEngineConstraintCheck: private cached member function(newRecord: boolean): boolean
+
+  /**
+   * @return The composite key type for the type, if any. The composite key type is the type in the mixin chain that
+   *         directly mixes CompositeKey. For CompositeKey types themselves, this will return itself.
+   */
+  compositeKeyType: private cached member function(): Type
+
+  /**
+   * @return the list of fields comprising the composite key, For any type that isA composite key and an empty
+   *         array otherwise.
+   */
+  compositeKeyFields: private cached member function(): [FieldPath]
+
+  /**
+   * @return a list of all fields that are fkey fields (both array and single ref)
+   */
+  fkeyFields: private cached member function(): [FieldPath]
+
+  /**
+   * Db Extension: @return filter spec to be used for a read only fkey relationship.
+   */
+  fkeyRefFilter: private member function(field: !string): string
+
+  /**
+   * Db Extension: @return limit to be used for a read only fkey relationship.
+   */
+  fkeyRefLimit: private member function(field: !string): !int
+
+  /**
+   * Db Extension: @return field path that is a foreign key in the reference type for a read only one to many
+   * relationship.
+   */
+  fkeyRefFkey: private member function(field: !string): string
+
+  /**
+   * Db Extension: @return field path that is a key in the source type for a read only one to many relationship.
+   */
+  fkeyRefKey: private member function(field: !string): string
+
+  /**
+   * Db Extension: @return order spec to be used for a read only one to many relationship.
+   */
+  fkeyRefOrder: private member function(field: !string): string
+
+  /**
+   * @return whether this value type is an fkey reference array field.
+   */
+  isFkeyRefArray: private member function(field: !string): boolean
+
+  /**
+   * @return whether this value type is an fkey reference array field.
+   */
+  isFkeyRefArray: private member function(ft: !FieldType): boolean
+
+  isFkeyRef: private member function(field: !string): boolean
+
+  /**
+   * @return the list of field that are the "latest characteristic" fields linked to `TimedCharacteristicHistory`
+   *         fields.
+   */
+  latestCharacteristicsFields: private cached member function(): [FieldPath]
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link AclEnabled}
+   */
+  isAclEnabled: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link AclEnabledTypes}
+   */
+  isAclEnabledTypes: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 type is a subtype of {@link JdbcStore}
+   */
+  isJdbcStore: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link TimedDataHeader}
+   */
+  isTimedDataHeader: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link IntervalDataHeader}
+   */
+  isIntervalDataHeader: private cached member function(): boolean
+
+  /**
+   * @return true if the type supports timed fetch
+   */
+  isTimedValueType: private cached member function(): boolean
+
+  /**
+   * @return true if the type is a timed interval type
+   */
+  isTimedIntervalType: private cached member function(): boolean
+
+  /**
+   * @return true if the type is a {@link TimedRelation} or {@link TimedRelationRef} or {@link TimedIntervalRelation}
+   * or {@link TimedIntervalRelationRef}
+   */
+  isTimedRelationType: private cached member function(): boolean
+
+  /**
+   * @return true if the type is a timed value history type
+   */
+  isTimedValueHistory: private cached member function(): boolean
+
+  /**
+   * @return true if the type is a {@link TimedRelation} type
+   */
+  isTimedRelation: private cached member function(): boolean
+
+  /**
+   * @return true if the type is a timed characteristic type
+   */
+  isTimedCharacteristicType: private cached member function(): boolean
+
+  /**
+   * @return true if the type is a timed interval characteristic history type
+   */
+  isTimedIntervalCharacteristicHistory: private cached member function(): boolean
+
+  /**
+   * @return true if the type supports timed fetch
+   */
+  isTimedFetchType: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link IntervalDataPoint}
+   */
+  isIntervalDataPoint: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link TimedDataPoint}
+   */
+  isTimedDataPoint: private cached member function(): boolean
+
+  /**
+   * @return true if this C3 Type is a subtype of {@link TimeseriesDataPoints}
+   */
+  isTimeseriesDataPoints: private member function(): boolean
+
+  /**
+   * @return true if this C3 Type is sub type of either {@link IntervalDataPoint}, {@link TimedDataPoint} or
+   * {@link TimeseriesDataPoints}
+   */
+  isAnyTimeseriesDataPoint: private cached member function(): boolean
+
+  /**
+   * @return True if the type is versionable (e.g. mixes Versionable).
+   */
+  isVersionable: private cached member function(): boolean
+
+  /**
+   * @return True if the type is a Geography (e.g. mixes Geo).
+   */
+  isGeography: private cached member function(): boolean
+
+  /**
+   * @return True if the type is a Geometry (e.g. mixes Geom).
+   */
+  isGeometry: private cached member function(): boolean
+
+  /**
+   * @return True if this type mixes in the TimedDataHeader type but not the NormalizedTimeseries type
+   */
+  isRawTimedData: private cached member function(): boolean
+
+  isRawTimedDataPoint: private cached member function(): boolean
+
+  /**
+   * @return name of the field for partitioning instances of this type for storage.
+   */
+  partitionKeyField: private cached member function(): string
+
+  /**
+   * @return FieldType of the field for partitioning instances of this type for storage.
+   */
+  partitionKeyFieldType: private cached member function(): FieldType
+
+  /**
+   * @return compiled partition key field expression (or id) on the given type
+   */
+  compiledPartitionKeyFieldExpr: private cached member function(): !Expr.Compiled
+
+  /**
+   * @return True if this type mixes in the IntervalDataHeader type but not the NormalizedTimeseries type
+   */
+  isRawTimeseries: private cached member function(): boolean
+
+  /**
+   * Checks if type is facaded for a given app. Facaded types live in a different app.
+   *
+   * @return true if type is facaded in an app other than the one specified. I.e. call to this type from app that is
+   *         different then provided app will resolve into a remote call
+   */
+  isFacade: private member function(app: !string serialized AppId): boolean
+
+  /**
+   * @return True if entity and not generic
+   */
+  canBePersisted: private member function(): boolean
+
+  /**
+   * @return True if the type has any non-fkey child collections. Includes recursive included type fields.
+   */
+  hasChildCollection: private cached member function(): boolean
+
+  /**
+   * Whether this type is only persists its key (e.g. Persistable, Identified, Named).
+   *
+   * @param includePersistable
+   *        if true, then types mixing {@link Persistable} will return false.  Otherwise they will return true.
+   *
+   * @return true if this type only persists its key.
+   */
+  isPersistKey: private cached member function(dontIncludePersistable: boolean): boolean
+
+  /**
+   * @return if {@link isPersistKey} returns true, the key field to be persisted (e.g. "name" or "id").
+   */
+  persistKeyField: private cached member function(): string
+
+  isNoOverlapTimedIntervalValueHistoryType: private member function(parentType: !TypeMeta): boolean
+  isRawTimeseriesDataPoint:                 private cached member function(): boolean
+  isAnyNormalized:                          private cached member function(): boolean
+  isNormalizedTimedDataPoint:               private cached member function(): boolean
+  isNormalizedTimeseriesDataPoint:          private cached member function(): boolean
+  isArchiveable:                            private member function(): boolean
+  isCompositeKeyType:                       private cached member function(): boolean
+  isCompactType:                            private cached member function(): boolean
+  isSystemType:                             private member function(): boolean
+  isVersioned:                              private member function(): boolean
+}

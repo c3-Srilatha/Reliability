@@ -1,0 +1,156 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Request type for listResources API.
+ */
+type CloudListResourcesSpec mixes CloudResourceFields, Spec {
+
+  /**
+   * Only returns resources that {@link CloudResource#isOk} return true;
+   */
+  @deprecated
+  onlyOk: boolean
+
+  /**
+   * Filter out resources by different attributes. Key is the attribute name and value is the attribute value.
+   */
+  @deprecated
+  attributes: map<string, string>
+
+  /**
+   * Filter out resources by different filters. Key is the field name and value is the filter value.
+   */
+  @deprecated
+  filters: map<string, string>
+
+  /**
+   * Only returns resources within the resource group given.
+   */
+  resourceGroupName: string
+
+  /**
+   * Only returns resources within the namespace given.
+   */
+  namespace: string
+
+  /**
+   * Match resource tags to every Cloud Tag key and value in this list.
+   */
+  tags: [CloudTag]
+
+  /**
+   * Avoid matching resource tags to every Cloud Tag key and value in this list.
+   * Note: Only currently support in K8sResource and its subtypes
+   */
+  excludeTags: [CloudTag]
+
+  /**
+   * Match resources by tag key presence only (regardless of value).
+   * Only returns resources that have ALL specified tag keys present.
+   * Difference from {@link #tags}: this checks only key existence, not the value.
+   * Note: Only currently supported in K8sResource and its subtypes
+   */
+  tagKeys: [string]
+
+  /**
+   * Exclude resources by tag key presence only (regardless of value).
+   * Excludes resources that have ANY of the specified tag keys present.
+   * Difference from {@link #excludeTags}: this checks only key existence, not the value.
+   * Note: Only currently supported in K8sResource and its subtypes
+   */
+  excludeTagKeys: [string]
+
+  /**
+   * Maximum number of resources to return.  If there are fewer resources than were requested, only those will be
+   * returned.  If there are additional resources beyond what was requested, then
+   * {@link CloudListResourcesResult.nextMarker} will be set.
+   *
+   * -1 returns all.
+   */
+  limit: int = 2000
+
+  /**
+   * Value from {@link CloudListResourcesResult.nextMarker} to get more results.
+   */
+  marker: string
+
+  /**
+   * Cloud region filter for this request.
+   */
+  region: string
+
+  /**
+   * Cloud accountId filter for this request.
+   */
+  accountId: string
+
+  /**
+   * Include channels in the result.
+   * Channels include partitions, shards, etc. for various cloud message brokers.
+   * Default is false.
+   */
+  listChannels: boolean
+
+  /**
+   * Filter resources for a given cloud id.
+   */
+  forCloudId: inline function(id: !CloudId): !CloudListResourcesSpec
+
+  /**
+   * Filter resources for a given cluster id.
+   */
+  forCluster: inline function(clusterId: !string): !CloudListResourcesSpec
+
+  /**
+   * Filter resources that belong to C3 Cluster where this action is running.
+   */
+  forMyCluster: inline function(): !CloudListResourcesSpec
+
+  /**
+   * Filter resources by a single Cloud Tag.
+   */
+  forTag: inline function(key: !string, value: !string): !CloudListResourcesSpec
+
+  /**
+   * Filter resources that match any of the provided Cloud Tags.
+   */
+  forTags: inline function(tags: !?[CloudTag]): !CloudListResourcesSpec
+
+  /**
+   * Add Cloud Tag filter.
+   */
+  withTag: inline member function(key: !string, value: !string): !mixing CloudListResourcesSpec
+
+  /**
+   * Add series of {@link CloudTag} filters.
+   *
+   * @param keyValuePairs
+   *           Series of key value pairs to be used for filtering.
+   * @return spec with corresponding filters.
+   */
+  withTags: inline member function(keyValuePairs: !?string ...): !mixing CloudListResourcesSpec
+
+  /**
+   * Add filter for {@link CloudTagKey#ENV_ID}.
+   *
+   * @param envId
+   *           Filter by the given {@link Env#id}.
+   * @return spec with corresponding filter.
+   */
+  withEnvId: inline member function(envId: !string): !mixing CloudListResourcesSpec
+
+  /**
+   * Add filter for {@link CloudTagKey#APP_ID}.
+   *
+   * @param appId
+   *           Filter by the given {@link App#id}.
+   * @return spec with corresponding filter.
+   */
+  withAppId: inline member function(appId: !string): !mixing CloudListResourcesSpec
+}

@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// Base class for DataLake catalogs. Catalogs are used to manage and access DataLake tables.
+@beta
+abstract inline type DataLake.Catalog<T: DataLake.Table, C: DataLake.Catalog.Config> mixes Configurable<C>, Named, DefaultInstance {
+
+  DEFAULT_CATALOG:   const string = "datasets"
+  DEFAULT_NAMESPACE: const string = "dfl"
+  conf:              private !C
+
+  /**
+   * Returns catalog tables.
+   * @param spec
+   *        Defines additional If specified only tables in the given namespace will be returned.
+   */
+  @action(group='read')
+  tables: abstract member function(spec: DataLake.Catalog.TableSpec): [T]
+
+  /**
+   * Returns specific catalog table.
+   */
+  @action(group='read')
+  table: abstract member function(name: !string, spec: DataLake.Catalog.TableSpec, failIfMissing: boolean): T
+
+  /**
+   * Deletes specific catalog table.
+   */
+  @action(group='delete')
+  deleteTable: abstract member function(name: !string, namespace: string, confirm: boolean)
+
+  /**
+   * Creates new table in catalog.
+   */
+  createTable: abstract member function(spec: !DataLake.CreateTableSpec): T
+
+  /**
+   * Transfers table ownership, as long as current user is the table owner or is auto-approved and the new owner has at
+   * least C3.DisclosureRequestor permissions.
+   */
+  transferTableOwnership: abstract member function(name: !string,
+                                                   newOwner: !User,
+                                                   spec: DataLake.Catalog.TableSpec): T
+
+  config:  ~
+  forName: ~
+  inst:    ~
+}

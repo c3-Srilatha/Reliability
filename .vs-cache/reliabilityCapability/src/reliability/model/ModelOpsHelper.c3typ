@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type for providing support for Model Ops Functionality
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+remix type ModelOpsHelper {
+
+  /**
+   * Retrain a list of {@link MlModel}s with a new time horizon and then deploys each new trained model
+   * on the same asset as its original template model.
+   */
+  retrainAndDeployModels: function(models: ![ReliabilityMlModel],
+                          start: !datetime,
+                          end: !datetime,
+                          timeRanges: [TimeRange] = [],
+                          jobName: string): ModelConfigRun js-rhino
+
+  /**
+   * Ensures that the {@link ReliabilityMlModel} is deployed on one {@link MlSubject}.
+   */
+  validateSingleSubjectModel: function(model: !ReliabilityMlModel): boolean js-rhino
+
+  /**
+   * Ensures that the {@link ReliabilityMlModel}s are each deployed on one {@link MlSubject}.
+   */
+  validateSingleSubjectModels: function(models: ![ReliabilityMlModel]): boolean js-rhino
+
+  /**
+   * Obtains the hyperparameters details of the model pipeline, and returns each of them in an object with the next information:
+   * { pipe, hyperparam, value }
+   * @param modelId
+   *  Id of the model where the hyperparameters are obtained from
+   */
+  fetchHyperparametersDetails: function(modelId: !string): FetchResult<any> py
+
+
+  /**
+   * Get the status of the {@link ReliabilityMlModel#latestAdjustModelHyperparamsExperiment latest experiment workflow} if available, returns null otherwise.
+   * @param modelId
+   * Id of the model where the workflow status is obtained from
+  */
+  getLatestExperimentStatus: function(modelId: !string): string js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

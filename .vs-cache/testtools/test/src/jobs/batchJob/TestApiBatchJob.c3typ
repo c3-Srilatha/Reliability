@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link BatchJob} used for testing {@link TestApi.waitForJob}.
+ */
+entity type TestApiBatchJob extends BatchJob<TestApiBatchJob, BatchJobOptions, TestApiBatchJobBatch> type key 'TAPI_BJ' {
+  /**
+   * When true job will fail during {@link TestApiBatchJob#doStart doStart}.
+   */
+  failJobDuringDoStart: boolean
+
+  /**
+   * When true job will fail during {@link TestApiBatchJob#processBatch processBatch}.
+   */
+  failJobDuringProcessBatch: boolean
+
+  /**
+   * The amount of time to stall (in ms) during {@link TestApiBatchJob#doStart doStart} before executing any of the
+   * implementation. Used by {@link Thread#sleep} to simulate a stall and is exclusively used to test handing when a
+   * job times out.
+   */
+  doStartStallTime: int = 0
+
+  /**
+   * The amount of time to stall (in ms) during {@link TestApiBatchJob#processBatch processBatch} before executing any
+   * of the implementation. Used by {@link Thread#sleep} to simulate a stall and is exclusively used to test handing
+   * when a job times out.
+   */
+  processBatchStallTime: int = 0
+
+  /**
+   * @inheritdoc
+   * If {@link failJobDuringDoStart} is true, this method will throw an error otherwise it will schedule a batch of
+   * 1 item to be processed.
+   */
+  doStart: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   * If {@link failJobDuringProcessBatch} is true, this method will throw an error otherwise it will complete
+   * successfully.
+   */
+  processBatch: ~ js-rhino
+}

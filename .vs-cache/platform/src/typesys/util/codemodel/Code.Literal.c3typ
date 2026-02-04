@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "literal" represents a value that generally corresponds to a literal in the programming language, such as a
+ * string or integer constant.
+ */
+type Code.Literal mixes Code.Expr {
+
+  /**
+   * The primitive value.
+   */
+  value: member function(): any
+
+  /**
+   * The character used to quote a string literal.
+   */
+  quote: member function(): int32
+
+  /**
+   * Multi-line literals start and end with triple quotes and can contain quotes within them.
+   *
+   * ```py
+   * """
+   * Tell Fred "the fish" to be quiet.
+   * """
+   * ```
+   */
+  multiLine: member function(): boolean
+
+  /**
+   * String literals allowing expansion of embedded expressions on evalulation.
+   *
+   * ```js
+   * console.log(`${n > 9 ? "Many" : "A few"} good men`);
+   * ```
+   *
+   * ```py
+   * print(f"{'Many' if n > 9 else 'A few'} good men.")
+   * ```
+   */
+  template: member function(): boolean
+
+  _value: private any
+  _quote: private int32
+
+  @code(java="15", js="none")
+  _multiLine: private boolean
+
+  @code(java="none", js="2015", python="3.6")
+  _template: private boolean
+}

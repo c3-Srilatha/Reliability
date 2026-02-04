@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+entity type AiVisionManyStaticPlaneData mixes SeedData, Identified schema name 'VMSPD' {
+  /**
+   * Location of the plane as a city
+   */
+  location: string
+
+  /**
+   * latitude of the plane
+   */
+  latitude: double
+
+  /**
+   * longitude of the plane
+   */
+  longitude: double
+
+  /**
+   * altitude of the plane as units of distance in cesium
+   */
+  altitude: double
+
+  /**
+   * Color of the plane
+   */
+  color: string
+
+  /**
+   * How likely it is that the plane will be delayed
+   */
+  riskOfDelay: AiVisionPlaneDataRiskOfDelay
+
+  /**
+   * Whether or not the plane is on the ground
+   */
+  grounded: boolean stored calc altitude == 0
+
+  /**
+   * Orientation for the plane to face (degree value from -179, 180)
+   */
+  orientation: double
+}

@@ -1,0 +1,98 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type of micro services proxy. Note that proxy can be a singleton communicating with one backend
+ * service or it can be `Named` and have multiple instances potentially communicating with multiple backend services.
+ *
+ * @see Microservice
+ */
+// TODO: PLAT-50536 | ReClaim should not require adding of @reClaim(inherit=true)
+abstract type Microservice.Proxy<C: Microservice.Config> mixes Microservice, Configurable<C>, ReClaim {
+
+  @reClaim(inherit=true)
+  forName: final ~ from Microservice
+
+  @reClaim(inherit=true)
+  config: final ~ from Configurable
+
+  @reClaim(inherit=true)
+  configKey: final ~ from Configurable
+
+  /**
+   * @returns true if the target service app is configured
+   */
+  @reClaim(inherit=true)
+  isConfigured: final member function(): !boolean
+
+  /**
+   * Sets target service App id and optionally url; Note it is required to ensure that access is allowed to current App
+   * in the App of a target service. You can use {@link Microservice.Service#allowAccess} in the App of the target
+   * service potentially hosted by a different cluster.
+   *
+   * @see Microservice.Service#allowAccess
+   */
+  @reClaim(inherit=true)
+  setServiceAppId: final member function(serviceAppId: !string serialized AppId,
+                                         serviceAppUrl: string serialized AppUrl)
+
+  /**
+   * Optionally sets target service type name.
+   */
+  @reClaim(inherit=true)
+  setServiceTypeName: final member function(serviceTypeName: !string)
+
+  /**
+   * Name of the target service type
+   */
+  @reClaim(inherit=true)
+  serviceTypeName: member function(): !string
+
+  /**
+   * App ID of a target service
+   */
+  @reClaim(inherit=true)
+  serviceAppId: member function(): !string serialized AppId
+
+  /**
+   * App endpoint of a target service
+   */
+  @reClaim(inherit=true)
+  serviceAppUrl: final member function(): !string serialized AppUrl
+
+  /**
+   * Returns the {@link App} this service is running in, or null if it does not exist.
+   */
+  @reClaim(inherit=true)
+  serviceApp: final member function(): App
+
+  /**
+   * Returns an {@link AppToken} for the proxy that can be used to make requests to the service.
+   */
+  @beta
+  @reClaim(inherit=true)
+  serviceAuthToken: private final member function(): !string
+
+  /**
+   * Returns the {@link App} that should be impersonated when making a call to the service.
+   * This is typically a current app, but can be configured to be `env-c3` or `c3-c3` app.
+   * This is useful when the service is shared across all apps in the env or cluster respectively.
+   */
+  @reClaim(inherit=true)
+  proxyApp: final member function(): App
+
+  _exec: ~
+
+  /**
+   * Provides a static means of making a microservice call using in memory options rather than relying on
+   * a subtype. Allows consumers to leverage the built in retry, network, and ser/deser logic.
+   */
+  @beta
+  @reClaim(inherit=true)
+  exec: private function(rpcSpec: !Microservice.RpcSpec): any
+}

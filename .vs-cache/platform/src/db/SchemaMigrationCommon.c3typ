@@ -1,0 +1,411 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functions used by SchemaUpgrade and PlatformSchemaMigration
+ */
+type SchemaMigrationCommon {
+
+  /**
+   * @return current schema migration version.
+   */
+  currentVersion: function(): int
+
+  /**
+   * Resets the current schema migration version.
+   *
+   * @return the (new) current schema migration version.
+   */
+  @action(group+='cluster-admin')
+  resetVersion: function(version: int): int
+
+  /**
+   * Checks if a table exists in the current db/schema.
+   *
+   * @param tableName
+   *           Table name to check.
+   *
+   * @return true if the table exists.
+   */
+  tableExists: function(tableName: !string): !boolean
+
+  /**
+   * Checks if a table column exists in the current db/schema.
+   *
+   * @param tableName
+   *           Table name to check.
+   * @param colName
+   *           Column name to check.
+   *
+   * @return true if the table column exists.
+   */
+  columnExists: function(tableName: !string, colName: !string): !boolean
+
+  /**
+   * Add a new, empty varchar column to a database table.
+   *
+   * @param tableName
+   *           Table name to which the column will be added.
+   * @param colName
+   *           Name of the column to create.
+   * @param length
+   *           column length. Default is default string field length (e.g. 512)
+   * @param onlyIfMissing
+   *           if true, the column will only be created if it doesn't already exist.
+   */
+  addVarcharColumn: function(tableName: !string, colName: !string, length: int = 512, onlyIfMissing: boolean = false)
+
+  /**
+   * Add a new, empty clob column to a database table.
+   *
+   * @param tableName
+   *           Table name to which the column will be added.
+   * @param colName
+   *           Name of the column to create.
+   * @param onlyIfMissing
+   *           if true, the column will only be created if it doesn't already exist.
+   */
+  addClobColumn: function(tableName: !string, colName: !string, onlyIfMissing: boolean)
+
+  /**
+   * Converts a varchar column to a clob column.  If the column doesn't exist or has a type other than varchar, an
+   * error is returned.  If the column exists and is already a clob, no changes are made.
+   *
+   * @param tableName
+   *           Table name of the column being converted.
+   * @param colName
+   *           Column name being converted.
+   */
+  convertColumnToClob: function(tableName: !string, colName: !string)
+
+  /**
+   * Add a new, empty numeric column to a database table.
+   *
+   * @param tableName
+   *           Table name to which the column will be added.
+   * @param colName
+   *           Name of the column to create.
+   * @param scale
+   *           column scale.
+   * @param precision
+   *           column precision. Default is 0 (e.g. integer)
+   * @param onlyIfMissing
+   *           if true, the column will only be created if it doesn't already exist.
+   */
+  addNumericColumn: function(tableName: !string,
+                             colName: !string,
+                             scale: !int,
+                             precision: int = 0,
+                             onlyIfMissing: boolean = false)
+
+  /**
+   * Add a new, empty timestamp column to a database table.
+   *
+   * @param tableName
+   *           Table name to which the column will be added.
+   * @param colName
+   *           Name of the column to create.
+   * @param onlyIfMissing
+   *           if true, the column will only be created if it doesn't already exist.
+   */
+  addTimestampColumn: function(tableName: !string, colName: !string, onlyIfMissing: boolean)
+
+  /**
+   * Add a new, empty xml column to a database table.
+   *
+   * @param tableName
+   *           Table name to which the column will be added.
+   * @param colName
+   *           Name of the column to create.
+   * @param onlyIfMissing
+   *           if true, the column will only be created if it doesn't already exist.
+   */
+  addXmlColumn: function(tableName: !string, colName: !string, onlyIfMissing: boolean)
+
+  /**
+   * Drop a column from a database.
+   *
+   * @param tableName
+   *           Table name from which the column will be dropped.
+   * @param colName
+   *           Name of the column to drop.
+   */
+  dropColumn: function(tableName: !string, colName: !string)
+
+  /**
+   * Rename a column in a database table.
+   *
+   * @param tableName
+   *           Table name to which the column will be added.
+   * @param colName
+   *           Name of the column to rename.
+   * @param newColName
+   *           New name for the column.
+   */
+  renameColumn: function(tableName: !string, colName: !string, newColName: !string)
+
+  /**
+   * Merge data from old column to new column and drops the old column if both the columns exist. If the new column
+   * doesn't exist, renames the old column to the new column name. If the old column doesn't exist it is no-op.
+   *
+   * @param tableName
+   *           Table name for which the column will be merged.
+   * @param colName
+   *           Column to move from (old column name)
+   * @param newColName
+   *           Column to move to (new column name)
+   */
+  mergeColumn: function(tableName: !string, colName: !string, newColName: !string)
+
+  /**
+   * Deletes rows from a table.  Only rows from the current app will be deleted.  If the table doesn't exist
+   * no error is thrown.
+   *
+   * @param tableName
+   *           Table name to delete the rows from.
+   * @param sqlCondition
+   *           Optional condition to apply to specify which rows to delete.
+   *
+   * @return the number of deleted rows.
+   */
+  deleteTableRows: function(tableName: !string, sqlCondition: string): !int
+
+  /**
+   * Returns a list of ids for a table for batches where the result[i] is the starting id for batch 'i + 1'.
+   *
+   * @param tableName
+   *           Table name to get batch ids for.
+   * @param suggestedNumBatches
+   *           Suggested number of batches to return ids for.  If {@link batchSize} is specified, then the number
+   *           of ids returned will be exactly this number - 1 if there is enough data.  If there is not enough data, then fewer
+   *           batches may be returned.  If {@link batchSize} is not specified, then this may return slightly more than this number - 1
+   *           batches if the data can't be partitioned into exactly that number of batches and maintain the batch size.
+   * @param batchSize
+   *           The fixed number of rows to be included in each batch.
+   * @param filter
+   *           Filter expression to apply to qualify matching rows.  This must be a valid SQL WHERE clause snippet.
+   *
+   * @return a list of batch ids based on the input parameters.
+   */
+  batchIds: function(tableName: !string, suggestedNumBatches: int, batchSize: int, filter: string): [string]
+
+  /**
+   * Completely removes any existing schema for the type (e.g. tables/indexes) and calls upsertCollection to recreate
+   * the new schema matching the type. This may only be called on types that contain data only from the requesting app
+   * or for types that mixin Metadata.
+   *
+   * IMPORTANT - Note that ALL EXISTING DATA WILL BE LOST.  For extended types, all data/schema in the base type and all
+   *             extended types will be removed and only the schema for the specific named type will be recreated.  In a
+   *             multi-app environment, all data for all apps will be removed from the type.  Since this is not the
+   *             "recommended" scenario, an extra provisioning of the Metadata will need to be performed after the last
+   *             app is upgraded.
+   *
+   * @param typeName
+   *           Name of type to reset schema for.
+   */
+  resetSchema: function(typeName: !string)
+
+  /**
+   * Inserts a new base type to an existing extension type hierarchy.  This will copy all data for all tables/columns
+   * in the new schema from the corresponding tables/columns in the old schema.  It will also prepend the typeIdents
+   * for all rows with the type key for the new base type and refresh metric dependencies for all metrics for all
+   * types that extend the new base type.
+   *
+   * IMPORTANT - Please note the following limitations/restrictions.
+   *   1. The old base type must be the true base type of the old hierarchy (e.g. it had no base type itself to start
+   *      with.
+   *   2. It is assumed that the old base type had a type key.  If any row is found to not start with the old type's
+   *      type key, the action will fail.
+   *
+   * @param oldBaseTypeName
+   *          The old base type name.
+   * @param oldRootTableName
+   *          The root table name for the old base type.  If the table does not exist, the operation will succeed but
+   *          without doing anything.  If the table can not be found in the C3_2_TYPE_TABLE table or is not associated
+   *          with the old base type, an exception will be thrown.  The old table name must also not be the same as
+   *          the table name for the new base type.
+   * @param oldTypeKey
+   *          The type key for the original base type.  Validation will be done to ensure that all rows typeIdents
+   *          start with the old type key.
+   * @param newBaseTypeName
+   *          The name of the new base type of the hierarchy.  Validation will be performed that the type is
+   *          extendable and it has an extension type matching the old base type.
+   * @param removeOldData
+   *          True if data should be removed from the old tables upon insertion into the new tables.  This should only
+   *          be true if the existing data is not needed for any other upgrade steps.
+   */
+  insertNewBaseType: function(oldBaseTypeName: !string,
+                              oldRootTableName: !string,
+                              oldTypeKey: !string,
+                              newBaseTypeName: !string,
+                              removeOldData: boolean)
+
+  /**
+   * Call this function to copy data from and old schema to a new type when the old type is moved to a different
+   * extendable type hierarchy.
+   *
+   * IMPORTANT - Please note the following limitations/restrictions.
+   *   1. This currently only supports copying the root table.  If the need arises, support will be expanded to
+   *      include child tables (e.g. arrays/maps).
+   *   2. If an id already exists in the target type for data being copied, those rows will be ignored.
+   *   3. This currently ignores unique indexes (other than the primary key (e.g. id)).  As such, duplicates w.r.t.
+   *      existing entries in the type hierarchy may be created and future duplicates may not be detected.  If
+   *      there are unique indexes involved in either the old type or the type hierarchy being merged into,
+   *      DO NOT USE THIS FUNCTION.  Instead, talk to the platform team (e.g. TomR) to explore alternatives.
+   *   4. This function is synchronous.  If the number of entries being copied is large (e.g. several hundred
+   *      thousand, please ask the platform team (e.g. TomR) to add support for asynchronous batch processing.
+   *
+   * @param oldRootSchemaName
+   *        Schema name for the old root type.  Note that this is the schema name defined on the old root type
+   *        and NOT the table name.
+   * @param type
+   *        Extendable type to copy to.  If the type is not an extendable type, an error will be thrown.
+   * @param oldRootTypeKey
+   *        The type key that was specified on the old root type for the schema.  Note that this is critical to
+   *        properly set the new typeIdents.  As such, you must specify the parameter, even if it is null.
+   * @param spec
+   *        Use to specify various parameters that control the operation of this function.
+   */
+  copyFromOldSchemaToExtendableType: function(oldRootSchemaName: !string,
+                                              type: !Type,
+                                              oldRootTypeKey: !?string,
+                                              spec: CopyFromOldSchemaToExtendableTypeSpec)
+
+  /**
+   * Updates the typeIdent field for the root table and all child tables after an extended type is moved to
+   * a different place in the extended type hierarchy.
+   *
+   * IMPORTANT - Please note the following limitations/restrictions.
+   *   1. This function assumes that there were no changes to type keys for the type being moved or any types
+   *      that extend it.
+   *   2. This function is not intended to be used when types that extend the type being moved are independently
+   *      moved in the hierarchy.
+   *   3. This function is synchronous.  If the number of entries being copied is large (e.g. several hundred
+   *      thousand, please ask the platform team (e.g. TomR) to add support for asynchronous batch processing.
+   *
+   * @param movedType
+   *        Type that was moved.
+   * @param oldBaseType
+   *        The original base type for 'movedType' prior to being moved.
+   */
+  moveExtendedType: function(movedType: !Type, oldBaseType: !Type)
+
+  /**
+   * Migrates all fields with a {@link Duration} value type from the old serialized string representation (in the "_S"
+   * suffixed column) to the native DB INTERVAL value (in the "_IDS" column) for the specified type and all types that
+   * extend it.  Note that this should be called on the base type of an extended type hierarchy to avoid having to call
+   * multiple times for each extension type.
+   *
+   * @param type
+   *        Type to migrate the duration values for
+   */
+  migrateDurationFields: function(type: !Type)
+
+  /**
+   * Migrates a field with a {@link Duration} value type from the old serialized string representation (in the "_S"
+   * suffixed column) to the native DB INTERVAL value (in the "_IDS" column).
+   *
+   * @param type
+   *        Type to migrate the duration values for
+   * @param fieldPath
+   *        Field path in the type to migrate.  Note that if the field path is invalid, an error will be thrown.
+   *        However, if the field path isn't a duration field, or doesn't otherwise need migration, no error will be
+   *        thrown.
+   */
+  migrateDurationField: function(type: !Type, fieldPath: !string)
+
+  /**
+   * Migrates all fields with a vector value type from the "_V" suffixed column to the "_VT<dimension>"
+   * (to add support for updating the dimension on the vector field) for the specified type and all types that
+   * extend it.  Note that this should be called on the base type of an extended type hierarchy to avoid having to call
+   * multiple times for each extension type.
+   *
+   * @param type
+   *        Type to migrate the vector values for
+   */
+  migrateVectorFields: function(type: !Type)
+
+  /**
+   * Updates all references to an id in a type that has changed.
+   *
+   * @param type
+   *           type that had ids changed.
+   * @param valueMapping
+   *           Map of old ids to new id values.
+   */
+  updateReferences: function(type: !Type, valueMapping: !map<string, string>)
+
+  /**
+   * Updates the ids of the specified type based on a mapping from old ids to new ids.  Includes updating the
+   * ids in the root obj and all child table, as well as any references to the old ids in other types.
+   *
+   * Note that the references are updated prior to updating the ids to facility idempotency in migration.
+   *
+   * @param type
+   *           Type to update the ids for.
+   * @param valueMapping
+   *           Map of old ids to new id values.
+   * @param ignoreIfAlreadyExists
+   *           If true, the update will be skipped for any ids where the target id already exists.  Otherwise an
+   *           error will be thrown on any conflict
+   */
+  updateIds: function(type: !Type, valueMapping: !map<string, string>, ignoreIfAlreadyExists: boolean)
+
+  /**
+   * Can be called during schema migration while provisioning to schedule a batch job that will be started at the
+   * end of provisioning after the workers have been notified and had a chance to pick up the newly provisioned
+   * app.
+   *
+   * @param job
+   *        The job to schedule.  The job must have already been persisted.
+   * @param options
+   *        Options to run the job with.
+   */
+  scheduleBatchJob: function(job: !BatchJob, options: any)
+
+  /**
+   * Can be called during schema migration while provisioning to schedule a mapReduce job that will be started at
+   * the end of provisioning after the workers have been notified and had a chance to pick up the newly provisioned
+   * app.
+   *
+   * @param job
+   *        The job to schedule.  The job must have already been persisted.
+   * @param options
+   *        Options to run the job with.
+   */
+  scheduleMapReduce: function(job: !MapReduce, options: MapReduceOptions)
+
+  /**
+   * Can be called during schema migration while provisioning to schedule a workflow that will be started at
+   * the end of provisioning after the workers have been notified and had a chance to pick up the newly provisioned
+   * app.
+   *
+   * @param workflow
+   *        The workflow to schedule.  The workflow must have already been persisted.
+   * @param options
+   *        Options to run the workflow with.
+   */
+  scheduleWorkflow: function(workflow: !Workflow, options: any)
+
+  /**
+   * Gets the migration functions for a migration type in the order that then need to be applied.  Also performs
+   * validation that the migration functions conform to the rules.
+   *
+   * @param type
+   *        Migration type to get the migration functions for
+   *
+   * @return the upgrade functions for an upgrade type in the order that the need to be applied.
+   */
+  migrations: private function(): [string]
+
+  /**
+   * Applies the necessary migrations (in the correct order) for the migration type.  Also updates the
+   * SchemaMigrationVersion type as migrations are completed.
+   */
+  applyMigrations: private function()
+}

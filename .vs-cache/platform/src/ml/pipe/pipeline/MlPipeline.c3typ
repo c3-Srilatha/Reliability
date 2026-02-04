@@ -1,0 +1,653 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An {@link MlPipeline} represents a multi-step machine learning model. Its steps are comprised of {@link MlAtomicPipe}'s
+ * or other nested {@link MlPipeline}s. The pipeline is represented as a directed port graph. Each {@link MlPipeline.Vertex}
+ * represents a machine learning step. Each of the input ports represent a data input (x or y) for a machine learning step.
+ * Each of the output ports represent a data output for a machine learning step.
+ *
+ * A valid path name in an {@link MlPipeline} specifies the name(s) of the parent vertices
+ * (if any) followed by the name of the desired vertex, all separated by the '/' delimiter. For example, a vertex
+ * named 'scalar_pipe' which has a parent vertex 'inner_pipeline' would have the path "inner_pipeline/scalar_pipe".
+ */
+entity type MlPipeline<DX, DY, DS, DO, DI> extends MlPipe<DX, DY, DS, DO, DI>
+                                           mixes PyReprProtocol, PyReprHtmlProtocol, FlowGraph<MlPipeline.Vertex>
+                                           type key 'PPL' {
+
+  /**
+   * Names of the x inputs for this machine learning pipeline.
+   */
+  xNames: cached property(): [string] py
+
+  /**
+   * Names of the y inputs for this machine learning pipeline.
+   */
+  yNames: cached property(): [string] py
+
+  /**
+   * Names of the context inputs for this machine learning pipeline.
+   */
+  contextNames: cached property(): [string] py
+
+  /**
+   * Names of the {@link #process} outputs for this machine learning pipeline.
+   */
+  outNames: cached property(): [string] py
+
+  /**
+   * Names of the {@link #interpret} outputs for this machine learning pipeline.
+   */
+  interpretationNames: cached property(): [string] py
+
+  /**
+   * Names of the {@link #score} outputs for this machine learning pipeline.
+   */
+  scoreNames: set<string>
+
+  /**
+   * The {@link MlPipe}s contained in this machine learning pipeline, indexed by name.
+   */
+  // TODO PLAT-45963: Remove inline claim
+  @dependency(include='this')
+  pipes: cached inline member function(): map<string, MlPipe> py
+
+  /**
+   * Extract the vertex wrapping a {@link MlPipe} from this possibly-nested machine learning pipeline, specified
+   * by a path of vertex names.
+   *
+   * @param path
+   *    The path to the desired {@link MlPipeline.Vertex}. See {@link MlPipeline} for details on path definition.
+   * @return the {@link MlPipeline.Vertex} specified by the path.
+   */
+  @dependency(include='this')
+  vertexAt: cached member function(path: !string): !MlPipeline.Vertex py
+
+  /**
+   * Validates the pipeline object.
+   *
+   * @return True if the pipeline object is valid.
+   */
+  validate: member function(): boolean py
+
+  /**
+   * Extract a given {@link MlPipe} by path.
+   *
+   * @param path
+   *    The path to the desired {@link MlPipe}. See {@link MlPipeline} for details on path definition.
+   * @return the {@link MlPipe} specified by the path.
+   */
+  @dependency(include='this')
+  pipeAt: member function(path: !string): MlPipe py
+
+  /**
+   * Extract a given {@link MlInterpreter} by path.
+   *
+   * @param path
+   *    The path to the desired {@link MlInterpreter}. See {@link MlPipeline} for details on path definition.
+   * @return the {@link MlInterpreter} specified by the path.
+   */
+  @dependency(include='this')
+  interpreterAt: member function(path: !string): MlInterpreter py
+
+  /**
+   * Extract multiple {@link MlPipe}s by path.
+   *
+   * @param paths
+   *    The paths to the desired {@link MlPipe}s. See {@link MlPipeline} for details on path definition.
+   * @return A list of {@link MlPipe}s corresponding to the input paths.
+   */
+  @dependency(include='this')
+  pipesAt: member function(paths: ![string]): [MlPipe] py
+
+  /**
+   * Extract multiple {@link MlInterpreter}s by path.
+   *
+   * @param paths
+   *    The paths to the desired {@link MlInterpreter}s. See {@link MlPipeline} for details on path definition.
+   * @return A list of {@link MlInterpreter}s corresponding to the input paths.
+   */
+  @dependency(include='this')
+  interpretersAt: member function(paths: ![string]): [MlInterpreter] py
+
+  /**
+   * Lists full paths of pipes within this pipeline. This function is intended to help the user provide
+   * paths to APIs like {@link #pipeAt}.
+   * @param level
+   *           the maximum nesting depth to list pipes for. The default is depth 1, which
+   *           lists all immediate children pipes of this pipeline. Depth 0 will return pipes at any level of nesting.
+   * @return list of paths, one per pipe, up to and including the specified nesting level.
+   */
+  @dependency(include='this')
+  pipePaths: member function(level: int = 1): [string] py
+
+  /**
+   * Lists the full path of every interpreter within this pipeline. This function is intended to help the user provide
+   * paths to APIs like {@link #interpreterAt}.
+   * @param level
+   *           the maximum nesting depth to list interpreters for. The default is depth 1, which
+   *           lists all immediate children interpreters of this pipeline. Depth 0 will return interpreters at any level of nesting.
+   * @return list of paths, one per interpreter, up to and including the specified nesting level.
+   */
+  @dependency(include='this')
+  interpreterPaths: member function(level: int = 1): [string] py
+
+  /**
+   * Used during {@link MlPipeline} execution of data consuming or data producing operations.
+   *
+   * @return the translator that maps objects of this Type to {@link MlFlow}.
+   */
+  workflowTranslator: private function(): MlPipelineToWorkflowTranslator py
+
+  /**
+   * Used during {@link MlPipeline} execution of data consuming or data producing operations to translate
+   * an {@link MlPipeline] to an executable {@link Workflow}.
+   *
+   * @see #translateAndExecute
+   */
+  translate: private member function(x: DX,
+                                     y: DY,
+                                     context: DS,
+                                     spec: MlOperationSpec,
+                                     opName: [MlDataOpName],
+                                     workflowId: string)
+                              : !{ workflow: Workflow, inputs: any, spec: MlOperationSpec, x: any, y: any, context: any } py
+
+  /**
+   * Used during {@link MlPipeline} execution of data consuming or data producing operations.
+   *
+   * @param x
+   *           Data to use as input to the model.
+   * @param y
+   *           Data to use as "y" or "label" to use as ground truth.
+   * @param context
+   *           Additional contextual data to use for execution of {@link MlDataOpName}.
+   * @param spec
+   *           Customizations for execution.
+   * @param opName
+   *           List of {@link MlDataOpName} representing current operations
+   * @param workflowId
+   *           Optional user defined "id" for {@link Workflow} created by {@link MlPipelineToWorkflowTranslator}
+   * @return the {@link MlOperationRun} object that represents the launched {@link MlDataOpName}. The caller should
+   *           use the APIs on the operation run object to query status and to get the final result.
+   */
+  translateAndExecute: private member function(x: DX,
+                                               y: DY,
+                                               context: DS,
+                                               spec: MlOperationSpec,
+                                               opName: [MlDataOpName],
+                                               workflowId: string): !MlOperationRun<any> py
+
+  /**
+   * Checks if the process output from this {@link MlPipeline} is indexed and satisfies the below rules.
+   * If the rules are not satisfied, an exception is raised.
+   * - For multi-input pipeline, no index validation check is done and an exception is raised.
+   * - For single-input, single/multi output pipeline, an exception is raised if any of the below is violated:
+   *   - The input must have a subject ID index {@link Feature.SUBJECT}.
+   *   - The outputs must have a subject ID index {@link Feature.SUBJECT}.
+   *   - The index values of {@link Feature.SUBJECT} of output must be a subset of index values of {@link Feature.SUBJECT} of input.
+   * @param x
+   *    Data used as "x" or "input" to processing.
+   * @param processOutput
+   *    Output of {@link MlPipeline#process}.
+   * @param outNames
+   *    Optional output names to perform validation check. If no outNames are specified, all outputs are validated.
+   */
+  @dependency(include='this')
+  validateOutputIndices: private member function(x: !DX, processOutput: !DO, outNames: [string]) py
+
+  /**
+   * Launch the training verification. Uses the authoring-based reference executor, which directly executes the
+   * operation from the authoring description.
+   * @param x
+   *           Data to use as "x" or "input" to training.
+   * @param y
+   *           Data to use as "y" or "label" to supervised training. If not provided, then training is unsupervised.
+   * @param spec
+   *           Customizations for training execution.
+   * @return a {@link MlPipeline} object that represents the trained pipeline.
+   */
+  train_verify: private member function(x: DX, y: DY, spec: MlOperationSpec): !mixing MlPipeline py
+
+  /**
+   * Launch the process verification of the trained pipeline. Uses the authoring-based reference executor, which directly executes the
+   * operation from the authoring description.
+   * @param x
+   *           Data to use as "x" or "input" to training.
+   * @param spec
+   *           Customizations for training execution.
+   * @return the output from processing.
+   */
+  process_verify: private member function(x: DX, spec: MlOperationSpec): DO py
+
+  /**
+   * Same as {@link #train}, except will not do a hyperparameter search. Used in underlying implementation of {@link #train}
+   * to do the non-search portion.
+   */
+  trainOnly: private member function(x: DX, y: DY, spec: MlOperationSpec): !MlOperationRun<any> py
+
+  /**
+   * Helper function used when doing hyperparameter search in {@link #train}.
+   * @param hpoExperiment
+   *           {@link Hpo.ExperimentBase} object associated with {@link #search}.
+   * @return an untrained {@link MlPipeline} that has the best hyperparameters from the searchRun.
+   */
+  // TODO: PLAT-93091, `hpoExperiment` argument should be `Hpo.ExperimentBase` type
+  bestPipeline: private member function(hpoExperiment: !any): !MlPipeline py
+
+  /**
+   * Detects if this {@link MlPipeline} is trainable
+   * An {@link MlPipeline} is trainable if at least one of it's constituent {@link MlPipe}s is trainable
+   * @return whether this {@link MlPipeline} is trainable.
+   */
+  @dependency(include='this')
+  isTrainable: ~ py
+
+  @dependency(include='this')
+  train: ~ py
+
+  @dependency(include='this')
+  trainOnServer: private member function(x: !?DX, y: DY, spec: MlOperationSpec): !MlOperationRun<any> py-server
+
+  @dependency(include='this')
+  process: ~ py
+
+  @dependency(include='this')
+  processOnServer: private member function(x: !?DX, spec: MlOperationSpec): MlOperationRun<DO> py-server
+
+  // TODO remove inline PLAT-45957
+  @dependency(include='this')
+  score: inline ~ py
+
+  // TODO remove inline PLAT-45957
+  @dependency(include='this')
+  scoreOnServer: private inline member function(x: !?DX,
+                                                y: DY,
+                                                context: DS,
+                                                spec: MlOperationSpec): MlOperationRun<map<string, double>> py-server
+
+  // TODO remove inline PLAT-45957
+  @dependency(include='this')
+  scoreAll: inline ~ py
+
+  // TODO remove inline PLAT-45957
+  @dependency(include='this')
+  scoreAllOnServer: private inline member function(x: !?DX,
+                                                   y: DY,
+                                                   context: DS,
+                                                   spec: MlOperationSpec): MlOperationRun<map<string, double>> py-server
+
+  // TODO remove inline PLAT-45957
+  @dependency(include='this')
+  interpret: inline ~ py
+
+  // TODO remove inline PLAT-45957
+  @dependency(include='this')
+  interpretOnServer: private inline member function(x: !?DX, spec: MlOperationSpec): MlOperationRun<DI> py-server
+
+  @dependency(include='this')
+  trainSync: ~ py
+
+  @dependency(include='this')
+  processSync: ~ py
+
+  @dependency(include='this')
+  scoreSync: ~ py
+
+  @dependency(include='this')
+  scoreAllSync: ~ py
+
+  @dependency(include='this')
+  interpretSync: ~ py
+
+  @dependency(include='this')
+  withHyperparams: ~ py
+
+  @dependency(include='this')
+  hyperparams: ~ py
+
+  @dependency(include='this')
+  searchResult: ~ py
+
+  hyperparamSpaces: ~ py
+
+  /**
+   * Add or change a set of parameter spaces for the hyperparameters of an {@link MlPipeline}.
+   * Example usage:
+   * Given a pipeline with sample {@link MlAtomicPipe} authored as using Linear Regression,
+   * Standard Scaler and MinMax Scaler models from Sklearn. To update various hyperparameters spaces of pipes in a pipeline,
+   * simply provide a map in the following format:
+   * ```py
+   * x, y = mla.var(), mla.var()
+   * lr_pipe = c3.MlPipe.convert(native_lr, name='lr')
+   * ss_pipe = c3.MlPipe.convert(native_ss, name='ss')
+   * mm_pipe = c3.MlPipe.convert(native_mm, name='mm')
+   * x_mm = mm_pipe(x)
+   * y_ss = ss_pipe(y)
+   * y_out = lr_pipe(x_mm, y_ss)
+   * pipeline = mla.pipeline(x={'x':x}, y={'y':y}, out={'y_pred':y_out})
+   * updated_pipeline = pipeline.withHyperparamSpaces({'ss': {'with_mean': c3.Hp.ParamSpace.Categorical.fromValues([True, False])}})
+   * ```
+   *
+   * @param paramSpaces
+   *           Map key represents the path to hyperparameter name. Map value represents the parameter spaces to be
+   *           defined for each respective hyperparameter.
+   * @return a {@link MlPipeline} with added parameter spaces for each desired hyperparameter.
+   */
+  // TODO: PLAT-52135 Move declaration back to MlPipe with param type "!map<string, any>"
+  withHyperparamSpaces: member function(paramSpaces: !map<string, map<string, Hp.ParamSpace>>): !mixing MlPipeline py
+
+  isTraining: ~ py
+
+  /**
+   * Used for accessing the parameter spaces of hyperparameters on one or more {@link MlAtomicPipe}s in a
+   * {@link MlPipeline}.
+   *
+   * @param hps
+   *           a map of {@link MlAtomicPipe} paths to their respective hyperparameter names.
+   * @return a map of {@link MlAtomicPipe} paths and their hyperparameter names to their respective
+   * {@link Hp.ParamSpace}.
+   */
+  @dependency(include='this')
+  hyperparamSpaces: private member function(hps: map<string, string>): !map<string, Hp.ParamSpace> py
+
+  /**
+   * Used for accessing values of hyperparameters overridden by the user relative to default hyperparameters
+   * of the native model of one or more {@link MlAtomicPipe} on an {@link MlPipeline}.
+   * @param hps
+   *           map of {@link MlAtomicPipe} paths to their respective hyperparameter names.
+   * @return a map of {@link MlAtomicPipe} paths and their hyperparameter names to their respective values.
+   */
+  @dependency(include='this')
+  hyperparams: member function(hps: map<string, any>): !map<string, any> py
+
+  /**
+   * Used for replacing a pipe in an MlPipeline based on the path provided.
+   * @param pipePath
+   *           path of {@link MlAtomicPipe} to be replaced.
+   * @param newPipe
+   *           new {@link MlAtomicPipe} to replace the existing pipe at the pipePath.
+   * @return {@link MlPipeline} with the newPipe present at the pipePath provided.
+   */
+  @dependency(include='this')
+  replacePipe: private member function(pipePath: !string, newPipe: !MlPipe): !mixing MlPipeline py
+
+  /**
+   * Used for replacing an interpreter in an MlPipeline based on the path provided.
+   * @param interpreterPath
+   *           path of {@link MlInterpreter} to be replaced.
+   * @param newInterpreter
+   *           new {@link MlInterpreter} to replace the existing interpreter at the interpreterPath.
+   * @return {@link MlPipeline} with the newInterpreter present at the interpreterPath provided.
+   */
+  @dependency(include='this')
+  replaceInterpreter: private member function(interpreterPath: !string,
+                                              newInterpreter: !MlInterpreter): !mixing MlPipeline py
+
+  /**
+   * Flattens a pipeline with nested inner pipelines by extracting the pipes of the inner pipelines
+   * and adding it to the outer pipeline such that no vertex in the pipeline graph represents a {@link MlPipeline}.
+   * @return the flattened {@link MlPipeline}
+   */
+  @dependency(include='this')
+  flatten: member function(): !mixing MlPipeline
+
+  /**
+   * Freezes an {@link MlPipeline}
+   * @param paths
+   *    The paths to the desired {@link MlPipe}s to freeze.
+   *    See {@link MlPipeline} for details on path definition.
+   *    If unspecified, then the entire pipeline is frozen.
+   * @return a modified copy of {@link MlPipeline} with the appropriate pipe(s) frozen that cannot be trained
+   */
+  @dependency(include='this')
+  freeze: member function(paths: [string]): !mixing MlPipeline py
+
+  /**
+   * Unfreezes an {@link MlPipeline}
+   * @param paths
+   *    The paths to the desired {@link MlPipe}s to unfreeze.
+   *    See {@link MlPipeline} for details on path definition.
+   *    If unspecified, then the entire pipeline is unfrozen.
+   * @return a modified copy of {@link MlPipeline} with the appropriate pipe(s) unfrozen that can be trained
+   */
+  @dependency(include='this')
+  unfreeze: member function(paths: [string]): !mixing MlPipeline py
+
+  /**
+   * Single workflow run triggered by training of this {@link MlPipeline}.
+   *
+   * NOTE: due to the immutability of pipelines, each training produces a new instance, which means that each pipeline
+   * instance can only be associated with a single training run.
+   * Also, keep in mind that a {@link WorkflowExecutorRun} might be periodically cleaned up, so this reference might
+   * not be always resolvable.
+   */
+  trainRun: WorkflowExecutorRun
+
+  /**
+   * Status of {@link #trainRun}. Holds important meta information (e.g. `startedby`) that needs to be persisted with this pipeline,
+   * even if the {@link #trainRun} reference is eventually cleaned up.
+   */
+  trainStatus: Workflow.Status
+
+  /**
+   * @return execution metadata associated with the training of this instance of {@link MlPipeline}. The key
+   *            is the vertex name, and the value is the aggregated results.
+   */
+  @deprecated(details="Use Workflow.Monitorable APIs on trainRun instead")
+  @dependency(include='this')
+  trainExecutionMetadata: member function(): map<string, Log.Entry.Action>
+
+  /**
+   * Create a visualization plotting start and end timestamps for all vertices in {@link #trainExecutionMetadata}.
+   * @return the native plot object.
+   */
+  @deprecated(details="Use Workflow.Monitorable APIs on trainRun instead")
+  plotTrainExecutionTimestamps: member function(): native py-client
+
+  /**
+   * The scoring metrics used in this pipeline.
+   */
+  @dependency(include='this')
+  scoringMetrics: ~ py
+
+  /**
+   * Do not generate java signatures for these methods and instead implement in py
+   */
+  _repr_: ~ py
+
+  _reprHtml_: ~ py
+  beforeMake: ~ java | py
+  cleanUp:    ~ py
+
+  /**
+   * Clean up (i.e. remove from db or delete from filesystem) any artifacts or dependencies related to this {@link MlPipeline}.
+   * Clean up this {@link MlPipeline} after artifacts or dependencies are cleaned up.
+   * @param cleanUpNested
+   *    If True, clean up all nested {@link MlPipe}s recursively
+   */
+  @dependency(include='this')
+  cleanUp: member function(cleanUpNested: boolean) py
+
+  /**
+   * Implementation of {@link MlPipeline#_repr_} with a better method name
+   */
+  @dependency(include='this')
+  repr: member function(): string py
+
+  /**
+   * Helper function to forcibly execute a `process` from java.
+   */
+  // TODO: PLAT-45223
+  processInJava: private function(trained: !MlPipeline, x: DX, spec: MlOperationSpec): DO
+
+  /**
+   * Construct an instance of {@link MlModel} from the given parameters.
+   * Currently, this supports creating an instance of platform provided {@link MlModel} only.
+   * For creating instances of subtypes of {@link MlModel}, it is recommended that users implement the equivalent logic
+   * in individual applications.
+   * If an instance of {@link MlProject} with the given projectName is not found, an error is raised.
+   * @param projectName
+   *    Name of the {@link MlProject} to associate the {@link MlModel} with.
+   * @param x
+   *    Map of {@link MlPipeline} x input names to corresponding {@link Feature.Set sets} of features.
+   *    Can be set to {@link Feature.Set} if there is only one x input to {@link MlPipeline}.
+   * @param y
+   *    Map of {@link MlPipeline} y input names to corresponding {@link Feature.Set sets} of features.
+   *    Can be set to {@link Feature.Set} if there is only one y input to {@link MlPipeline}.
+   *
+   * @return a {@link MlModel} encompassing this {@link MlPipeline}.
+   */
+  createModel: member function(projectName: !string,
+                               x: map<string, Feature.Set> | Feature.Set,
+                               y: map<string, Feature.Set> | Feature.Set): !MlModel py
+
+  /**
+   * @see Workflow.Run#setLogLevel
+   * Change the log level for {@link MlPipeline} related Types.
+   *
+   * @param logLevel
+   *           The log level to set on the Logger for all {@link MlPipeline} related Types
+   * @param children
+   *           If set to True, then this method will also update the log level on the Loggers for
+   *           {@link Workflow.Run} related types.
+   */
+  setLogLevel: function(logLevel: !string enum Logger.Level, children: boolean)
+
+  /**
+   * Generates authoring code, as text or Jupyter cell, that the user can execute to create an equivalent pipeline.
+   *
+   * @param level
+   *           specifies the level of nesting to generate authoring code up to. Level 0 indicates code generation
+   *           for the outer pipeline only. Level 1 indicates code generation for outer pipeline and one level of
+   *           inner pipelines only, etc. Level -1 indicates generate code for all nesting levels.
+   * @param freezePipes
+   *           if set, then freeze all pipes in the generated code.
+   * @param asString
+   *           if set, return generated code as string. Otherwise, a new Jupyter cell will be created with the generated
+   *           code populating it.
+   * @param varPrefix
+   *           specifies the prefix, if any, for vars representing nested pipelines. Primarily intended to be used by
+   *           internal implementation of nested levels.
+   * @return the generated code as string, if asString is set, otherwise nothing.
+   */
+  @dependency(include='this')
+  authoringCode: member function(level: int = 0,
+                                 freezePipes: boolean,
+                                 asString: boolean,
+                                 varPrefix: string): ?string py
+
+  /**
+   * Extracts background {@link Data} instances from interpreter instances in this {@link MlPipeline}.
+   *
+   * @returns a native python dictionary whose keys are json of {@link Data}
+   * and values are {@link Data} instances.
+   */
+  extractBackgroundData: private member function(): native py
+
+  /**
+   * Checks if {@link Data} instances within the input are persisted and persists them if they are not persisted.
+   * This API persists inputs to {@link MlPipeline} by recursively traversing its input for instances of {@link Data}
+   * @param inputToPersist
+   *     Input to be persisted. Either C3 Types: {@link Data}, {@link Tuple}, {@link Map}, or {@link Obj},
+   *     or Python-native types: pandas.DataFrame or dict.
+   * @return persisted #inputToPersist
+   */
+  persistData: private function(inputToPersist: native): native py
+
+  /**
+   * Helper function to close intermediate {@link Data} instances.
+   * This API closes data inputs which is either {@link Data} or named {@link Tuple} of {@link Data} or map of {@link Data}.
+   * @param inputToClose
+   *     Input to be closed
+   * @param closeMultiNodeData
+   *     If True, data supporting multi-node such as {@link Data.Persisted} will be closed.
+   */
+  closeData: private function(inputToClose: native, closeMultiNodeData: boolean) py
+
+  /**
+   * Extracts {@link Data} instances from sourceToExtract and populates extractedData.
+   * Returns a map whose keys are json of {@link Data} and values are {@link Data} instances.
+   * sourceToExtract could be one of {@link Data}, Map or named Tuple or List of {@link Data}, {@link MlInterpretResult}
+   * or {@link Hpo.ExperimentBase} or a c3 object instance containing {@link Data}.
+   * @param sourceToExtract
+   *     Input to extract {@link Data} instances from.
+   * @param extractedData
+   *     A native python dictionary whose keys are json of {@link Data} and values are {@link Data} instances.
+   * @param doNotRecurse
+   *     If True, disable recursively checking nested c3 object instances for {@link Data}.
+   * @returns a native python dictionary whose keys are json of {@link Data}
+   * and values are {@link Data} instances.
+   */
+  // TODO: PLAT-52617, remove inline
+  extractData: private inline function(sourceToExtract: native,
+                                       extractedData: native,
+                                       doNotRecurse: boolean): native py
+
+  /**
+   * Controls the behavior of {@link MlPipeline#beforeMake}
+   * If set, all the {@link MlPipe}s referenced by this {@link MlPipeline} are not upserted.
+   */
+  doNotAutoUpsert: private boolean
+
+  /**
+   * Sets {@link MlPipeline#doNotAutoUpsert} to True/False for this {@link MlPipeline} and for all nested {@link MlPipeline}s
+   * referenced by this {@link MlPipeline}.
+   * @param value
+   *     Boolean value for {@link MlPipeline#doNotAutoUpsert}
+   * @param reverse
+   *    Specifies the order to set {@link MlPipeline#doNotAutoUpsert} for nested {@link MlPipeline}s.
+   *    If true, deeply nested {@link MlPipeline#doNotAutoUpsert} are set before this {@link MlPipeline}.
+   * @return a new instance of {@link MlPipeline}.
+   */
+  setDoNotAutoUpsert: private member function(value: !boolean, reverse: boolean): !MlPipeline py
+
+  fetch: ~
+
+  /**
+   * Pipeline constructor - based on the stringified v7 `MLSerialPipeline` json and runtime requirements.
+   * Currently only supports the following `MLLeafPipe` conversions: {@link SklearnLikePipeV7}.
+   * @param pipeline
+   *           json dump of the v7 `MLSerialPipeline`.
+   * @param runtimeRequirements
+   *           yamls for the declared runtime requirement in v7 for the runtime corresponding to the `MLLeafPipe`s,
+   *           in order of appearance in the `MLSerialPipeline`.
+   * @return constructed V8-operable {@link MlPipeline}.
+   */
+  fromV7Json: function(pipeline: !string, runtimeRequirements: ![string]): !mixing MlPipeline py
+
+  replaceEntityReferences: ~ py
+
+  /**
+   * Used to ensure that the pipes of the pipeline are deployed using {@link Workflow.Engine}.
+   * All the pipes within the pipeline will be deployed in the same {@link Workflow.Engine}.
+   * @param deploySpec
+   *           the deploy spec to use for deploying all the pipes in the pipeline.
+   * @param opName
+   *           List of {@link MlDataOpName} for which pipeline operations we need the pipeline to be deployed.
+   */
+  @beta
+  ensureDeployed: member function(deploySpec: Workflow.Engine.DeploySpec,
+                                  opNames: [MlDataOpName] = [MlDataOpName.PROCESS, MlDataOpName.SCORE, MlDataOpName.INTERPRET])
+                           : ![Workflow.Engine] py
+
+  /**
+   * Used to ensure that the pipes of the pipeline are deployed using {@link Workflow.Engine}.
+   * Multiple pipes could be deployed as part of the same engine. see {@link ensureDeployed} if prefer to deploy all the pipes
+   *  in the same engine.
+   * @param deploySpecs
+   *           A list of deploy specs and list of pipe paths that should be deployed using these specs.
+   *           The pipe paths should match the input of {@link #pipesAt}.
+   * @param opName
+   *           List of {@link MlDataOpName} representing for which pipeline operations we need the pipeline to be deployed.
+   */
+  @beta
+  ensureDeployedPipes: private member function(deploySpecs: [{ deploySpec: Workflow.Engine.DeploySpec, pipePaths: [string] }],
+                                               opNames: [MlDataOpName] = [MlDataOpName.PROCESS, MlDataOpName.SCORE, MlDataOpName.INTERPRET])
+                                        : ![Workflow.Engine] py
+}

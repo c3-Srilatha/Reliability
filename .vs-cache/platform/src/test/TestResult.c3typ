@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// @xml(rootElement='testsuites', compact=true, schema='junit4.xsd')
+@db(includeReadCalcs=true)
+entity type TestResult mixes Xml<TestResult> schema name 'TST_RES' {
+
+  testsuite:        [TestSuiteResult] schema name 'STS'
+  coverageCounters: [CodeCoverageCounter](testResult)
+
+  /**
+   * Information about the current hardware where the test is executed
+   */
+  // @xmlField(hidden=true)
+  hardware: Hardware
+
+  // @xmlField(hidden=true)
+  id: ~
+
+  // @xmlField(hidden=true)
+  name: ~
+
+  // @xmlField(hidden=true)
+  meta: ~
+
+  // @xmlField(hidden=true)
+  // version: ~
+  // @xmlField(hidden=true)
+  totalTests: int stored calc 'sum(testsuite.tests)'
+
+  // @xmlField(hidden=true)
+  totalErrors: int stored calc 'sum(testsuite.errors)'
+
+  // @xmlField(hidden=true)
+  totalFailures: int stored calc 'sum(testsuite.failures)'
+
+  // @xmlField(hidden=true)
+  totalWarnings: int stored calc 'sum(testsuite.warnings)'
+
+  // @xmlField(hidden=true)
+  totalSkipped: int stored calc 'sum(testsuite.skipped)'
+
+  // @xmlField(hidden=true)
+  totalPassed: int stored calc 'totalTests - (totalErrors + totalFailures + totalSkipped)'
+
+  // @xmlField(hidden=true)
+  percentagePassed: double stored calc 'round(totalPassed / (totalTests - totalSkipped), 2)'
+
+  // @xmlField(hidden=true)
+  percentageFailed: double stored calc 'round((totalFailures + totalErrors) / (totalTests - totalSkipped), 2)'
+
+  // @xmlField(hidden=true)
+  status: string enum('Passed', 'Failed') stored calc "totalFailures + totalErrors == 0 ? 'Passed' : 'Failed'"
+
+  /**
+   * @return a YAML string of the `TestResult`. This is the preferred method to create a human-readable string
+   *    representation of your `TestResult`, as we use
+   *    [Literal Style](https://yaml.org/spec/1.2.2/#812-literal-style) which does not escape new lines and tabs.
+   */
+  toYamlString: member function(): string
+
+  /**
+   * Return true if any tests produced an error or failed an assertion.
+   */
+  anyErrorsOrFailures: member function(): boolean
+
+  /**
+   * Print errors and failures to the current process standard error. This is implemented in each language, to display
+   * the results in the invoked-from environment.
+   */
+  printErrorsAndFailures: member function() java | js | py
+
+  /**
+   * Merge the {@link TestSuiteResult}s of the two test Results and return a new TestResult
+   */
+  mergeTestResults: function(results: ![TestResult]): !TestResult
+}

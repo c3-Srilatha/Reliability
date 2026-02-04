@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.management.trafficmanager.implementation.EndpointInner',
+      runtimeFieldMapper='JavaC3StyleFieldMapper')
+type AzureTrafficManagerEndpointFields {
+
+  weight:                @java(runtimeClassName='java.lang.Long') int
+  priority:              @java(runtimeClassName='java.lang.Long') int
+  type_:                 @java(runtimeClassName='java.lang.String') string
+  geoMapping:            @java(runtimeClassName='java.util.List') [string]
+  endpointMonitorStatus: @java(runtimeClassName='com.microsoft.azure.management.trafficmanager.EndpointMonitorStatus') string enum AzureTrafficManagerEndpointMonitorStatus
+  target:                @java(runtimeClassName='java.lang.String') string
+  targetResourceId:      @java(runtimeClassName='java.lang.String') string
+  endpointLocation:      @java(runtimeClassName='java.lang.String') string
+  endpointStatus:        @java(runtimeClassName='com.microsoft.azure.management.trafficmanager.EndpointStatus') string enum AzureTrafficManagerEndpointStatus
+  minChildEndpoints:     @java(runtimeClassName='java.lang.Long') int
+  name_:                 @java(runtimeClassName='java.lang.String') string
+  subnets_:              @java(runtimeClassName='java.util.List') [AzureTrafficManagerEndpointPropertiesSubnetsItem]
+  id_:                   @java(runtimeClassName='java.lang.String') string
+  customHeaders:         @java(runtimeClassName='java.util.List') [AzureTrafficManagerEndpointPropertiesCustomHeadersItem]
+  fromJava:              function(javaObj: @java(class="java.lang.Object") !?native)
+                           : AzureTrafficManagerEndpointFields
+  toJava:                member function(): native
+}

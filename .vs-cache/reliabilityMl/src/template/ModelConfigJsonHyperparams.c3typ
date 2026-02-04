@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the key and additional hyperparameters for the underlying machine learning pipeline
+ * (MlPipeline) for a {@link ModelTemplate} or the pipeline of a {@link ReliabilityMlModel}. This type is used to
+ * store and parse hyperparameter configurations for machine learning models in a format that is easier to handle
+ * within user interfaces (UIs).
+ *
+ * **NOTE**: Unlike the {@link ModelConfigHyperparams} type, the fields of this type are represented as `json`
+ * to facilitate easier parsing and processing when used in a UI.
+ */
+type ModelConfigJsonHyperparams mixes ModelConfigHyperparams {
+
+  /**
+   * Key hyperparameters for the machine learning pipeline. This field holds essential hyperparameters that
+   * are critical to defining the pipeline's behavior. These parameters are required for configuring the model
+   * and driving the underlying training and inference processes.
+   *
+   * The data is stored in a `json` format for easier parsing, especially when displayed in a user interface.
+   * This allows flexible handling of complex configurations without predefined schema limitations.
+   */
+  keyHyperparams: json
+
+  /**
+   * Additional hyperparameters for the machine learning pipeline. This field allows users to specify any
+   * additional parameters that might not be part of the core hyperparameter set. These parameters can help
+   * fine-tune the behavior of the model pipeline or address specific model requirements.
+   *
+   * Like `keyHyperparams`, this field is also stored as `json` for flexibility in handling and presenting
+   * these additional parameters in the UI.
+   */
+  additionalHyperparams: json
+}

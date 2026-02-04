@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Mixin this type to store raw Timeseries data points which happen at a "point in time" -
+ * (having only start date time and no end - e.g. Temperature reading at a given instant in time)
+ *
+ * This type participates in the normalization process which performs data cleansing on these points. Refer to the topic
+ * on [normalization](ts-normalization.c3doc.md) for more information.
+ *
+ * In order for normalization process to work, there needs to be a 1-1 mapping in between a {@link TimedDataPoint} type
+ * & {@link TimedDataHeader} type.
+ *
+ * For the normalization process, a single TimedDataPoint type CANNOT map to multiple TimedDataHeader types.
+ *
+ * You also must create a Timeseries field that needs to be normalized typically denoted with an annotation
+ * @ts (@see Ann.Ts)
+ *
+ * Refer to [Normalization Process](ts-normalization.c3doc.md) for an end to end example.
+ *
+ * DO NOT mixin this type if you do not want to participate in the normalization process & use the base types
+ * (e.g. TimedDataPointFields) if you would like to inherit the base fields only
+ *
+ * In order to represent data that has a defined start & end date time, @see IntervalDataPoint
+ *
+ * @see normalization#how-it-works
+ * @see IntervalDataPoint
+ * @see TimedDataHeader
+ */
+abstract type TimedDataPoint<P: TimedDataHeader> mixes TimedDataPointFields, ParentPartitionable<P>

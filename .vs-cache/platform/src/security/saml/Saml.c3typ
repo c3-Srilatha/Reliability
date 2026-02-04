@@ -1,0 +1,276 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used to parse and generate Saml artifacts
+ */
+type Saml mixes Authenticator {
+
+  /**
+   * This function is used to generate a Saml single sign-on SP descriptor that can be used by our customers to configure
+   * their Identity Provider to implement IdP-initiated SAML SSO flow.
+   *
+   * @param spec
+   *           {@link SpSsoDescriptorSpec spec} for SpSsoDescriptor
+   * @return string
+   *           The Saml EntityDescriptor xml as a string.
+   *           Example: Saml.generateSpSsoDescriptor(SpSsoDescriptorSpec.make({'acsUrl': '127.0.0.1/saml/login',
+   *                                                                           'wantAssertionsEncrypted': true}));
+   */
+  generateSpSsoDescriptor: function(spec: SpSsoDescriptorSpec): string
+
+  /**
+   * Given a Saml EntityDescriptor, generate all the C3 Saml artifacts to support IDP initiated Saml SSO. Basically
+   * generates {@link VanityUrl}, {@link SAMLProfile}, {@link SAMLSettings},{@link Idp} and {@link IdpCertificate}.
+   *
+   * To use local files,
+   *           descriptorFile = File.make("file:///<file_path>");
+   *
+   * To use S3 files,
+   *           descriptorFile = File.make("s3://<file_path>");
+   *
+   *
+   * @param descriptorFile
+   *           C3 File that contains the Saml EntityDescriptor
+   * @param vanityUrl
+   *           This is the vanityUrl that will be bound to the corresponding Saml artifacts.
+   * @param env
+   *           Env the vanityUrl will be bound to.
+   * @param app
+   *           App the vanityUrl will be bound to.
+   * @param hasExternalDns
+   *           Set if you want to skip creation of dns entry on dns not managed by underlying cloud services. {@see VanityUrl#hasExternalDns}
+   */
+  generateIdpSsoArtifacts: function(descriptorFile: !File,
+                                    vanityUrl: !string,
+                                    env: !string,
+                                    app: !string,
+                                    hasExternalDns: boolean,
+                                    override: string enum ConfigOverride = APP)
+
+  generateIdpSsoArtifacts: function(descriptorFile: !string,
+                                    vanityUrl: !string,
+                                    env: !string,
+                                    app: !string,
+                                    hasExternalDns: boolean,
+                                    override: string enum ConfigOverride = APP)
+
+  /**
+   * Given a Saml EntityDescriptor, generate all the C3 Saml artifacts to support SP initiated Saml SSO. Basically
+   * generates {@link SAMLProfile}, {@link SAMLSettings},{@link Idp}, {@link IdpCertificate}, {@link Sp},
+   * or {@link VanityUrl} if the given fully qualified domain name is a vanityUrl
+   *
+   * To use local files,
+   *           descriptorFile = File.make("file:///<file_path>");
+   *
+   * To use S3 files,
+   *           descriptorFile = File.make("s3://<file_path>");
+   *
+   *
+   * @param descriptorFile
+   *           C3 File that contains the Saml EntityDescriptor
+   * @param acsUrl
+   *           Assertion Consumer Service endpoint url
+   * @param fqdn
+   *           This is the fully qualified domain name {@see AppUrl#id} that will be bound to the corresponding Saml artifacts.
+   * @param env
+   *           Env the fully qualified domain name will be bound to.
+   * @param app
+   *           App the fully qualified domain name will be bound to.
+   * @param compressRequest
+   *           If true, compress the SAMLRequest to IdP
+   * @param hasExternalDns
+   *           Set if you want to skip creation of dns entry on dns not managed by underlying cloud services. {@see VanityUrl#hasExternalDns}
+   */
+  generateSpSsoArtifacts: function(descriptorFile: !File,
+                                   acsUrl: !string,
+                                   fqdn: !string,
+                                   env: !string,
+                                   app: !string,
+                                   compressRequest: boolean,
+                                   hasExternalDns: boolean,
+                                   override: string enum ConfigOverride = APP)
+
+  generateSpSsoArtifacts: function(descriptorFile: !string,
+                                   acsUrl: !string,
+                                   fqdn: !string,
+                                   env: !string,
+                                   app: !string,
+                                   compressRequest: boolean,
+                                   hasExternalDns: boolean,
+                                   override: string enum ConfigOverride = APP)
+
+  /**
+   * Cleanup all the Saml artifacts associated with the fully qualified domain name: {@link SAMLProfile},
+   * {@link SAMLSettings}, {@link Idp}, {@link IdpCertificate}, {@link Sp}, {@link AutoCreateUser}.
+   *
+   * @param fqdn
+   *           Determines which fully qualified domain name to cleanup.
+   */
+  cleanUpArtifacts: function(fqdn: !string)
+
+  /**
+   * Similar to #generateIdpSsoArtifacts but the descriptor is read from a string instead of a File.
+   */
+  generateIdpSsoArtifactsFromDescString: private function(desc: !string,
+                                                          fqdn: !string,
+                                                          env: !string,
+                                                          app: !string,
+                                                          hasExternalDns: boolean,
+                                                          override: string enum ConfigOverride = APP)
+
+  /**
+   * When generating {@link SamlProfile} and {@link SamlServiceProvider} to enable SSO by calling {@link Saml.generateIdpSsoArtifacts},
+   * the picked {@link CryptoKeyPair} to decrypt an encrypted Saml response is the default one whose id is exactly same as the
+   * argument fqdn passed in the function {@link Saml.generateIdpSsoArtifacts}.
+   *
+   * This {@link Saml.updateSpKeyPair} function is used to pick up different {@link CryptoKeyPair cryptoKeyPair} with
+   * the id as passed in argument when decrypting an encrypted SAML response.
+   *
+   * @param fqdn
+   *           Saml fully qualified domain name that jit user creation will be enabled for.
+   *
+   * @param keyPairId
+   *            The id of new {@link CryptoKeyPair CryptoKeyPair} will be used.
+   */
+  updateSpKeyPair: private function(fqdn: !string, keyPairId: !string, override: string enum ConfigOverride = APP)
+
+  /**
+   * Builds request that will be redirected to idp
+   *
+   * @param  privateKey
+   *             private key used for signature and signing
+   * @param  publicKey
+   *             public key used for signature and signing
+   * @param  profile
+   *             SamlIdpConfig with valid saml information
+   * @param  relayState
+   *             redirect location based off of original request
+   */
+  buildSAMLAuthnRequest: function(@java(class="java.security.PrivateKey")
+                                  privateKey: !?native,
+                                  @java(class="java.security.PublicKey")
+                                  publicKey: !?native,
+                                  profile: !SamlIdpConfig,
+                                  relayState: !string): string
+
+  /**
+   * Builds request that will be redirected to idp
+   *
+   * @param  profile
+   *             SamlIdpConfig with valid saml information
+   * @param  nameId
+   * @param  sessionIndex
+   */
+  buildSAMLLogoutRequest: function(profile: !SamlIdpConfig, nameId: !string, sessionIndex: !string): string
+
+  /**
+   * Builds response for logout
+   *
+   * @param  issuer
+   *             which idp this logout response is from
+   * @param  destination
+   *             location for where the user should be sent
+   * @param  requestId
+   * @param  sessionIndex
+   * @param  statusCodeUri
+   *             status code if successful or not
+   */
+  buildSAMLLogoutResponse: function(issuer: !string,
+                                    destination: !string,
+                                    requestId: !string,
+                                    sessionIndex: !string,
+                                    statusCodeUri: !string): string
+
+  /**
+   * Saml-initiated logout
+   *
+   * @param  request
+   *           HttpRequest
+   * @param  samlRequest
+   */
+  doLogout: function(request: !HttpRequest, samlRequest: !string): HttpResponse
+
+  /**
+   * Parses response received from idp
+   *
+   * @param  SAMLResponse
+   *             response that needs to be parsed
+   * @param  isCompressed
+   *             indicator for whether response is compressed or not
+   */
+  parseSAMLResponse: function(SAMLResponse: !string,
+                              isCompressed: !boolean): @java(class="org.opensaml.saml.saml2.core.Response") native
+
+  /**
+   * Extracts assertions from SAMLResponse
+   *
+   * @param  response
+   *             saml response that contains the assertions
+   * @param  keyId
+   *             id for {@link CryptoPrivateKey}
+   */
+  extractAssertionFromSAMLResponse: function(@java(class="org.opensaml.saml.saml2.core.Response")
+                                             response: !?native,
+                                             keyId: string)
+                                      : @java(class="org.opensaml.saml.saml2.core.Assertion") native
+
+  /**
+   * Extracts encrypted assertions from SAMLResponse
+   *
+   * @param  response
+   *             saml response that contains the assertions
+   * @param  keyId
+   *             id for {@link CryptoPrivateKey}
+   */
+  extractEncryptedAssertionFromSAMLResponse: function(@java(class="org.opensaml.saml.saml2.core.Response")
+                                                      response: !?native,
+                                                      keyId: string)
+                                               : @java(class="org.opensaml.saml.saml2.core.Assertion") native
+
+  /**
+   * Extract the SAML assertion information of interest from the SubjectStatement elements
+   *
+   * @param Assertion
+   *           saml assertion data
+   */
+  getSamlAssertionAttributes: function(@java(class="org.opensaml.saml.saml2.core.Assertion")
+                                       Assertion: !?native): map<string, [SamlAssertionAttribute]>
+
+  /**
+   * Ensures there are no comments in the assertion data
+   *
+   * @param children
+   *           1 specific saml assertion data
+   * @param attributeName
+   *           name of the specific saml assertion data
+   */
+  assertNoComment: private function(@java(class="org.w3c.dom.Nodelist") children: !?native, attributeName: string)
+
+  /**
+   * Returns the {@link AppId} for the target app stored in the provided state token
+   * @param relayState
+   *      The relay state
+   * @param host
+   *      The host for which the IdpConfig is configured for
+   */
+  appFromRelayState: function(relayState: !string, host: !string): string serialized AppId
+
+  /**
+   * Construct an http response that will redirect the client to their target app login endpoint.
+   * @param app
+   *      The app to redirect to
+   * @param host
+   *      The host for which the IdpConfig is configured for
+   * @param data
+   *      The data to be passed to the target app
+   * @param req
+   *      The request that initiated the authentication flow
+   */
+  redirectToTargetApp: private function(app: !string, host: !string, data: !string, req: !HttpRequest): HttpResponse
+}

@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+private type K8sServiceSpec mixes K8sResourceSpecBase {
+
+  clusterIP:                string
+  externalIPs:              [string]
+  externalName:             string
+  externalTrafficPolicy:    string
+  healthCheckNodePort:      int
+  loadBalancerIP:           string
+  loadBalancerSourceRanges: [string]
+  ports:                    [K8sServicePort]
+  publishNotReadyAddresses: boolean
+  selector:                 map<string, string>
+  sessionAffinity:          string
+  sessionAffinityConfig:    K8sSessionAffinityConfig
+
+  @ser(name='type')
+  type_: string
+}

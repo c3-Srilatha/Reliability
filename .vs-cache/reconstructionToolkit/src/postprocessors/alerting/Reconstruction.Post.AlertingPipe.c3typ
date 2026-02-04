@@ -1,0 +1,58 @@
+
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This Type represents all alerting pipe that determine whether or not to raise an "alert" based on certain inputs. All
+ * alerting pipes should extend from this Type and output a single `Data` containing the alerts.
+ *
+ * DEVELOPER NOTE: Developers may override {@link #succeed} to customize how an alerting pipe is appended to a central
+ * pipe.
+ */
+abstract extendable entity type Reconstruction.Post.AlertingPipe<DX> extends MlTemplate.AtomicPipe<DX, void, {alert: Data}> mixes Reconstruction.Post.Postprocessor type key 'RCPA' {
+
+  /**
+   * The name of the column in the {@link Data} output. Default is "alert"
+   */
+  alertColumnName: string = "alert"
+
+  /**
+   * The required lookback duration to correctly generate alerts. Used for internal data handling in the model
+   * deployment framework.
+   */
+  lookbackDuration: private Duration
+
+  generatePipe: ~ py
+
+  /**
+   * This method constructs a new {@link MlPipeline} that appends this alerting pipe to any {@link MlPipe} that has
+   * `riskScore` as an output. The returned pipeline will have a new output `alert`. See
+   * {@link Reconstruction.Post.Postprocessor#suceed} for the list of accepted keyword arguments.
+   *
+   * It is recommended to use this method with a {@link Reconstruction.Post.RiskScorePipe}. For example,
+   * ```py
+   * # Create a new Reconstruction.Algorithm
+   * autoencoder = c3.Reconstruction.Algorithm.TransformerAutoencoder(name="trans_ae").withDefaults()
+   *
+   * # Create a new risk score pipe
+   * risk_score_pipe = c3.Reconstruction.Post.SimpleRiskScorePipe(aggFunc="mean", name="simple_risk_score")
+   *
+   * # Create a new alerting pipe
+   * alerting_pipe = c3.Reconstruction.Post.PercentileDurationAlertingPipe(name="alerting").withDefaults()
+   *
+   * # Connect the risk score pipe to the autoencoder
+   * ae_with_risk_score = risk_score_pipe.succeed(autoencoder)
+   *
+   * # Connect the alerting pipe to the sub-pipeline containing the autoencoder and risk score pipe by invoking
+   * # `succeed` on the alerting pipe.
+   * full_pipeline = alerting_pipe.succeed(ae_with_risk_score)
+   * ```
+   */
+  succeed: ~ py
+}

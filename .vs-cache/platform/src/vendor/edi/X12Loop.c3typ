@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This c3typ represents configuration for x12 document loop - set of segments that represents an entity
+ * with a business value. Example may be a 'submitter' entity that contains personal data in segment 'NM1' and
+ * contact information in segment 'PER'.
+ * If business entity should contain some sub-entity, it is represented as nested loop.
+ *
+ * @see Segment
+ */
+entity type X12Loop type key 'X12L' schema name 'X12_LOOP' {
+
+  /**
+   * loop may be occurred multiple times, this value defines limitations for the loop to repeat.
+   */
+  maxRepeatNum: string
+
+  /**
+   * defines whether the loop should get letters from the parent loop name.
+   *
+   * For example, loop 1000A contains nested loop with loopId 2000 and following name:
+   * - 2000 if letteringDepth < 1
+   * - 2000A if letteringDepth >= 1
+   */
+  letteringDepth: int
+
+  parent: X12Loop schema suffix 'PRNT'
+
+  /**
+   * nested loops.
+   */
+  loops: [X12Loop](parent) schema suffix 'LPIDS'
+}

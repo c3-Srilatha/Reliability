@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specification that describes how to use each field of the {@link dataType} for display in the {@link UiSdlCategoricalLineBarChart}.
+ * A single field is mapped to either X axis or Y axis, so an instance of this type specifies how to display the X axis
+ * in a categorical line bar chart.
+ */
+@typeScript
+type UiSdlCategoricalLineBarChartXAxisDataSpecSetting mixes UiSdlFieldBasedDataSpecSetting, UiSdlDynamicOptionsGeneratable {
+
+  /**
+   * The url to which the user is redirected upon clicking the label.
+   */
+  redirectLink: UiSdlLinkTemplate
+
+  /**
+   * How should we sort the values, ascending or descending.
+   */
+  sortDirection: string enum('ascending', 'descending') = 'ascending'
+
+  /**
+   * Should we sort based on the X values or Y values.
+   * If sorting on X values, it will be sorted in alphabetical order.
+   */
+  sortedBasedOn: string enum('X values', 'Y values') = 'X values'
+
+  /**
+   * The name of the y axis field to sort on.
+   */
+  @restriction(filter="sortedBasedOn=='Y values'")
+  sortField: string
+
+  /**
+   * TODO: UI-7879 This should be dynamic and based on the component metadata. We shouldn't have to manually generate options by custom logic.
+   *
+   * Helper function to dynamically fetch options depending on the components configuration in the redux store.
+   *
+   * @param environment The environment holding the redux store.
+   * @param componentId The ID of the component being configured.
+   *
+   * @return y axis field names to be rendered.
+   */
+  getDynamicOptionsForField: ~
+}

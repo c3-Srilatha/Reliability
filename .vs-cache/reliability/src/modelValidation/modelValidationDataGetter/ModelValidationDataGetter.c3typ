@@ -1,0 +1,92 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type gets data for model validation of a particular model for its dataset.
+ * It returns the data used to train the model and the model output data with the masks from the dataset applied.
+ */
+type ModelValidationDataGetter {
+
+  /**
+   * Returns the data used to train the model and the model output data with the masks from the dataset applied.
+   */
+  getData: inline function(model: !ReliabilityMlModel): native py-data
+
+  /**
+   * Returns the feature and mask data used to train the model.
+   * A tuple of the following format is returned: (datasetPreparationRun, feature_data, mask_data).
+   */
+  getDatasetData: inline function (model: !ReliabilityMlModel): native py-data
+
+  /**
+   * Returns the alerting threshold for a given {@link ReliabilityRiskMlModel}.
+   * Returns a tuple where the first value is the threshold, and the second value
+   * is the column this threshold is based on.
+   */
+  getRiskModelAlertingThreshold: inline function(model: ReliabilityRiskMlModel): native py-data
+
+  /**
+   * Adds the model outputs to the dataset data for a Control Valve models {@link ReliabilityMlModel}.
+   * Used by the Reliability Risk for Control Valves {@link ReliabilityMl.Project}. Should not be used elsewhere.
+   */
+  addCVModelOutputs: private inline function(
+    model: !ReliabilityRiskMlModel,
+    datasetPreparationRun: !ReliabilityMlDatasetPreparationRun,
+    datasetData: !native
+  ): !native py-data
+
+  /**
+   * Adds the model outputs to the dataset data for the {@link ReliabilityMlModel}s using the
+   * `reliabilityRiskWithResidualDiagnostics` project.
+   * Used by {@link ReliabilityMl.Project#addModelOutputsForModelValidationChartLambda}. Should not be used elsewhere.
+   */
+  addResidualRiskModelOutputs: private inline function(
+    model: !ReliabilityMlModel,
+    datasetPreparationRun: !ReliabilityMlDatasetPreparationRun,
+    datasetData: !native
+  ): !native py-data
+
+  /**
+   * Adds the model outputs to the dataset data for a {@link ReliabilityRiskMlModel}.
+   * Used by the Reliability Risk {@link ReliabilityMl.Project}. Should not be used elsewhere.
+   */
+  addRiskModelOutputs: private inline function(
+    model: !ReliabilityRiskMlModel,
+    datasetPreparationRun: !ReliabilityMlDatasetPreparationRun,
+    datasetData: !native
+  ): !native py-data
+
+  /**
+   * Returns the thresholds for a given {@link ReliabilityRiskMlModel}. Used by the Reliability Risk
+   * {@link ReliabilityMl.Project#getThresholdsForModelValidationChartLambda}. Should not be used elsewhere.
+   */
+  getRiskModelThresholds: private inline function(model: ReliabilityRiskMlModel): native py-data
+
+
+  /**
+   * Returns the thresholds for a given {@link ReliabilityMlModel}. Used by the Reliability Risk
+   * with Residual Diagnostics {@link ReliabilityMl.Project#getThresholdsForModelValidationChartLambda}.
+   * Should not be used elsewhere.
+   */
+  getResidualModelThresholds: private inline function(model: ReliabilityMlModel): native py-data
+
+  /**
+   * Used by the Reliability Risk for Control Valves project in
+   * {@link ReliabilityMl.Project#getThresholdsForModelValidationChartLambda}
+   * to obtain the thresholds used by a trained {@link ReliabilityMlModel}. Should not be used elsewhere.
+   *
+   * @param model
+   *        The Control Valves (CV) trained model.
+   * @returns The Python dictionary
+   *         `{ 'training': [alert_threshold], 'validation': [alert_threshold] }`,
+   *          where the keys are the translated strings for training & validation and the values are
+   *          the alert thresholds.
+   */
+  getCVModelAlertThresholds: private function(model: !ReliabilityMlModel): native py
+}

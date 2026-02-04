@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "compilation unit" represents a single source file. This may be a single top-level class definition for a
+ * language like Java, or a set of statements, comments, and class definitions for JavaScript or Python.
+ */
+type Code.CompileUnit mixes Code.Node {
+
+  /**
+   * The source file name from which the code was read, if any.
+   */
+  fileName: member function(): string
+
+  /**
+   * All statements, class definitions, comments, etc. that make up the compilation unit.
+   */
+  program: member function(): [Code.Node]
+
+  /**
+   * The top-level classes defined in this compilation unit.
+   */
+  classes: member function(): [Code.DefinedClass]
+
+  /**
+   * The global variables defined in this compilation unit.
+   */
+  vars: member function(): [Code.FieldVar]
+
+  /**
+   * The global functions defined in this compilation unit.
+   */
+  functions: member function(): [Code.Method]
+
+  /**
+   * Produce source code for this compilation unit for the current language. If the code model is not for a specific
+   * language, the call will fail.
+   *
+   * @param writer use this writer rather than the default for the current language
+   * @return file source code
+   */
+  toSource: member function(writer: Code.Writer): string
+
+  _fileName: private string
+  _program:  private [Code.Node]
+}

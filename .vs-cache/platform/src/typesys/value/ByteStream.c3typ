@@ -1,0 +1,96 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The specialized BinaryStream type provides extra support for streams of bytes.
+ * In particular, they can be processed as binary blocks instead of one byte at a time.
+ */
+type ByteStream mixes BlockStream<byte, binary>, Value {
+
+  /**
+   * @return string from these bytes based on input charset and compression type.
+   */
+  readString: abstract member function(contentType: string, contentEncoding: string): !string
+
+  /**
+   * Drains this stream into a byte push stream and closes this stream, even if there is any exception. Target push
+   * stream will be closed based on doNotCloseTarget.
+   */
+  drain: abstract member function(target: !BytePushStream, doNotCloseTarget: boolean)
+
+  /**
+   * Compresses the byte stream into out and closes both streams; if contentEncoding is 'identity' doesn't compress.
+   */
+  compress: abstract member function(out: !BytePushStream, contentEncoding: !?string)
+
+  /**
+   * Uncompresses the stream; if contentEncoding is 'identity' returns the same stream. It's important to make sure
+   * that resulting stream is closed so all the allocated resources are released properly.
+   */
+  uncompress: abstract member function(contentEncoding: !?string): !ByteStream
+
+  /**
+   * Transcodes this stream from contentType and contentEncoding into outContentType and outContentEncoding and closes
+   * both streams.
+   */
+  transcode: abstract member function(contentType: !string,
+                                      contentEncoding: !string,
+                                      out: !BytePushStream,
+                                      outContentType: !string,
+                                      outContentEncoding: !string)
+
+  /**
+   * @return character stream on top of this byte stream. It's important to make sure that resulting
+   * stream is closed so all the allocated resources are released properly.
+   */
+  toCharStream: abstract member function(contentType: string, contentEncoding: string): !CharStream
+
+  /**
+   * @return a {@Link ContentStream} on top of this byte stream. It's important to make sure that resulting
+   * stream is closed so all the allocated resources are released properly.
+   */
+  toContentStream: member function(contentType: string, contentEncoding: string): !ContentStream
+
+  /**
+   * @return java.io.InputStream if this stream is backed by it.
+   */
+  asInputStream: member function(failIfNot: boolean): @java(class='java.io.InputStream') native
+
+  /**
+   * @return new stream from a binary value.
+   */
+  fromBinary: function(value: !?binary): !ByteStream java | js
+
+  /**
+   * @return new stream from a binary value.
+   */
+  fromBytes: function(value: !?stream<byte>): !ByteStream java | js
+
+  /**
+   * @return new stream from netty ByteBuf (https://netty.io/4.0/api/io/netty/buffer/ByteBuf.html)
+   */
+  fromNettyByteBuf: function(byteBuf: @java(class='java.lang.Object') native): ByteStream
+
+  /**
+   * Creates a new instance based on the native input/read stream:
+   *  - Java: `java.io.InputStream`
+   *  - JavaScript: [iterable/iterator](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols)
+   */
+  fromNative: function(inputStream: @java(class='java.io.InputStream') !native): !ByteStream java | js
+
+  /**
+   * @return new stream from a text value.
+   */
+  fromText: inline function(value: string, charset: string): ByteStream java | js
+
+  hasNext:   abstract ~
+  next:      abstract ~
+  skip:      abstract ~
+  readBlock: abstract ~
+  doClose:   abstract ~
+}

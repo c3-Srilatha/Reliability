@@ -1,0 +1,182 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An individual workflow vertex run.
+ */
+@db(systemType=true, compactType=true)
+extendable entity type Workflow.Run.Vertex mixes Workflow.Monitorable type key 'VERTEX' {
+
+  /**
+   * Vertex that owns the run.
+   */
+  vertex: !Workflow.Vertex
+
+  /**
+   * Current status for the vertex.
+   */
+  runStatus: Workflow.Run.VertexStatus
+
+  /**
+   * Workflow run that this vertex run was created for.
+   */
+  workflowRun: !Workflow.Run
+
+  /**
+   * The result for a vertex upon completion.  This may be used by subsequent vertices.
+   */
+  @db(persistAllFields=true)
+  runResult: any
+
+  /**
+   * Action ID of the action that executes this vertex.
+   * Developer note: this is set in {@link #setResult} for most vertex types, but it is set in {@link #checkStatus} for Workflow.Run.Conditional.
+   * This field will be set for all vertex types with an associated subtype of {@link Workflow.Run.Vertex} ({@link Workflow.Join} and {@link Workflow.Run.Output} don't fit this description, so they don't have a startingActionId).
+   */
+  startingActionId: private string
+
+  /**
+   * Time the run was started
+   */
+  started: !datetime
+
+  /**
+   * Input vertices that must be completed to start the vertex
+   */
+  inputVertices: set<string>
+
+  /**
+   * Input vertices that have been reported as completed.
+   */
+  completedVertices: set<string>
+
+  /**
+   * If false, then this vertex's underlying execution takes responsibility for invalidating the {@link WorkflowQueue}
+   * entry corresponding to this {@link workflowRun} (for example, in an "onComplete" callback). In this case,
+   * {@link WorkflowQueue#compute} will not automatically invalidate. In other words, it will not poll this vertex's
+   * status.
+   * NOTE: invalidation needs to happen no matter if the underlying execution is successful or not.
+   * In contrast, if this is true, then the only way to know whether the vertex has finished is to continuously poll it
+   * by re-invalidating {@link WorkflowQueue#compute} for this {@link workflowRun} repeatedly.
+   */
+  requiresPolling: private !boolean
+
+  /**
+   * Called when each input vertex is completed.  When all input vertices are completed, this vertex will proceed.
+   */
+  inputCompleted: private member function(input: !Workflow.Vertex)
+
+  /**
+   * @return true when all input vertices have been completed
+   */
+  isInputComplete: private member function(): boolean
+
+  /**
+   * Attempts to recover a workflow vertex that is in the 'failing' or 'failed' state (similar to Batch/MapReduce.recover).
+   */
+  recover: private member function()
+
+  /**
+   * Cancels a running workflow vertex.
+   */
+  cancel: private member function()
+
+  /**
+   * Gets the current status of a workflow vertex run.
+   */
+  @action(group+='monitor')
+  status: member function(): !Workflow.Run.VertexStatus
+
+  /**
+   * Called when a vertex is completed to get its result to store on the workflow run to make available to subsequent vertices.
+   */
+  result: private member function(): any
+
+  /**
+   * Checks the status and ensures execution for the vertex run. For example, on the first call, the execution
+   * of the vertex will begin.
+   *
+   * @param workflowRun
+   *        Fully populated and current workflow run owning the vertex run
+   *
+   * @return the new status for the vertex
+   */
+  checkStatus: private member function(workflowRun: !Workflow.Run): !Workflow.Run.VertexStatus
+
+  /**
+   * @param workflow
+   *           optional but useful optimization, if caller has {@link Workflow} instance available. When provided,
+   *           the implementation will use the provided {@link Workflow} instead of getting/fetching it again.
+   * @return the next vertices for a completed vertex run.
+   */
+  next: private member function(workflow: Workflow): [Workflow.Vertex]
+
+  /**
+   * Sets the status for a vertex run.
+   *
+   * @param status
+   *           Status value to set.
+   *
+   * @return the updated vertex status.
+   */
+  setStatus: private member function(status: !string, errors: [string]): !Workflow.Run.VertexStatus
+
+  /**
+   * Sets the result of a vertex run upon completion.
+   *
+   * @return the updated vertex run.
+   */
+  setResult: private member function(result: any): Workflow.Run.Vertex
+
+  /**
+   * Gets the instance of the vertex run of the correct specific type
+   *
+   * @param failIfNotExists
+   *        If specified, an error will be thrown if the run doesn't exist.  Otherwise null will be returned.
+   *
+   * @return the requested vertex run.
+   */
+  getSpecificRun: member function(failIfNotExists: boolean): mixing Workflow.Run.Vertex
+
+  /**
+   *  Creates a new vertex run for the vertex.
+   *
+   *  @param vertex
+   * The vertex that the run is being created for
+   *  @param workflowRun
+   *            The workflow run that the vertex run is for.
+   *
+   *  @return the created vertex run.
+   */
+  createRun: private function(vertex: !Workflow.Vertex, workflowRun: !Workflow.Run): !mixing Workflow.Run.Vertex
+
+  /**
+   *  Starts a workflow vertex run.
+   *
+   *  @param run
+   *         WorkflowRun the vertex run is being started for
+   *
+   *  @return
+   * The new vertex status
+   */
+  start: private member function(): !mixing Workflow.Run.Vertex
+
+  /**
+   * Override to perform vertex specific start logic (if any).
+   */
+  doStart: private member function(): !mixing Workflow.Run.Vertex
+
+  visualize:            ~ py
+  summary:              ~ py-data
+  flamegraph:           ~ py
+  flamegraphJson:       ~ py-server
+  errors:               ~
+  magnify:              ~
+  summaryAsFetchResult: ~ py-server
+  summaryCount:         ~ py-server
+}

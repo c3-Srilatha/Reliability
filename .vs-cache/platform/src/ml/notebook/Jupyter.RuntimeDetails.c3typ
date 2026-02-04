@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Runtime information for each runtime successfully returned by {@link Jupyter.RuntimeInfo.listRuntimeDetails}.
+ * It is intended to be used by Jupyter UI, so it will contain some redundant information (with itself and
+ * with the corresponding {@link ImplLanguage.Runtime}) that we want to avoid computing on the front end.
+ */
+type Jupyter.RuntimeDetails mixes Jupyter.RuntimeDetailsBase {
+
+  /**
+   * The language, including version, of this runtime (ex. "Python 3.9").
+   */
+  language: string
+
+  /**
+   * The names of the parents of this runtime.
+   */
+  parents: [string]
+
+  /**
+   * Details about the declared packages of this runtime.
+   */
+  packages: [Jupyter.PackageDetails]
+
+  /**
+   * Details about the dependency packages of this runtime.
+   */
+  dependencies: [Jupyter.PackageDetails]
+
+  /**
+   * The names of the repositories for this runtime, in search order.
+   */
+  repositories: [string]
+
+  /**
+   * The names of the repositories used by the parents of this runtime.
+   */
+  parentRepositories: [string]
+
+  /**
+   * The resolutions of the declared packages of this runtime.
+   */
+  declaredResolvedPackages: [Jupyter.PackageDetails]
+
+  /**
+   * The resolutions of the inherited packages of this runtime.
+   */
+  inheritedResolvedPackages: [Jupyter.PackageDetails]
+
+  /**
+   * A map from package names declared by this runtime's ancestors to a comma-separated
+   * string of the package version in the declarations.
+   */
+  inheritedDeclaredPackages: map<string, string>
+
+  /**
+   * When the runtime was most recently resolved.
+   */
+  lastResolvedTime: datetime
+}

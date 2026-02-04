@@ -1,0 +1,83 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The "code authoring" type provides a builder pattern with natural convenience methods that allow fluent programming
+ * when building an AST. Once the structure has been built, the #build method is called to turn it into an immutable
+ * {@link Code} instance.
+ *
+ * For each "leaf node" that is a direct inner type of {@link Code}, there is a corresponding node under this type.
+ * For example, {@link Code.Not} is the logical negation unary operation and {@link Code.Authoring.Not} is its
+ * authoring type.
+ *
+ * This is more interesting for types with complex sub-structure because the authoring type will add methods to create
+ * sub-structure using a fluent pattern. For example, {@link Code.Authoring.DefinedClass} has methods to create
+ * fields and methods, which also in turn have sub-structure.
+ */
+type Code.Authoring mixes Code, Mutable {
+
+  /**
+   * Add a module to the code model.
+   *
+   * @param name name of the module, if desired
+   */
+  module: member function(name: string): !Code.Authoring.DefinedModule
+
+  /**
+   * Add a class in a new module and compilation unit. This is a convenience function for the three steps:
+   *  - add a module
+   *  - add a compilation unit to that module
+   *  - add a class to that compilation unit
+   *
+   * The module and compilation unit file will be named after the class name.
+   *
+   * @see Code.Authoring.CompileUnit#class
+   */
+  class: member function(name: !string): !Code.Authoring.DefinedClass
+
+  /**
+   * Add a global function in a new module and compilation unit. This is a convenience function for the three steps:
+   *  - add a module
+   *  - add a compilation unit to that module
+   *  - add a function to that compilation unit
+   *
+   * The module and compilation unit file will be named after the function name.
+   *
+   * @see Code.Authoring.CompileUnit#class
+   */
+  function: member function(name: !string): !Code.Authoring.Method
+
+  /**
+   * Add a top-level statement in a new module and compilation unit. This is a convenience function for the three steps:
+   *  - add a module
+   *  - add a compilation unit to that module
+   *  - add a statement to that compilation unit
+   *
+   * The module and compilation unit file will be named "global".
+   */
+  statement: member function(stmt: !Code.Authoring.Node): !Code.Authoring.Node
+
+  /**
+   * Produce an instance of {@link Code} that contains all structure created in this authoring instance. The
+   * authoring instance may continue to be used and all structure already created remains.
+   */
+  build: member function(): !Code
+
+  /**
+   * Produce a writer for the language being currently authored. If not authoring for a specific language, the call
+   * will fail.
+   */
+  makeWriter: member function(): !Code.Writer
+
+  /**
+   * Instantiate the correct sub-type of the specified node type for the current language. If there is no current
+   * language, construct a base authoring node type (`Code.Authoring.DefinedClass`). If the node is not supported
+   * in the current language, throw an exception.
+   */
+  makeNode: private member function<T: Code.Authoring.Node>(forType: !Type<<Code.Node>>): !T
+}

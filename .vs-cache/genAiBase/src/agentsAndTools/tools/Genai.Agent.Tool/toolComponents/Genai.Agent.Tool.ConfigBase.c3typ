@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for fields common to all {@link Genai.Agent.Tool} subtypes.
+ */
+type Genai.Agent.Tool.ConfigBase {
+  /**
+   * Semantic name for the tool. Used for agent prompts.
+   */
+  toolName: !string
+
+  /**
+   * Natural language description for the tool. Used for agent prompts.
+   */
+  toolDescription: !string
+
+  /**
+   * Natural language message appended prior to llm generation. Helps prompt the agent to correctly format to tool input.
+   * Ignored if not provided.
+   *
+   * e.g. "\n[SYSTEM MESSAGE: {toolName} requires inputing a start date and end date.]"
+   */
+  formattingMessage: string
+
+  /**
+   * Array of {@link Genai.Agent.Tool.Example}s for this tool.
+   */
+  examples: [Genai.Agent.Tool.Example]
+
+  /**
+   * Configuration for how this will be shown as a UI drop-down option if {@link Genai.Agent.Config}
+   * uiToolOptions includes this tool.
+   */
+  uiOptions: Genai.Agent.Tool.Config.UiOptions
+
+  /**
+   * Runtime keywords arguments passed into the tool. Enables overriding of default behavior such
+   * as default prompts for specific sub tools.
+   *
+   * Format of configs for the {@link Genai.Agent.Tool.UnstructuredDataQuery}:
+   *```json
+   * {
+   *    "find_time_information_kwargs": {
+   *        "default_span": dict,
+   *        "default_interval": str,
+   *        "default_interval_thresholds": dict,
+   *        "default_timezone": dict,
+   *        "default_timezone_offset": dict,
+   *        "find_start_time_information_prompt": str,
+   *        "find_end_time_information_prompt": str,
+   *    }
+   * }
+   *```
+   */
+  overrideRuntimeKwargs: json
+}

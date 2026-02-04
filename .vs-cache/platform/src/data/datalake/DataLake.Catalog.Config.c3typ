@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// Base class for DataLake catalogs configs.
+@config(doNotDefaultIfMissing=true)
+@action(group+='cluster-admin')
+@beta
+abstract type DataLake.Catalog.Config mixes Config, Named {
+
+  /**
+   * Specifies C3 iceberg catalog type for the corresponding catalog implementation
+   */
+  catalogType: abstract member function(): Type<<DataLake.Catalog>>
+
+  /**
+   * Specifies table meta-fields which will be recorded for each table in Catalog.
+   */
+  metaFields: [DataLake.Table.MetaField]
+
+  forName: ~: mixing DataLake.Catalog.Config
+
+  /**
+   * Perform catalog config initialization.
+   */
+  initialize: member function(): DataLake.Catalog.Config
+}

@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This config defines the Types, fields, and metrics available to the {@link Genai.Agent.Tool.EvalQuery}
+ */
+type Genai.StructuredData.Config mixes Named, DefaultInstance, Config, Genai.ParentConfig {
+  inst: ~ js-rhino
+
+  /**
+   * Set the config with the specified name as the default for the app (via {@link Genai.StructuredData.DefaultConfig}).
+   */
+  setDefault: function(configName: !string) js-rhino
+
+  /**
+   * A single json object that contains all of the whitelisted types, fields, and metrics. The format is
+   * {
+   *   TYPE_NAME: {metrics: [METRIC NAMES], fields: [FIELD NAMES]},
+   *   TYPE_NAME_2: {metrics: [METRIC NAMES], fields: [FIELD NAMES]},
+   *  ...
+   * }
+   */
+  whiteListedDataModel: !json
+
+  /**
+   * Helper method to ensure all required type names are in the white-listed data model. If incomplete, an error
+   * indicating what types are missing and where they are referenced will be raised.
+   *
+   * @param typeMetas
+   *          A dictionary of type names to their corresponding {@link TypeMeta}.
+   * @param whiteListedDataModel
+   *          See #whiteListedDataModel.
+   * @param fieldsToIgnore
+   *          Type fields that should be ignored when validating the #whiteListedDataModel.
+   */
+  validateWhiteListedDataModel: function(typeMetas: native, whiteListedDataModel: json, fieldsToIgnore: [string]) py
+
+  /**
+   * Used to override the documentation for a type, field, or metric included in the whiteListedDataModel. The format is
+   * { TYPE_NAME: {doc: NEW_DOCSTRING,
+   *               metrics: {METRIC_NAME: {doc: NEW_DOCSTRING}},
+   *               fields: {FIELD_NAME: {doc: NEW_DOCSTRING}}}
+   * }
+   */
+  overrideDocumentation: private json
+
+  /**
+   * Returns a list of all whitelisted types
+   * If #whiteListedDataModel is not provided, uses the value from the config
+   */
+  whiteListedTypes: member function(whiteListedDataModel: json): [string] py
+
+  /**
+   * Returns a json of the form {TYPE_NAME: [FIELD NAMES]} with all types that have at least one whitelisted field
+   * If #whiteListedDataModel is not provided, uses the value from the config
+   */
+  whiteListedFields: member function(whiteListedDataModel: json): json py
+
+  /**
+   * Returns a json of the form {TYPE_NAME: [METRIC NAMES]} with all types that have at least one whitelisted metric
+   * If #whiteListedDataModel is not provided, uses the value from the config
+   */
+  whiteListedMetrics: member function(whiteListedDataModel: json): json py
+
+  /**
+   * The maximum time in seconds wait for initialization before declaring the initialization failed.
+   * The default timeout is 1 hour (3600s)
+   */
+  initializationTimeout: int = 3600
+
+  /**
+   * Construct and return the in-memory nx.graph for the types and fields whitelisted.
+   */
+  // TODO: GEN-9664 graph as separate type
+  makeDataModelGraph: member function(graphKwargs: json): !native py-query_orchestrator-server-py4j
+
+  childConfigFields: ~ js
+
+  /**
+   * Names of external types that should be ignored when creating the structured data model.
+   */
+  blockedExternalTypeNames: [string]
+
+  /**
+   * Names of {@FileSourceCollection}s that should be ignored when creating the structured data model.
+   */
+  blockedFileSourceCollectionTypeNames: [string]
+}

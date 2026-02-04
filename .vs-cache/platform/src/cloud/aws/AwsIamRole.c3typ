@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type provides an interface to the AWS *IAM* service;
+ * see the [AWS documentation](http://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html).
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='iam')
+type AwsIamRole mixes AwsResource {
+
+  /**
+   * The trust relationship policy document that grants an entity permission to assume the role.
+   */
+  assumeRolePolicyDocument: json
+
+  /**
+   * The inline policies that are embedded in the role. Key of the map is the name of the policy and value is policy.
+   */
+  policies: map<string, json>
+
+  /**
+   * The path to the role.
+   */
+  path: string
+
+  /**
+   * The date and time, in ISO 8601 date-time format, when the role was created.
+   */
+  createdAt: datetime
+
+  /**
+   * The description of the iam role
+   */
+  description: string
+
+  hasTags:   ~
+  hasRegion: ~
+
+  /**
+   * @param C3 Cluster Id: e.g. dev-srv.
+   *
+   * Returns default policies for the cluster
+   */
+  generateDefaultPolicies: private function(clusterId: string): map<string, json>
+
+  /**
+   * Returns default assume role policy.
+   */
+  defaultAssumeRolePolicyDocument: private member function(): !json
+}

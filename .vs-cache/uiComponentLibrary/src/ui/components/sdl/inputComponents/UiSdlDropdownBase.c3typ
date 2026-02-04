@@ -1,0 +1,131 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base component type for dropdowns.
+ */
+@typeScript
+abstract type UiSdlDropdownBase mixes UiSdlInputBase<UiSdlDropdownBaseDataSpec> {
+
+  /**
+   * The specification used for retrieving data displayed in the dropdown.
+   */
+  @uiSdlDataSpec(dataDestinationField='options')
+  @uiSdlDesignerGlobalFilterCustomRenderer
+  dataSpec: ~
+
+  /**
+   * Holds the data to display in the dropdown.
+   */
+  @uiSdlDesignerCustomRenderer(rendererType='SDLDataGrid')
+  options: [json]
+
+  /**
+   * Whether the dropdown can be cleared.
+   */
+  clear: boolean
+
+  /**
+   * If used in a form or filter panel, the field this component is associated with.
+   */
+  field: string
+
+  /**
+   * Whether the dropdown will take the full width of its parent.
+   */
+  fluid: boolean
+
+  /**
+   * Content to appear in the input when the input is empty.
+   */
+  placeholder: string serialized UiSdlDynamicValueSpec
+
+  /**
+   * The field used for the values of the dropdown options.
+   */
+  valueField: string
+
+  /**
+   * The selected input items of this component.
+   */
+  selectedInputItems: private [UiSdlSelectedInputItem]
+
+  /**
+   * The field used for the display text of the dropdown options.
+   */
+  displayField: string
+
+  /**
+   * The flag to make the dropdown searchable.
+   */
+  search: boolean
+
+  /**
+   * The flag to disallow multiple options to be selected.
+   */
+  multiple: boolean
+
+  /**
+  * The flag to display a search icon for multiple search dropdown inputs.
+  */
+  showMultipleSearchIcon: boolean = false
+
+  /**
+   * An action that is dispatched to set the selected input items when the value of the select component has changed.
+   *
+   * @param id
+   *           Id of the input component.
+   * @param selectedInputItems
+   *           The selected input items of the dropdown component.
+   */
+  @uiSdlActionCreator(actionType='SELECTED_INPUT_ITEMS_SET')
+  setSelectedInputItemsAction: function(id: string, selectedInputItems: [UiSdlSelectedInputItem]): !UiSdlSelectedInputItemsSetAction ts-client
+
+  /**
+   * Action dispatched to set the list of {@link UiSdlDropdownBase#options}.
+   *
+   * @param id
+   *           Id of the component.
+   * @param options
+   *           The list of options to set on the component.
+   * @returns A `SEARCH_CHANGE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='OPTIONS_SET')
+  setOptionsAction: function(id: !string, options: [Obj | string]): !UiSdlOptionsSetAction ts-client
+
+  /**
+   * Listens for actions of type `OPTIONS_SET` and sets the list of {@link UiSdlDropdownBase#options}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='OPTIONS_SET')
+  optionsSetReducer: private function(state: !UiSdlReduxState,
+                                      action: !UiSdlOptionsSetAction): !UiSdlReduxState ts-client
+
+  /**
+   * Listens for actions of type `SELECTED_INPUT_ITEMS_SET` and sets the {@link UiSdlDropdownBase#selectedInputItems} field of the
+   * select input component.
+   */
+  @uiSdlReducer(actionType='SELECTED_INPUT_ITEMS_SET')
+  selectedInputItemsSetReducer: private function(state: UiSdlReduxState, action: UiSdlSelectedInputItemsSetAction): UiSdlReduxState ts-client
+
+  /**
+   * Action dispatched when the dropdown is cleared.
+   *
+   * @param id
+   *           Id of the component.
+   * @returns A `VALUE_CLEAR` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='VALUE_CLEAR')
+  clearValueAction: function(id: !string): !UiSdlReduxAction ts-client
+}

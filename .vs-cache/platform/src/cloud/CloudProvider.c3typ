@@ -1,0 +1,125 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract base type for all Cloud Providers.
+ *
+ * Cloud Provider is an abstraction over public and private "clouds" i.e. hosting environments that can be fully managed
+ * using APIs.
+ *
+ * Such environments provide various hosting infrastructure components such as network, compute instances (aka virtual
+ * machines), domain name servers, queues, storage, databases, etc.
+ */
+abstract type CloudProvider mixes Mutable, Named, Singleton {
+
+  AWS:   const string = 'aws'
+  AZURE: const string = 'azure'
+  GCP:   const string = 'gcp'
+  K8S:   const string = 'k8s'
+  LOCAL: const string = 'local'
+
+  /**
+   * @return cloud provider instance for Amazon Web Services.
+   */
+  aws: inline function(): !Aws
+
+  /**
+   * @return cloud provider instance for Microsoft Azure.
+   */
+  azure: inline function(): !Azure
+
+  /**
+   * @return cloud provider instance for Google Cloud Provider.
+   */
+  gcp: inline function(): !Gcp
+
+  /**
+   * @return cloud provider instance for Kubernetes.
+   */
+  k8s: inline function(): !K8sCloud
+
+  /**
+   * @return cloud provider instance for Apache Software Foundation based "cloud".
+   */
+  apache: inline function(): !Apache
+
+  /**
+   * @return cloud provider instance for "local cloud" i.e. emulation based on local OS and static network.
+   */
+  local: inline function(): !LocalCloud
+
+  isAws:            inline member function(): boolean
+  isAzure:          inline member function(): boolean
+  isGcp:            inline member function(): boolean
+  isK8s:            inline member function(): boolean
+  isApache:         inline member function(): boolean
+  isLocal:          inline member function(): boolean
+  safeEnv:          inline function(): !string
+  safeCluster:      inline function(): !string
+  safeApp:          inline function(): !string
+  defaultRegion:    member function(): string
+  defaultAccountId: member function(): !string
+
+  @action(group+='cluster-admin')
+  defaultCredentials: member function(): CloudCredentials
+
+  allCloudIdentities: member function(): [string]
+  allAccounts:        member function(): [CloudAccount]
+
+  @action(group+='cluster-admin')
+  allCredentials: member function(): [CloudCredentials]
+
+  /**
+   * Return Cloud Tagging API implementation type for this Cloud Provider
+   */
+  taggingApi: inline member function(): Type
+
+  /**
+   * Return specific Cloud Resource sub type that this Cloud Provider implements for a given base type (typically
+   * abstract)
+   *
+   * E.g. `Aws.inst().resourceBaseType()` should return `AwsResource`
+   */
+  resourceBaseType: abstract inline member function(): Type
+
+  /**
+   * Return specific Cloud Resource sub type that this Cloud Provider implements for a given base type (typically
+   * abstract)
+   *
+   * E.g. `Aws.inst().resourceSubType(CloudComputeInstance)` should return `AwsEc2Instance`
+   */
+  resourceSubType: inline member function(resourceBaseType: !Type): Type
+
+  /**
+   * Return specific Cloud Credentials type for this Cloud Provider.
+   */
+  credentialsType: private abstract inline member function(): !Type
+
+  /**
+   * @return config key for default config template for this cloud provider.
+   */
+  configKey: private inline member function(): !string
+
+  /**
+   * Return the cloud-internal domain for the given region.
+   */
+  internalDomain: abstract function(region: string): string
+
+  /**
+   * @return default cloud provider
+   */
+  defaultProvider: cached function(): !CloudProvider
+
+  inst: cached ~
+  forName: ~
+
+  /**
+   * remove the cloud provider's default credentials cached in method's static variable
+   */
+  resetDefaultCredentials: private member function()
+}

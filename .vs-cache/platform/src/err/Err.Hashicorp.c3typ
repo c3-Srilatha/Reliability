@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type for Hashicorp related Errors
+ */
+type Err.Hashicorp mixes Error {
+
+  @error(message="Failed to read from Vault at path ${quote(path)}: ${quote(error)}")
+  failedToReadFromVault: function(path: !?string, error: !?string): !Err.Hashicorp
+
+  @error(message="Failed to write to data ${quote(data)} to Vault at path ${quote(path)}: ${quote(error)}")
+  failedToWriteToVault: function(data: !?string, path: !?string, error: !?string): !Err.Hashicorp
+
+  @error(message="Failed to delete from Vault at path ${quote(path)}: ${quote(error)}")
+  failedToDeleteFromVault: function(path: !?string, error: !?string): !Err.Hashicorp
+
+  @error(message="Failed to list keys from Vault at path ${quote(path)}: ${quote(error)}")
+  failedToListVault: function(path: !?string, error: !?string): !Err.Hashicorp
+
+  @error(message="Failed to build VaultConfig with url ${quote(url)}, namespace ${quote(namespace)}: ${quote(error)}")
+  failedToBuildVaultConfig: function(url: !?string, namespace: !?string, error: !?string): !Err.Hashicorp
+
+  @error(message="Failed to authenticate against HashiCorp Vault with ${quote(method)} authentication", httpCode=401)
+  failedToAuthenticateToVault: function(method: !?string): !Err.Hashicorp
+
+  @error(message="${quote(what)} is required for ${quote(method)} authentication against HashiCorp Vault",
+         httpCode=400)
+  missingRequiredFieldForVaultAuth: function(what: !?string, method: !?string): !Err.Hashicorp
+
+  @error(message="Cannot read file at ${quote(path)}: ${quote(error)}")
+  failedToReadFileForVaultAuth: function(path: !?string, error: !?string): !Err.Hashicorp
+
+  @error(message="Cannot login to Vault with ${quote(method)} authentication: ${quote(error)}")
+  failedToLoginToVault: function(method: !?string, error: !?string): !Err.Hashicorp
+}

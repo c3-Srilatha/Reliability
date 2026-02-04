@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type TSPerfTestConfig {
+
+  /**
+   * deciding how many batches to create
+   */
+  numberOfThreads: int = 100
+
+  /**
+   * start id for the timeseries
+   */
+  startId: int = 1
+
+  /**
+   * end id representing how many timeseries we want to create
+   */
+  endId: int = 1000
+
+  /**
+   * if this is disabled no data will be created
+   */
+  enabled: boolean = true
+
+  /**
+   * timeseries type for which you want to create data
+   */
+  timeseriesType: Type
+
+  /**
+   * timeseries field name
+   */
+  timeseriesField: string
+
+  /**
+   * is the field an exact dimension
+   */
+  isExactDim: boolean
+
+  /**
+   * no of days to create data for
+   */
+  iterations: int = 10
+
+  testAggregation: boolean = true
+
+  /**
+   * determines whether the batch job is for initial load or incremental, also decides, whether we should be doing refreshNormalization, or wait for NormalizationQueue to compute
+   */
+  isInitialLoad: boolean
+
+  /**
+   * start time of the job
+   */
+  startTime: datetime
+
+  /**
+   * no of incremental days which will be fired 1 day at a time
+   */
+  noOfIncrementalDays: int
+
+  /**
+   * job id for the batch job
+   */
+  targetObjId: string
+
+  /**
+   * set to true for concurrency test
+   */
+  isConcurrencyTest: boolean
+
+  /**
+   * issue a tsEval for random time-range and validate
+   */
+  validateAfterCreate: boolean
+
+  /**
+   * QUARTER_HOUR / HOUR / MONTH
+   */
+  grain: string
+
+  batchNumber: int
+}

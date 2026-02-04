@@ -1,0 +1,147 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Convenient box for three related values. This is useful for packaging multiple values without having to define a
+ * custom type.
+ *
+ * The usual way to create these is with the #of method, but many specialized methods exist to create a triple with
+ * specific types (such as #ofStr).
+ *
+ * @see Pair
+ */
+type Triple<T1, T2, T3> mixes WithToString {
+
+  /**
+   * First value of triple.
+   */
+  fst: T1
+
+  /**
+   * Second value of triple.
+   */
+  snd: T2
+
+  /**
+   * Third value of triple.
+   */
+  thd: T3
+
+  /**
+   * Create an instance where #fst, #snd and #thd are set to the three specified values. The returned instance will be
+   * of a type bound to `any` if the original type is generic.
+   *
+   * @param fst value to be used for the #fst field
+   * @param snd value to be used for the #snd field
+   * @param thd value to be used for the #thd field
+   * @return Triple instance
+   */
+  of: function<V1, V2, V3>(fst: V1, snd: V2, thd: V3): !Triple<V1, V2, V3> java | js
+
+  /**
+   * Create an instance where #fst, #snd and #thd are set to the three specified values. If `guessType` is true, the
+   * returned instance will be of a type bound as appropriate for the values, otherwise bound to `any`.
+   *
+   * @param fst value to be used for the #fst field
+   * @param snd value to be used for the #snd field
+   * @param thd value to be used for the #thd field
+   * @param guessType if true, the returned instance will be of a type bound to the actual values
+   * @return Triple instance
+   */
+  of: function<V1, V2, V3>(fst: V1, snd: V2, thd: V3, guessType: boolean): !Triple<V1, V2, V3> java | js
+
+  /**
+   * Create an instance with all values of type `string`.
+   *
+   * @see #of
+   */
+  ofStr: function(fst: string, snd: string, thd: string): !Triple<string, string, string> java | js
+
+  /**
+   * Create an instance with all values of type `boolean`.
+   *
+   * @see #of
+   */
+  ofBool: function(fst: boolean, snd: boolean, thd: boolean): !Triple<boolean, boolean, boolean> java | js
+
+  /**
+   * Create an instance with all values of type `int`.
+   *
+   * @see #of
+   */
+  ofInt: function(fst: int, snd: int, thd: int): !Triple<int, int, int> java | js
+
+  /**
+   * Create an instance with all values of type `int16`.
+   *
+   * @see #of
+   */
+  ofInt16: function(fst: int16, snd: int16, thd: int16): !Triple<int16, int16, int16> java | js
+
+  /**
+   * Create an instance with all values of type `int32`.
+   *
+   * @see #of
+   */
+  ofInt32: function(fst: int32, snd: int32, thd: int32): !Triple<int32, int32, int32> java | js
+
+  /**
+   * Create an instance with all values of type `float`.
+   *
+   * @see #of
+   */
+  ofFloat: function(fst: float, snd: float, thd: float): !Triple<float, float, float> java | js
+
+  /**
+   * Create an instance with all values of type `double`.
+   *
+   * @see #of
+   */
+  ofDbl: function(fst: double, snd: double, thd: double): !Triple<double, double, double> java | js
+
+  /**
+   * Create an instance with all values of type `any`.
+   *
+   * @see #of
+   */
+  ofAny: function(fst: any, snd: any, thd: any): !Triple<any, any, any> java | js
+
+  /**
+   * Create an instance with all values of specified value type.
+   *
+   * @see #of
+   */
+  ofSame: function<V>(type: !ValueType, fst: V, snd: V, thd: V): !Triple<V, V, V> java | js
+
+  /**
+   * Return the value type of the generic binding for the #fst field. If the type is generic, this will throw an error.
+   */
+  fstType: member function(): !ValueType
+
+  /**
+   * Return the value type of the generic binding for the #snd field. If the type is generic, this will throw an error.
+   */
+  sndType: member function(): !ValueType
+
+  /**
+   * Return the value type of the generic binding for the #thd field. If the type is generic, this will throw an error.
+   */
+  thdType: member function(): !ValueType
+
+  typeOf:      function(fstType: !ValueType, sndType: !ValueType, thdType: !ValueType): !Type
+  typeOfStr:   cached function(): !Type
+  typeOfBool:  cached function(): !Type
+  typeOfInt:   cached function(): !Type
+  typeOfInt16: cached function(): !Type
+  typeOfInt32: cached function(): !Type
+  typeOfFloat: cached function(): !Type
+  typeOfDbl:   cached function(): !Type
+  typeOfSame:  cached function(valueType: !ValueType): !Type
+  typeOfAny:   cached function(): !Type
+  toString:    ~ java | js
+}

@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * `PhysicalAsset` represents an asset in the physical world that may have associated sensors.
+ * 
+ * - `childSensorRelations`: This property defines the relationships between the asset and its associated sensors.
+ * It fetches all the sensor-related hierarchical relationships linked to this physical asset, where 
+ * the sensor type is identified by `typeIdent == "SENSOR"`.
+ */
+remix type PhysicalAsset {
+
+  /**
+   * The {@link Sensor}s associated with this {@link PhysicalAsset}.
+   * 
+   * This field establishes the relationship between the physical asset and its associated sensors,
+   * using a filter to only include sensors in the relation (where the type of relation is 'SENSOR').
+   */
+  @db(filter='to.typeIdent == "SENSOR"')
+  childSensorRelations: [PhysicalAssetHierarchyRelation](from)
+}

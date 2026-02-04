@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Header for a series of monitoring results, which are computed for a given {@link MlModel}, {@link MlScoringMetric}, and
+ * data filter.
+ * See related type {@link MlModel.Monitor.TimedResult}.
+ */
+@db(unique=['model, metricName, filter'], index=['model', 'metricName', 'filter'])
+entity type MlModel.Monitor.TimedResultHeader {
+
+  /**
+   * {@link MlModel} associated with this series of monitoring results.
+   */
+  model: !MlModel
+
+  /**
+   * the name of the {@link MlScoringMetric} that produced this series of results.
+   */
+  metricName: !string
+
+  /**
+   * String representation of the {@link Filter} that corresponds to the {@link MlModel.Monitor.Group#groupBy} and
+   * {@link MlModel.Monitor.Batch#groupByValue}, as well as the {@link MlModel.Monitor.Group#filter}, used to compute
+   * the values associated with this header.
+   * The filter typically represents the sub-segment of data and/or subjects that the metric was computed for.
+   * This field is expected to be set automatically and *consistently* by {@link MlModel.Monitor.Job}.
+   *
+   * e.g. groupBy = ["country", "city"] and groupByValue = ["USA", "NYC"] would produce filter string 'country=="USA" && city=="NYC"'
+   * e.g. if there was an additional monitor group filter "assetType == 'windTurbine'", the filter string would be
+   *      "(country=='USA' && city=='NYC') && (assetType == 'windTurbine')"
+   */
+  filter: string serialized Filter
+
+  /**
+   * Optional baseline to associate to this {@link #model} and {@link #metricName}, in the context of the provided {@link #filter}.
+   * Note: this can be used in conjunction with {@link #metricHigherIsBetter} to get some sense of how good a {@link MlModel.Monitor.TimedResult#metricValue} is.
+   */
+  metricBaseline: double
+
+  /**
+   * Indicates whether a higher {@link MlModel.Monitor.TimedResult#metricValue} is better or worse, for example
+   * relative to the {@link #metricBaseline}.
+   */
+  metricHigherIsBetter: boolean = false
+
+  /**
+   * Helper function to compute the {@link #filter} field from the provided groupBy/groupByValue and
+   * {@link MlModel.Monitor.Group#filter} field.
+   *
+   * @param groupBy
+   *           the grouped columns/attributes.
+   * @param groupByValue
+   *           the grouped column/attribute values.
+   * @param groupFilter
+   *           the filter associated with the monitor group.
+   * @return the computed filter.
+   */
+  combinedFilterFromGroupBy: private function(groupBy: [string],
+                                              groupByValue: [any],
+                                              groupFilter: string serialized Filter): Filter
+
+  /**
+   * Recommended constructor for making instances of this type. In particular, this constructor will automatically set
+   * the header id consistently, such that duplicates are avoided.
+   *
+   * @param model
+   *           the {@link MlModel} associated with this series of monitoring results.
+   * @param metricName
+   *           the name of the {@link MlScoringMetric} that produced this series of results.
+   * @param filter
+   *           data filter that was applied to the data prior to metric computation. It is recommended to compute
+   *           this using {@link #combinedFilterFromGroupBy}.
+   * @param higherIsBetter
+   *           indicates whether a higher {@link MlModel.Monitor.TimedResult#metricValue} is better or worse
+   * @return a constructed (but not upserted) instance of this type.
+   */
+  fromFilter: private function(model: !MlModel,
+                               metricName: !string,
+                               filter: string serialized Filter,
+                               higherIsBetter: boolean): !mixing MlModel.Monitor.TimedResultHeader
+}

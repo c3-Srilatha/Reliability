@@ -1,0 +1,81 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 App Node execution Thread
+ */
+type App.Node.Thread mixes Identified, StringSerializable {
+
+  /**
+   * @return instance for the current thread where this action is executing
+   */
+  current: function(): !App.Node.Thread
+
+  /**
+   * Thread name in the node, unique within the App
+   */
+  name: cached property(): !string
+
+  /**
+   * Parent Thread Pool name
+   */
+  threadPoolName: cached property(): !string
+
+  /**
+   * Parent Thread Pool
+   */
+  @cache(platPkg=true)
+  threadPool: cached property(): !App.Node.ThreadPool
+
+  /**
+   * Parent App Node id where this thread is running
+   */
+  nodeId: cached property(): !string serialized Server.Id
+
+  /**
+   * Parent App Node where this thread is running
+   */
+  @cache(platPkg=true)
+  node: cached property(): !App.Node
+
+  /**
+   * Java native thread to which this {@link App.Node.Thread} correspond to.
+   *
+   * There are always exists corresponding java thread for each {@link App.Node.Thread}. Matching happening by
+   * {@link #name} that is equal to `Thread.getName()` of java `Thread`. All {@link App.Node.Thread threads} started by
+   * {@link App.Node.ThreadPool} and uses `c3.ThreadPoolExecutor.Thread` subclass of java `Thread` for execution.
+   */
+  nativeThread: cached property(): @java(class='c3.ThreadPoolExecutor.Thread') !native
+
+  /**
+   * Encoded identifier for this thread
+   */
+  id: !~
+
+  /**
+   * Utility to generate consistent thread names
+   */
+  generateName: private inline function(threadPoolName: !string, threadOrdinal: !int): !string
+
+  /**
+   * Utility to generate consistent thread id
+   */
+  generateId: private inline function(nodeId: !string, threadPoolName: !string, threadOrdinal: !int): !string
+
+  generateId: private inline function(nodeId: !string, threadName: !string): !string
+
+  // TODO: PLAT-61143 code-gen produces invalid java code for `DataGen.Profile.Type`
+  // isSameJavaThread: private member function(thread: @java(class='java.lang.Thread') !native): boolean
+  isSameJavaThread: private inline member function(thread: !native): boolean
+
+  /**
+   * Return information about current state of this {@link App.Node.Thread}.
+   * See {@link App.Node.Thread.Info} for details.
+   */
+  info: member function(): !App.Node.Thread.Info
+}

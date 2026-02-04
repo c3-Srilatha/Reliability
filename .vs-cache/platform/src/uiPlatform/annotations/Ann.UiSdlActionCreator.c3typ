@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI action creator is a function that is exposed to components wrapped around dispatch.
+ *
+ * The function should return a UiSdlReduxAction.
+ * The name should be specified in the form verbNoun
+ *
+ * Example:
+ *      function changeFilter(event, ownProps) {
+ *          return {type: this.id + '.FILTER_CHANGE', payload: {filter: event.target.value}};
+ *      }
+ *
+ * When the react component is rendered, the prop.changeFilter method will be equivalent of:
+ * `(event)  => dispatch(changeFilter(event, props))` so you don't have to manually call dispatch.
+ */
+@annotation(appliesTo=['function'], docPills={ActionCreator: 'true'})
+type Ann.UiSdlActionCreator mixes Annotation {
+
+  /**
+   * The redux action type that will be dispatched. Preferred format: NOUN_VERB
+   */
+  actionType: string
+}

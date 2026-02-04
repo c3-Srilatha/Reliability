@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that gets mixed into an entity type in order to be able to tag it with
+ * {@link DataTagBase} instances. Should be used purely with {@link DataTagBase} and
+ * {@link DataTagRelationBase}.
+ */
+abstract type DataTagSubjectBase<DTRB: DataTagRelationBase> mixes FeatureEvaluatable {
+
+  /**
+   * The data tags related to this type.
+   */
+  dataTagRelations: [DTRB](from)
+
+  /**
+   * Clear the data tags for a specific instance that mixes in this type.
+   */
+  // TODO: ENGR-13706 Functions below not implemented yet, but data tagging works without them
+  clearDataTags: member function() js-rhino
+
+  /**
+   * Populate all of the data tags for a specific type.
+   */
+  populateDataTags: function() js-rhino
+
+  /**
+   * Populate all of the data tags for a specific type that do not have a metric expression.
+   */
+  populateAttributeDataTags: function() js-rhino
+
+  /**
+   * Populate all of the data tags for a specific type that have a metric expression.
+   */
+  populateMetricDataTags: function() js-rhino
+}

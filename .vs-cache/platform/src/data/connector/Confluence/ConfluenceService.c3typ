@@ -1,0 +1,128 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the surface exposing out of box Confluence connector APIs
+ */
+type ConfluenceService {
+
+  /**
+   * Retrieve all the spaces given ids and keys (both are optional, final result is an intersection)
+   * @param ids
+   *    ids of the spaces we want to retrieve
+   * @param keys
+   *    key values of the spaces we want to retrieve
+   * @param limit
+   *    limit the number of spaces returned. Default is 25, Maximum is 250.
+   */
+  listSpaces: function(ids: [int], keys: [string], limit: int): [ConfluenceSpaceSummary]
+
+  /**
+   * Retrieve all the pages given ids (they can be from any space)
+   * @param ids
+   *    ids of the pages we want to retrieve
+   * @param limit
+   *    limit the number of pages returned. Default is 25, Maximum is 250.
+   */
+  listPages: function(ids: [int], limit: int): [ConfluencePageSummary]
+
+  /**
+   * Retrieve all the attachments which can be filtered on filename and mediaType
+   * @param filename
+   *    filename of the attachments we want to retrieve
+   * @param mediaType
+   *    mediaType of the attachments we want to retrieve
+   * @param limit
+   *    limit the number of attachments returned. Default is 50, Maximum is 250.
+   */
+  listAttachments: function(filename: string, mediaType: string, limit: int): [ConfluenceAttachment]
+
+  /**
+   * Retrieve all the custom content which can be filtered on ids, spaceIds and type
+   * @param type
+   *    The type of the content being requested
+   * @param ids
+   *    ids of the custom content we want to retrieve
+   * @param spaceIds
+   *    ids of the spaces whose content we want to retrieve
+   * @param limit
+   *    limit the number of custom content returned. Default is 25, Maximum is 250.
+   */
+  listCustomContent: function(type: string, spaceIds: [int], ids: [int], limit: int): [ConfluenceCustomContent]
+
+  /**
+   * Retrieve all the blogposts which can be filtered on ids and title.
+   * @param ids
+   *    ids of the blogposts we want to retrieve
+   * @param title
+   *    title of the blogposts we want to retrieve
+   * @param limit
+   *    limit the number of blogposts returned. Default is 25, Maximum is 250.
+   */
+  listBlogPosts: function(ids: [int], title: string, limit: int): [ConfluenceBlogPost]
+
+  /**
+   * Retrieve all the labels which can be filtered on prefix
+   * @param prefix
+   *    List of prefix for which we want to retrieve the labels
+   * @param id
+   *    id of the space/page for which we want to retrieve the labels
+   * @param select
+   *    To select whether to retrieve from a page or a space.
+   *    'space' will retrieve from space, 'page' will retrieve from page and anything else will retrieve all.
+   * @param limit
+   *    limit the number of labels returned. Default is 25, Maximum is 250.
+   */
+  listLabels: function(select: string, id: int, prefix: [string], limit: int): [ConfluenceLabel]
+
+  /**
+   * Retrieve all the attachments from a particular page which can be filtered on filename and mediaType
+   * @param id
+   *    id of the page whose attachments are to be returned
+   * @param filename
+   *    filename of the attachments we want to retrieve
+   * @param mediaType
+   *    mediaType of the attachments we want to retrieve
+   * @param limit
+   *    limit the number of attachments returned. Default is 50, Maximum is 250.
+   */
+  listAttachmentsByPage: function(id: !int, filename: string, mediaType: string, limit: int): [ConfluenceAttachment]
+
+  /**
+   * Retrieve all the blogposts from a given space
+   * @param id
+   *    id of the space
+   * @param limit
+   *    limit the number of blogposts returned. Default is 25, Maximum is 250.
+   */
+  listBlogPostsBySpace: function(id: !int, limit: int): [ConfluenceBlogPost]
+
+  /**
+   * Retrieve all visible tasks
+   * @param dueDateFrom
+   *    Filter the results on start of date-time range of task based on due date (inclusive)
+   * @param dueDateTo
+   *    Filter the results on end of date-time range of task based on due date (inclusive)
+   * @param assignedTo
+   *    Filter the results based on accountId of the user to whom the task is assigned
+   *    Multiple account Ids can be specified as a comma-separated list.
+   * @param spaceIds
+   *    Filter the results based on space ids.
+   *    Multiple space ids can be specified as a comma-separated list.
+   * @param status
+   *    Used to sort the result depending on the status of the task
+   * @param limit
+   *    limit the number of tasks returned. Default is 25, Maximum is 250.
+   */
+  listTasks: function(dueDateFrom: DateTime,
+                      dueDateTo: DateTime,
+                      spaceIds: [int],
+                      assignedTo: [string],
+                      status: string,
+                      limit: int): [ConfluenceTask]
+}

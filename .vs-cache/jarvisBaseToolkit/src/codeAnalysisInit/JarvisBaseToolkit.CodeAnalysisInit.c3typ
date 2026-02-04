@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The Type that contains utility functions for running code analysis initialization Jarvis step.
+ */
+type JarvisBaseToolkit.CodeAnalysisInit mixes JarvisBaseToolkit.Step, Value js-rhino {
+
+  /**
+   * Function to get the contents of the `.c3standardsrc` file for the repository.
+   *
+   * @param step
+   *           The Jarvis step that is being run
+   * @return The `.c3standardsrc` file contents.
+   */
+  c3standardsrcForRepository: private function(step: Jarvis.Step): json
+
+  /**
+   * The helper function to get the source control spec for initializing code analysis for the Jarvis build.
+   *
+   * @param step
+   *           The Jarvis step that is being run
+   * @return The source control spec
+   */
+  getSourceControlSpec: private function(step: Jarvis.Step): BaseCodeAnalyzer.SourceControlGadget.Spec
+
+  /**
+   * The helper function to queue the document generation and code analysis steps for the Jarvis build.
+   */
+  queueDocGenAndCodeAnalysisSteps: private function(step: Jarvis.Step)
+
+  /**
+   * The function to initialize code analysis for the Jarvis build.
+   * The step will retrieve and store metadata needed for running code analysis.
+   */
+  runStep: ~
+}

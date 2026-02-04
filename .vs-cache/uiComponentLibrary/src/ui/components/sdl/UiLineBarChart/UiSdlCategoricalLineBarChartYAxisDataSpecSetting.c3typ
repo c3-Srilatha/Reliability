@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specification that describes how to use each field of the {@link dataType} for display in the {@link UiSdlCategoricalLineBarChart}.
+ * A single field is mapped to either X axis or Y axis, so an instance of this type specifies how to display the Y axis
+ * in a categorical line bar chart.
+ */
+@typeScript
+type UiSdlCategoricalLineBarChartYAxisDataSpecSetting mixes UiSdlFieldBasedDataSpecSetting, UiSdlLineBarChartYAxisDataSpecSetting {
+
+  /**
+   * Aggregation options for collection fields.
+   */
+  aggregation: string enum('Sum', 'Count', 'Average', 'Maximum', 'Minimum')
+
+  /**
+   * The strategy used for determining the colors of the bars. Currently, only gradient coloring is supported.
+   * If this field is set, {@link color} is ignored.
+   */
+  colorConfigurationStrategy: UiSdlGradientColorSetting
+
+  /**
+   * The type of visualization. It could be either 'UiSdlLineBarChartBarVisualization', 'UiSdlLineBarChartPointVisualization' or 'UiSdlCategoricalLineBarChartLineVisualization'.
+   * To config it at json file, put visualization type value at "type" field alongside with other fields from the reference type.
+   * For example:
+   *     "visualizationType": {
+   *       "type": "UiSdlCategoricalLineBarChartLineVisualization",
+   *       "lineStyle": "Dotted"
+   *     }
+   */
+  visualizationType: UiSdlLineBarChartBarVisualization | UiSdlLineBarChartPointVisualization | UiSdlCategoricalLineBarChartLineVisualization
+
+  /**
+   * Map to actual aggregation function.
+   */
+  aggregationMap: json = {Sum: 'sum', Count: 'count', Average: 'avg', Maximum: 'max', Minimum: 'min'}
+}

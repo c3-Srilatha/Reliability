@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to register a part of the GlobalCanvas.
+ */
+// TODO: TOOLS-10832 Move this back into globalCavnasCommon and create a proper tunneling mechanism
+abstract type GlobalCanvasRegistration mixes Metadata, Identified {
+
+  /**
+   * Whether or not this is a {@link CanaryMode} feature
+   */
+  canary: boolean
+
+  /**
+   * The optional priority for this registration.  Registrations will be ordered on priority and invoked from lowest
+   * priority to highest priority.  A priority of null will result in skipping a registration.  This allows a higher
+   * level package to ignore subsets of dependent packages.
+   * If a registration needs to be skipped for a package, set the priority to null or ignore the property.
+   */
+  priority: int
+
+  /**
+   * Get the registrations of the calling type
+   * @return [GlobalCanvasRegistration] - The registrations of this type filtered against current environments
+   * {@link CanaryMode} and {@link #canary} and ordered on {@link #priority}
+   */
+  getRegistrations: function(): [GlobalCanvasRegistration]
+
+  /**
+   * Get all instances of {@link GlobalCanvasRegistration}, key'd by the type name
+   */
+  getAllRegistrations: function(): map<string, [GlobalCanvasRegistration]>
+}

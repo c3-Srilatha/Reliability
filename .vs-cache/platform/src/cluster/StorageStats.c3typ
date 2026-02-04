@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * StorageStats provides an abstraction for storage metrics of a disk associated with a directory.
+ * It offers key insights into the disk's total capacity, current storage usage, and available space.
+ * The total capacity is a fixed value, while the available space is dynamically calculated.
+ * Additionally, it can determine whether a specified amount of data can fit within the remaining available space.
+ */
+type StorageStats {
+
+  /**
+   * Represents the total number of bytes currently in use.
+   */
+  usedBytes: int
+
+  /**
+   * Represents the total storage capacity in bytes.
+   */
+  capacityBytes: int
+
+  /**
+   * Calculates and returns the total number of bytes currently available for use.
+   */
+  availableBytes: property(): int
+
+  /**
+   * Computes and returns the percentage of storage that has been used.
+   * The value is calculated as (usedBytes / capacityBytes) * 100.
+   */
+  percentageUsed: property(): double
+
+  /**
+   * Checks if the specified number of bytes can be accommodated within the available storage.
+   * @param bytes
+   *          The number of bytes to check for availability.
+   * @return True if there is enough capacity for the given bytes, false otherwise.
+   */
+  hasCapacityForBytes: member function(bytes: !int): boolean
+}

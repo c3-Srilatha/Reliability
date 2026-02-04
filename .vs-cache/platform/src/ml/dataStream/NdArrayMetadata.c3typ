@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * NdArrayMetadata holds fields that describe the metadata of an n-dimensional array.
+ */
+type NdArrayMetadata {
+
+  /**
+   * Labels for elements along ndarray axes.
+   * For example, for a three-dimensional ndarray with sources in the first dimension, dates in the second, and metrics
+   * in the third, indices.get(0)[j] would be the label for the j-th source, indices.get(1)[j] would be the label for
+   * the j-th date, and indices.get(2)[j] would be the label for j-th metric.
+   *
+   * Each string array can contain null, indicating that there is no label at that particular position.
+   *
+   * **CAUTION**: We recommend not to use the range delimiter ":" in a label.  This may be confused by the parser used
+   * by the underlying implementation of various functions. For example, see {@link AbstractTensor#subTensor}.
+   */
+  indices: map<int, [string]>
+}

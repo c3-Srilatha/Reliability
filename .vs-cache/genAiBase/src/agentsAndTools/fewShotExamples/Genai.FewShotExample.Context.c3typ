@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Persists few-shot examples for a python agent along with its embedding in pgvector.
+ */
+@db(index += ['fewShotExampleType', 'query', 'context'])
+entity type Genai.FewShotExample.Context extends Genai.FewShotExample type key "FSEC" {
+
+    /**
+     * The context attached to the query which will serve as an example for the llm.
+     */
+    context: !string
+
+    /**
+     * Description of the few-shot.
+     */
+    description: string = ""
+
+    /**
+     * The context in which the few-shot examples are being retrieved.
+     * This field describes the specific situation or environment that the examples pertain to,
+     * allowing for more relevant and accurate retrieval of few-shot examples based on the context.
+     * Here some examples that are used for the agentic REA pipeline: `query_rewriting`, `retrieval_filters`, `reranker`, `message_builder`
+     */
+    fewShotExampleType: !string
+
+    parseForTemplate: ~ py-query_orchestrator
+}

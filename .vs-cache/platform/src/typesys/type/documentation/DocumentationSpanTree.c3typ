@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A piece of parsed documentation markup with more than one formatting style. These spans are used to contain other
+ * spans when styles nest.
+ *
+ * For example, in the case of a link within an emphasized string: `_unless using a {@link Type}._`, you will end up
+ * with four nodes:
+ * - DocumentationSpanTree, style EM, no text
+ *   - DocumentationSpan, style PLAIN, text "unless using a "
+ *   - DocumentationReference (style LINK)
+ *   - DocumentationSpan, style PLAIN, text "."
+ *
+ * This means that when rendering spans recursively, one ignores PLAIN style as usual since here it means "same as
+ * parent".
+ *
+ * Other examples of how inline spans can nest:
+ * - a paragraph with _regular and **strong** emphasis_
+ * - a _[link](https://en.wikipedia.org/wiki/Hyperlink) inside an emphasis_
+ * - _`code` and ~~struck-through~~ inside an emphasis_
+ * - [a **strong** link](https://www.merriam-webster.com/dictionary/strong)
+ */
+type DocumentationSpanTree mixes DocumentationSpan {
+
+  /**
+   * @inheritdoc
+   *
+   * In the case of a tree, the style of its #spans will be `PLAIN` unless they change from its style.
+   */
+  style: ~
+
+  /**
+   * @inheritdoc
+   *
+   * In the case of a tree, there will be _no_ text in the tree itself; its #spans will have the text that goes with
+   * their style (or nested sub-trees).
+   */
+  text: ~
+
+  /**
+   * Nested spans within this span. These inherit the style from this node and perhaps add a nested style. These may
+   * be leaf spans or tree to support arbitrary nesting.
+   */
+  spans: [DocumentationSpan]
+}

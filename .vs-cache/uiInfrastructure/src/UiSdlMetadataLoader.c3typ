@@ -1,0 +1,297 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type that provides methods to support the process of generating TSX source implementation from the JSON UI metadata configuration.
+ */
+@restful(endpoint='ui-metadata')
+@codeGeneratorWithCaching
+final type UiSdlMetadataLoader {
+
+  /**
+   * Prefix for federated module exposed path.
+   */
+  EXPOSED_PATH_PREFIX: const string = './'
+
+  /**
+   * Path category for types.
+   */
+  PATH_CATEGORY_TYPES: const string = 'types'
+
+  /**
+   * Path category for typesys types.
+   */
+  PATH_CATEGORY_TYPESYS_TYPES: const string = 'typesys'
+
+  /**
+   * Path category for epics.
+   */
+  PATH_CATEGORY_EPICS: const string = 'epics'
+
+  /**
+   * Path category for styles.
+   */
+  PATH_CATEGORY_STYLES: const string = 'styles'
+
+  /**
+   * Path category for tests.
+   */
+  PATH_CATEGORY_TESTS: const string = 'tests'
+
+  /**
+   * Path category for pluggables.
+   */
+  PATH_CATEGORY_PLUGGABLES: const string = 'pluggables'
+
+  /**
+   * Generates source files for each page. One `.json` file will be generated with the initial UI metadata required
+   * for the page, as well as the TSX source implementation for the page.
+   *
+   * @return a map of source file path to source file content.
+   */
+  generateSourceFiles: function(): map<string, string> js-server
+
+  /**
+   * Returns an NPM module containing all the types as TypeScript interfaces in a single .d.ts file.
+   */
+  @restful(subPath='npm-modules/ts-types-decl.tgz')
+  produceTsDeclNpmModule: function(): !ContentValue js-server
+
+  /**
+   * Returns an NPM module containing all the UI metadata and source code produced by {@link generateSourceFiles}.
+   */
+  @restful(subPath='npm-modules/c3ui.tgz')
+  produceC3UiNpmModule: function(): !ContentValue js-server
+
+  /**
+   * Returns an NPM module containing all the sdl-react presentational source code produced by {@link generateSdlReactPresentationalSourceCode}.
+   */
+  @restful(subPath='npm-modules/sdl-react.tgz')
+  produceC3SdlReactNpmModule: function(): !ContentValue js-server
+
+  /**
+   * Returns an NPM module @c3/bundler.
+   *
+   * This c3-bundler.tgz is used to retrieve the c3-bundler in platform package.
+   *
+   * This is different than the bundler.tgz used in {@link UiBundlerRestApi} as it is used prior to when the UI was migrated out of c3-server.
+   */
+  @restful(subPath='npm-modules/c3-bundler.tgz')
+  readC3BundlerNpmModule: function(): !ContentValue js-server
+
+  /**
+   * Compatibility Notice: This method is no longer used but is kept here for compatibility reasons.
+   *
+   * Generates a mapping of all source files for the given namespace.
+   *
+   * If {@link UiSdlExtraFilesInvalidatingCacheLoader} is disabled, remove files in:
+   * `.*\/ui/{namespace}/(?!src/customComponents|src/customInstances).*`
+   *
+   * @see UiBundler.produceUiFiles
+   */
+  produceUiFiles: function(namespace: !string): map<string, string> js-server
+
+  /**
+   * Checks whether src/test.tsx file exists in the store. This is used to create a webpack entry point for tests.
+   */
+  isSrcTestTsxPresent: function(): boolean js-server
+
+  /**
+   * Generates a manifest map containing file paths matched to their describing metadata.
+   * Do not use this API directly as it is expensive, use UiSdlMetadataFileManifestCache.generateManifest instead.
+   *
+   * The keys in the manifest map are file paths as indicated in generateSourceFiles plus some extra files that, although are not
+   * generated to be reused from UI, contain code or data that might change the outcome of generating bundles (like
+   * UiSdlConfig.infrastructure.webpackMode or the webpack.config.js file)
+   *
+   * @param files Optional collection of files to be used for the generation, if not passed, generateSourceFilesData will be used
+   *              to create them.
+   * @return The manifest contents as a map of file paths to UiSdlMetadataFileManifestEntry values
+   */
+  generateManifest: function(files: map<string, UiSdlMetadataFile>): map<string, any> js-server
+
+  /**
+   * Detects circular dependencies and throws error if detected.
+   */
+  detectCircularDependencies: private function(): any js-server
+
+  /**
+   * Helper function for {@link detectCircularDependencies} without side effects.
+   */
+  detectCircularDependenciesInImports: private function(importedBy: map<string, [string]>): any js-server
+
+  /**
+   * Generates source file data to be consumed by different methods.
+   */
+  generateSourceFilesData: cached private function(): map<string, UiSdlMetadataFile> js-server
+
+  /**
+   * Compares the manifest in TagMetadataStore (ui/content/c3/manifest.json) with a freshly generated manifest from the
+   * TagMetadataStore source files.
+   *
+   * @return true if all digests from the new manifest match the cached manifest in the TagMetadataStore.
+   */
+  isMetadataStoreMatchingManifest: function(manifest: map<string, UiSdlMetadataFileManifestEntry>): boolean js-server
+
+  /**
+   * Compares the manifest from the last run (stored in UiSdlMetadataFileManifest) with a freshly generated manifest from the
+   * TagMetadataStore source files.
+   *
+   * @return true if all digests from the new manifest match the cached manifest in UiSdlMetadataFileManifest
+   */
+  isMetadataStoreMatchingUiBundlerResultManifest: function(manifest: map<string, UiSdlMetadataFileManifestEntry>)
+                                                    : boolean js-server
+
+  /**
+   * Compares two manifests
+   *
+   * @return true if both manifests are the same
+   */
+  manifestsMatch: private function(newManifest: map<string, UiSdlMetadataFileManifestEntry>,
+                                   oldManifest: map<string, UiSdlMetadataFileManifestEntry>): boolean js-server
+
+  /**
+   * Debug function to find out differences between manifest between MetadataStore and newly generated manifest.
+   *
+   * @return an array of objects that are different.
+   */
+  diffManifestMetadataStoreVsNewManifest: private function(): [map<string, string>] js-server
+
+  /**
+   * Debug function to find out differences between manifest between MetadataStore and last time UiBundler generated manifest.
+   *
+   * @return an array of objects that are different.
+   */
+  diffManifestMetadataStoreVsUiBundlerResult: private function(): [map<string, string>] js-server
+
+  /**
+   * Detects changes in the files included in a federated module and returns true if there are any.
+   *
+   * @return true if changes are detected or no manifest is present.
+   */
+  federatedModuleHasChanges: function(federatedModuleName: string): boolean js-server
+
+  /**
+   * Returns a mapping between federated module and status in the UiBundlerResults. When true, it means the federated module appears in at least
+   * one of the {@link UiBundlerResult} records.
+   */
+  getFederatedModulesFromUiBundlerResults: private function(bundlerResults: [UiBundlerResult]): map<string, boolean> js-server
+
+  /**
+   * Returns true if all the federated modules mentioned in the manifest are present in the {@link UiBundlerResult} records.
+   * Uses getFederatedModulesFromUiBundlerResults to retrieve the list of present federated modules in UiBundlerResults
+   */
+  areBundlerResultsUsable: private function(manifest: UiSdlMetadataFileManifest): boolean js-server
+
+  /**
+   * Returns manifest contents from the manifest located at ui/c3/manifest.json in the tag's MetadataStore
+   */
+  getManifestFromMetadataStore: private function(): map<string, UiSdlMetadataFileManifestEntry> js-server
+
+  /**
+   * Returns the manifest contents from the manifest saved in the {@link UiSdlMetadataFileManifest} singleton
+   */
+  getManifestFromLastRun: private function(): map<string, UiSdlMetadataFileManifestEntry> js-server
+
+  /**
+   * Detects changes from one manifest to another in all files that belong to a particular federated module.
+   */
+  federatedModuleHasChangesAgainstManifest: private function(federatedModuleName: string,
+                                                             manifest: map<string, UiSdlMetadataFileManifestEntry>,
+                                                             cachedManifest: map<string, UiSdlMetadataFileManifestEntry>)
+                                                      : boolean js-server
+
+  /**
+   * Helper method for federatedModuleHasChanges, uses federatedModuleHasChangesAgainstManifest and takes into consideration that files have to be present in the metadata store
+   */
+  federatedModuleHasChangesAgainstManifests: private function(federatedModuleName: string,
+                                                              deployedManifest: map<string, UiSdlMetadataFileManifestEntry>,
+                                                              deployedFileList: [string],
+                                                              cachedManifest: map<string, UiSdlMetadataFileManifestEntry>,
+                                                              manifest: map<string, UiSdlMetadataFileManifestEntry>)
+                                                       : boolean js-server
+
+  /**
+   * Detects changes in cache-invalidating files, files that affect all federated modules, by comparing to two manifests in case they
+   * are present in either the MetadataStore or in UiSdlMetadataFileManifest.
+   */
+  areCacheInvalidatingChangesPresent: private function(manifest: map<string, UiSdlMetadataFileManifestEntry>,
+                                                       deployedManifest: map<string, UiSdlMetadataFileManifestEntry>,
+                                                       cachedManifest: map<string, UiSdlMetadataFileManifestEntry>)
+                                                : boolean js-server
+
+  /**
+   * Generates a mapping of exposed module names to file paths.
+   *
+   * @return A map where keys are module names and values are objects with properties types and components.
+   */
+  exposedByFederatedModule: function(): map<string, any> js-server
+
+  /**
+   * Transforms a @c3/ui path to a federated module exposed path.
+   *
+   * @param path
+   *        A @c3/ui path to be transformed.
+   */
+  c3UiPathToExposedPath: private function(path: string): string js-server
+
+  /**
+   * Generates a map whose keys are paths from @c3/ui and where each
+   * value is the name of the federated module where the file will be exposed
+   */
+  generateC3UiToFederatedModuleMapping: private function(): map<string, string> js-server
+
+  /**
+   * Generates an index.js implementation that imports and exports all webpack config
+   * extensions in reverse remix order (root package last)
+   */
+  generateWebpackExtensionsIndex: private function(namespace: string): string js-server
+
+  /**
+   * Generates a map whose keys are paths from @c3/ui and where each
+   * value is the path to the file from the c3 namespace folder.
+   */
+  generateC3UiToExposedPathMapping: private function(): map<string, string> js-server
+
+  /**
+   * Generates a mapping of exposed paths to their federated module.
+   */
+  exposedToFederatedModule: private function(): map<string, string> js-server
+
+  /**
+   * Transforms a exposed path from a federated module to a path from '@c3/ui'.
+   *
+   * @param exposedPath
+   *           The exposed path to be transformed.
+   */
+  exposedPathToC3UiPath: private function(path: string): string js-server
+
+  /**
+   * Used to test the internal functionality.
+   *
+   * Add extra files generated by {@link UiSdlExtraFilesInvalidatingCacheLoader} if
+   * UiSdlConfig.infrastructure.disableExtraFilesLoader is not set to true.
+   */
+  addExtraSourceFiles: private function(fileMap: map<string, UiSdlMetadataFile>): map<string, UiSdlMetadataFile> js-server
+
+  /**
+   * Creates a typescript declaration based on the type metadata for a single type.
+   * @param typeMeta
+   *           The typeMeta for the type.
+   * @param typeName
+   *           The name of the type
+   * @return The typescript declaration for the type.
+   */
+  doGenerateTsDeclForTypes: function(typeMeta: TypeMeta, typeName: string): string js-server
+
+  /**
+   * Generates a typescript declaration for all types in the system.
+   * @return A map of index filename to typescript declaration for all types.
+   */
+  generateTsDeclForTypes: function(typeMetas: map<string, TypeMeta>): map<string, ContentValue> js-server
+}

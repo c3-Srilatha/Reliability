@@ -1,0 +1,220 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a project agnostic pipeline that can be used for different use cases within the C3 AI Reliability application.
+ * The pipeline processes time-series data of assets, applies various masks to exclude unwanted data points, and outputs alerts,
+ * risk scores, or other artifacts.
+ *
+ * The pipeline supports both training and inference and can generate alerts based on operational conditions or other predictive outcomes.
+ * Customization is enabled via optional custom pipes for advanced data processing logic.
+ *
+ * The pipeline requires 9 mandatory inputs and 1 optional input. Each input should be of type {@link Data} with `subject` and `timestamp` columns.
+ *
+ * The outputs include at least one artifact, typically an alert, and optionally, outputs from custom pipes such as risk scores.
+ */
+extendable entity type ReliabilityMl.Pipeline<DX, DY, DO, DI> extends MlTemplate.Pipeline<DX, DY, void, DO, DI> mixes ReliabilityMl.PipeBase type key 'RMP' {
+
+  /**
+   * Optional custom pipe that generates outputs to be consumed by the {@link #alertPipe}.
+   * This pipe can be used to calculate risk scores or other metrics that will be fed into the alerting pipe for final decision making.
+   *
+   * Example: The `algorithmPipe` may output a risk score that indicates the likelihood of an asset failure or an anomaly.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  algorithmPipe: ReliabilityMl.CustomPipe
+
+  /**
+   * A custom pipe responsible for generating an `alert` based on the 9 input features and any additional outputs from the {@link #algorithmPipe}.
+   * This pipe applies alerting logic to decide when an alert should be triggered.
+   *
+   * Example: The `alertPipe` could output a binary value indicating whether an alert should be raised for a specific asset at a particular time.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  alertPipe: !ReliabilityMl.CustomPipe
+
+  /**
+   * Defines which pipe's output should be interpreted or visualized.
+   * The choices are either the `algorithmPipe` (e.g., risk score, other calculated metrics) or the `alertPipe` (e.g., alerts, predictions).
+   */
+  pipeToInterpret: string enum('algorithmPipe', 'alertPipe')
+
+  /**
+   * If the pipeline involves supervised learning, this flag should be set to `true` to indicate the presence of a target variable.
+   * This enables training functionality within the pipeline.
+   */
+  @typeMetaDoc(isAdditional=true)
+  hasTarget: boolean
+
+  /**
+   * A list of all the categories of masks that should be applied during training to filter out unwanted data points.
+   * There are 7 types of masks in total. By default, 6 masks are applied to remove data that is not suitable for model training.
+   *
+   * Masks can be customized by modifying this list to control which data points are used during training.
+   *
+   * Default masks:
+   * - mask_IsAssetNotOperational
+   * - mask_AssetEvent
+   * - mask_PreAssetEvent
+   * - mask_PostAssetEvent
+   * - mask_AdHocTraining
+   * - mask_AlgorithmicallyComputed
+   */
+  trainingMasks: [string] = [
+    'mask_IsAssetNotOperational',
+    'mask_AssetEvent',
+    'mask_PreAssetEvent',
+    'mask_PostAssetEvent',
+    'mask_AdHocTraining',
+    'mask_AlgorithmicallyComputed'
+  ]
+
+  /**
+   * A list of masks that should be applied during inference (model prediction) to filter out unwanted data points.
+   * By default, 4 masks are applied for inference. Similar to `trainingMasks`, these can be customized for specific inference use cases.
+   *
+   * Default masks:
+   * - mask_IsAssetNotOperational
+   * - mask_AssetEvent
+   * - mask_PostAssetEvent
+   * - mask_AdHocInference
+   */
+  inferenceMasks: [string] = [
+    'mask_IsAssetNotOperational',
+    'mask_AssetEvent',
+    'mask_PostAssetEvent',
+    'mask_AdHocInference'
+  ]
+
+  /**
+   * The ID of the Hyperparameter Optimization (HPO) job that created this pipeline.
+   * If no HPO job was used, this value will be empty.
+   */
+  hpoJobId: private string
+
+  /**
+   * A function that returns a superset of all possible categories of masks that can be applied to train or infer from the pipeline.
+   * This helps to understand what other masks are available beyond those provided in `trainingMasks` and `inferenceMasks`.
+   *
+   * Returns a list of available mask categories.
+   */
+  maskCategories: function(): ![string] py
+
+  /**
+   * Validates that the `trainingMasks` and `inferenceMasks` used in the pipeline are valid subsets of the available `maskCategories`.
+   * If not, an error is thrown.
+   *
+   * Ensures that only recognized and valid masks are applied during model training and inference.
+   */
+  validateTrainingAndInferenceMasks: private member function() py
+
+  /**
+   * Validates if the pipeline is interpretable.
+   * An interpretable pipeline is one whose outputs (such as alerts or risk scores) can be understood and explained based on the input data.
+   *
+   * This is crucial for understanding the model's behavior and building trust in the system's predictions.
+   */
+  validateIsInterpretable: private member function() py
+
+  /**
+   * Pre-creation logic for the pipeline.
+   * This function can be used to prepare any data or configuration necessary before the pipeline is created.
+   */
+  beforeCreate: ~ py
+
+  /**
+   * Generates the machine learning pipeline by processing the input data, applying the masks, and using the algorithm pipe (if available).
+   * The pipeline is created using the defined custom pipes and configuration.
+   */
+  generatePipeline: ~ py
+
+  /**
+   * Generates the type bindings for the pipeline.
+   * This ensures that the types of the input data, outputs, and other fields are correctly defined and mapped.
+   */
+  generateTypeBindings: ~ py
+
+  /**
+   * Retrieves the hyperparameters for the pipeline, including those from the `algorithmPipe` and `alertPipe`.
+   * These hyperparameters are used to control the behavior of the pipeline during training and inference.
+   */
+  hyperparams: ~ py
+
+  /**
+   * Returns a merged map of hyperparameters, combining both the initial ones and those updated during training.
+   * This function ensures the hyperparameters reflect the final trained state of the pipeline.
+   */
+  updatedHyperparams: private member function(): map<string, any> py
+
+  /**
+   * Generates the hyperparameter JSON necessary for model setup, including descriptions and metadata.
+   * If the pipeline is trained, this function will use the trained hyperparameters and update the values accordingly.
+   */
+  hyperparamsForModelSetupUi: private member function(): [json] py
+
+  /**
+   * Creates a copy of the pipeline with updated hyperparameters.
+   * This function allows for modifications to hyperparameters without retraining the model.
+   * It is useful when changing inference-only hyperparameters.
+   */
+  withHyperparams: ~ py
+
+  /**
+   * Creates a "copy" of the pipe with new hyperparameter value, similar to
+   * {@link withHyperparams}. In the case of {@link withHyperparams}, the new
+   * pipeline is untrained. In the case of `replicate`, only hyperparameters that are
+   * relevant for only-inference, i.e.,
+   * {@link ReliabilityMl.CustomPipeKwarg#isForInferenceOnly}, may be changed.
+   * Because these parameters only influence inference time performance of the
+   * pipeline, the new pipeline will continue to remain `trained` if the original pipeline
+   * is also trained. There will be no need to retrain the pipeline returned by
+   * this function.
+   *
+   * @param newHps
+   *        The keys of the outer map must be the fields on the pipeline, whose inference-only
+   * hyperparameters are to be changed. For example, `algorithmPipe` or `alertPipe`. The keys of
+   * the inner map must be the names of the hyperparameters for that particular pipe. The
+   * values of the inner map must be the new values of the hyperparameters.
+   *
+   * @returns a new {@link ReliabilityMl.Pipeline} with new inference-only parameters.
+   * Thus, if the original pipeline is trained, the new pipeline will also be trained and
+   * ready for inference.
+   */
+  replicate: member function(
+    newHps: map<string, map<string, any>>
+  ): !ReliabilityMl.Pipeline py
+
+  /**
+   * Resolves the pipeline configuration in preparation for dataset runs.
+   * This function ensures that all necessary setup is completed before running the pipeline on a specific dataset.
+   */
+  resolveForDatasetPreparationRun: ~ py
+
+  /**
+   * Replaces entity references within the pipeline.
+   * This is necessary for handling any external references (e.g., to datasets or models) that need to be updated.
+   */
+  replaceEntityReferences: ~ py
+
+  /**
+   * This function is used to refit the {@link ReliabilityMl.Pipeline} for a specific {@link ReliabilityAsset}.
+   * It creates a new version of the custom pipe that is adapted for the provided asset, ensuring that the pipe's
+   * functionality and configuration are tailored to the asset's data and requirements.
+   *
+   * @param assetId
+   *        The ID of the {@link ReliabilityAsset} for which the custom pipe is being refitted.
+   *
+   * @returns A new instance of {@link ReliabilityMl.Pipeline} that is refitted for the specified asset.
+   */
+  refitForAsset: private member function(
+    assetId: !string
+  ): !ReliabilityMl.Pipeline py
+}

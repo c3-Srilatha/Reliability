@@ -1,0 +1,23 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Fetch spec used when fetching alerts and rules for an App through UI.
+ * The C3 UI Framework assumes a traditional {@link FetchSpec} when using a {@link UiSdlDataGrid} - specifically, it will
+ * set "filter", "limit", "offset", and "order" fields. This type here serves as a translation layer between the arguments
+ * passed from the UI framework to what our backend actually expects.
+ * Note that though this type mixes FetchSpec, only the filter and order fields of FetchSpec will actually be respected
+ * if set on the top level. They will be combined/applied to the appropriate internal specs such as `ruleSpec` and `statusSpec`.
+ */
+type App.Alert.FetchSpec.Ui mixes FetchSpec, App.Alert.FetchSpec {
+
+  /**
+   * Convert {@link App.Alert.FetchSpec.Ui} to {@link App.Alert.FetchSpec}.
+   */
+  toAppAlertFetchSpec: inline member function(): App.Alert.FetchSpec
+}

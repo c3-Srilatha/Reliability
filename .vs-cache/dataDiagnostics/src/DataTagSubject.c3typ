@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type that gets mixed into an entity type in order to be able to tag it with
+ * {@link DataTag}s. Should be used with parametric extensions of {@link DataTag}.
+ */
+abstract type DataTagSubject<DTR: DataTagRelation, DT: DataTag> mixes FeatureEvaluatable, DataTagSubjectBase<DTR> {
+
+  /**
+   * The data tags related to this type.
+   */
+  dataTagRelations: [DTR](from)
+
+  /**
+   * The direct data tags calculated on this type.
+   */
+  directDataTags: [DT] stored calc dataTagRelations.to schema name 'DDT'
+
+  /**
+   * All the data tags for this type based on its direct data tags and the data tags of types related to it.
+   * Users should override this field in order to aggregate data tag names across this entity and entities that
+   * this entity is related to such as a Facility's data tags and its Meters' data tags.
+   */
+  dataTags: [string] stored calc directDataTags.name schema name 'DT'
+}

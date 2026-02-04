@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract inline type TimeseriesInfoBase {
+
+  /**
+   * @return available / not available boolean value for every point
+   *         <p>
+   *         available = not(missing)
+   */
+  available: abstract member function(): [boolean]
+
+  /**
+   * @return unavailability time ranges of timeseries.
+   */
+  missingRanges: abstract member function(): [TimeRange]
+
+  /**
+   * Within the time range of this timeseries, it returns the earliest date for which data is available.
+   *
+   * @return earliest date (within this series) for which data is available.
+   */
+  earliestAvailable: abstract member function(): datetime
+
+  /**
+   * Within the time range of this timeseries, it returns the latest date beyond which data is unavailable.
+   *
+   * @return latest date (within this series) beyond which data is unavailable.
+   */
+  latestAvailable: abstract member function(): datetime
+
+  /**
+   * Computes percentage of missing data using "missing" information.
+   *
+   * @return double 0 <= x <= 100
+   */
+  percentMissing: abstract member function(): !byte
+
+  /**
+   * @return true if timeseries is fully available.
+   */
+  isFullyAvailable: abstract member function(): boolean
+
+  /**
+   * @return true if timeseries if fully missing
+   */
+  isFullyMissing: abstract member function(): boolean
+
+  /**
+   * @return time info for this timeseries.
+   */
+  timeInfo: abstract member function(): !TimeInfo
+
+  /**
+   * Shifts the timeseries info in the time domain to specified start. This shifts start, end, missingRanges,
+   * estimateRanges.
+   *
+   * @param start
+   *        datetime to which timeseries info has to be shifted.
+   */
+  shift: abstract member function(start: datetime): !mixing TimeseriesInfoBase
+
+  /**
+   * @return new timeseries info with provided availability.
+   */
+  withAvailability: abstract member function(missing: [boolean]): !mixing TimeseriesInfoBase
+
+  /**
+   * @return dates for points of timeseries.
+   */
+  dates: abstract member function(): ![datetime]
+}

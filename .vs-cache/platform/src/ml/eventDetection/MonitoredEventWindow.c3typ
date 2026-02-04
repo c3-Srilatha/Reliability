@@ -1,0 +1,21 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents monitored event window for an ongoing event prediction, typically created from {@link Timeseries}
+ * using {@link EventWindow#fromTimeseries}.
+ */
+extendable entity type MonitoredEventWindow extends EventWindow type key 'MEW' {
+
+  /**
+   * "MONITORING" status if the {@link MonitoredEventWindow} is open but no {@link ObservedEvent} has occurred yet.
+   * "EVENT-VERIFIED" if the {@link MonitoredEventWindow} is open and at least one {@link ObservedEvent} has occurred.
+   * "FALSE-POSITIVE" if the {@link MonitoredEventWindow} is closed and there were no {@link ObservedEvent}s.
+   */
+  monitoringStatus: string calc "exists(events) ? 'EVENT-VERIFIED' : exists(end) ? 'FALSE-POSITIVE' : 'MONITORING'"
+}

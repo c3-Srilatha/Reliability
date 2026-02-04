@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used internally for invalidation for metrics defined with a tsDecl
+ */
+private type AsTsMetricDep {
+
+  /**
+   * Metric with tsDecl specified.
+   */
+  metricId: string
+
+  /**
+   * Type used as the asTimeseries header.  This is typically the deepest reference field in the metric path.
+   */
+  headerType: Type
+
+  /**
+   * Field in the header type that is the parent of the asTimeseries data points.
+   */
+  parentField: string
+
+  /**
+   * Type for the data points.
+   */
+  dataPointType: Type
+
+  /**
+   * @return the simple metric for the dependency.
+   */
+  metric: inline member function(): SimpleMetric
+
+  /**
+   * Gets all of the AsTsMetricDeps for a given type.
+   *
+   * @param type
+   *        Type to get the deps for.
+   *
+   * @return All the AsTsMetricDeps for a given type.
+   */
+  depsForType: inline function(type: !Type): [AsTsMetricDep]
+
+  /**
+   * Gets all of the AsTsMetricDeps for a type used as a header type in an AsTs metric.
+   *
+   * @param type
+   *        Type to get the deps for.
+   *
+   * @return All the AsTsMetricDeps for a type used as a header type in an AsTsMetric.
+   */
+  depsForHeaderType: inline function(type: !Type): [AsTsMetricDep]
+}

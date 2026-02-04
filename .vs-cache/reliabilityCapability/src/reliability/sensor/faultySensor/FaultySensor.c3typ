@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Namespace type for the faulty sensor module in the reliability app. In the following documentation, you will find
+ * a general overview of what this module is, some high level implementation details, and a list of types, functions,
+ * and fields to read. The more granular the documentation (e.g. function docs), the more specific and accurate it will
+ * be. This is a complex feature and copying all the details in once place (this type) would cause a lot of redundancy.
+ *
+ * The purpose of this module is that sometimes [sensors](Sensor) become faulty or have routine maintenance.
+ * Over the duration of this downtime, models that use the sensor as input will likely perform sub-optimally.
+ * This module provides both a method of marking sensors as faulty, and a way to automatically adjust models to account
+ * for the faulty sensor.
+ *
+ * **Steps in the faulty sensor process:**
+ * - Sensor(s) are marked as `faulty` or `operational` by a user.
+ *   - Details at: {@link Sensor#operationalStatus} + {@link SensorOperationalStatusTimedValue} +
+ *       {@link SensorOperationalStatusEnum#FAULTY}
+ * - Identify the list of model/asset relations that are using the updated sensors as features or masks.
+ *   - Details at:
+ *     - {@link FaultySensor.ModelImpactMapReduceJob} - General docs
+ *     - {@link FaultySensor.ModelImpactMapReduceJob#filterRelationsImpactedBySensorsBatch}
+ * - Validate which of the affected models can be retrained.
+ *   - Overview:
+ *     - If the sensor is used in a mask, the model cannot be retrained.
+ *     - If the resulting model without the sensor will have no features, the model cannot be retrained.
+ *     - If the model contains features that is not parsable to understand the sensors used, the model cannot be
+ *       retrained.
+ *   - Details at:
+ *     - {@link FaultySensor.ModelImpactMapReduceJob#doValidateModelWithDatasetPrepCanBeRetrained}
+ *     - {@link FaultySensor.ModelRetrainValidationErrorEnum}
+ * - Retrain the models that can be retrained.
+ *   - Overview:
+ *     - For the model that should be retrained, identify the model's original (called source of truth) model.
+ *        - Details at: {@link FaultySensor.RiskModelSourceOfTruthRelation}
+ *     - Remove all features that use a sensor in the faulty status.
+ *     - Retrain the model on the same time period as the original model.
+ *     - Deploy the new model.
+ *   - Details at:
+ *     - {@link FaultySensor.Orchestrator.Spec.Process}
+ *     - {@link FaultySensor.Orchestrator.Spec.Retrain}
+ * - Provide notifications to the user about all retraining successes or failures.
+ *   - Overview:
+ *     - Users are notified if a model was not retrained because it failed validation.
+ *       - Details at: {@link FaultySensor.Notification#createNotificationsFromMapReduceResult}
+ *     - Users are notified about successful model retraining or failures during the retraining process.
+ *       - Details at: {@link FaultySensor.Notification#createNotificationsFromModelRetraining}
+ *   - Details at:
+ *     - {@link FaultySensor.Notification}
+ * - Automatically return sensors to operational status based on the user specified end date.
+ *     - Details at:
+ *        - {@link SensorOperationalStatusTimedValue#endDate}
+ *        - {@link Sensor#updateExpiredFaultySensors}
+ *
+ * The previous steps are all orchestrated by the {@link FaultySensor.Orchestrator} type. This is another great entry
+ * point to understand how the pieces all fit together.
+ *
+ * You can find more details on this process in the inner types that implement this module.
+ */
+type FaultySensor

@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The interface for interacting with {@link Studio} administrative capabilities.
+ */
+abstract type StudioIface mixes Microservice.Iface, Singleton {
+
+  /**
+   * Allows administrative apps and services to start {@link App}s in a safe manner.
+   */
+  startApp: abstract function(envId: !string, spec: !Env.StartAppSpec): !string
+
+  /**
+   * Allows administrative apps and services to terminate {@link App}s in a safe manner.
+   */
+  terminateApp: abstract function(appId: !string)
+
+  /**
+   * Allows administrative apps and services to start {@link Env}s in a safe manner.
+   */
+  startEnv: abstract function(spec: !Cluster.StartEnvSpec): !string
+
+  /**
+   * Allows administrative apps and services to terminate {@link Env}s in a safe manner.
+   */
+  terminateEnv: abstract function(envId: !string)
+
+  /**
+   * Returns env for the given envId
+   */
+  envForId: abstract function(envId: !string): Env
+
+  /**
+   * Allows administrative apps to make calls to {@link App}s via {@link App#callJson}.
+   */
+  appCallJson: abstract function(appId: !string,
+                                 type: !string,
+                                 action: !string,
+                                 thisArg: json,
+                                 args: json,
+                                 kwargs: json): json
+
+  /**
+   * Allows administrative apps to make calls to {@link Env}s via {@link App#callJson}.
+   */
+  envCallJson: abstract function(envId: !string,
+                                 type: !string,
+                                 action: !string,
+                                 thisArg: json,
+                                 args: json,
+                                 kwargs: json): json
+
+  /**
+   * Returns the {@link StudioCluster.State} of the {@link StudioEnv} with id envId.
+   */
+  senvStateForId: abstract function(envId: !string, failIfMissing: boolean = true): string
+
+  /**
+   * Returns the {@link StudioCluster.State} of the {@link StudioApp} with id appId.
+   */
+  sappStateForId: abstract function(appId: !string, failIfMissing: boolean = true): string
+
+  /**
+   * Returns the {@link StudioCluster.HistoryEntry} of the {@link StudioEnv} with id envId.
+   */
+  senvHistoryForId: abstract function(envId: !string, failIfMissing: boolean = true): json
+
+  /**
+   * Returns the {@link StudioCluster.HistoryEntry} of the {@link StudioApp} with id appId.
+   */
+  sappHistoryForId: abstract function(appId: !string, failIfMissing: boolean = true): json
+
+  /**
+   * Checks {@link CronQueue} and Studio {@link CronJob}s to ensure they are healthy
+   * @param spec
+   *            Spec to dictate whether or not certain mutative actions should be performed in the sanity check.
+   */
+  sanityCheck: abstract function(spec: Studio.SanityCheck.Spec): Studio.SanityCheck
+}

@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+entity type MetricTestData schema name 'MTD' {
+
+  /**
+   * Metric source type.
+   * TODO: change to type "type" after PLAT-5137
+   */
+  sourceType: Type
+
+  /**
+   * Name of the metric.
+   */
+  metric: string
+
+  /**
+   * Spec for metric evaluation.
+   */
+  evalMetricSpec: EvalMetricSpec schema suffix 'EVALMS'
+
+  /**
+   * Contains the expected result of the metric evaluation on the source.
+   */
+  truth: [double] schema suffix 'TRTH'
+
+  /**
+   * Compares result of metric evaluation with saved bindings
+   * against saved truth data.
+   * @param metricTestData object with all fields defined
+   * @return Result with whether metric is valid against truth
+   */
+  validate: function(metricTestData: MetricTestData): MetricTestResult js-server
+
+  /**
+   * Given a source and a compound metric, extract the data necessary to eval our metric
+   * and save in the form of bindings.
+   * @param name - Name of the metric to extract data for
+   * @param source - Instance of source object with well-defined data
+   * @param evalMetricSpec - Spec containing expression, start, end, and interval
+   * @return Fully defined MetricTestData object
+   */
+  extractTestData: function(name: string,
+                            source: MetricEvaluatable,
+                            evalMetricSpec: EvalMetricSpec): MetricTestData js-server
+}

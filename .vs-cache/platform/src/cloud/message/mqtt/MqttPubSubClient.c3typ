@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a client in the Mqtt Communication.
+ */
+type MqttPubSubClient {
+
+  /**
+   * The Id of the Client
+   */
+  clientId: !string
+
+  /**
+   * Create a Mqtt Client by establishing the connection with the Mqtt Server
+   *
+   * @param credential
+   *           the credential required to connect with Mqtt Server
+   */
+  createClient: function(credential: !MqttAuth): !MqttPubSubClient
+
+  /**
+   * Destroy a Mqtt Client by disconnecting from the Mqtt Server
+   */
+  destroyClient: member function()
+
+  /**
+   * Publish message to a topic.
+   *
+   * @param topic
+   *           the topic where the message will be published
+   * @param message
+   *           the message in string format
+   */
+  publish: member function(topic: !string, message: !string)
+
+  /**
+   * Subscribe a topic to start receiving messages.
+   *
+   * @param topic
+   *           the topic to be subscribed
+   * @param callback
+   *           a user defined function processing the message received from the topic
+   */
+  subscribe: member function(topic: !string, callback: !lambda(message: MqttMessage))
+
+  /**
+   * Unsubscribe a topic to stop receiving messages
+   *
+   * @param topic
+   *           the topic to be unsubscribed
+   */
+  unsubscribe: member function(topic: !string)
+}

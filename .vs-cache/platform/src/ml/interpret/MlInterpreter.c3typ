@@ -1,0 +1,156 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract Type, defining the common interface for interpretability techniques used for understanding machine learning
+ * models. {@link MlInterpreter}s represent algorithms that interpret objects which are defined to be
+ * {@link MlInterpretable}.
+ */
+abstract type MlInterpreter<DX, DO> mixes CallableProtocol {
+
+  /**
+   * A name for this interpreter
+   */
+  name: string
+
+  /**
+   * The algorithm, or explainer, used to interpret a model. The explainer can be a serialized string, representing a
+   * native Python class of the explainer, or a function.
+   */
+  explainer: !(string | Lambda<function(): any>)
+
+  /**
+   * If the {@link #explainer} is a native Python class, these kwargs will be used to initialize the explainer in
+   * addition to a native model or its process function.
+   */
+  initKwargs: map<string, any>
+
+  /**
+   * Keyword arguments for an {@link #explainer}'s interpret function. If the {@link #explainer} is a function, then
+   * the native model being interpreted, or its process function, will also be passed in.
+   */
+  callKwargs: map<string, any>
+
+  /**
+   * The {@link Action.Requirement minimal action requirement} in which all MlInterpreter methods for the pipe will be executed,
+   * except {@link #interpret}, which may be overwritten by the pipe's action requirement, if set @see MlCustomPipe.actionRequirement.
+   */
+  actionRequirement: private string serialized Action.Requirement
+
+  /**
+   * The narrowed {@link MlInterpretResult} Type whose instance will be returned on {@link #interpret}.
+   */
+  resultType: property(): !Type py
+
+  /**
+   * Initialize an {@link MlInterpreter} with an explainer.
+   *
+   * @param explainer
+   *           The primary algorithm for interpretation. See C3 Types that mixin {@link MlInterpreter} for their list
+   *           of accepted explainers.
+   * @param spec
+   *           Customizations for an {@link MlInterpreter} and its explainer. If the explainer is a native Python class
+   *           and either the spec or {@link MlInterpretSpec#initKwargs} are null, then the explainer will be
+   *           initialized with empty arguments.
+   */
+  fromExplainer: abstract function(explainer: !native, spec: MlInterpretSpec): !MlInterpreter py
+
+  /**
+   * Make a new instance of a native explainer from a {@link MlAtomicPipe}. This method will utilize the
+   * {@link #initKwargs} during initialization and be set to interpret the pipe's trained native model.
+   *
+   * @param pipe
+   *           A trained {@link MlAtomicPipe} with a native model that can be interpreted by this {@link MlInterpreter}.
+   * @return A native explainer
+   */
+  makeExplainer: private abstract member function(pipe: !MlAtomicPipe): !native py
+
+  /**
+   * Interpret the model associated with an {@link MlPipe} using the given data.
+   *
+   * Determines the {@link Action.Requirement} by combining the requirements for the pipe's {@link MlAtomicPipe#doProcess} and the interpreter's {@link #doInterpret}.
+   * To find the requirement for the pipe, it checks for `actionRequirement` on the pipe, then on the overload of `doProcess`.
+   * For the interpreter, it checks `actionRequirement` on the interpreter, and then on the overload for `doInterpret`.
+   * Then, it attempts to find a common descendent of these two runtimes (pipe and interpreter)
+   * If one is found, that is returned, otherwise return the requirement for the interpreter.
+   *
+   * @param pipe
+   *           The trained {@link MlAtomicPipe} to be interpreted. {@link MlInterpreter} does not currently support
+   *           interpreting {@link MlPipeline}s.
+   * @param x
+   *           The input data used to help interpret the underlying model in an {@link MlPipe}. For model-agnostic
+   *           methods, the model's {@link #processFunc} will be used
+   * @param spec
+   *           Customizations for the interpretation.
+   * @return A result that helps interpret the behavior of the {@link MlAtomicPipe}
+   */
+  interpret: member function(pipe: !MlAtomicPipe, x: DX, spec: MlOperationSpec): !MlInterpretResult<any> py
+
+  /**
+   * Convert the input into a native format and make a new explainer from the pipe.
+   *
+   * @param pipe
+   *           A trained {@link MlAtomicPipe}.
+   * @param x
+   *           The input data being used for interpretation.
+   * @return a native Python dictionary containing `x`, `context`, and `explainer`.
+   */
+  beforeInterpret: private member function(pipe: !MlAtomicPipe, x: DX): !native py
+
+  /**
+   * Use a native explainer to perform local interpretation on a model and input data.
+   *
+   * @param beforeInterpretOutputs
+   *           A native Python dictionary containing `x` and `explainer`.
+   * @return A native Python dictionary containing the interpretation results. This will include at least the
+   * output produced by the native explainer, keyed as `interpretations`. This method does not return the outputs of
+   * `process` on the {@link MlAtomicPipe} that is being interpreted. Please use {@link MlPipeline#interpret} to get
+   * the results of `process` in addition to the result of this method.
+   */
+  doInterpret: private abstract member function(beforeInterpretOutputs: !native): !native py
+
+  /**
+   * Assemble the results of interpretation into an instance that mixes {@link MlInterpretResult}. This method will
+   * convert any native values into instances of C3 Types (i.e. np.ndarray to c3.Data).
+   *
+   * @param doInterpretOutputs
+   *           A native Python dictionary containing a 1:1 mapping of field names on a type that mixes
+   *           {@link MlInterpretResult} to their native values.
+   */
+  afterInterpret: private member function(doInterpretOutputs: !native): !MlInterpretResult<any> py
+
+  /**
+   * Convert native outputs of interpretations into instances of {@link ValueType}s. This method only supports the
+   * conversion of floats, np.ndarray, and pd.DataFrame, as well as a native list of those types.
+   *
+   * @param nativeOutput
+   *           A supported native object.
+   * @return The native object as a {@link ValueType} instance.
+   */
+  convertNativeToInterpretOutputs: private member function(nativeOutput: !native): any py
+
+  /**
+   * @return A new instance of {@link MlInterpreter} with field values specified by the `spec`.
+   */
+  fromSpec: private function(spec: MlInterpretSpec): !MlInterpreter py
+
+  /**
+   * Prepare or setup this instance of {@link MlInterpreter} for model interpretation. This function will be called
+   * automatically during {@link MlPipeline#train}.
+   *
+   * @param x
+   *           The training input data for the {@link MlAtomicPipe} that is associated with this interpreter. This can
+   *           be used to set configurations prior to interpretation.
+   * @return A prepared {@link MlInterpreter} instance
+   */
+  // TODO PLAT-41167 Use Ann.ML annotations to select functions to execute
+  prepare: private member function(x: !DX): !MlInterpreter py
+
+  _call_:    ~ py
+  afterMake: ~ py
+}

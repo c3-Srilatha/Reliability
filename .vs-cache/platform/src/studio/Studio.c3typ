@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A way to administrate {@link App}s and {@link Env}s in a controlled manner.
+ */
+type Studio mixes StudioIface, Microservice.Proxy {
+
+  @reClaim(inherit=true)
+  @typesys(todo="PLAT-130528 - Remove Microservice.Proxy#proxyApp overrides from proxy types")
+  proxyApp: ~
+
+  /**
+   * Deploy Studio and its services.
+   * This method should be called on c3 app of the env.
+   */
+  @action(group+='cluster-admin')
+  @reClaim(inherit=true)
+  deploy: function(mode: string enum AppMode = PROD)
+
+  /*
+   * Deploys `notificationService` in the calling {@link Env} following {@link C3Notification.ServiceSpec}.
+   * Will set the `notificationService` to be the CLUSTER level {@link Microservice.Config}.
+   */
+  @action(group+='cluster-admin')
+  @reClaim(inherit=true)
+  configureNotificationService: function(spec: C3Notification.ServiceSpec, mode: string enum AppMode = PROD)
+}

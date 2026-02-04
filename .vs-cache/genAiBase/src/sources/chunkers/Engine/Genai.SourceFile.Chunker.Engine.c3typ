@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * Engine for executing chunking jobs with improved scalability and performance.
+ * Configure deploySpec on the {@link Genai.SourceFile.Chunker.UniversalChunker.Config}.
+ */
+type Genai.SourceFile.Chunker.Engine mixes Engine<Genai.SourceFile.Chunker.Engine.Deployment, Genai.SourceFile.Chunker.Engine.DeploySpec>, DefaultInstance {
+
+    /**
+     * Returns the {@link Genai.SourceFile.Chunker.Engine} for the default {@link Genai.SourceFile.Chunker.UniversalChunker.Config}.
+     */
+    inst: ~ py-chunker
+
+    /**
+     * Returns a new or existing engine instance from the given {@link Genai.SourceFile.Chunker.UniversalChunker.Config}.
+     */
+    forConfig: private function(cfg: !Genai.SourceFile.Chunker.UniversalChunker.Config): Genai.SourceFile.Chunker.Engine py-chunker
+
+    /**
+     * Chunks files using the default engine instance, avoiding re-initialization of the Python process and chunkers.
+     * Note: After changing configurations, engines must be terminated for config changes to take effect.
+     *
+     * @param files
+     *        The {@link Genai.SourceFile}s to chunk. All files will be processed using the same engine instance.
+     *
+     * @param chunkerSpec
+     *        The {@link Genai.SourceFile.ChunkerSpec} specifying which chunker to use. This references the
+     *        {@code fileExtToChunkerSpecMap} attribute in {@link Genai.SourceFile.Chunker.UniversalChunker.Config}.
+     *
+     * @param doNotWrite
+     *        If true, the produced passages will not be written to file. By default, passages are written
+     *        before being returned.
+     *
+     * @param omitPassagesInResult
+     *        If true, the {@link Genai.SourceFileChunkerResult#passages} field will be left empty. This
+     *        requires that the produced passages be read from file afterward.
+     */
+    chunkFilesBatch: function(files: ![Genai.SourceFile],
+      chunkerSpec: Genai.SourceFile.ChunkerSpec,
+      doNotWrite: boolean,
+      omitPassagesInResult: boolean): Genai.SourceFileChunkerResult py-chunker
+
+    /**
+     * Chunks files using a specific engine instance.
+     */
+    chunkFilesBatchInEngine: private member function(files: ![Genai.SourceFile],
+      chunkerSpec: Genai.SourceFile.ChunkerSpec,
+      doNotWrite: boolean,
+      omitPassagesInResult: boolean): Genai.SourceFileChunkerResult py-chunker
+}

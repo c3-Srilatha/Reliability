@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The natural integer type in each language. Note that `int` does not have precise semantics because it uses a
+ * different native type in each language:
+ *  - Java: `long` (64-bit 2s complement)
+ *  - Python: `int` (arbitrary length integer)
+ *  - JavaScript: `number` (53 bits of precision in a `double`)
+ *
+ * In particular, large `int` values will not be preserved properly when moving through JavaScript; integer values
+ * larger than 9,007,199,254,740,991 (2⁵³, 10¹⁵) may lose their least significant digits. Java `long` values can handle
+ * up to 922,337,2036,854,775,807 (2⁶³−1).
+ *
+ * Java:
+ * ```java
+ * 1L << 60 == 1152921504606846976L
+ * 1L << 70 == 64L
+ * ```
+ *
+ * JavaScript:
+ * ```js
+ * 2**60 === 1152921504606847000
+ * 2**70 === 1.1805916207174113e+21
+ * ```
+ *
+ * Python:
+ * ```py
+ * 2**60 == 1152921504606846976
+ * 2**70 == 1180591620717411303424
+ * ```
+ *
+ * There are no fields (other than #modifier), so this is normally accessed with {@link PrimitiveType#ofInt}.
+ *
+ * @see Int32Type
+ * @see Int16Type
+ * @see ByteType
+ * @see BigIntType
+ */
+type IntType mixes NumberType {
+
+  visitPrimitive: ~
+
+  // TODO: PLAT-41138 Implement in JavaScript and Python
+  valueFromString: ~ java
+
+  valueFromJson:      ~ java | py | js
+  defaultEmptyValue:  ~ java | js | py
+  maxValue:           ~
+  minValue:           ~
+  isConvertibleValue: ~
+  isSamePredicate:    ~
+  valueConverter:     ~
+}

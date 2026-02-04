@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An abstract type that that notifies its mixers to be notified of local file changes
+ */
+type LocalFileListener {
+
+  /**
+   * The local directory to listen to changes for.
+   */
+  localRoot: !string
+
+  /**
+   * Starts listening for changes in the specified root folder for the type
+   *
+   * @return true if the specified localRoot is already being watched by the type
+   */
+  start: final function(localRootUrl: !FileUrl): boolean
+
+  /**
+   * Stops listening for changes in the specified root folder for the type
+   */
+  stop: final function(localRootUrl: !FileUrl)
+
+  /**
+   * Action that will be invoked in case of a new file is created.
+   */
+  created: abstract member function(file: FileUrl)
+
+  /**
+   * Action that will be invoked in case of a new file is deleted.
+   */
+  deleted: abstract member function(file: FileUrl)
+
+  /**
+   * Action that will be invoked in case of a new file is modified.
+   */
+  modified: abstract member function(file: FileUrl)
+}

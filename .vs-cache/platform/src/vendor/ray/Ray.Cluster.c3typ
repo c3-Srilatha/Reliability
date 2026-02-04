@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract representation of a Ray cluster and also necessary dependencies of the cluster.
+ */
+@beta
+abstract private type Ray.Cluster mixes CloudCluster<Ray.Cluster.Node>, CloudService, Mutable, DefaultInstance {
+
+  inst:          ~
+  forId:         ~
+  state:         ~
+  nodes:         ~
+  node:          ~
+  mapNodeToAny:  ~
+  ensureService: abstract ~
+  stop:          abstract ~
+  terminate:     abstract ~
+
+  /**
+   * @return necessary hostname and port info to connect to Ray cluster
+   */
+  address: abstract member function(): string
+
+  /**
+   * @return verification that Ray is ready to serve requests
+   */
+  isReady: abstract member function(): boolean
+
+  /**
+   * Updates the necessary credentials of the Ray Cluster
+   */
+  syncCredentials: abstract member function()
+
+  /**
+   * @return the worker {@link Ray.Cluster.Node}'s for the ray cluster
+   */
+  workerNodes: abstract member function(): [Ray.Cluster.Node]
+
+  /**
+   * @return head {@link Ray.Cluster.Node}s for the Ray cluster
+   */
+  headNodes: abstract member function(): [Ray.Cluster.Node]
+}

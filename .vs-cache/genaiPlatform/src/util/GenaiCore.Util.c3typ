@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to contain utility functions for the GenaiCore types.
+ */
+type GenaiCore.Util {
+
+  /**
+   * Get a variable from `c3.vars()`, or set and return the value using `defaultProvider` if it was not set.
+   * @param key
+   *        The key for `c3.vars()`
+   * @param defaultProvider
+   *        A lambda that will be called to set the value if it was not set
+   * @return The value from `c3.vars()` (after setting with `defaultProvider` if necessary)
+   */
+  getOrSetC3Var: inline function(key: !string, defaultProvider: !lambda(): !native): native py
+
+  /**
+   * Get a new, empty LRU cache.
+   *
+   * @param maxSize
+   *        The maximum number of items to store in the cache. Set to -1 for no limit.
+   * @param maxBytes
+   *        The maximum number of bytes to store in the cache. Set to -1 for no limit.
+   *
+   * e,g,
+   * ```
+   * GenaiCore.Util.lruCache(100, 1000000);  // max of 100 items, 1MB
+   * GenaiCore.Util.lruCache(-1, -1);        // no limits
+   * GenaiCore.Util.lruCache(100, -1);       // max of 100 items, no size limit
+   * GenaiCore.Util.lruCache(-1, 1000000);   // no item limit, 1MB
+   * ```
+   * @return the LRU cache
+   */
+  lruCache: inline function(maxSize: !int, maxBytes: !int = -1): !native py
+
+  /**
+   * Returns the LRU cache class used by {@link #lruCache}.
+   * @param withMemoryLimit
+   *      If true, the LRU cache will have a memory limit, set by the max_bytes argument to the constructor.
+   * @return the LRU cache class
+   */
+  lruCacheClass: private inline function(withMemoryLimit: boolean): !native py
+
+  /**
+   * Clear all variables set on `c3.vars()`.
+   */
+  clearC3Vars: private inline function() py
+
+  /**
+   * Writes a string to the given C3 File by using a temporary file and c3.FileSystem.uploadFile, which is generally
+   * more efficient when called from Python than `file.writeString`.
+   * @param file
+   *        The C3 File to write to
+   * @param content
+   *        The content to write
+   */
+  writeStringToFile: inline function(file: !File, content: !string) py
+
+  /**
+   * Reads a string from the given C3 File by using a temporary file and c3.FileSystem.downloadFile, which is generally
+   * more efficient when called from Python than `file.readString`.
+   * @param file
+   *        The C3 File to read
+   * @return The content of the file as a string
+   */
+  readFileAsString: inline function(file: !File): string py
+
+  /**
+   * Simple python retry function.
+   *
+   * @param func
+   *        The function to call.
+   * @param maxRetries
+   *        The maximum number of retries.
+   * @param delay
+   *        The delay between retries, in seconds.
+   * @return The result of the function.
+   */
+  retry: inline function(func: !native, maxRetries: int = 3, delay: int = 1): !native py
+
+  /**
+   * Executes a function contingent on being able to acquire and hold a given **node-specific** lock key. See the
+   * documentation on the spec type for parameter details.
+   *
+   * If the lock is acquired and {@link GenaiCore.Util.ExecuteWithLockSpec#func} executes, this function will return
+   * the value returned by `func`. If {@link GenaiCore.Util.ExecuteWithLockSpec#executePredicate} returns False,
+   * meaning that the lock does not need to be acquired, then `executeWithLock` will return `None`.
+   *
+   * **NOTE** The implementation of `executeWithLock` uses POSIX file locks, which are _per process_. As a result, the
+   * locking will **NOT** work as expected when used in by multiple threads in the same process (e.g. via Python's
+   * threading library).
+   *
+   * @param spec
+   *        The spec for execution
+   *
+   * @return the value returned by `func` if executed,
+   *         None if the lock is not acquired because the predicate is satisfied
+   */
+  executeWithLock: inline function(spec: !GenaiCore.Util.ExecuteWithLockSpec): any py-py4j | py-client
+}

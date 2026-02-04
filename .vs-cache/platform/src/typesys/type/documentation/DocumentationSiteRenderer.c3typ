@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type renders the documentation micro site directly from the server. These actions use RESTful paths to allow
+ * natural linking.
+ */
+@restful(endpoint='documentation')
+type DocumentationSiteRenderer mixes Singleton, Configurable<DocumentationSiteRenderer.Prefs> {
+
+  /**
+   * The base path the documentation endpoint.
+   */
+  ENDPOINT_PATH: const string = "/documentation"
+
+  @restful(subPath='index.html')
+  index: function(): Content
+
+  @restful(subPath='guides.html')
+  guideList: function(): Content
+
+  @restful(subPath='types.html')
+  typeList: function(catName: string): Content
+
+  @restful(subPath='type/:typeName/field/:fieldName')
+  oneTypeField: function(typeName: !string, fieldName: !string): Content
+
+  @restful(subPath='type/:typeName')
+  oneType: function(typeName: !string): Content
+
+  @restful(subPath='topics.html')
+  topicList: function(catName: string): Content
+
+  @restful(subPath='topic/:topicName')
+  oneTopic: function(topicName: !string): Content
+
+  @restful(subPath='categories.html')
+  categoryList: function(): Content
+
+  @restful(subPath='search.html')
+  search: function(q: string, max: int, singleKind: string, singleCategory: string): Content
+
+  @restful(subPath='poly/:path')
+  polyTest: function(path: !string): Content
+
+  @restful(subPath='notebook/:path')
+  notebook: function(path: !string): Content
+
+  @restful(subPath='image/:path')
+  image: function(path: !string): Content
+
+  @restful(subPath='static/:path')
+  static: function(path: !string): Content
+
+  @restful(subPath='dingus')
+  dingus: function(): Content
+
+  @restful(subPath='editor.html')
+  editor: function(topicName: string): Content
+
+  @restful(subPath='types/:partial')
+  typeMatch: function(partial: !?string, limit: int, skipIfLimited: boolean): Content
+
+  @restful(subPath='topics/:partial')
+  topicMatch: function(partial: !?string, limit: int, skipIfLimited: boolean): Content
+
+  /**
+   * Add/remove a type name to the list of favorites for the current user.
+   * @param typeName the name of the file
+   * @param favorite if true add, else remove favorite
+   * @return whether change was made
+   */
+  favoriteType: function(typeName: !string, favorite: !boolean): boolean
+
+  /**
+   * Add/remove a topic file URL to the list of favorites for the current user.
+   * @param topicFile the path to the topic file
+   * @param favorite if true add, else remove favorite
+   * @return whether change was made
+   */
+  favoriteTopic: function(topicFile: !string serialized Pkg.Path, favorite: !boolean): boolean
+}

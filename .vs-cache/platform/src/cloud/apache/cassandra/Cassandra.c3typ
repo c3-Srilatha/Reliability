@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Cassandra mixes CassandraKeyspaceBase, KvStore<Cassandra.Config> {
+
+  /**
+   * Gets a Cassandra keyspace that is a c3-specific datastore.
+   * @param keyspaceName
+   *           Name of {@link Cassandra.Keyspace} to return
+   * @param failIfMissing
+   *
+   * @return {@link Cassandra.Keyspace}
+   */
+  keyspace: function(keyspaceName: !string, failIfMissing: boolean): !mixing Cassandra
+
+  inst:              ~
+  cluster:           ~
+  forName:           ~
+  putBatch:          ~
+  getBatch:          ~
+  removeBatch:       ~
+  ping:              ~
+  scanPartitionKeys: ~
+
+  /**
+   * Scan rows in Cassandra table and return a stream of {@link KvRow}s. For Cassandra rows see {@link https://docs.datastax.com/en/cql-oss/3.3/cql/cql_reference/cqlSelect.html}
+   *
+   * @param tableName
+   *            The name of the table to scan
+   * @param spec
+   *            Optional KvStoreScanSpec for the scan. Only offset and limit are supported.
+   *
+   *            Example of how scan is working with limit:
+   *            ```
+   *            // create a table and insert 3 records
+   *            CREATE TABLE example_table (
+   *               id UUID PRIMARY KEY,
+   *               name TEXT,
+   *               age INT
+   *            );
+   *            INSERT INTO example_table (id, name, age) VALUES ("id1", 'John', 30);
+   *            INSERT INTO example_table (id, name, age) VALUES ("id2", 'Alice', 25);
+   *            INSERT INTO example_table (id, name, age) VALUES ("id3", 'Bob', 35);
+   *
+   *            scan("example_table", KvStoreScanSpec.make().withLimit(3L))  // return 3 KvRows
+   *
+   *            // then insert 2 more records with "id1"
+   *
+   *            INSERT INTO example_table (id, name, age) VALUES ("id1", 'Foo', 30);
+   *            INSERT INTO example_table (id, name, age) VALUES ("id1", 'Bar', 30);
+   *
+   *            scan("example_table", KvStoreScanSpec.make().withLimit(3L))  // return 1 KvRow, since it consumed the 3 Cassandra rows associated with "id1"
+   *            scan("example_table", KvStoreScanSpec.make().withLimit(4L))  // return 2 KvRows, one with "id1" and one with "id2"
+   *            scan("example_table", KvStoreScanSpec.make().withLimit(5L))  // return 3 KvRows
+   *            ```
+   * @return Stream of KvRows
+   */
+  scan: ~
+}

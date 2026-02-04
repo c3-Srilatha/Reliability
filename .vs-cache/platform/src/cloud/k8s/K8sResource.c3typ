@@ -1,0 +1,91 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=false,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasRole=false,
+       hasSubseq=false,
+       hasResourceGroupName=false,
+       identityRoleOptions='NULL')
+abstract type K8sResource mixes CloudResource {
+
+  /**
+   * @return The resource kind identifier used to construct the endpoint for
+   *         K8sApiServer API calls for a given K8s resource e.g. K8sDeployment => deployment
+   * @see Ann.K8s.nativeKind
+   */
+  nativeKind: function(): !string
+
+  /**
+   * @return The plural form of the resource kind identifier used to construct the endpoint for
+   *         K8sApiServer API calls for a given K8s resource e.g. K8sDeployment => deployments
+   * @see Ann.K8s.nativeKindPlural
+   */
+  nativeKindPlural: function(): !string
+
+  /**
+   * Kubernetes API server url prefix, example: /api (default) or /apis
+   * @see Ann.K8s.apiPrefix
+   */
+  apiPrefix: function(): !string
+
+  /**
+   * @return boolean indicating whether this resource is a "Workload Resource", ie, brings up pods when created
+   * @see https://kubernetes.io/docs/concepts/workloads/controllers/
+   */
+  workloadResource: function(): !boolean
+
+  /**
+   * @return boolean indicating whether this resource is a "Custom Resource"
+   * @see https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+   */
+  isCRD: function(): !boolean
+
+  extraTemplateBindings: ~
+  upsertResource:        ~
+  getResource:           ~
+  destroyResource:       ~
+  listResources:         ~
+
+  /**
+   * Destroys multiple Kubernetes resources of the same type in batch based on the labels.
+   *
+   * The method follows certain conventions to protect the resources in the cluster from
+   * accidental deletions. The K8sCloudResourceBatchDestroySpec#includeTags field must include at least one of:
+   * - ENV_ID tag
+   * - APP_ID tag
+   * - ID tag
+   * - SERVICE_ID tag
+   * - Both CLUSTER and ENV tags
+   *
+   * @param spec
+   *            CloudResourceDestroySpec
+   */
+  destroyResourceBatch: private function(spec: !K8sCloudResourceBatchDestroySpec)
+
+  /**
+   * Performs a patch operation on the specified paths.
+   * Refer to {@link K8sResource.PatchOperation} for supported operations.
+   */
+  patchResource: member function(operation: !string, pathsAndValues: !map<string, string>): json
+
+  withDefaultConfig: ~
+
+  /**
+   * K8s tags for the app
+   */
+  tagsForApp: function(appId: !string): map<!string, string>
+
+  /**
+   * Default precedence for the batch deletion
+   */
+  defaultPrecedence: private cached function(): [Type]
+
+  hasLocalDryRun: ~
+}

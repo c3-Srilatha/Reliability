@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * For validation purposes, most {@link MlScoringMetric} have a rigid interface. The parametrization determines ahead of time
+ * how many `x`, `y`, and `context` inputs are expected and how they should be named.
+ * {@link MlMappedMetric} is a convenience type that can wrap any existing metric and "re-map" the user-provided input(s)
+ * to conform to the declared input(s) of the existing metric. Notably, {@link MlMappedMetric} itself is an {@link MlScoringMetric},
+ * so it can be seamlessly used wherever an {@link MlScoringMetric} is expected.
+ *
+ * Example 1 - Renaming sample weights:
+ * ```py
+ * mapped_metric = c3.MlMappedMetric(
+ *   scoringMetric=c3.MlAccuracyMetric(),  # MlAccuracyMetric supports a single named `context` value: "sampleWeights"
+ *   contextMapping={'sampleWeights': 'myCustomWeightsFieldName'}
+ * )
+ * # the input will supply the MlAccuracyMetric's "sampleWeights" `context` under the name "myCustomWeightsFieldName"
+ * ```
+ *
+ * Example 2 - Selecting a label:
+ * ```py
+ * mapped_metric = c3.MlMappedMetric(
+ *   scoringMetric=c3.MlAccuracyMetric(),  # MlAccuracyMetric supports a single unnamed `targetOutput` value
+ *   targetOutputMapping="label1"
+ * )
+ * # the input will supply multiple labels, e.g. {"label1": ..., "label2": ...}, and "label1" will be used as the `targetOutput` for MlAccuracyMetric
+ * ```
+ *
+ * Example 3 - Mapping multi-input predictions:
+ * ```py
+ * custom_metric = c3.MlCustomMetric.fromPyFunc(..., modelOutputNames=["predA", "predB"])  # this custom metric takes multiple named inputs for `modelOutput`: {"predA": ..., "predB": ...}
+ * mapped_metric = c3.MlMappedMetric(
+ *   scoringMetric=custom_metric,
+ *   modelOutputMapping={"predA": "myPredC", "predB": "myPredD"}
+ * )
+ * # the input will supply multiple predictions, e.g. {"myPredA": ..., "myPredB": ..., "myPredC": ..., "myPredD": ...}, and "myPredC" and "myPredD" will be used for named inputs "predA" and "predB", respectively, for `modelOutput` for MlCustomMetric
+ * ```
+ *
+ * The `DS` parametrization represents the named input types for `context`.
+ */
+// DEVELOPER NOTE: this has an equivalent meaning to the `DS` parametrization on {@link MlScoringMetric}. The reason for
+// hard-coding the parent `DS` to `any` and having the extra `DS` parametrization here is to be permissive of extra keys in the input
+// to {@link #doScore}'s `context` input. `DS` is used to implement {@link #contextNames}, which is not a member function.
+type MlMappedMetric<DS> mixes MlScoringMetric<any, any, any> {
+
+  /**
+   * {@link MlScoringMetric} for monitoring model performance.
+   */
+  scoringMetric: !MlScoringMetric
+
+  /**
+   * This field maps the `targetOutput` input of {@link #scoringMetric} to the `targetOutput` input of this metric.
+   * If the `targetOutput` input for {@link #scoringMetric} is single-input, then this field should be a `string` that
+   * matches one of the keys in the `targetOutput` input to this metric.
+   * If the `targetOutput` input for {@link #scoringMetric} is multi-input, then this field maps the keys of the
+   * `targetOutput` input of {@link #scoringMetric} to the keys of the `targetOutput` input of this metric.
+   */
+  targetOutputMapping: string | map<string, string>
+
+  /**
+   * This field maps the `modelOutput` input of {@link #scoringMetric} to the `modelOutput` input of this metric.
+   * If the `modelOutput` input for {@link #scoringMetric} is single-input, then this field should be a `string` that
+   * matches one of the keys in the `modelOutput` input to this metric.
+   * If the `modelOutput` input for {@link #scoringMetric} is multi-input, then this field maps the keys of the
+   * `modelOutput` input of {@link #scoringMetric} to the keys of the `modelOutput` input of this metric.
+   */
+  modelOutputMapping: string | map<string, string>
+
+  /**
+   * This field maps the `context` input of {@link #scoringMetric} to the `context` input of this metric.
+   */
+  contextMapping: map<string, string>
+
+  doScore:        ~ py
+  noTarget:       ~ py
+  contextNames:   ~ py
+  higherIsBetter: ~ py
+  afterMake:      ~ py
+}

@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * APIs to help perform UI actions for the Profile Form created by
+ * {@link ExMachinaDynamicComponentsUi.dynamicProfileForm}
+ */
+type ExMachinaProfileFormUi {
+
+  /**
+   * The member's email
+   */
+  email: string
+
+  /**
+   * The member's name
+   */
+  name: string
+
+  /**
+   * Server build version
+   */
+  serverBuild: string
+
+  /**
+   * ExMachina build version
+   */
+  exmacBuild: string
+
+  /**
+   * Whether usage tracking is enabled or disabled. An SDL limitation with SDLRadioButtonGroup prevents this from being
+   * a boolean field because the radio buttons only support string values.
+   */
+  usageTracking: string enum('ENABLED', 'DISABLED')
+
+  /**
+   * Fetches the necessary data from {@link ExMachinaUser} and elsewhere (user preferences, etc.) to populate
+   * the Profile form.
+   */
+  fetchProfileInfo: function(): ExMachinaProfileFormUi js-server
+
+  /**
+   * Returns build versions for ExMachina and C3 server.
+   */
+  fetchDeploymentInfo: function(): json js-server
+
+  /**
+   * Saves the state of the Profile form. Since many fields in the Profile form are disabled, this API only takes
+   * what's editable and makes changes for those fields.
+   */
+  saveProfileInfo: function(formData: ExMachinaProfileFormUi, visitorId: string): boolean js-server
+
+  /**
+   * Called within {@link saveProfileInfo} to update the member info based on the related form fields
+   */
+  saveAccountMember: private function(newName: string) js-server
+
+  /**
+   * Called within {@link saveProfileInfo} to update the usage tracking settings based on the related form fields
+   */
+  saveUsageTracking: private function(usageTracking: string enum('ENABLED', 'DISABLED'),
+                                      pendoVisitorId: string) js-server
+}

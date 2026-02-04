@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies inputs for fetching training data and groups of subjects to train on.
+ * Users can extend this type, and override the {@link MlModel.Train.Strategy#timeRange} for custom functionality.
+ */
+type MlModel.Train.Strategy {
+
+  /**
+   * Filter to select the subjects in scope for a single training group.
+   * If null, all the subjects that are in scope of the project associated with training group is used.
+   */
+  subjectFilter: string serialized Filter
+
+  /**
+   * Specifies how many models to train for this group, by splitting up the subjects using a "group by" operation.
+   * For example, to train a model per {@link MlSubject}, then specify "id".
+   * To train a model per group-of-subjects, by country, then specify "country".
+   * If unspecified, then a single model will be trained for the population of subjects defined by {@link #subjectFilter}.
+   * If null, a single global model is trained.
+   */
+  groupBy: string serialized FieldPath
+
+  /**
+   * Start date which would be used to evaluate {@link MlModel#xFeatures} and {@link MlModel#yFeatures} features.
+   */
+  start: datetime
+
+  /**
+   * End date which would be used to evaluate {@link MlModel#xFeatures} and {@link MlModel#yFeatures} features.
+   */
+  end: datetime
+}

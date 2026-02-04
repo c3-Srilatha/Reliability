@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Holds the inputs required for execution of {@link MlModel.Train.JobRun#startTrainAndScore}.
+ */
+type MlModel.Train.JobRunEngine.Input {
+
+  /**
+   * {@link MlModel.Train.JobResult} that an instance of {@link MlModel.Train.Result} belongs to.
+   */
+  @deprecated(details="Field is no longer used by internal implementation")
+  trainJobResult: MlModel.Train.JobResult
+
+  /**
+   * {@link MlModel.Train.Group} that holds the {@link MlModel.Train.Template#model} used for training and scoring.
+   */
+  trainGroup: !MlModel.Train.Group
+
+  /**
+   * Subject filter used for evaluating features.
+   */
+  subjectFilter: string serialized Filter
+
+  /**
+   * Field value on {@link MlSubject} that was used for grouping of subjects.
+   */
+  subjectGroupBy: any
+
+  /**
+   * Maximum time allocated for execution of a {@link MlModel.Train.Template#model}.
+   */
+  timeoutMinutes: int
+}

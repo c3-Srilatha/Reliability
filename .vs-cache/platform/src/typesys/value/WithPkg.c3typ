@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for types that have a logical reference to instance of Pkg that should be used exclusively when there is a
+ * need to resolve a type.
+ * <p>
+ * Normally application code would use something like `C3.type("Foo").instantiate()` or just `Foo.make(...)` to create a
+ * new instance of Foo. However for types used in the Type System implementation, the `C3.pkg()` i.e. Pkg instance for
+ * a thread may not be same one that contains the "Foo" type.
+ * <p>
+ * This is where `WithPkg#pkg` has to be used to ensure that the correct Pkg instance is used to resolve the type.
+ *
+ * @see Typesys
+ */
+abstract type WithPkg mixes Value {
+
+  /**
+   * C3 application package that should be used by sub-types to resolve any C3 type.
+   */
+  pkg: property(): !Pkg
+}

@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used for Cache invalidator
+ */
+type CacheMessage {
+
+  /**
+   * A random Uuid string for the cache invalidation message
+   */
+  id: string
+
+  /**
+   * The type that will be invalidated, e.g. App
+   */
+  typ: !string
+
+  /**
+   * The action that will be broadcast to the other nodes, e.g. CacheInvalidator#evictLocal
+   */
+  action: !string enum Cache.Invalidator.Action
+
+  /**
+   * The key that will be evicted from the cache
+   */
+  key: string
+
+  /**
+   * The methodName of the cache Ex: rawJsonNativeCache or nativeCache
+   */
+  cache: string enum Cache.Invalidator.CacheKind
+
+  /**
+   * The specific level that the invalidation will occur on
+   */
+  level: !string enum Cache.Invalidator.Level
+
+  /**
+   * Location that the cache queue entry is originating from.
+   */
+  sourceServerId: !string
+
+  /**
+   * AppId that the cache queue entry is originating from.
+   */
+  sourceAppId: !string
+
+  /**
+   * Id of the user who initiated the cache broadcast.
+   */
+  user: string
+
+  /**
+   * Creates a CacheMessage with the given fields and serverSourceId/id populated.
+   */
+  createMessage: function(typ: !string,
+                          // TODO: PLAT-120388 return Cache.Invalidator.Level
+                          level: !string,
+                          action: !string enum Cache.Invalidator.Action,
+                          // // TODO: PLAT-120388 return Cache.Invalidator.CacheKind
+                          cache: !?string,
+                          key: string,
+                          user: string): !CacheMessage
+}

@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The returned suspicious points will be derived from this type
+ *
+ * The type of timeseries, timedData and dataPoint will be completely specified
+ */
+type SuspiciousPoint {
+
+  tip: string
+
+  /**
+   * Only one of timeseries or timedData will be set
+   */
+  measurementSeries: Obj
+
+  /**
+   * start and end will be set only for time analysis
+   */
+  start: datetime
+
+  end:          datetime
+  value:        int | double | decimal | Dimension | ExactDimension
+  analysisType: string enum('ValueAnalysis', 'ValueAndNeighbourAnalysis', 'TimeAnalysis', 'GapAnalysis', 'RangeGapAnalysis')
+  reason:       string enum('Outlier', 'Time Gap', 'Time Overlap', 'Invalid Time Entry', 'Missing Value')
+  dataPoint:    Obj
+
+  /**
+   * timeRangeStart, timeRangeEnd and attributeName are for internal use
+   */
+  timeRangeStart: datetime
+
+  timeRangeEnd:  datetime
+  attributeName: string
+
+  generateHistogram: function(point: SuspiciousPoint,
+                              config: HistogramSpec)
+                       : Histogram<string | int | double | decimal | Dimension, double | decimal | Dimension>
+
+  saveDataPoint: function(point: SuspiciousPoint)
+}

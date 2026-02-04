@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A summary of the coverage of all canonical tests.
+ */
+private type BaseCanonicalTesterCoverageSummary {
+
+  /**
+   * The number of transforms that were tested.
+   */
+  numberOfTransforms: int = 0
+
+  /**
+   * The number of transforms that were covered by the tests.
+   */
+  numberOfTransformsCovered: int = 0
+
+  /**
+   * The percentage of transforms that were covered by the tests.
+   */
+  coveragePercentage: double = 100
+
+  /**
+   * The detailed coverage information for each source / canonical type.
+   */
+  coverageDetails: [BaseCanonicalTesterCoverage]
+
+  /**
+   * Function to generate summary for a package with no canonical test coverage. If the package has no transforms, the
+   * #coveragePercentage is set to 100%. If there are non-zero transforms, this function creates new coverage detail
+   * instances with the #testCoverageComplete field set
+   * to `false`.
+   *
+   * @return the summary of the test coverage for all the canonicals.
+   */
+  generateSummaryForPkgWithNoTests: private inline function(): BaseCanonicalTesterCoverageSummary js-server
+
+  /**
+   * A helper function to generate a summary of the test coverage for all the canonicals.
+   * This function is used to generate coverage summary reports for a full package after all the tests have been run.
+   *
+   * @return The summary of the test coverage for all the canonicals.
+   */
+  generateSummary: function(): BaseCanonicalTesterCoverageSummary js-server
+}

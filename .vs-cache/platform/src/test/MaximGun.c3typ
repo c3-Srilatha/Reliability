@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * "Stress" / Performance, Scalability & Reliability test case aka Maxim Gun.
+ *
+ * A given package should define these as a seed data under `/test/` folder so that CI and PSR team can run and report
+ * these in the consistent and automated manner.
+ *
+ * Here is an example of a test for C3 REST endpoint and Authentication & Authorization:
+ * ```
+ * ```
+ */
+entity type MaximGun extends BatchJob<MaximGun, int, int> mixes MaximGunOptions type key 'MGUN' {
+
+  /**
+   * Starts (fires) a test.
+   */
+  fire: function(options: !MaximGunOptions): !MaximGunFire
+
+  /**
+   * Starts (fires) a test for given count, concurrency and action for current user and tenant and tag.
+   */
+  fireActions: function(count: !int, concurrency: !int, action: !lambda()): !MaximGunFire
+
+  /**
+   * Starts (fires) a test for given count, concurrency and request supplier.
+   */
+  fireRequests: function(count: !int, concurrency: !int, requestSupplier: !lambda(): HttpRequest): !MaximGunFire
+
+  /**
+   * @return last fire of _any_ MaximGun.
+   */
+  lastFire: function(): MaximGunFire
+
+  /**
+   * @return current or last fire of _this_ MaximGun.
+   */
+  activeOrLastFire: member function(failIfMissing: boolean): MaximGunFire
+
+  _active:     private MaximGunFire
+  allComplete: ~
+}

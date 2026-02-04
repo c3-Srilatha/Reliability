@@ -1,0 +1,475 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state to manage C3 Generative AI chat in Studio
+ */
+@typeScript
+type StudioGenAiState mixes UiSdlSingletonApplicationState {
+
+  id: ~
+
+  /**
+   * The current UI configurations for Gen Ai agents in the current application.
+   */
+  chatAgents: [StudioGenAiState.ChatAgentUi]
+
+  /**
+   * Additional context to send to the GenAi agent. This will allow the agent to construct arguments
+   * to each of its tools.
+   */
+  context: [StudioGenAiState.Context]
+
+  /**
+   * The current list of all question-answer pairs
+   */
+  questionAnswerPairs: [StudioGenAiQuestionAnswerPair]
+
+  /**
+   * The current chat session id
+   */
+  chatSessionId: string
+
+  /**
+   * The server version of current app
+   */
+  version: string serialized SemanticVersion
+
+  /**
+   * The component id of the Gen AI side panel
+   */
+  genAiSidePanelComponentId: string
+
+  /**
+   * Returns the current chat session id
+   */
+  getChatSessionId: function(state: !UiSdlReduxState): !string ts-client
+
+  /**
+   * Returns the current list of all question-answer pairs
+   */
+  getQuestionAnswerPairs: function(state: !UiSdlReduxState): [StudioGenAiQuestionAnswerPair] ts-client
+
+  /**
+   * Returns the attribute of current chatAgents
+   * @param agentTypeNames
+   *           The list of agent type names to filter the chat agents
+   */
+  getChatAgents: function(state: !UiSdlReduxState, agentTypeNames: [string]): [StudioGenAiState.ChatAgentUi] ts-client
+
+  /**
+   * Returns the current chat input
+   */
+  getChatInput: function(state: !UiSdlReduxState): string ts-client
+
+  /**
+   * Returns the server version of the current app.
+   */
+  getAppServerVersion: function(state: !UiSdlReduxState): string ts-client
+
+  /**
+   * Returns the url of the current app.
+   */
+  getAppUrl: function(state: !UiSdlReduxState): string ts-client
+
+  /**
+   * An action to update the {@link #context}.
+   * By default will merge with existing context unless override is set to true. If the context entry key already
+   * exists, the value will be updated.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_GEN_AI_CONTEXT')
+  updateGenAiContextAction: function(context: [StudioGenAiState.Context],
+                                     override: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `UPDATE_GEN_AI_CONTEXT` and updates the {@link context} in state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='UPDATE_GEN_AI_CONTEXT')
+  updateGenAiContextReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to set the chat agents in state
+   * @param chatAgents
+   *           The array of chat agents to be set
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_CHAT_AGENTS')
+  setChatAgentsAction: function(chatAgents: [StudioGenAiState.ChatAgentUi]): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_CHAT_AGENTS` and sets {@link #chatAgents} in state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_CHAT_AGENTS')
+  setChatAgentsReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to fetch the Chat Agents
+   *
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='FETCH_CHAT_AGENTS')
+  fetchChatAgentsAction: function(): !UiSdlReduxAction ts-client
+
+  /**
+   * An epic to fetch the Chat Agents
+   */
+  @uiSdlEpic(actionType='FETCH_CHAT_AGENTS')
+  fetchChatAgentsEpic: function(actionStream: !UiSdlActionsObservable,
+                                stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+
+  /**
+   * An action to set the current app version.
+   *
+   * @param version
+   *          The version
+   *
+   * @returns a `SET_APP_SERVER_VERSION` action
+   */
+  @uiSdlActionCreator(actionType='SET_APP_SERVER_VERSION')
+  setAppServerVersionAction: function(version: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Sets the version in state
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_APP_SERVER_VERSION')
+  setAppServerVersionReducer: private inline function(state: !UiSdlReduxState,
+                                                      action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to set the current app url.
+   *
+   * @param url
+   *          The url
+   *
+   * @returns a `SET_APP_SERVER_URL` action
+   */
+  @uiSdlActionCreator(actionType='SET_APP_SERVER_URL')
+  setAppUrlAction: function(url: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Sets the app url in state
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_APP_SERVER_URL')
+  setAppUrlReducer: private inline function(state: !UiSdlReduxState,
+                                            action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Epic to populate the server version for current app when application state initialize
+   */
+  @uiSdlEpic(actionType='APPLICATION_STATE_INITIALIZE')
+  setAppServerVersionAndEndpointEpic: private inline function(state: !UiSdlReduxState,
+                                                              action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * An action to set the chat session id
+   *
+   * @param chatSessionId
+   *           The chat session id to be set
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_CHAT_SESSION_ID')
+  setChatSessionIdAction: function(chatSessionId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_CHAT_SESSION_ID` and sets the {@link chatSessionId} in state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_CHAT_SESSION_ID')
+  setChatSessionIdReducer: private inline function(state: !UiSdlReduxState,
+                                                   action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * An action to submit a question to C3 Generative AI and update the {@link questionAnswerPairs}
+   *
+   * @param question
+   *           The question to be submitted
+   * @param agentTypeName
+   *           the type name corresponding to the agent to be used
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SUBMIT_QUESTION')
+  submitQuestionAction: function(question: !string, agentTypeName: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * An epic to update {@link questionAnswerPairs} with latest question and submit this question to C3 Generative AI
+   */
+  @uiSdlEpic(actionType='SUBMIT_QUESTION')
+  submitQuestionEpic: function(actionStream: !UiSdlActionsObservable,
+                               stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+
+  /**
+   * An action to submit a feedback to C3 Generative AI
+   * @param questionAnswerPair
+   *           The question answer pair to provide feedback on
+   * @param feedback
+   *          The feedback to be submitted
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SUBMIT_FEEDBACK')
+  submitFeedbackAction: function(questionAnswerPair: !StudioGenAiQuestionAnswerPair,
+                                 feedback: !AiAssistant.AnswerFeedback,
+                                 agentTypeName: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * An epic to submit feedback to C3 Generative AI
+   */
+  @uiSdlEpic(actionType='SUBMIT_FEEDBACK')
+  submitFeedbackEpic: function(actionStream: !UiSdlActionsObservable,
+                               stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+
+  /**
+   * An action to add a question answer pair to the end of {@link questionAnswerPairs}
+   * @param questionAnswerPair
+   *           The question answer pair to be added
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='ADD_QUESTION_ANSWER_PAIR')
+  addQuestionAnswerPairAction: function(questionAnswerPair: !StudioGenAiQuestionAnswerPair): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `ADD_QUESTION_ANSWER_PAIR` and adds the {@link questionAnswerPair} to the end of {@link questionAnswerPairs} in state.
+   */
+  @uiSdlReducer(actionType='ADD_QUESTION_ANSWER_PAIR')
+  addQuestionAnswerPairReducer: private inline function(state: !UiSdlReduxState,
+                                                        action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * An action to update an answer of a {@link StudioGenAiQuestionAnswerPair} in {@link questionAnswerPairs}
+   *
+   * @param chatMessage
+   *           The chat message to be updated
+   * @param chatMessageId
+   *           The id of the chat message to be updated
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='UPDATE_ANSWER')
+  updateAnswerAction: function(answer: !StudioGenAiChatMessage,
+                               questionAnswerPairId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `UPDATE_ANSWER` and updates the {@link questionAnswerPairs} in state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='UPDATE_ANSWER')
+  updateAnswerReducer: private inline function(state: !UiSdlReduxState,
+                                               action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * An action to delete all question answer pairs in {@link questionAnswerPairs}
+   *
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='DELETE_ALL_CHAT_MESSAGES')
+  deleteAllChatMessageAction: function(): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `DELETE_ALL_CHAT_MESSAGES` and deletes all question answer pairs in {@link questionAnswerPairs}.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='DELETE_ALL_CHAT_MESSAGES')
+  deleteAllChatMessageReducer: private inline function(state: !UiSdlReduxState,
+                                                       action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * Submits a question to the Gen Ai backend model.
+   */
+  @uiSdlActionCreator(actionType='ASK_GEN_AI_QUESTION')
+  askGenAiQuestionAction: function(question: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Submits a question to the Gen Ai backend model. Upon receiving a response, the response is added to {@link chatMessages}, and the session id is updated.
+   */
+  @uiSdlEpic(actionType='ASK_GEN_AI_QUESTION')
+  askGenAiQuestionEpic: private function(actionStream: !UiSdlActionsObservable,
+                                         stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+
+  /**
+   * An action that is triggered when a response is received from the Gen Ai backend model.
+   */
+  @uiSdlActionCreator(actionType='ASK_GEN_AI_QUESTION_COMPLETED')
+  askGenAiQuestionCompletedAction: function(question: !string,
+                                            answer: !StudioGenAiChatMessage,
+                                            questionAnswerPairId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * An action to thumbs up a Gen Ai message of given Id which
+   * updates the {@link StudioGenAiChatMessage#thumbsUp} to true
+   * updates the {@link StudioGenAiChatMessage#thumbsDown} to false
+   */
+  @uiSdlActionCreator(actionType='THUMBS_UP_GEN_AI_MESSAGE')
+  thumbsUpGenAiMessageAction: function(questionAnswerPairId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `THUMBS_UP_GEN_AI_MESSAGE` and updates the {@link questionAnswerPairs} in state.
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='THUMBS_UP_GEN_AI_MESSAGE')
+  thumbsUpGenAiMessageReducer: private inline function(state: !UiSdlReduxState,
+                                                       action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * An action to thumbs down a Gen Ai message of given Id which
+   * updates the {@link StudioGenAiChatMessage#thumbsUp} to false
+   * updates the {@link StudioGenAiChatMessage#thumbsDown} to true
+   */
+  @uiSdlActionCreator(actionType='THUMBS_DOWN_GEN_AI_MESSAGE')
+  thumbsDownGenAiMessageAction: function(questionAnswerPairId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `THUMBS_DOWN_GEN_AI_MESSAGE` and updates the {@link questionAnswerPairs} in state.
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='THUMBS_DOWN_GEN_AI_MESSAGE')
+  thumbsDownGenAiMessageReducer: private inline function(state: !UiSdlReduxState,
+                                                         action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * An action to set the chat input
+   * @param chatInput
+   *           The chat input to be set
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_CHAT_INPUT')
+  setChatInputAction: function(chatInput: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_CHAT_INPUT` and sets the {@link chatInput} in state.
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_CHAT_INPUT')
+  setChatInputReducer: private inline function(state: !UiSdlReduxState,
+                                               action: UiSdlReduxAction): UiSdlReduxState ts-client
+
+  /**
+   * An action to set the question answer pairs in state
+   * @param questionAnswerPairs
+   *           The array of question answer pairs to be set
+   * @returns a Redux action.
+   */
+  @uiSdlActionCreator(actionType='SET_QUESTION_ANSWER_PAIRS')
+  setQuestionAnswerPairsAction: function(questionAnswerPairs: [StudioGenAiQuestionAnswerPair]): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_QUESTION_ANSWER_PAIRS ` and sets the {@link #questionAnswerPairs} in state.
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_QUESTION_ANSWER_PAIRS')
+  setQuestionAnswerPairsReducer: private inline function(state: !UiSdlReduxState,
+                                                         action: UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Epic to populate {@link #questionAnswerPairs} from session storage when application state initialize
+   */
+  @uiSdlEpic(actionType='SET_CHAT_HISTORY_FROM_SESSION_STORAGE')
+  setChatHistoryFromStorageEpic: private inline function(state: !UiSdlReduxState,
+                                                         action: !UiSdlReduxAction): !UiSdlActionsObservable ts-client
+
+  /**
+   * Epic to save {@link #questionAnswerPairs} to session storage
+   */
+  @uiSdlEpic(actionType='SAVE_CHAT_HISTORY_TO_SESSION_STORAGE')
+  saveChatHistoryToStorageEpic: private inline function(state: !UiSdlReduxState,
+                                                        action: !UiSdlReduxAction): !UiSdlActionsObservable ts-client
+
+  /**
+   * Returns a formatted link to documentation portal for a given file name and server version. This will render the filename as a link.
+   * e.g. "topicFile.c3doc.md" -> [topicFile.c3doc.md]('https://developer.c3.ai/docs/<serverVersion>/topic/topicFile.md')
+   *
+   * NOTE: Implementation is based on https://github.com/c3-e/c3basetoolkit/blob/develop/base/docgen/src/DevPortalDocumentationLinkBuilder.js#L10-L23
+   *
+   * @param fileName
+   *           The file name of the doc
+   * @param serverVersion
+   *           The server version of the documentation. If no version is provided, the link will use `latest` as the version.
+   */
+  formattedDocPortalLinkForFileName: function(fileName: !string, serverVersion: string): !string ts-client
+
+  /**
+   * An action to set the id of the current Gen AI side panel component
+   *
+   * @param genAiSidePanelComponentId
+   *          The component id of the Gen AI side panel
+   *
+   * @returns a `SET_GEN_AI_SIDE_PANEL_COMPONENT_ID` action
+   */
+  @uiSdlActionCreator(actionType='SET_GEN_AI_SIDE_PANEL_COMPONENT_ID')
+  setGenAiSidePanelComponentIdAction: function(genAiSidePanelComponentId: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_GEN_AI_SIDE_PANEL_COMPONENT_ID` and sets the {@link genAiSidePanelComponentId} in state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_GEN_AI_SIDE_PANEL_COMPONENT_ID')
+  setGenAiSidePanelComponentIdReducer: private inline function(state: !UiSdlReduxState,
+                                                               action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the component id of the Gen AI side panel
+   */
+  getGenAiSidePanelComponentId: function(state: !UiSdlReduxState): string ts-client
+}

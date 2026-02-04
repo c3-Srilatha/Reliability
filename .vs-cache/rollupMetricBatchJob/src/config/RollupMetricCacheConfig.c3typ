@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for configuring how data is cached / retrieved using
+ * {@link RollupMetricPersistedResult}.
+ */
+@action(group=['C3.AppAdmin'])
+type RollupMetricCacheConfig mixes Singleton, Config {
+
+  /**
+   * **WARNING:** This is an advanced configuration option that will increase the total
+   *              computation and the amount of data stored in {@link Cassandra} by a
+   *              factor of `timeZones.length`. Only use this field if you are aware of
+   *              your application's expected data size and data storage requirements and
+   *              limits.
+   *
+   * All {@link TimeZone}s that should be cached when running
+   * {@link RollupMetricPersistedResult#startRollupMetricBatchJobs}. A separate
+   * {@link Timeseries} will be created for each {@link TimeZone} in this list.
+   * If no {@link TimeZone}s are specified, metrics will be cached exclusively
+   * [without a time zone](TimeZone#NONE).
+   *
+   * The {@link TimeZone}s to cache can be overridden for a given evaluation
+   * through {@link RollupMetricStartPersistenceJobSpec#timeZones}.
+   *
+   * **NOTE:** {@link RollupMetricPersistedResult} is **not flexible** to treat different
+   *           but equal [offset formats](TimeZone#isOffset) (e.g., `-08:00`, `GMT-08:00`,
+   *           `GMT-8`) or [time zone IDs](TimeZone#isId) (e.g., `UTC`, `Zulu`, `Etc/UTC`)
+   *           the same. When caching metrics with time zones, you must ensure that the
+   *           time zone ID or offset format for caching and evaluation is consistent.
+   */
+  timeZones: @indexed set<TimeZone>
+}

@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Intermediate representation for an `loc` pandas-like operation on {@link Data} and {@link Data.Series}.
+ */
+@beta
+type DataLocIndexer mixes MutableItemProtocol<any>, Mutable, Result {
+
+  data:         private ?(Data | Data.Series)
+  _item_:       ~
+  _setItem_:    ~
+  _removeItem_: ~
+
+  /**
+   * This API is invoked when one calls `d.loc[...]`, where d is an instance of {@link Data}, and is used to select
+   * values from the data instance. The `selector` parameter can come in several different forms, which determines the
+   * behavior of this method.
+   *
+   * `selector` will always either be a pair of values or a single value. In the former case, the first value of the
+   * pair is used to select rows, and the second value of the pair is used to select columns. In the latter case, the
+   * value is only used to select rows, and all columns are implicitly selected. Both row and column selector values can
+   * come in different forms, each of which are described below. It is legal to use any row selector in conjunction with
+   * any column selector.
+   *
+   * Forms of row selection:
+   * 1) by mask - {@link Data#sliceByMask}
+   * Selector is a series or list of booleans. Must have same number of elements as number of rows in the Data. Rows
+   * corresponding to the True values in the mask are selected.
+   * d.loc[d["a"] > 100]
+   * d.loc[[True, False, True]]
+   *
+   * 2) by slice - {@link Data#sliceByLabel}
+   * Selector is a {@link Slice}. Rows are selected from {@link Slice#start} to {@link Slice#stop}, INCLUSIVE.
+   * df.loc["r0":"r10":2]
+   * df.loc[:100]
+   *
+   * 3) by row label - {@link Data#sliceByLabel}
+   * Selector is a single row label or collection of row labels. Only the provided rows are selected.
+   * df.loc["r0"]
+   * df.loc[["r0", "r2", "r3"]]
+   *
+   * Forms of column selection:
+   * 1) by mask - Not currently implemented // TODO: PLAT-42025: Data#fieldSelectByMask
+   * Selector is a series or list of booleans. Must have same number of elements as number of columns in the Data.
+   * Columns corresponding to the True values in the mask are selected.
+   * df.loc[:, df.loc["r0"] > 100]
+   * df.loc[:, [True, False, True]]
+   *
+   * 2) by slice - Not currently implemented // TODO: PLAT-42026: Data#fieldSelectBySlice
+   * Selector is a {@link Slice}. Columns are selected from {@link Slice#start} to {@link Slice#stop}, INCLUSIVE.
+   * df.loc[:, "c0":"c5":2]
+   * df.loc[:, :"c2"]
+   *
+   * 3) by column name - {@link Data#pluck} / {@link Data#fieldSelect}
+   * Selector is a single column name (pluck) or collection of column names (fieldSelect). Only the provided columns are
+   * selected.
+   * df.loc[:, "c0"]
+   * df.loc[:, ["c0", "c2", "c3"]]
+   *
+   * For full pandas documentation:
+   * @see https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html
+   */
+  get: member function(fst: any, snd: any): any
+
+  /**
+   * This API is invoked when one calls `d.loc[...] = value`, where d is an instance of {@link Data}, and is used to
+   * (mutably) set values at the intersection of the selected rows and columns. The `selector` parameter can come in
+   * several different forms, which determines the behavior of this method. See documentation for
+   * {@link DataLocIndexer#get} for a detailed breakdown of all legal forms of row and column selection using `loc`.
+   *
+   * Mapping `d.loc[...] = value` calls to methods on Data is not as straightforward as the DataLocIndexer#get case,
+   * because values are mutably set at the INTERSECTION of the selected row(s) and column(s). Thus, the corresponding
+   * method(s) on Data need to be able to handle both rows and columns simultaneously (it cannot be two separate methods
+   * chained together, as is the case with get). Thus, we map DataLocIndexer#set to a single high-level API on Data,
+   * {@link Data#locSet}, which can handle all combinations of rowSelector and columnSelector.
+   *
+   * The `value` being set by this method may be any of the following:
+   * 1) A single value
+   * All selected "cells" of the data are set to this value.
+   * df["r0", [["c0", "c1"]] = 1
+   *
+   * 2) A list or series
+   * Used when setting the value of cells in one or more rows or columns. Length of the provided list or series must
+   * match the number of selected values from the row(s) or column(s).
+   * df["r0", [["c0", "c1"]] = [1, 2]
+   * df.loc[["r0", "r1"], ["0", "1"]] = [1, 2]
+   *
+   * 3) A data or 2D array
+   * Used when setting the value of cells in one or more rows or columns. Shape of the provided data / 2D array must
+   * match the number of selected cells. If using a Data, row labels and indices MUST match the selected cells.
+   * df.loc[["r0", "r1"], ["0", "1"]] = [[1, 2], [3, 4]]
+   * df.loc[["r0", "r1"], ["0", "1"]] = df1  #df1 is (2x2) and has row labels "r0", "r1" and column names "0", "1"
+   */
+  set: member function(value: !?any, left: !any, right: any)
+
+  remove: member function(selector: !?any)
+}

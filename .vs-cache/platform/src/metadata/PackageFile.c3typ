@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A deployment package file is a zip file containing the files requirement by an application.
+ * Following file types are accepted:
+ *  - *.c3typ; *.c3app; *.c3ui: module definitions. Module definition files in the .zip must be in the sub folder
+ *       with the same name as package where this module belongs.
+ *  - *.js : the action implementations associated with the module definitions.
+ *      The javascript files must be in a directory named after the module name.
+ *  - *.json : the data that should be upserted as part of this deployment.
+ *      There are two ways to package the json files:
+ *         1. ${package}/${module}/${type}.json: a directory named after the module name contains a file named
+ *             after the type name.
+ *         2. ${package}/${module}/${type}/data1.json: if you have multiple data files for the same type,
+ *             you can package them up in a directory named after the module name containing a directory named
+ *              after the type name.
+ *  - binary attachments: an 'attachments' directory might contains random binary files.
+ *     These files might be used if you provide data for BundleAttachment type.
+ *
+ *
+ * Example:
+ *   +- attachments
+ *   |  |- helloworld.ear
+ *   |  +- dir1
+ *   |     |- config.xml
+ *   |
+ *   +- package1
+ *   |  +- foo
+ *   |  |  |- fooFunction1.js
+ *   |  |  |- fooFunction2.js
+ *   |  |  |- fooType1.json
+ *   |  +- bar
+ *   |  |  |- barFunction1.js
+ *   |  |  |- barFunction2.js
+ *   |  |  +- barType1
+ *   |  |     |- jsonData1.json
+ *   |  |     |- jsonData2.json
+ *   |  |- foo.c3typ
+ *   |  |- foo.c3app
+ *   |  |- bar.c3typ
+ *   |
+ *   +- package2
+ *      |- baz.c3ui
+ */
+@action(group+='provision')
+@facade(tag='c3')
+entity type PackageFile mixes OldContent schema name 'METADATA_PKGFILE'

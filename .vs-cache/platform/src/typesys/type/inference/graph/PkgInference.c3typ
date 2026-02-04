@@ -1,0 +1,213 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link FlowGraph} which represents a Package Inference operation, which attempts to create C3 Pkg artifacts from a
+ * {@link Dataset}. Inner types of {@PkgInference} define package inference-specific vertices and visitors.
+ *
+ * @see Dataset#createPkg
+ */
+// TODO: PLAT-42290 rename PkgInference to Data.Flow
+@beta
+type PkgInference mixes Workflow {
+
+  /**
+   * Placeholder Name for Metric Inference parent's metric name
+   */
+  METRIC_PARENT_PLACEHOLDER: const string = 'PARENT_PLACEHOLDER'
+
+  /**
+   * @return true if the vertex's action is a metric method, false otherwise (or if vertex does not have an action)
+   *
+   * @see PkgInference.Methods.Metric
+   */
+  isMetricMethod: function(vertex: !Workflow.Vertex): !boolean
+
+  /**
+   * Return whether this {@link PkgInference} graph contains a vertex referring to a metric method.
+   */
+  containsMetricMethod: member function(): boolean
+
+  /**
+   * @return true if the vertex's action is a FetchSpec method, false otherwise (or if vertex does not have an action)
+   *
+   * @see PkgInference.Methods.FetchSpec
+   */
+  isFetchSpecMethod: function(vertex: !Workflow.Vertex): !boolean
+
+  /**
+   * @return true if given vertex is an instance of {@link PkgInference.Vertex.Processed}, false otherwise
+   */
+  isProcessed: function(vertex: !Workflow.Vertex): !boolean
+
+  _visit: ~
+
+  /**
+   * Replace given {@link Workflow.Action} vertex and its non-Data arguments with the provided newVertex. Shorthand
+   * for calling {@link PkgInference#replaceActionChainAndArgs} with a single action to replace.
+   */
+  replaceActionAndArgs: member function(action: !Workflow.Action, newVertex: !Workflow.Vertex): PkgInference
+
+  /**
+   * Replace given {@link Workflow.Action} vertices and all their non-Data arguments with the provided newVertex; ie,
+   * previous vertices are only replaced if they are {@link Workflow.Const} vertices.
+   *
+   * The given actions must be a single linear chain of action vertices. Note that the ordering of these vertices is
+   * extremely important: they must be in topological ordering according to the FlowGraph, so that the implementation
+   * correctly understands how to re-map ports.
+   *
+   *             +----------+                       +----------+
+   *             |  source  |                       |  source  |
+   *             +----------+                       +----------+
+   *                  |                                  |
+   *          +-------|---------+                        |
+   *          |       v         |                        v
+   *  +----+  |  +----------+   |                 +--------------+
+   *  | 13 | --> |  action  |   |                 |   newVertex  |
+   *  +----+  |  +----------+   |                 +--------------+
+   *          |       |         |     ------>            |
+   *          |       | actions |                        |
+   *          |       v         |                        v
+   *  +----+  |  +----------+   |                   +----------+
+   *  | 37 | --> |  action  |   |                   |  action  |
+   *  +----+  |  +----------+   |                   +----------+
+   *          +-------|---------+
+   *                  |
+   *                  v
+   *             +----------+
+   *             |  action  |
+   *             +----------+
+   */
+  replaceActionChainAndArgs: member function(actions: ![Workflow.Action], newVertex: !Workflow.Vertex): PkgInference
+
+  /**
+   * Helper method for quickly retrieving an argument which has a primitive value for a {@link Workflow.Action}.
+   * This method assumes that {@PkgInference.Transformer.Const} has already been run on this PkgInference FlowGraph.
+   */
+  arg: member function<T>(action: !Workflow.Action, name: !string): T
+
+  /**
+   * Helper method for quickly retrieving the string serialized {@link Expr} of an argument which has a primitive value
+   * for a {@link Workflow.Action}. This method assumes that {@PkgInference.Transformer.Const} has already been run on
+   * this PkgInference FlowGraph.
+   */
+  argExprString: member function(action: !Workflow.Action, name: !string): string
+
+  /**
+   * Reconstructs {@link Data.Rolling} instance from a {@link Data#rolling} {@link Workflow.Action} vertex. Assumes
+   * that {@link PkgInference.Transformer.Const} has been run on this PkgInference FlowGraph.
+   */
+  dataRollingFromAction: member function(action: !Workflow.Action): !Data.Rolling
+
+  /**
+   * Reconstructs {@link Data.Resample} instance from a {@link Data#resample} {@link Workflow.Action} vertex. Assumes
+   * that {@link PkgInference.Transformer.Const} has been run on this PkgInference FlowGraph.
+   */
+  dataResampleFromAction: member function(action: !Workflow.Action): !Data.Resample
+
+  /**
+   * Reconstructs {@link Data.GroupBy} instance from a {@link Data#groupby} {@link Workflow.Action} vertex. Assumes
+   * that {@link PkgInference.Transformer.Const} has been run on this PkgInference FlowGraph.
+   */
+  dataGroupByFromAction: member function(action: !Workflow.Action): !Data.GroupBy
+
+  /**
+   * Reconstructs {@link Data.Resample} instance from a {@link Data.GroupBy#resample} {@link Workflow.Action}
+   * vertex. Assumes that {@link PkgInference.Transformer.Const} has been run on this PkgInference FlowGraph.
+   */
+  dataGroupByResampleFromAction: member function(action: !Workflow.Action): !Data.Resample
+
+  /**
+   * @return {@link Transform} with the {@link Transform#target} field populated based on the {@link Transform#source}
+   * and {@link Transform#projection} of the provided Transform
+   */
+  computeTargetType: function(tx: !Transform): !Transform
+
+  /**
+   * @return return type of the given expression, representing a column on a data / field on a type
+   */
+  columnType: function(source: !Type, columnExpr: !string): !ValueType
+
+  /**
+   * @return whether the column represented by given expression has a numerical ValueType
+   *
+   * @see PkgInference#columnType
+   */
+  isNumeric: function(source: !Type, columnExpr: !string): !boolean
+
+  /**
+   * Run provided {@link Workflow.OptimizationStrategy} on this PkgInference Workflow. If an optimization strategy is
+   * not provided, uses {@link PkgInference#optimizer}. Calling this method with the default optimizer generates all
+   * Pkg Inference metadata, which is then ready to be collected with {@link PkgInference.Metadata.Collector}.
+   *
+   * @see Workflow#optimize
+   */
+  optimize: cached ~
+
+  /**
+   * @return default {@link Workflow.OptimizationStrategy} used by the PkgInference algorithm to transform this graph.
+   */
+  optimizer: cached function(): !Workflow.OptimizationStrategy
+
+  /**
+   * Helper method to run {@link PkgInference.Metadata.Collector} on graph to return results of Package Inference,
+   * represented as {@link PkgInference.Metadata}. Requires {@link PkgInference#optimize} to have been run first.
+   */
+  collectResult: member function(): !PkgInference.Metadata
+
+  /**
+   * Maps {@link DataFillMethod} to its corresponding {@link AggOp}
+   */
+  dataFillMethodToAggOp: function(method: !DataFillMethod): !AggOp
+
+  /**
+   * Maps {@link DataFillMethod} to its corresponding interpolatorType
+   *
+   * @see ExpressionEngineFunction#interpolate
+   */
+  dataFillMethodToInterpolatorType: function(method: !DataFillMethod): !string
+
+  /**
+   * Returns the only {@link PkgInference.Vertex.Target} vertex in this PkgInference graph.
+   */
+  targetVertex: member function(): !PkgInference.Vertex.Target
+
+  /**
+   * Create a PkgInference from a columnName, which can then be used to recreate the values in that column.
+   * if retainIndexedColumns is true, then the names inside the indexedColumns array will be included in the
+   * PkgInference. e.g. if indexedColumns=['a','b'], calling forName('c') will return a PkgInference that
+   * contains the workflow for three columns: 'a', 'b' and 'c'
+   */
+  forColumn: member function(columnName: !string,
+                             retainIndexedColumns: boolean,
+                             indexedColumns: Array<string>): !PkgInference
+
+  /**
+   *  Trims the PkgInference to remove certain filter ops such as slice, sliceByMask, etc.
+   *  operations contain the filter ops to be removed, and columns are names of the columns to be checked.
+   *  for example:
+   * data = [[a,b,c]
+   * [d,1,2]
+   * [e,3,4]
+   * ]
+   * sliced =data.loc[data['a']==d],
+   * PkgInference dataFlow = sliced.toWorkflow()
+   * then dataFlow.filterOperations(["sliceByMask"],["a"]) removes the sliceByMask operation carried on column 'a'.
+   */
+  filterOperations: member function(operations: !set<string>, columns: ![string]): !PkgInference
+
+  /**
+   * Overload function to compare two {@link PkgInference}s by comparing each {@link PkgInference.Vertex} pair in them.
+   * If the two PkgInferences have different number of vertices or the vertex in one PkgInference is not the same as the
+   * vertex in corresponding position in the other PkgInference, then return false. Otherwise, return true. This function
+   * is used to optimize the PkgInference to the ready state, see {@link Workflow.RunToSteadyState#optimize}.
+   * @return
+   *        Return true if the two PkgInferences are identical.
+   */
+  isSame: ~
+}

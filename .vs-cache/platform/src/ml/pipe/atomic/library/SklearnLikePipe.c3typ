@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This pipe simplifies the creation of a {@link MlAtomicPipe<Data, Data, Data>} following [scikit-learn conventions](https://scikit-learn.org/stable/developers/develop.html).
+ * It gives off-the-shelf implementations of {@link MlAtomicPipe<Data, Data, Data>} abstract methods for such pipe.
+ * If you are unsure whether your estimator(s) follow scikit-learn conventions, you can use [check_estimator](https://scikit-learn.org/stable/modules/generated/sklearn.utils.estimator_checks.check_estimator.html).
+ */
+abstract type SklearnLikePipe extends MlAtomicPipe<Data, Data, Data> mixes SklearnLikePipe.FieldsAndUtils type key 'SKLIKE' {
+
+  afterConvert: ~ py
+
+  @dependency(include='this')
+  nativeModel: ~ py
+  convertXToNative: ~ py
+  convertYToNative: ~ py
+
+  /**
+   * Feeds beforeTrainResults to {@link #nativeTrainFuncAndKwargs}.
+   * Attempts to train with the first two elements of {@link #nativeTrainFuncAndKwargs} output.
+   * In case of failure, fallback to train with the first and last element of {@link #nativeTrainFuncAndKwargs} output.
+   *
+   * @inheritdoc MlAtomicPipe
+   */
+  doTrain: ~ py
+  doProcess: ~ py
+}

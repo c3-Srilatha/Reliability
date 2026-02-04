@@ -1,0 +1,221 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * This type is responsible for taking the Authentication Data and invoking the correct Idp for authentication.
+ * following is an example flow:
+ *
+ * ```
+ * +---------------+  +---------------+
+ * |               |  |               |
+ * |  http-client  |  |   c3-server   |
+ * |               |  |               |
+ * +-------+-------+  +-------+-------+
+ *         |                  |                 +----------------+
+ *         |           http request             |                |
+ *         +----------------------------------->+  http-handler  |
+ *         |                  |                 |                |
+ *         |                  |                 +--------+-------+
+ *         |                  |                          |
+ *         |                  |                          |
+ *         |                  |        +-----------------+------------------+
+ *         |                  |        |  extract authentication data from  |
+ *         |                  |        |  1) cookie or                      |
+ *         |                  |        |  2) Authorization header or        |
+ *         |                  |        |  3) Query Parameter (SamlResponse) |
+ *         |                  |        |  create the AuthenticationSpec     |
+ *         |                  |        +-----------------+------------------+
+ *         |                  |                          |                                     +-----------------+
+ *         |                  |                          |  authenticate(AuthenticationSpec)   |                 |
+ *         |                  |                          +------------------------------------>+  Authenticator  |
+ *         |                  |                          |                                     |                 |
+ *         |                  |                          |                                     +--------+--------+
+ *         |                  |                          |                                              |
+ *         |                  |                          |                                              |
+ *         |                  |                          |       +--------------------------------------+--------------+
+ *         |                  |                          |       | Authenticate based on Authentication data           |
+ *         |                  |                          |       | 1) SessionToken -> verify()                         |
+ *         |                  |                          |       | 2) Basic Auth Authorization header -> BasicAuth IdP |
+ *         |                  |                          |       | If valid, return User object                        |
+ *         |                  |                          |       | if invalid, return HttpResponse (401, etc)          |
+ *         |                  |                          |       +--------------------------------------+--------------+
+ *         |                  |                          |                                              |
+ *         |                  |                          +<---------------------------------------------+
+ *         |                  |                          |           Pair<User, HttpResponse>
+ *         |                  |    +---------------------+-------------------------------------------+
+ *         |                  |    | if successful authentication, generate SessionToken set in  C3  |
+ *         |                  |    | context, set cookie and invoke 'handler' (Api, Content, etc)    |
+ *         |                  |    | else return HttpResponse                                        |
+ *         |                  |    +---------------------+---+---------------------------------------+
+ *         |                  |                          |   |                                     +-------------------+
+ *         |                  |                          |   |                                     |                   |
+ *         +<--------------------------------------------+   +------------------------------------>+  request-handler  |
+ *         |                  |    401 HttpResponse      |          continue processing            |                   |
+ *         |                  |                          |      HttpRequest (C3 context set)       +---------+---------+
+ *         |                  |                          |                                                   |
+ *         +<------------------------------------------------------------------------------------------------+
+ *         |                  |                          |         200 HttpResponse
+ *         +                  +                          +
+ * ```
+ */
+@restful(endpoint='auth')
+type Authenticator mixes Value, Restful {
+
+  /**
+   * Authenticates the user using Authorization header that is sent to the endpoint.
+   *
+   * @return - Response with status code 200 and the session token set in the Set-Cookie header. Status code 401 otherwise.
+   */
+  @restful(subPath='login')
+  login: function(): HttpResponse
+
+  /**
+   * Handler of all HTTP requests that require authentication.
+   */
+  handleRequest: function(req: HttpRequest): AuthenticateResult
+
+  /**
+   * Authenticates the authorization data supplied via HttpRequest {@link HttpRequest}.
+   *
+   * @param req
+   *          HttpRequest
+   * @return - User if authentication is successful, HttpResponse otherwise
+   */
+  authenticate: inline function(req: !HttpRequest): !AuthenticateResult
+
+  /*
+   * Will authenticate and if valid will create the SessionToken and set it the the C3 context
+   * It will return a User object if authentication succeeded, null otherwise.
+   * If authentication fails and an HttpResponse needs to be returned (Saml Idp or WWW-Authorize header)
+   * one will be generated.
+   * Note: This method abstracts various identity providers, authentication mechanisms by simply delegating to
+   * {@link IdentityProvider}.
+   *
+   * @param spec - AuthenticationSpec
+   *                       {@link AuthenticationSpec} argument.
+   *
+   * @return - User if authentication is successful, HttpResponse otherwise
+   */
+  authenticate: inline function(spec: !AuthenticationSpec): !AuthenticateResult
+
+  /**
+   * Authenticate user supplied authentication data.
+   */
+  authenticate: abstract function(authenticationData: !string, req: HttpRequest): !AuthenticateResult
+
+  /*
+   * Invalidate all session tokens for the User represented by the token
+   * @param req - HttpRequest
+   *                       {@link HttpRequest} argument that is required if performing SAML logout.
+   *
+   * @return HttpResponse
+   */
+  @restful(subPath='logout')
+  logout: inline function(req: HttpRequest): HttpResponse
+
+  /**
+   * Generate a C3 Action Authentication Token ({@link action-auth-token.c3doc.md Action Authentication and Propagation}).
+   *
+   * @return The action authentication token.
+   */
+  generateActionAuthToken: function(): !string
+
+  /**
+   * Generate c3 key auth token with given username and user's private key
+   *
+   * @param username
+   *          user identifier
+   * @param privateKey
+   *          private key of the user
+   *
+   * @return a c3 key auth token
+   */
+  generateC3KeyAuthToken: function(username: !string, privateKey: !string): !string
+
+  /**
+   * Generate basic auth token with given username and password.
+   *
+   * @param username
+   *          user identifier.
+   * @param password
+   *          user password.
+   *
+   * @return a basic auth token generated with given username and password.
+   */
+  generateBasicAuthToken: function(username: !string, password: !string): !string
+
+  /**
+   * Parse a basic token
+   *
+   * @param token
+   *            token to be parsed.
+   *
+   * @return a user & password from auth token
+   */
+  parseBasicAuthToken: private function(token: !string): StrPair
+
+  /**
+   * Determines if the provided request is the first login or not
+   */
+  firstLogin: private function(req: HttpRequest): boolean
+
+  /**
+   * Returns whether authentication is required to access the given endpoint
+   *
+   * @param req
+   *            HttpRequest
+   *
+   * @return a boolean representing whether anonymous access is allowed
+   */
+  isAnonymousAccessAllowed: inline function(req: !HttpRequest): boolean
+
+  /**
+   * Returns the IdpConfig associated with the given host.
+   * @param host
+   *           host for which IdpConfig is configured for
+   *
+   * @return the IdpConfig configured for the host. If it does not exist, returns null.
+   */
+  idpConfig: inline function(host: !string, failIfMissing: boolean): IdpConfig
+
+  /**
+   * Returns whether basic auth is used for authentication.
+   *
+   * @return a boolean representing whether this {@link App} use basic auth.
+   */
+  isIdpConfiguredForUrl: inline function(url: !Url): boolean
+
+  /**
+   * Prepare auth denied response
+   * @param req
+   *            HttpRequest that was used to login
+   */
+  denyUser: private inline function(req: !HttpRequest): !AuthenticateResult
+
+  /**
+   * Creates an 401 Unauthorized HttpResponse with the given headers.
+   */
+  unauthorized: private inline function(req: !?HttpRequest, headers: map<string, [string]>): !AuthenticateResult
+
+  /**
+   * The authentication result with no-content
+   */
+  noContent: private inline function(req: !?HttpRequest): !AuthenticateResult
+
+  /**
+   * The authentication result for a given user
+   */
+  result: private inline function(user: !User, req: !?HttpRequest, resp: HttpResponse): !AuthenticateResult
+
+  /**
+   * Properly logs authentication information for all subtypes
+   */
+  logAuthenticationInformation: private inline function(logger: !Logger,
+                                                        loggerLevel: !string enum Logger.Level,
+                                                        msg: !string)
+}

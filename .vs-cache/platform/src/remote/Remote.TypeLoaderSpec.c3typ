@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Necessary information used when constructing the script source code that loads a type in the client SDK
+ * environment.
+ *
+ * @see TypeMeta#toSdkLoader
+ * @see ServerConnection
+ */
+type Remote.TypeLoaderSpec mixes Spec {
+
+  /**
+   * What tier are we loading for.
+   */
+  tier: string enum Remote.Tier = REST
+
+  /**
+   * Whether we're loading for an async type system.
+   */
+  async: boolean
+
+  /**
+   * Whether we're want to merge the mixin implementations directly into this implementation. This should not be done
+   * generally, because it's less efficient than to handle the mixins separately, but is done for certain key types
+   * needed to bootstrap the system.
+   */
+  mixinCode: boolean
+
+  /**
+   * Whether we want to load types that are mixins of this type as well. Note that types listed in #skipTypes will be
+   * avoided, but the type declaration for all other mixins will be loaded as well.
+   */
+  mixinTypes: boolean
+
+  /**
+   * If true, types returned in the corresponding bootstrap are _not_ included, even if requested explicitly.
+   */
+  bootstrapped: boolean
+
+  /**
+   * Types which are already present in the client and do not need to be delivered to complete the requested type.
+   * For example if the type is generic and has one of these as the prototype or it has one of these as a mixin
+   * that type will not be sent if listed here.
+   *
+   * If #bootstrapped is set, those types need not be listed here; they will automatically be excluded.
+   *
+   * @see #mixinTypes
+   * @see #bootstrapped
+   */
+  x: set<string>
+
+  /**
+   * Types marked to have all methods local using forceLocal (if full type system).
+   */
+  forceLocalTypes: set<string>
+
+  /**
+   * If true, download the source code for the types and make all methods local (if full type system).
+   */
+  forceLocal: boolean
+
+  /**
+   * If true, don't download the source code for the types and make all methods remote (if full type system).
+   */
+  forceRemote: boolean
+
+  /**
+   * If true, don't download the source code for the type and make all methods that should have local implementations
+   * throw an error instead (if full type system).
+   */
+  failedSource: boolean
+
+  /**
+   * Load more types up front to speed up later operations. This results in a larger bootstrap, but also means key
+   * types are already available.
+   */
+  preload: boolean
+
+  /**
+   * If true, do not append sourceMappingURL in source files of all types.
+   * Passed in from @see RemoteConnectSpec#noSourceMapPointer
+   */
+  noSourceMapPointer: boolean
+
+  /**
+   * This lambda can be specified to map a standard metadata path for the type's source file to a path that makes
+   * sense to the client. The argument is a path, such as '/platform/src/http/HttpRequest.js' where the package is the
+   * first path component.
+   */
+  sourceMapFile: lambda(pkgPath: !string serialized Pkg.Path): !string
+
+  /**
+   * Mapping of package name to package local root on client side.
+   * Used to locate implementation file paths in source map files for Node users.
+   * Passed in from @see RemoteConnectSpec#pkgRoots and used in @see Remote.TypeLoaderSpec#sourceMapFile
+   */
+  pkgRoots: map<string, string>
+
+  @deprecated(finalVersion='8.5', message='use #x instead')
+  skipTypes: set<string>
+}

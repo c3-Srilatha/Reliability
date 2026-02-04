@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A spec for controlling the behavior of {GenaiCore.Unstructured.Job.Run#retry}
+ */
+type GenaiCore.Unstructured.Job.RetrySpec mixes GenaiCore.Unstructured.Job.StartSpec {
+
+  /**
+   * If true, retries all sources, not just the ones that failed.
+   *
+   * Ignored if #sources is specified.
+   * NOTE: if this is set to true, then all checkpoints will be ignored.
+   */
+  allSources: boolean
+
+  /**
+   * If specified, only retries the given (by file path) sources.
+   */
+  sources: [string]
+
+  /**
+   * If true, then all sources which are being re-processed will be restarted from the beginning instead of from the
+   * latest available checkpoint.
+   */
+  ignoreCheckpoints: boolean
+}

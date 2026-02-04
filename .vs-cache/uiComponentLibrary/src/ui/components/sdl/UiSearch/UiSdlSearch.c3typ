@@ -1,0 +1,98 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A component that allow you to search on a given data source.
+ */
+@typeScript
+@uiComponentCategorizer(name='Search', category='Components')
+type UiSdlSearch mixes UiSdlComponent<UiSdlNoData>, UiSdlSearchable {
+
+  /**
+   * The path in the data source to get the data.
+   */
+  dataPath: string
+
+  /**
+   * If true, displays the input form field as 'disabled', with a non-interactable input.
+   */
+  disabled: boolean = false
+
+  /**
+   * The display field for each search result. Should be a valid field returned in the data source collection.
+   */
+  displayField: string
+
+  /**
+   * The value field for each result. Should be a valid field returned in the data source collection.
+   */
+  field: string
+
+  /**
+   * When set to true this input will take up the full width of its container.
+   */
+  fluid: boolean
+
+  /**
+   * Whether or not the argument to insert in the new search call is a filter spec. `true` by default.
+   */
+  generateFilter: boolean = true
+
+  /**
+   * The label to display underneath the input field.
+   */
+  hint: string
+
+  /**
+   * If true, displays the input form field as 'invalid', with red text, icons, and borders.
+   */
+  invalid: boolean = false
+
+  /**
+   * The label to put above the input.
+   */
+  label: string
+
+  /**
+   * Whether to load dropdown results initially, based on an empty search query. Defaulted to `false`.
+   */
+  loadInitialData: boolean = false
+
+  /**
+   * The message to display when data returned in the search is empty.
+   */
+  noResultsMessage: string = 'UiSdlSearch.noResultsMessageText'
+
+  /**
+   * Whether to show the dropdown list when search is focused (true), or only show it on search change (false).
+   */
+  openOnFocus: boolean = true
+
+  /**
+   * Controls whether or not to show the dropdown when search results are updated. This can be set to false
+   * when search is being used with a grid, for example, where change in the search query is filtering the rows.
+   * Note: If {@link openOnFocus} is set to `true`, that will override this configuration.
+   */
+  openOnResultsChange: boolean = true
+
+  /**
+   * The placeholder text to display in the input element.
+   */
+  placeholder: string = 'UiSdlSearch.placeholderText'
+
+  /**
+   * The name of the data source to fetch search results from.
+   */
+  searchDataSource: string
+
+  /**
+   * The list of fields in the data source that are used in the fetch filter.
+   * Relevant if {@link generateFilter} is true.
+   */
+  searchFields: [string]
+}

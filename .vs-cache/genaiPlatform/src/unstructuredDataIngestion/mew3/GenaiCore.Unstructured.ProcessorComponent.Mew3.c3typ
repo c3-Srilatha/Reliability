@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Core {@link GenaiCore.Unstructured.ProcessorComponent} to represent the integration of components from
+ * the `mew3` library.
+ */
+type GenaiCore.Unstructured.ProcessorComponent.Mew3 mixes GenaiCore.Unstructured.ProcessorComponent {
+
+  /**
+   * The path to the `mew3` wheel file, which will be dynamically installed when processing.
+   */
+  mew3WheelPath: !string
+
+  /**
+   * The `mew3` class name representing the component to use in the processor.
+   * The class will be found in the `mew3.integrations` package path.
+   */
+  className: !string
+
+  /**
+   * Initialization options for the `mew3` classes.
+   * The options are specified as a map of class name to a map of option name to option value.
+   * The option (if existing) corresponding to this instance's class name will be used to
+   * initialize the class. The entire options will be passed directly as a kwarg to the
+   * class's call.
+   */
+  options: map<string, json>
+
+  process: ~ py-mew3
+}

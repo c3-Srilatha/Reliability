@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Outlines a structured way to specify parameters for profiling or querying application logs,
+ * integrating grouping, sorting, filtering, and statistical computation capabilities.
+ */
+@beta
+private type Log.AppProfile.ProfileSpec mixes Spec {
+
+  /**
+   * Defines fields to group by, specified as an array of string enums from {@link Log.AppProfile.GroupByFields}
+   */
+  groupBy: [string enum Log.AppProfile.GroupByField]
+
+  /**
+   * Specifies statistics to compute, valid only if groupBy is not empty.
+   * Represents an array of pairs where the first element is a string enum from {@link Log.AppProfile.StatsFields}
+   * and the second element is a string enum from {@link Log.AppProfile.StatsKind}.
+   */
+  metrics: ![Log.AppProfile.ActionMetricSpec]
+
+  /**
+   * Specifies a filter based on {@link Log.AppProfile.FilterSpec}
+   */
+  filter: Log.AppProfile.FilterSpec
+
+  /**
+   * Specifies the maximum number of records to return
+   */
+  size: int = 10000
+}

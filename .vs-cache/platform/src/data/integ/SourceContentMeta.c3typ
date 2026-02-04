@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is all necessary meta information for source content processed/data-loaded into C3 type system
+ */
+type SourceContentMeta mixes Identifiable {
+
+  /**
+   * Source type to which the source file is intended to be loaded and should
+   * match the associated {@link SourceCollection#source} field of #sourceCollection.
+   */
+  @deprecated(finalVersion='8', details='see function sourceType')
+  source: Type
+
+  /**
+   * {@link SourceCollection} associated to the source content.
+   */
+  // TODO: PLAT-40185 remove <any> restriction
+  @implicit(parsed="sourceCollection")
+  sourceCollectionName: string serialized SourceCollection<any>
+
+  /**
+   * @returns the relative path from the root directory to the directory in which the file is located
+   */
+  encodedPath: string
+
+  /**
+   * @return all transform types for loading this SourceContentMeta
+   */
+  transforms: member function(): [Transform]
+
+  /**
+   * @return all target types loaded for this SourceContentMeta
+   */
+  targets: member function(): [Type]
+}

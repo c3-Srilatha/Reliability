@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The batch job to evaluate {@link DataValidationRule data validation rules}.
+ */
+@db(unique=['run'])
+entity type DataValidationBatchJob extends BatchJob<DataValidationBatchJob, DataValidationBatchJobOptions, DataValidationBatch> type key 'DVBJ' {
+
+  /**
+   * The rules this batch job is responsible for running.
+   */
+  rules: ![DataValidationRule] schema suffix 'RULE'
+
+  /**
+   * The run this batch job is responsible for generating results for.
+   */
+  dataValidationRun: DataValidationRun(jobId)
+
+  /**
+   * The options to use while running this job
+   */
+  options: DataValidationBatchJobOptions
+
+  /**
+   * Starts the {@link DataValidationBatchJob}.
+   */
+  startJob: member function() js-rhino
+
+  /**
+   * Creates a {@link DataValidationBatchJob}
+   * @param rules
+   *    The {@link DataValidationRule}s that will be run by this job
+   * @param dataValidationRun
+   *    The {@link DataValidationRun} that will be populated by this job
+   * @param spec
+   *    Specifies options for the batch job.
+   * @return
+   *    A batch job that has been created but not upserted yet.
+   */
+  createJob: function(rules: ![DataValidationRule],
+                      dataValidationRun: !DataValidationRun,
+                      spec: !DataValidationExecutionSpec):
+                      !DataValidationBatchJob js-rhino
+  /**
+   * @inheritdoc
+   */
+  doStart: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  processBatch: ~ js-rhino
+
+  /**
+   * @inheritdoc
+   */
+  allComplete: ~ js-rhino
+}

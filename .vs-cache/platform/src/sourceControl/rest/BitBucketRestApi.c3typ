@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to access BitBucket through REST.
+ */
+type BitBucketRestApi mixes SourceControlRestApi<BitBucket> {
+
+  sourceControlType: ~ = BITBUCKET
+
+  /**
+   * Name of project.
+   */
+  projectName: !string
+
+  /**
+   * Sets repoUrl, sourceControlRepoName, projectName and returns the updated instance.
+   */
+  configureWithRepoUrl: ~ js-server
+
+  transformToken: ~ js-server
+
+  /**
+   * Validate `token` for appropriate permissions to function well in C3 IDS.
+   */
+  validateToken: ~ js-server
+
+  /**
+   * Return the content of the file.
+   */
+  getFileContent: ~ js-server
+
+  isBranchPresent:           ~ js-server
+  branch:                    ~ js-server
+  createBranchFromSrcBranch: ~ js-server
+  createBranchFromSha:       ~ js-server
+  deleteBranch:              ~ js-server
+  getRestUrl:                ~ js-server
+  createPullRequest:         ~ js-server
+  getPullRequest:            ~ js-server
+  declinePullRequest:        ~ js-server
+  getCommits:                ~ js-server
+  getCommitDetails:          ~ js-server
+  createContent:             ~ js-server
+  updateContent:             ~ js-server
+  compare:                   ~ js-server
+  getBranchUrl:              ~ js-server
+
+  /**
+   * Performs a merge of one branch into another. For BitBucket, a pull request is created during the process
+   * due to a lack of a merge REST endpoint.
+   */
+  merge: ~ js-server
+
+  getMyUsername:        ~ js-server
+  getCommitsAheadCount: ~ js-server
+
+  /**
+   * Resets a branch to the state of another branch. The source branch is deleted and recreated using a specified
+   * target branch. If this fails, the source branch is restored to its original state.
+   */
+  reset: ~ js-server
+
+  /**
+   * Updates a ref to a target sha. The source branch of the ref is deleted and recreated with the provided sha.
+   * If recreation fails, the branch is restored to its original state.
+   */
+  updateReferenceToSha: ~ js-server
+
+  /**
+   * Use the Bitbucket Server token to generate the basic authentication string for REST calls
+   */
+  getAuthFromToken: ~ js-server
+
+  /**
+   * Get the BitBucket token from the basic authentication string for REST calls
+   */
+  getTokenFromAuth: ~ js-server
+
+  getItemsInFolder: ~ js-server
+
+  /**
+   * get list of {@link SourceControlRepository}s
+   */
+  repositories: ~ js-server
+
+  /**
+   * Helper function that makes a {@link SourceControlCommit} object from a
+   * BitBucket REST response object.
+   */
+  makeSourceControlCommit: private member function(commit: !json): SourceControlCommit js-server
+
+  /**
+   * Helper function that gets the diffs for a {@link SourceControlCommit} and returns the
+   * commit with the diff results in the {@link SourceControlCommit.files} field.
+   */
+  addCommitFiles: private member function(sourceControlCommit: !SourceControlCommit): SourceControlCommit js-server
+
+  /**
+   * check if the token and url on {@link SourceControlRestApi#restInst} are valid, throws otherwise
+   */
+  validateConfigTokenAndUrl: ~ js-server
+}

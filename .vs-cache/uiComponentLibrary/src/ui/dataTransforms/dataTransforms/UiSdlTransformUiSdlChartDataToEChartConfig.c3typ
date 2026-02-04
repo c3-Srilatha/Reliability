@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Transform {@link UiSdlChartData} to {@link UiSdlChartEChartConfig}.
+ */
+@typeScript
+type UiSdlTransformUiSdlChartDataToEChartConfig mixes UiSdlDataTransform<UiSdlChartData, UiSdlChartEChartConfig> {
+
+  /**
+   * Override abstract function to transform {@link UiSdlChartData} to {@link UiSdlChartEChartConfig}.
+   *
+   * Each {@link UiSdlChartDataSeries} will be transformed into a {@link UiSdlChartEChartSeries}.
+   *
+   * All series will be assigned to an axis ({@link UiSdlChartEChartAxis}) based on the {@link Unit} of its data. Multiple
+   * series that share units will also share an axis (e.g. if two series use 'kWh' as their units, they will both use
+   * the 'kWh' axis). All series with unitless data will share an axis with the id "unitless".
+   */
+  transform: function(data: !UiSdlChartData): UiSdlChartEChartConfig ts-client
+}

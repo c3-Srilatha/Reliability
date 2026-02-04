@@ -1,0 +1,124 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An interface for creating a {@link Workflow} that starts the {@link ReliabilityRiskMlModel} inference
+ * routine for all `CHAMPION` models. The steps for model inference are:
+ * 1. Generating predictions
+ * 2. Generating contributions
+ * 3. Normalizing the predictions, i.e., {@link ReliabilityRiskScoreMlPredictionHeader#refreshNormalization}
+ * 4. Normalizing the contributions, i.e., {@link ReliabilityRiskScoreMlContributionHeader#refreshNormalization}
+ * 5. Generating alerts
+ * 6. Refreshing relevant stored calculated fields, i.e., {@link ReliabilityAsset#refreshCalcFields}
+ *
+ * There are two ways this {@link Workflow} can be executed:
+ * 1. `SEQUENTIAL`
+ *   - All the steps mentioned above are executed sequentially, i.e., predictions will be generated for all assets before moving on to generating contributions for all assets, and so on
+ * 2. `PARALLEL`
+ *   - All the steps are executed sequentially per-asset, i.e., for one asset all the steps are performed sequentially and the distributed nature of the job applies to the assets. In this case, the inference routine for one asset may complete before another asset (due to, for example, differences in size of data)
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+type ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference mixes ReliabilityOrchestrator.WorkflowConvertable {
+
+  name: ~ = 'ReliabilityRisk_ModelInference'
+
+  /**
+   * @see MlSubject.OperationJobSpec
+   */
+  mlOperationJobSpec: !MlSubject.OperationJobSpec
+
+  /**
+   * The list of {@link MlModel.Route.Status.Label}s that should be used for running model inference. If
+   * not specified, model inference will be run for the `CHAMPION` models by default. This field will override the
+   * {@link Filter} spcified in {@link #mlOperationJobSpec}.
+   */
+  statusLabels: [MlModel.Route.Status.Label] = [MlModel.Route.Status.Label.CHAMPION]
+
+  /**
+   * Flag to indicate if the inference period provided should be overriden to account for
+   * incremental inference.
+   *
+   * This flag is used in {@link ReliabilityAsset#beforeRunReliabilityRiskModelInference}.
+   */
+  overrideInferencePeriodForInference: boolean = false
+
+  /**
+   * @see MlOperationSpec
+   */
+  mlOperationSpec: MlOperationSpec
+
+  /**
+   * With `SEQUENTIAL`, the {@link Workflow} looks like the following:
+   * ```
+   * | MlSubject.ProcessJob |
+   *            |
+   *            v
+   * | MlSubject.InterpretJob |
+   *            |
+   *             -------------
+   *                         |
+   *                         v
+   * | RefreshNormalizationBatchJob for predictions |
+   *                         |
+   *                         v
+   * | RefreshNormalizationBatchJob for contributions |
+   *                         |
+   *                         v
+   * | MapReduce to distribute ReliabilityAsset#processRiskAlerts |
+   *                         |
+   *               ----------
+   *               |
+   *               v
+   * | RefreshCalcFieldsBatchJob |
+   * ```
+   *
+   * With `PARALLEL`, the {@link Workflow} looks like the following:
+   * ```
+   *                                 ASSETS
+   *                                   |
+   *    ---------------------------------------------------..........----
+   *    |                                  |               ..........   |
+   *    v                                  v               ..........   v
+   * ASSET #1                        ASSET #2           ..........   ASSET #N
+   * 1. generate predictions         1. generate predictions         1. generate predictions
+   * 2. generate contributions       2. generate contributions       2. generate contributions
+   * 3. normalize predictions        3. normalize predictions        3. normalize predictions
+   * 4. normalize contributions      4. normalize contributions      4. normalize contributions
+   * 5. generate alerts              5. generate alerts              5. generate alerts
+   * 6. refresh calc fields          6. refresh calc fields          6. refresh calc fields
+   * ```
+   *
+   */
+  workflowType: string enum('SEQUENTIAL', 'PARALLEL') = 'PARALLEL'
+
+  /**
+   * Validates the fields on this {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference} to ensure that
+   * the {@link Workflow} can be created and executed successfully.
+   *
+   * Raises error if validation is not successful.
+   */
+  validate: member function() py
+
+  createWorkflow: ~ py
+
+  /**
+   * Funciton to trigger the {@link Workflow} associated with this
+   * {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelInference}.
+   *
+   * @param periodBeforeEnd
+   *          The period before the end of the inference period for which the inference job should be triggered.
+   *          The end is automatically set to current time using {@link DateTime#now}.
+   * @return
+   *          The {@link Workflow.Run} as a result of triggering the workflow.
+   */
+  triggerInferenceJob: private member function(periodBeforeEnd: !Period): Workflow.Run py
+}

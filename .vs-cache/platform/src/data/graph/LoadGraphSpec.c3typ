@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type LoadGraphSpec mixes Spec {
+
+  /**
+   * Filter expression for which Obj instances to return.  Filter expressions must evaluate to a value type of Boolean.  They support
+   * basic comparison operators (e.g. "==", "<", "<=", ">", ">=", "!="), arithmetic operators (e.g. "+", "-", "*", "/"), "&&", "||" and "most" non-timeseries
+   * functions supported by the C3 expression engine.
+   *
+   * Expressions can include fields in the Obj itself (e.g. "name == 'foo'"), as well as fields in Objs in other types referenced from the Obj
+   * (e.g. "refField.name == 'foo'").  Expressions involving arry/mapp fields will automatically be interpreted as "exists" queries
+   * (e.g. "refArry.name == 'foo'" will bring back all Obj instances that have at least one entry in refArry where the referenced Obj has the value 'foo' for its
+   * name field).
+   */
+  vertexFilter: string
+
+  /**
+   * Specifies which fields to bring back values for in the returned Obj instances.  Include specifications are logically a list of field paths.  The following
+   * examples illustrate the supported ways to specify them:
+   *
+   * - Simple list of fields - "[field1, field2, field3]"
+   *
+   * - List of fields involving references and non-reference fields - "[refField1.name, refField1.refField2.name]"
+   *
+   * - Same as above with Obj notation - "[{refField1: [name, {refField2: [name]}]}]"
+   *
+   * - Return all fields in obj - Either not specified or "[this]"  Note that for external references, only the ids are returned unless an explicit include indicates
+   *                              that data from the reference should be returned (see below).  Also, fkey fields (e.g. fields defined like arry: SomeType(fkeyField))
+   *                              are also only brought back if specifically included.
+   *
+   * - Using dot query to filter arry/mapp results - "[refArry.(name == 'foo')]" or "[{refArry}.(name == 'foo')]"
+   */
+  vertexInclude: string
+
+  /**
+   * Filter expression for which Obj instances to return.  Filter expressions must evaluate to a value type of Boolean.  They support
+   * basic comparison operators (e.g. "==", "<", "<=", ">", ">=", "!="), arithmetic operators (e.g. "+", "-", "*", "/"), "&&", "||" and "most" non-timeseries
+   * functions supported by the C3 expression engine.
+   *
+   * Expressions can include fields in the Obj itself (e.g. "name == 'foo'"), as well as fields in Objs in other types referenced from the Obj
+   * (e.g. "refField.name == 'foo'").  Expressions involving arry/mapp fields will automatically be interpreted as "exists" queries
+   * (e.g. "refArry.name == 'foo'" will bring back all Obj instances that have at least one entry in refArry where the referenced Obj has the value 'foo' for its
+   * name field).
+   */
+  edgeFilter: string
+
+  /**
+   * Specifies which fields to bring back values for in the returned Obj instances.  Include specifications are logically a list of field paths.  The following
+   * examples illustrate the supported ways to specify them:
+   *
+   * - Simple list of fields - "[field1, field2, field3]"
+   *
+   * - List of fields involving references and non-reference fields - "[refField1.name, refField1.refField2.name]"
+   *
+   * - Same as above with Obj notation - "[{refField1: [name, {refField2: [name]}]}]"
+   *
+   * - Return all fields in obj - Either not specified or "[this]"  Note that for external references, only the ids are returned unless an explicit include indicates
+   *                              that data from the reference should be returned (see below).  Also, fkey fields (e.g. fields defined like arry: SomeType(fkeyField))
+   *                              are also only brought back if specifically included.
+   *
+   * - Using dot query to filter arry/mapp results - "[refArry.(name == 'foo')]" or "[{refArry}.(name == 'foo')]"
+   */
+  edgeInclude: string
+
+  /**
+   * A map provides to be applied for filter evaluations at run time.
+   */
+  bindings: map<string, any>
+
+  /**
+   * Flag to specify if the generated map should be cached in persisted memory and memory.
+   */
+  doCache: boolean = false
+
+  /**
+   * BatchSize for number of objects for scan query batch (default 100)
+   */
+  batchSize: int = 100
+
+  /**
+   * Threads specifying number of parallel threads scan query should use (default 1)
+   */
+  threads: int = 1
+}

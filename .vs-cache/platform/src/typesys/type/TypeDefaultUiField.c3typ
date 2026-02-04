@@ -1,0 +1,180 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Information about the default UI presentation for each field of a type is described in this instance.
+ * Values here may come from explicit declarations in a default UI file or defaulted using conventions.
+ *
+ * User interface presentation can be declared in `.c3ui` "UI DSL" files. And for required things like label, order and
+ * value expression, values are initialized from the underlying type. This means there are always basic ways to build a
+ * simple UI for a type, whether there is an explicit presentation defined or not.
+ *
+ * The "declared" fields on this type are the ones which are loaded from the default UI file and the properties
+ * use these values if specified and otherwise fall back to conventions.
+ *
+ * @see TypeDefaultUi
+ * @see Ann.Ui
+ */
+type TypeDefaultUiField mixes Documentable, Annotatable, Nameable, WithRef, Typesys, DslCommented {
+
+  /**
+   * The name of the corresponding type field.
+   */
+  @dsl(suppress=true)
+  name: !~
+
+  /**
+   * The label for this field specified using the `label` syntax in the default UI file.
+   */
+  @dsl(syntax="label")
+  declaredLabelExpr: string serialized Expr
+
+  /**
+   * The presentation order in the list of all fields. This may be specified using the `order` syntax in the default UI
+   * file or will be generated based on declaration order of the field.
+   */
+  @dsl(syntax="order")
+  declaredOrder: int
+
+  /**
+   * The group this field is part of using the `group` syntax in the default UI file.
+   */
+  @dsl(syntax="group")
+  declaredGroupExpr: string serialized Expr
+
+  /**
+   * Value type dependent format string for presentation. This may be specified using the `format` syntax in the default
+   * UI file.
+   */
+  @dsl(syntax="format")
+  declaredFormatExpr: string serialized Expr
+
+  /**
+   * The short description of this field, typically used as a tool tip. This is the string constant as declared in the
+   * DSL file.
+   */
+  @dsl(syntax="description")
+  declaredDescriptionExpr: string serialized Expr
+
+  /**
+   * Whether this field should be suppressed in default UIs. This may be specified using the `order` syntax in the
+   * default UI file.
+   */
+  @dsl(syntax="hidden", flag=true, suffix=true)
+  declaredHidden: boolean
+
+  /**
+   * Whether this field should disallow editing using the `read only` syntax in the default UI file.
+   */
+  @dsl(syntax="read only", flag=true, suffix=true)
+  declaredReadOnly: boolean
+
+  /**
+   * The expression by which the value of the field is retrieved from type, specified using the `value` syntax in
+   * the default UI file.
+   */
+  @dsl(syntax="value")
+  declaredValueExpr: string serialized Expr
+
+  /**
+   * The label for this field. This may be specified using the `label` syntax in the default UI file or will generated
+   * as a cleaned-up version of the field name.
+   *
+   * @see #declaredLabelExpr
+   */
+  label: cached property(): !string
+
+  /**
+   * The presentation order in the list of all fields. This may be specified using the `order` syntax in the default UI
+   * fileor will be generated based on declaration order of the field.
+   *
+   * @see #declaredOrder
+   */
+  order: cached property(): !int
+
+  /**
+   * If the fields should be presented in distinct groups, they can be organized into groups by name using the `group`
+   * syntax in the default UI file.
+   *
+   * @see #declaredGroupExpr
+   */
+  group: cached property(): string
+
+  /**
+   * Value type dependent format string for presentation. This may be specified using the `format` syntax in the default
+   * UI file.
+   *
+   * @see declaredFormatExpr
+   */
+  format: cached property(): string
+
+  /**
+   * The short description of this field, typically used as a tool tip. This is declared in the DSL file or extracted
+   * from the documentation of the field.
+   *
+   * @see declaredDescriptionExpr
+   */
+  description: cached property(): string
+
+  /**
+   * Whether this field should be suppressed in default UIs. This may be specified using the `order` syntax in the
+   * default UI file. Otherwise, private fields are hidden by default.
+   *
+   * @see #declaredHidden
+   */
+  hidden: cached property(): boolean
+
+  /**
+   * Whether this field should disallow editing in the default UIs. This may be specified using the `read only` syntax
+   * in the default UI file.
+   *
+   * @see #declaredReadOnly
+   */
+  readOnly: cached property(): boolean
+
+  /**
+   * The expression by which the value of the field is retrieved from type. This is specified using the `value` syntax
+   * in the default UI file or defaults to the same name as the UI field an expected to exist on the type.
+   *
+   * @see #declaredValueExpr
+   */
+  valueExpr: cached property(): !string serialized Expr
+
+  /**
+   * The field type corresponding to the _first_ element of the value expression for this field. If this is not a
+   * field in the corresponding type, there will be no field, however there will always be a #valueType.
+   *
+   * @see #valueExpr
+   * @see #leafFieldType
+   */
+  fieldType: cached property(): FieldType
+
+  /**
+   * The field type corresponding to the _last_ element of the value expression for this field. If this is not a simple
+   * path expression, there will be no field, however there will always be a #valueType.
+   *
+   * @see #valueExpr
+   * @see #fieldType
+   */
+  leafFieldType: cached property(): FieldType
+
+  /**
+   * The value type corresponding to the value expression for this field. Usually this is the same as the field type's
+   * value type when a UI field just exposes a type field.
+   *
+   * @see #valueExpr
+   */
+  valueType: cached property(): !ValueType
+
+  /**
+   * Get the TypeDefaultUi this belongs to.
+   */
+  parentUi: cached property(): !TypeDefaultUi java | js
+
+  toRef: ~ java | js
+}

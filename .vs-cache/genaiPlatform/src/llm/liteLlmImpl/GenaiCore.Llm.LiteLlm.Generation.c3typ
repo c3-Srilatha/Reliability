@@ -1,0 +1,44 @@
+
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Internal type that provides a unified implementation for both LiteLLM-backed embedding and completion models.
+ */
+private type GenaiCore.Llm.LiteLlm.Generation {
+  /**
+   * Executes a specific task using the LiteLLM-backed model.
+   *
+   * @param model
+   *        The model to use for the task.
+   * @param task
+   *        The enum of the task to be performed (e.g., GenaiCore.Llm.Task.WithAuthEnum.COMPLETION).
+   * @param args
+   *        A map containing input data and options, structured as:
+   *        {
+   *          "messages": data,
+   *          "options": options
+   *        }
+   * @returns
+   *        The result of executing the task using the LiteLLM runtime.
+   */
+  doTask: inline function(model: !GenaiCore.Llm.Model, task: !GenaiCore.Llm.Task.WithAuthEnum, args: !map<string, any>): !native py-litellm
+
+  /**
+   * Sends a request using the specified function and arguments, wrapped with a backoff based on retryable LiteLLM errors.
+   *
+   * @param func
+   *        The function to be executed with backoff within the LiteLLM environment.
+   * @param args
+   *        A key-value map of arguments required by the function.
+   * @returns
+   *        The result of the request execution using the LiteLLM runtime.
+   */
+  requestWithBackoff: inline function(func: !native, args: map<string, any>): !native py-litellm
+}

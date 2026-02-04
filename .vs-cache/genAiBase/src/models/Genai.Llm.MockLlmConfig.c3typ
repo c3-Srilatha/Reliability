@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Config to control the behavior of the mock LLM.
+ */
+type Genai.Llm.MockLlmConfig mixes Singleton, Config {
+  /**
+   * The path to the file where calls will be logged or from which they will be read depending on the value of
+   * the `mockLlmMode` property.
+   * If the mode is 'record', then the file at `callLogFilePath` will be created if it does not exist and will be
+   * appended to otherwise.
+   * NOTE: In order to allow appending, 'record' only supports local (to the server) files in the tmp directory.
+
+   *
+   * If the mode is 'playback', then the file at `callLogFilePath` must exist and have the results of previous
+   * 'record' mode runs.
+   * NOTE: During playback, if a call can not be found in the records, the mock LLM will throw an error and saved the unmatched
+   * call at "'/tmp/' + C3.pkg().name() + '/test/resource/mockLlmCallLog/' + filename + 'unmatched_calls.txt'".
+   */
+  callLogFilePath: string
+
+  /**
+   * The mode of the mock LLM. If set to `off`, the mock LLM will not be used.
+   *
+   * If set to `record`, the mock LLM will record all calls to the LLM and write them to the file specified by the
+   * `callLogFilePath` property.
+   *
+   * If set to `playback`, the mock LLM will read calls from the file specified by `callLogFilePath` and return
+   * them instead of calling the app-configured LLM.
+   */
+  mode: !string enum('off', 'record', 'playback') = 'off'
+
+  /**
+   * Validates that the current configuration is valid and throws an error if not. If the configuration is valid,
+   * returns the config instance.
+   */
+  validateConfig: inline function(): !Genai.Llm.MockLlmConfig js
+
+   /**
+    * Returns the path to the mock LLM config file for the given test and mode.
+    *       * record: "/tmp/ + C3.pkg().name() + /test/resource/mockLlmCallLog/ + filename + '.txt'"
+    *       * playback: "meta:// + C3.pkg().name() + /test/resource/mockLlmCallLog/ + filename + '.txt"
+    */
+  filePathForTest: private function(filename: !string,
+                                    mode: !string enum('record', 'playback')): !string js
+
+  /**
+   * Attempts to copy the test log file to the meta store (i.e. from the 'record' path to the one for 'playback').
+   * If you are synced to an env when you run this command it _should_ write the file to your local repo as well.
+   *
+   * If that does not work, then you will need to manually copy the file:
+   *      1. var sourcePath = "file://" + Genai.Llm.MockLlmConfig.filePathForTest(filename, "record")
+   *      2. copy(C3.FileSystem.fromUrlOrEncodedPath(sourcePath).makeFile(sourcePath).readString())
+   *      3. PASTE TO LOCAL REPO in Genai.Llm.MockLlmConfig.filePathForTest(filename, 'playback')
+   *      4. Check that it's readable:
+   *            var destPath = Genai.Llm.MockLlmConfig.filePathForTest(filename, 'playback');
+   *            C3.FileSystem.fromUrlOrEncodedPath(destPath).makeFile(destPath).readString()
+   */
+  copyTestLogToMetadataFile: private function(filename: !string) js-rhino
+}

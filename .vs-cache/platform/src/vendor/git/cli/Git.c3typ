@@ -1,0 +1,185 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This utility will help run git utility commands on a local directory for given cloned repository in that directory.
+ *  pass '--help' for `options` to get what possible options can be given to a particular command.
+ *  Options can be
+ *      ["--help"]
+ *  if option requires a value pass it an next element in the list. e.g for checkout ["-b", "testbranch"]
+ */
+type Git mixes Configurable<Git.Config>, Named {
+
+  /**
+   * The full name of the repository. i.e `owner/repo-name`
+   *
+   * @see Git.Config#repoUrl
+   */
+  name: !~
+
+  /**
+   * The GitHub repository url
+   *
+   * @see Git.Config#repoUrl
+   */
+  repoUrl: cached property(): !GitUrl
+
+  /**
+   * Return the local Directory path for the repository content.
+   * i.e `/usr/local/share/c3/git/env/app/<repository full name>`
+   *
+   * @see Git.Config#repoUrl
+   */
+  localDir: cached member function(): string
+
+  /**
+   * Clone repository to local directory from a given GitHub url and optional branch. If already cloned then
+   * simply return
+   */
+  clone: function(repoUrl: !string serialized GitUrl, branch: string, spec: Git.CloneSpec): !Git
+
+  /**
+   * Lookup instance of already cloned git repository by GitHub url or the full name of the branch.
+   */
+  forRepo: function(repoNameOrUrl: !string, failIfMissing: boolean): Git
+
+  /**
+   * Get the version of git command
+   */
+  version: cached member function(): string
+
+  /**
+   * Show help and options for all or a single git command
+   */
+  help: member function(command: string): string
+
+  /**
+   * Switch branches or restore working tree files
+   */
+  checkout: member function(branch: !string, options: string ...): string
+
+  /**
+   * List, create, or delete branches
+   */
+  branch: member function(branch: !string, options: string ...): string
+
+  /**
+   * Download objects and refs
+   */
+  fetch: member function(options: string ...): string
+
+  /**
+   * Fetch from and integrate with another repository or a local branch
+   */
+  pull: member function(options: string ...): string
+
+  /**
+   * Update remote refs along with associated objects
+   */
+  push: member function(options: string ...): string
+
+  /**
+   * Join two or more development histories together
+   */
+  merge: member function(options: string ...): string
+
+  /**
+   * Reapply commits on top of another base tip
+   */
+  rebase: member function(options: string ...): string
+
+  /**
+   * Show the working tree status
+   */
+  status: member function(options: string ...): string
+
+  /**
+   * Show commit logs
+   */
+  log: member function(options: string ...): string
+
+  /**
+   * Add file contents to the index
+   */
+  add: member function(options: string ...): string
+
+  /**
+   * Remove files from the working tree and from the index
+   */
+  restore: member function(options: string ...): string
+
+  /**
+   * Remove files from the working tree and from the index
+   */
+  rm: member function(options: string ...): string
+
+  /**
+   * Record changes to the repository
+   */
+  commit: member function(message: !string, options: string ...): string
+
+  /**
+   * Reset current HEAD to the specified state
+   */
+  reset: member function(options: string ...): string
+
+  /**
+   * Remove untracked files from the working tree
+   */
+  clean: member function(options: string ...): string
+
+  /**
+   * Apply the changes introduced by some existing commits
+   */
+  cherryPick: member function(sha: !string, options: string ...): string
+
+  /**
+   * Create a new commit that undoes the changes introduced by a previous commit
+   */
+  revert: member function(sha: !string, options: string ...): string
+
+  /**
+   * Stash the changes in a dirty working directory away
+   */
+  stash: member function(options: string ...): string
+
+  /**
+   * Create, list, delete or verify a tag object signed with GPG
+   */
+  tag: member function(options: string ...): string
+
+  /**
+   * Switch branches
+   */
+  switch: member function(options: string ...): string
+
+  /**
+   * Show changes between commits, commit and working tree, etc
+   */
+  diff: member function(options: string ...): string
+
+  /**
+   * Execute any git command
+   */
+  command: private member function(commandAndOptions: string ...): string
+
+  /**
+   * return current HEAD sha
+   */
+  commitSha: member function(): string
+
+  /**
+   * add remote branches to track. After shallow clones, this will help track other branches.
+   */
+  setBranches: member function(branchNames: string ...): string
+
+  /**
+   * return the remote name for this.
+   */
+  remoteName: cached member function(): string
+}

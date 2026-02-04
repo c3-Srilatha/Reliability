@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is intended to measure the performance of feature engineering in Python versus the performance of
+ * building the features using c3.ai metrics.
+ */
+// TODO: DATASCI-3443 Move files to the mlPerfTest package
+type MetricPerfTester mixes Value {
+
+  /**
+   * Method used to compare the performance of evaluating metrics on unnormalized data with fetching the data and perform the
+   * same feature engineering in python.
+   * @param metricDurationInDays
+   *           number of days of data to test the performance. The difference between start and end of the evaluation period.
+   * @param featureEngineeringFlag
+   *           whether or not to perform feature engineering during the testing.
+   * @param interval
+   *           the evaluation interval while evaluating c3 metric. This parameter will also be used to normalize dataset we get through python.
+   * @return PerfTime. The "c3Time" field is the amount of time taken (in nanoseconds) to train the model using C3;
+   *          the "pyTime" field is the amount of time taken (in nanoseconds) to train in pure Python.
+   */
+  timeMetricNormalizedData: function(metricDurationInDays: !int,
+                                     featureEngineeringFlag: !boolean,
+                                     interval: !string): PerfTime py
+
+  /**
+   * Method used to compare the performance of evaluating metrics on normalized data with fetching the data and perform the
+   * same feature engineering in python.
+   * @param metricDurationInDays
+   *           number of days of data to test the performance. The difference between start and end of the evaluation period.
+   * @param featureEngineeringFlag
+   *           whether or not to perform feature engineering during the testing.
+   * @param interval
+   *           the evaluation interval while evaluating c3 metric. This parameter will also be used to normalize dataset we get through python.
+   * @return PerfTime. The "c3Time" field is the amount of time taken (in nanoseconds) to train the model using C3;
+   *          the "pyTime" field is the amount of time taken (in nanoseconds) to train in pure Python.
+   */
+  timeMetricUnnormalizedData: function(metricDurationInDays: !int,
+                                       featureEngineeringFlag: !boolean,
+                                       interval: !string): PerfTime py
+}

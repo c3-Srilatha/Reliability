@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * IstanbulBranchMetadata is used by Istanbul coverage tool to map unique ids that are embedded into instrumented code representing
+ * branches, to the file locations in uninstrumented code. Used by {@link IstanbulCoverageFileResult}.
+ */
+type IstanbulBranchMetadata schema name 'ISTBRMETA' {
+
+  /**
+   * The type of the branch (e.g. "if" or "switch") used by the Istanbul code coverage tool
+   */
+  @ser(name='type')
+  branchType: string
+
+  /**
+   * Line of branch used by Istanbul.
+   */
+  line: int
+
+  /**
+   * Location of branch used by Istanbul.
+   */
+  loc: IstanbulCoverageLocation
+
+  /**
+   * Locations of each part of the branch used by Istanbul.
+   */
+  locations: [IstanbulCoverageLocation] schema suffix 'LOCS'
+}

@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Payload to be provided to {@link GenAiUiBasicRedirectEpic#getRedirectParams}
+ */
+@typeScript
+type GenAiUiBasicRedirectPayload {
+  /**
+   * The additional variables provided by the ReduxAction.  Generally used when the redirect is using a
+   * {@link UiSdlEffectPayloadForwarder#payloadStrategy} of MERGE
+   */
+  additionalParamVariables: [GenAiUiBasicRedirectParam]
+
+  /**
+   * The id of an optional {@link UiSdlApplicationState}.  Required if #applicationStateParamVariables are
+   * provided
+   */
+  applicationStateId: string
+
+  /**
+   * The params to derive from an optional {@link UiSdlApplicationState}.  Must have an #applicationStateId.
+   * {@see UiSdlApplicationState.getConfigFromApplicationState}
+   */
+  applicationStateParamVariables: [GenAiUiBasicRedirectApplicationStateParam]
+
+  /**
+   * Whether or not to use the {@link GenAiUiBasicRedirectEpic} or not.  When true this will resolve the url and use
+   * `window.location.href = ${url}`
+   */
+  browserRedirect: boolean = false
+
+  /**
+   * When true this will resolve the url and use `window.open(${url})`
+   */
+  openInNewTab: boolean = false
+
+  /**
+   * The params for the {@link UiSdlRoute} if required.  These should be in the already resolved format
+   * `{key: value}` where the key is part of the target route.
+   * example `"users/{{id}}" {id: '123'}`
+   */
+  routeParams: map<string, string>
+
+
+  /**
+   * The params to derive from the {@link UiSdlReduxState}.
+   * {@see UiSdlConnected#getPageParamFromState}
+   */
+  statePageParamVariables: [GenAiUiBasicRedirectParam]
+
+  /**
+   * The name of the {@link UiSdlRoute#targetModuleName} to redirect to.  Used to find the {@link UiSdlRoute}
+   */
+  targetModuleName: string
+
+  /**
+   * The name of the {@link UiSdlRoute#targetPageName} to redirect to.  Used to find the {@link UiSdlRoute}
+   */
+  targetPageName: string
+
+  /**
+   * The url to redirect to.  This will be used instead of by finding the {@link UiSdlRoute} from the
+   * #targetModuleName and #targetPageName
+   */
+  url: string
+}

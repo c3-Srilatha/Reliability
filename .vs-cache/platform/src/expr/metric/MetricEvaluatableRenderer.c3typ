@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Render the objects available for a source object to HTML.
+ */
+type MetricEvaluatableRenderer mixes HtmlRenderer {
+
+  m_source: private MetricEvaluatable
+  create:   inline function(arg: !MetricEvaluatable) js-client
+
+  /**
+   * Get the list of "sets" of metrics, which are logical groups the user might care about.
+   */
+  metricSets: inline function(): [string] js
+
+  /**
+   * Get all possible metrics for the specified type, for the given metric set.
+   */
+  listMetrics: inline function(type: !Type, set: string): [string]
+
+  menuTitle: inline ~ js-client
+  title:     ~ js-client
+  render:    ~ js-client
+  dispose:   ~ js-client
+}

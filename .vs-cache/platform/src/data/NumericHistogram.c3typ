@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Histogram for numerical data.
+ */
+type NumericHistogram mixes Histogram<number, NumericHistogram, HistogramBuilder<NumericHistogram>> {
+
+  /**
+   * Mean of all the points in the histogram.
+   */
+  mean: member function(): !double
+
+  /**
+   * Stddev of all the points in the histogram
+   */
+  stddev: member function(): !double
+
+  /**
+   * Median of all the data points in the histogram
+   */
+  median: member function(): !double
+
+  /**
+   * Compute the Earth mover's distance between this NumericHistogram and another NumericHistogram. Earth mover's
+   * distance is a similarity measurement between two distributions. The smaller the distance, the more similar
+   * the distributions are.
+   * @see https://en.wikipedia.org/wiki/Earth_mover%27s_distance
+   */
+  earthMoversDistance: member function(other: !NumericHistogram): !double
+
+  /**
+   * Compute the cumulative distribution function of this histogram, which is equivalent to the cumulative sum of the
+   * bin percentages. If a bins parameter is provided, the histogram distribution will be mapped onto the provided bins,
+   * over which the cdf will be calculated. (The histogram itself is not changed by this operation). These bins MUST
+   * strictly cover the full range of values of the histogram. If bins are not provided, then the cdf will be
+   * calculated over the histogram's natural bins.
+   */
+  cdf: member function(bins: Array<HistogramBin<number>>): !Array<double>
+}

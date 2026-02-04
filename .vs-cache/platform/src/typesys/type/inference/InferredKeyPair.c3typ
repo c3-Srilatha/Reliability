@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single inferred Primary Key-Foreign Key relationship.
+ * @see ForeignKeyInferrer
+ * @see InferForeignKeyResult
+ */
+type InferredKeyPair mixes Result {
+
+  /**
+   * Name of the table which the primary key candidate column is from.
+   */
+  pkTableName: !string
+
+  /**
+   * Name of the table which the foreign key candidate column is from.
+   */
+  fkTableName: !string
+
+  /**
+   * Name of the primary key column.
+   */
+  pkColumn: !string
+
+  /**
+   * Name of the foreign key column. Column names are sourced from the keys of ObjDigest.fieldStats().
+   */
+  fkColumn: !string
+
+  /**
+   * Earth Mover's Distance between the histograms of the primary and foreign key columns. This is an indication of how
+   * good of a candidate this pair is; the lower the number, the more likely the relationship. This field may not behave
+   * well for small amounts of data (< 1000). For String columns, this will be null.
+   * @see NumericHistogram
+   */
+  earthMoversDistance: double
+}

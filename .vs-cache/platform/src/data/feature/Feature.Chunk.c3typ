@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contains data for a timeRange. This is used by @{link Feature.Chunk.DfBldr} to build the "chunked dataframe" from the
+ * {@link Feature.Store.Block}s.
+ */
+inline private type Feature.Chunk mixes TimeRange {
+
+  /**
+   * Contains actual data for the {@link #start} and {@link #end}
+   */
+  data: ![Data.Column]
+
+  /**
+   * Create new instances from the current instance based on the provided **timeRanges**.
+   * 1. If the chunk does not have a {@link Feature.TIMESTAMP} column, then input `keep` won't be used and the original chunk will be returned as is.
+   * 2. For chunks having {@link Feature.TIMESTAMP} column, if the input timeRanges are outside the "chunk" timeRange, then they will be ignored. So, you may expect that the input timeRange count does not match the output Feature.Chunk count.
+   * 3. For chunks having {@link Feature.TIMESTAMP} column, if there is a "partial" overlap between the input timeRange and chunk timeRange, then only the data present in the chunk will be returned.
+   */
+  split: member function(keep: ![!TimeRange]): [Feature.Chunk]
+}

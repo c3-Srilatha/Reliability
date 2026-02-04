@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Annotation to assist in the transformation from UiComponent to React Component props.
+ * If specified on a function, the function will be passed along as a prop value (essentially treated as a lambda)
+ */
+@annotation(appliesTo=['field', 'function'])
+type Ann.React mixes Annotation {
+
+  /**
+   * If specified, uses the annotation value as the React Component prop field name, rather than the c3 type field or
+   * function name.
+   */
+  prop: string
+
+  /**
+   * When set on a field, the field will be skipped when converting the field to props
+   */
+  skipToReactProps: boolean
+
+  /**
+   * When set on a field in a type, if that type is annotated with @react(componentReference = true) in another type,
+   * this annotation allows the field value on that instance to take priority over the received componentReference
+   * props. The field value will not be merged over from the received props.
+   * Ex: {@link ConsoleKendoGrid.RowIndexHeaderCell#onClick} Our custom logic in ConsoleKendoGrid.RowIndexHeaderCell.js
+   * attaches a UiReactMouse.Click event handler which will then get converted to `onClick` prop.
+   * {@link KendoGridColumnProps.headerCell} is annotated with `@react(componentReference=true)`. When Kendo supplies
+   * props to the React component type instance, it will also supply an `onClick` handler. The handler defined in
+   * ConsoleKendoGrid.RowIndexHeaderCell.js should always prevail, thus the usage of this annotation to indicate that
+   * the props generated from the UiComponent instance should not be overridden should a collision happen when it is
+   * used on a field that is annotated with `@react(componentReference=true)`.
+   */
+  skipComponentReferenceMerge: boolean
+
+  /*
+   * This annotation should be used for fields/props that require a React component type reference, as opposed to a
+   * React component instance. This should only be specified on fields where the value type is a {@link UiComponent}
+   * or a collection of UiComponents.
+   * If specified as `true`, when the parent component is converted to its react props, the value of the field will not
+   * be converted to a React element, instead its value will be set as an anonymous React Component reference
+   * that is created on the fly.
+   */
+  componentReference: boolean
+
+  /*
+   * Some React components requires their child components to be of a specific react component type instance.
+   * e.g. KendoGrid requires its immediate children to be KendoGridColumn. By default all UiComponents are rendered as
+   * instances of a `HOCForC3Class`component to assist in re-rendering.
+   * This annotation should only be specified on fields where the value type is a {@link UiComponent} or a collection of
+   * UiComponents. If specified as `true`, the created React component(s) associated to the value of the field will not
+   * be wrapped in the `HOCForC3Class`component.
+   */
+  skipHOCWrapper: boolean
+}

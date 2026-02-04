@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all application issues across queues, jobs, actions, and data.
+ * Provides common fields and methods for issue tracking, categorization, and resolution.
+ *
+ * Categories are extensible - applications can define their own. Common platform categories
+ * include: 'queues', 'jobs', 'async-actions', 'data'.
+ *
+ * Issues are stored in 'system' domain for option to enable:
+ * - Centralized access e.g. from Studio for cross-app analytics
+ * - Availability even when individual apps are down
+ * - System-level monitoring and alerting
+ *
+ * Note that by default `system` domain is hosted by the App and ACL for Issues is not enabled.
+ *
+ * In order to store Issues in a remote system db first configure the Db.Domain to point to a remote app then
+ * enable Access Control by creating:
+ *
+ * 1. `AclPrivilege` record:
+ *    ```json
+ *    {
+ *      "id": "App.Issue_AclPrivilege",
+ *      "typeName": "App.Issue",
+ *      "canUpdate": "true",
+ *      "canRemove": "true",
+ *      "canModifyAcl": "true",
+ *      "acl": { "expr": "_context.appId" }
+ *    }
+ *    ```
+ *
+ * 2. 'EnableAclPrivilege' record:
+ *    ```json
+ *    {
+ *      "id": "App.Issue_EnableAclPrivilege",
+ *      "enabled": true,
+ *      "typeName": "App.Issue"
+ *    }
+ *    ```
+ *
+ * See {@link AclEnabled} for more details on access control configuration.
+ */
+@db(systemType=true, domain='system', index+=['category, subcategory', 'targetType'])
+extendable entity type App.Issue mixes App.Issue.Dimensions, AclEnabled type key 'ISSUE' {
+
+  /**
+   * Human-readable summary of the message describing the issue.
+   */
+  summary: string
+
+  /**
+   * Message produced by the system for this issue, should contain all the details, like error messages and call-stacks.
+   */
+  message: string
+
+  /**
+   * Timestamp when the issue was created or last updated.
+   * Useful for tracking issue history and age.
+   */
+  timestamp: datetime = now()
+
+  /**
+   * Gets a list and summary of issues grouped by dimensional attributes.
+   */
+  list: function(groupBy: string = 'category, subcategory, severity'): [App.Issue.List]
+
+  /**
+   * Attempts to recover from this issue. Behavior is subtype-specific:
+   * - Data issues: Revalidates whether problem still exists (passive check)
+   * - Queue issues: Retries failed entries (active retry)
+   * - Job issues: Restarts failed jobs (active restart)
+   *
+   * If recovery succeeds, the issue is typically removed from the database.
+   * If recovery fails, the issue persists.
+   */
+  recover: final member function()
+
+  /**
+   * Attempts to recover from multiple issues matching the filter.
+   * Calls {@link #recover} on each matching issue.
+   *
+   * @param filter
+   *          Optional filter to select which issues to recover. If null, recovers all.
+   */
+  recoverAll: final function(filter: Filter)
+
+  /**
+   * Subtype-specific recovery implementation.
+   * Called by {@link #recover} to perform the actual recovery logic.
+   *
+   * Optional - not all issue types support recovery.
+   */
+  doRecover: private optional member function()
+}

@@ -1,0 +1,755 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A persisted Machine Learning model that can be used to generate ML predictions.
+ *
+ * A `MlModel` associates a pipeline with the {@link Feature.Set feature sets} required to generate the input data for
+ * the pipeline.
+ * To ensure traceability, models are _immutable_: it is not possible to change the underlying pipeline or the
+ * feature sets once the model is persisted in the database.
+ *
+ * Models can be {@link train trained} and {@link process processed} to generate predictions.
+ * They can also be {@link deploy deployed} on a population of {@link MlSubject subjects}.
+ * Once a model is deployed, it is possible to use it to generate predictions for those subjects by invoking
+ * {@link MlSubject#process} or starting a {@link MlSubject#processBatch prediction job}.
+ * A model operates at a higher level of abstraction than a {@link MlPipeline}: it does not directly accept
+ * {@link Data} as an input, but it generates the necessary data based on the {@link MlSubject subjects} and the
+ * time range on which the predictions are made.
+ *
+ * The status of a deployed model is held by a {@link MlModel.Route}; that status can be updated (for example to
+ * promote a model to "CHAMPION" or on the contrary to "retire" the model and stop using it).
+ *
+ * @see MlSubject
+ * @see MlProject
+ * @see MlModel.Route
+ */
+@db(createOnly=true, index+=['name'])
+extendable entity type MlModel mixes WithMlProject, SeedData type key 'MLM' {
+
+  /**
+   * Name of this model.
+   */
+  name: string = id
+
+  /**
+   * The underlying pipeline used by the model.
+   *
+   * It must be {@link MlPipeline#isTrainable trainable} if the model is to be trained,
+   * or {@link MlPipeline#isProcessable processable} if the model is to be directly deployed and used to serve
+   * predictions.
+   */
+  pipeline: !MlPipeline
+
+  /**
+   * The underlying {@link #pipeline} will skip creating a new {@link Workflow} if one is provided for the list of
+   * operations. Note that if the workflow has been specified for a particular operation, it will take precedence over
+   * the {@link MlOperationSpec#workflowOverride} specified in {@link #operationSpec} for the operation.
+   */
+  workflowOverrides: private map<MlDataOpName, Workflow>
+
+  /**
+   * For internal use: consolidates {@link #xFeatures} and {@link #yFeatures} into a single array.
+   * This is populated automatically by {@link #beforeCreate}.
+   */
+  features: private [Feature.Set]
+
+  /**
+   * Map of {@link pipeline} `x` inputs names to corresponding {@link Feature.Set sets} of features.
+   * The keys of the map must be a subset of the names of the "x" inputs of the pipeline.
+   *
+   * @see Feature
+   */
+  xFeatures: map<string, Feature.Set>
+
+  /**
+   * Map of {@link pipeline} `y` inputs names to corresponding {@link Feature.Set sets} of features.
+   * The keys of the map must be a subset of the names of the "y" inputs of the pipeline.
+   *
+   * @see Feature
+   */
+  yFeatures: map<string, Feature.Set>
+
+  /**
+   * Map of {@link EvalFeatureSpec#projection} for {@link #xFeatures}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#xFeatures}.
+   * The values of this map are comma-separated feature names to evaluate.
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3',
+   * if we want to evaluate only the feature 'f1' and 'f2', we can use either "f1, f2" or "metricFs.f1, metricFs.f2".
+   * If this field is set, projections will be applied to all operations on this model.
+   */
+  xProjections: private map<string, string>
+
+  /**
+   * Map of {@link EvalFeatureSpec#projection} for {@link #yFeatures}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#yFeatures}.
+   * The values of this map are comma-separated feature names to evaluate.
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3',
+   * if we want to evaluate only the feature 'f1' and 'f2', we can use either "f1, f2" or "metricFs.f1, metricFs.f2".
+   * If this field is set, projections will be applied to all operations on this model.
+   */
+  yProjections: private map<string, string>
+
+  /**
+   * {@link Feature.Set.Snapshot snapshot} that captures #xFeatures and #yFeatures during #train if snapshotId is provided
+   * see also #train
+   */
+  @deprecated(details="Replaced with xSnapshots and ySnapshots")
+  snapshot: Feature.Set.Snapshot
+
+  /**
+   * For internal use: consolidates {@link #xSnapshots} and {@link #ySnapshots} into a single array.
+   * This is populated automatically by {@link #beforeCreate}.
+   */
+  snapshots: private [Feature.Set.Snapshot]
+
+  /**
+   * Map of {@link MlModel} `x` inputs names to corresponding {@link Feature.Set.Snapshot}s.
+   * The keys of this map must be same or subset of keys of {@link MlModel#xFeatures}.
+   * If {@link MlOperationSpec#xSnapshotIds} is provided, then this field is populated after {@link #train}.
+   * see {@link MlModel#train}
+   */
+  xSnapshots: map<string, Feature.Set.Snapshot>
+
+  /**
+   * Map of {@link MlModel} `y` inputs names to corresponding {@link Feature.Set.Snapshot}s.
+   * The keys of this map must be same or subset of keys of {@link MlModel#yFeatures}.
+   * If {@link MlOperationSpec#ySnapshotIds} is provided, then this field is populated after {@link #train}.
+   * see {@link MlModel#train}
+   */
+  ySnapshots: map<string, Feature.Set.Snapshot>
+
+  /**
+   * {@link MlModel.Input} that captures the inputs used for {@link MlModel#train}.
+   */
+  trainInput: MlModel.Input
+
+  /**
+   * Foreign key reference to a list of all {@link MlModel.Evaluation.Result} for this {@link MlModel}.
+   */
+  evaluationResults: [MlModel.Evaluation.Result](model)
+
+  /**
+   * Foreign key reference to a list of all {@link MlModel.Monitor.TimedResult} for this {@link MlModel}.
+   */
+  monitorResults: [MlModel.Monitor.TimedResult](parent.model)
+
+  /**
+   * Foreign key reference to the health history of this {@link MlModel}.
+   */
+  @db(order='descending(timestamp)')
+  healthHistory: [MlModel.Health.History](parent)
+
+  /**
+   * Construct an instance of {@link MlModel} from the given parameters.
+   *
+   * @param project
+   *    Instance of {@link MlProject} to be associated with the {@link MlModel}
+   * @param pipeline
+   *    The {@link MlPipeline} to be used by the model
+   * @param x
+   *    Map of {@link MlPipeline} x input names to corresponding {@link Feature.Set sets} of features.
+   *    Can be set to {@link Feature.Set} if there is only one x input to {@link MlPipeline}
+   * @param y
+   *    Map of {@link MlPipeline} y input names to corresponding {@link Feature.Set sets} of features.
+   *    Can be set to {@link Feature.Set} if there is only one y input to {@link MlPipeline}
+   * @param id
+   *    Optional id to upsert the {@link MlModel} with. If no id is provided, DB generated id is used.
+   *
+   * @return a {@link MlModel} constructed from the given parameters
+   */
+  createModel: function(project: !MlProject,
+                        pipeline: !MlPipeline,
+                        x: map<string, Feature.Set> | Feature.Set,
+                        y: map<string, Feature.Set> | Feature.Set,
+                        id: string): !mixing MlModel
+
+  /**
+   * Deploy a model on a group of {@link MlSubject subjects} (the type of the subjects is determined by the
+   * {@link #project}).
+   *
+   * During this operation, a {@link MlModel.Route} is created and handled by the {@link MlProject#router router}
+   * associated with the {@link project} of the model.
+   * The status of the route is {@link MlModel.Route.Status.Label#CANDIDATE CANDIDATE}.
+   * To promote or retire the model, use {@link MlModel.Route#updateStatus}.
+   *
+   * ```py
+   * project = c3.MlProject(subjectType=c3.WindTurbine)
+   * model = c3.MlModel(project=project, ...)
+   * # deploy the model on all wind turbines located in France
+   * route = model.deploy({"subjectFilter": "country == 'FRA'"})
+   * # deploy the model on all wind turbines
+   * route = model.deploy()
+   * ```
+   *
+   * @param spec
+   *    configuration of the deployment; in particular {@link MlModel.DeploySpec#subjectFilter} defines the subjects
+   *    on which the model is deployed.
+   *
+   * @return a model route defined on the subjects specified in the spec and pointing to the model
+   *
+   * @see MlModel.Route#updateStatus
+   */
+  // TODO PLAT-45688 - allow to deploy with a custom status
+  @dependency(include="this, project.this, project.router.this")
+  deploy: member function(spec: MlModel.DeploySpec): !MlModel.Route
+
+  /**
+   * Batched version of {@link MlModel#deploy}.
+   *
+   * @param batches
+   *     List of {@link MlModel.DeployBatch} to deploy.
+   * @return the id corresponding to the group of {@link MlModel.Route} created by this batch
+   *     API. This id is a convenience that can be used in subsequent operations that need to be performed on the entire group.
+   *     For example, see {@link MlModel.Route#updateStatusBatch}.
+   *     NOTE: each {@link MlModel.DeployBatch} can produce one or more {@link MlModel.Route}, so the size of the group is not
+   *     necessarily equal to the size of the input.
+   */
+  deployBatch: function(batches: ![MlModel.DeployBatch]): !string
+
+  /**
+   * Computes the final evaluation spec to be used for feature set evaluation ({@link #evaluateFeaturesHelper}).
+   * See {@link #evaluateFeatures} for information on parameters.
+   *
+   * @return map of x name (or y name) to {@link EvalFeatureSpec} for that featureSet.
+   */
+  evaluationSpecHelper: private inline member function(subjects: !(string | [MlSubject]),
+                                                       operation: !MlDataOpName,
+                                                       featureSets: map<string, Feature.Set>,
+                                                       start: datetime,
+                                                       end: datetime,
+                                                       snapshotId: string | map<string, string>,
+                                                       isX: boolean): !map<string, EvalFeatureSpec>
+
+  /**
+   * Performs feature set evaluation based on the given parameters.
+   * See {@link #evaluateFeatures} for information on parameters.
+   * NOTE: `evalSpec` parameter is expected to come from {@link #evaluationSpecHelper}.
+   *
+   * @return map of {@link Data} corresponding to featureSets input map, casted to the pipeline's input type
+   */
+  evaluateFeaturesHelper: private inline member function(subjectType: !Type,
+                                                         subjects: !(string | [MlSubject]),
+                                                         featureSets: map<string, Feature.Set>,
+                                                         isX: boolean,
+                                                         evalSpec: map<string, EvalFeatureSpec>): !any
+
+  /**
+   * Evaluates features required for {@link MlModel} operations and casts to pipeline input type
+   *
+   * @param subjectType
+   *    {@link MlSubject} type associated with this model.
+   * @param featureSets
+   *    {@link MlModel#xFeatures} or {@link MlModel#yFeatures}.
+   * @param subjects
+   *    List of subjects to evaluate on or a subject filter.
+   * @param operation
+   *    {@link MlDataOpName} representing train, process, interpret or score operation for which features
+   *     need to be evaluated.
+   * @param start
+   *    Start date for evaluating features.
+   * @param end
+   *    End date for evaluating features.
+   * @param snapshotId
+   *    Identifier for feature snapshots for evaluation.
+   *    Providing a `string` to `snapshotId` is deprecated, only {@link Map} is supported for execution.
+   *    snapshotId is one of {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds}.
+   * @param isX
+   *    Determines whether to use x or y parametrization on the pipeline to do the cast.
+   * @return map of {@link Data} corresponding to featureSets input map, casted to the pipeline's input type
+   */
+  @dependency(include="this")
+  evaluateFeatures: private member function(subjectType: !Type,
+                                            subjects: !(string | [MlSubject]),
+                                            operation: !MlDataOpName,
+                                            featureSets: map<string, Feature.Set>,
+                                            start: datetime,
+                                            end: datetime,
+                                            snapshotId: string | map<string, string>,
+                                            isX: boolean): !any
+
+  /**
+   * Calculates {@link EvalFeatureSpec} for evaluating features for {@link MlModel} operations.
+   * Default implementation uses input start and end for all {@link EvalFeatureSpec}s across all operations.
+   * Note that {@link EvalFeatureSpec} is calculated per input featureSet.
+   *
+   * @param subjects
+   *    List of subjects to evaluate on or a subject filter.
+   * @param operation
+   *    {@link MlDataOpName} representing train, process, interpret or score operation.
+   * @param featureSets
+   *    {@link MlModel#xFeatures} or {@link MlModel#yFeatures}.
+   * @param start
+   *    Optional start of predictions/interpretations (if applicable).
+   * @param end
+   *    Optional start of predictions/interpretations (if applicable).
+   * @param snapshotId
+   *    Identifier for feature snapshots for evaluation.
+   *    Providing a `string` to `snapshotId` is deprecated, only {@link Map} is supported for execution.
+   *    snapshotId is one of {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds}.
+   * @param isX
+   *    Determines if start and end date are calculated for {@link MlModel#xFeatures} or {@link MlModel#yFeatures}.
+   * @returns a map of {@link EvalFeatureSpec} for each of the featureSets.
+   *    key is name of featureSet. Value is {@link EvalFeatureSpec} for that featureSet.
+   */
+  @dependency(include="this")
+  evaluationSpec: member function(subjects: !(string | [MlSubject]),
+                                  operation: !MlDataOpName,
+                                  featureSets: map<string, Feature.Set>,
+                                  start: datetime,
+                                  end: datetime,
+                                  snapshotId: string | map<string, string>,
+                                  isX: boolean): !map<string, EvalFeatureSpec>
+
+  /**
+   * Precompute the workflow for the given {@link MlDataOpName}.
+   */
+  precompute: member function(operation: !MlDataOpName, spec: MlOperationSpec): !mixing MlModel py
+
+  /**
+   * Constructs a wrapper {@link MlPipeline} from the input {@link MlPipeline} for the given operations,
+   * and starts the execution of the wrapper {@link MlPipeline}.
+   * @param pipeline
+   *    {@link MlPipeline} to be executed.
+   * @param operations
+   *    List of {@link MlDataOpName} representing train, process, interpret or score operation.
+   * @param xData
+   *    X input for MlPipeline operations.
+   * @param yData
+   *    Y input for MlPipeline operations.
+   * @param spec
+   *    Optional {@link MlOperationSpec} that will be passed to all {@link MlPipeline} operations.
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * The expected sample format `xData`, `yData` and invoking `startPipelineOperations` is as follows:
+   * ```py
+   *   xData = [[[c3.MlDataOpName.TRAIN, c3.MlDataOpName.SCORE], x_data_for_train],
+   *            [[c3.MlDataOpName.PROCESS], x_data_for_process]]]
+   *   yData = [[[c3.MlDataOpName.TRAIN, c3.MlDataOpName.SCORE], y_data_for_train]]
+   *   operations = [c3.MlDataOpName.TRAIN, c3.MlDataOpName.SCORE, c3.MlDataOpName.PROCESS]
+   *  operation_run = c3.MlModel.startPipelineOperations(pipeline, operations, xData, yData, spec)
+   * ```
+   */
+  @beta
+  startPipelineOperations: private function(pipeline: !MlPipeline,
+                                            operations: ![MlDataOpName],
+                                            xData: ![![any]],
+                                            yData: [[any]],
+                                            spec: MlOperationSpec): !MlOperationRun<any> py
+
+  /**
+   * Asynchronously train {@link #pipeline} and return {@link MlModel.OperationRun} that will hold new {@link MlModel}
+   * with trained pipe. Input arguments to this API are captured in trained {@link MlModel} as {@link MlModel#trainInput},
+   * except for list of {@link MlSubject}s.
+   * See {@link MlModel.Input} for more information on how to capture list of subjects.
+   *
+   * Usage:
+   * ```py
+   * operation_run = model.train(subjects=[wind_turbine_1, wind_turbine_2], start="2021-01-01", end="2021-02-01")
+   * trained_model = operation_run.result()
+   * ```
+   *
+   * @param subjects
+   *    List of subjects to train on.
+   * @param start
+   *    Start date which would be used to evaluate {@link xFeatures} and {@link yFeatures} features.
+   * @param end
+   *    End date for evaluating features. Same as for start param.
+   * @param spec
+   *    Optional {@link MlOperationSpec} that will be passed to {@link MlPipeline#train}.
+   *    {@link MlOperationSpec#executorSpec} will be used to as parameter to {@link Workflow}
+   *    that asynchronously executes {@link MlPipeline#train}. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists. No {@link Feature.Set.Snapshot} will be created during `train`.
+   *    If {@link MlOperationSpec#scoreMlModel} is set, then the trained {@link MlModel} will be scored using
+   *    training {@link xFeatures} and {@link yFeatures}, and {@link MlModel#trainScores} will be set.
+   *
+   * @return {@link MlModel.OperationRun} that wraps copy of {@link MlModel} with new id and trained {@link pipeline}.
+   *         If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds}
+   *         are provided, a new {@link MlModel} with attached {@link Feature.Set.Snapshot}s is
+   *         created and attached to {@link MlModel.OperationRun}.
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, yFeatures.this, pipeline.this")
+  train: member function(subjects: ![MlSubject],
+                         start: datetime,
+                         end: datetime,
+                         spec: MlOperationSpec): !MlModel.OperationRun
+
+  /**
+   * Asynchronously train {@link #pipeline} and return {@link MlModel.OperationRun} that will hold new {@link MlModel}
+   * with trained pipe. Input arguments to this API are captured in trained {@link MlModel} as {@link MlModel#trainInput}.
+   *
+   * Usage:
+   * ```py
+   * operation_run = model.train(subjectFilter="blades == 3", start="2021-01-01", end="2021-02-01")
+   * trained_model = operation_run.result()
+   * ```
+   *
+   * @param subjectFilter
+   *    Filter to select the subjects used for training.
+   * @param start
+   *    Start date which would be used to evaluate {@link xFeatures} and {@link yFeatures} features.
+   * @param end
+   *    End date for evaluating features. Same as for start param.
+   * @param spec
+   *    Optional {@link MlOperationSpec} that will be passed to {@link MlPipeline#train}.
+   *    {@link MlOperationSpec#executorSpec} will be used to as parameter to {@link Workflow}
+   *    that asynchronously executes {@link MlPipeline#train}. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists. No {@link Feature.Set.Snapshot} will be created during `train`.
+   *    If {@link MlOperationSpec#scoreMlModel} is set, then the trained {@link MlModel} will be scored using
+   *    training {@link xFeatures} and {@link yFeatures}, and {@link MlModel#trainScores} will be set.
+   *
+   * @return {@link MlModel.OperationRun} that wraps copy of {@link MlModel} with new id and trained {@link pipeline}.
+   *         If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds}
+   *         are provided, a new {@link MlModel} with attached {@link Feature.Set.Snapshot}s is
+   *         created and attached to {@link MlModel.OperationRun}.
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, yFeatures.this, pipeline.this")
+  train: member function(subjectFilter: !string,
+                         start: datetime,
+                         end: datetime,
+                         spec: MlOperationSpec): !MlModel.OperationRun
+
+  /**
+   * @return true when the model is trained, i.e. when the {@link pipeline} is trained.
+   */
+  @dependency(include="pipeline.this")
+  isTrained: member function(): !boolean
+
+  /**
+   * Asynchronously compute predictions for the provided list of subjects and (optional) time range.
+   * To make the execution blocking and wait for the result, call {@link MlOperationRun#result result()}
+   * on the value returned by this function.
+   *
+   * Usage:
+   * ```py
+   * predictions = model.process(subjects=[wind_turbine_1, wind_turbine_2], start="2022-01-01", end="2022-02-01").result()
+   * ```
+   *
+   * @param subjects
+   *    List of subjects to process
+   * @param start
+   *    Optional start of predictions (if applicable)
+   * @param end
+   *    Optional end of predictions (if applicable)
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * @see MlPipeline#process
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, pipeline.this")
+  process: member function(subjects: ![MlSubject],
+                           start: datetime,
+                           end: datetime,
+                           spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * Asynchronously compute predictions for the subjects that meet the filter criteria and (optional) time range.
+   * To make the execution blocking and wait for the result, call {@link MlOperationRun#result result()}
+   * on the value returned by this function.
+   *
+   * Usage:
+   * ```py
+   * predictions = model.process(subjectFilter="blades == 3", start="2022-01-01", end="2022-02-01").result()
+   * ```
+   *
+   * @param subjectFilter
+   *    Filter to select the subjects to process
+   * @param start
+   *    Optional start of predictions (if applicable)
+   * @param end
+   *    Optional end of predictions (if applicable)
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * @see MlPipeline#process
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, pipeline.this")
+  process: member function(subjectFilter: !string,
+                           start: datetime,
+                           end: datetime,
+                           spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * Compute and handle predictions for the provided map of route ids with respective subjects, and (optional) time range,
+   * Used by {@link MlSubject.Process} and {@link MlSubject.StartProcessJob}.
+   * @param operation
+   *    Name of operation to perform.
+   * @param subjectsPerRoute
+   *    A map of {@link MlModel.Route#id} to a list of corresponding {@link MlSubject}s served by route.
+   * @param start
+   *    Optional start of interpret operation (if applicable)
+   * @param end
+   *    Optional end of interpret operation (if applicable)
+   * @param operationTimeoutMinutes
+   *    Optional timeout for the operation
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlModel.HandleOutputResult}.
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, pipeline.this")
+  doOperationAndHandle: private member function(operation: !MlDataOpName,
+                                                subjectsPerRoute: !map<string, [MlSubject]>,
+                                                start: datetime,
+                                                end: datetime,
+                                                operationTimeoutMinutes: int,
+                                                spec: MlOperationSpec): !MlModel.HandleOutputResult
+
+  /**
+   * Compute interpretations and predictions for the provided list of subjects and (optional) time range.
+   * This function is asynchronous. To block the thread to wait for the result, call
+   * {@link MlOperationRun#result result()} on the returned value.
+   *
+   * Usage:
+   * ```py
+   * interpreter_result = model.interpret(subjects=[wind_turbine_1, wind_turbine_2], start="2022-01-01", end="2022-02-01").result()
+   * interpretations = interpreter_result['interpret_out'].interpretations
+   * predictions = interpreter_result['interpret_out'].processOutput
+   * ```
+   *
+   * @param subjects
+   *    List of subjects to invoke interpret operation
+   * @param start
+   *    Optional start of interpret operation (if applicable)
+   * @param end
+   *    Optional end of interpret operation (if applicable)
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * @see MlPipeline#interpret
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, pipeline.this")
+  interpret: member function(subjects: ![MlSubject],
+                             start: datetime,
+                             end: datetime,
+                             spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * Compute interpretations and predictions for the provided list of subjects and (optional) time range.
+   * This function is asynchronous. To block the thread to wait for the result, call
+   * {@link MlOperationRun#result result()} on the returned value.
+   *
+   * Usage:
+   * ```py
+   * interpreter_result = model.interpret(subjects=[wind_turbine_1, wind_turbine_2], start="2022-01-01", end="2022-02-01").result()
+   * interpretations = interpreter_result['interpret_out'].interpretations
+   * predictions = interpreter_result['interpret_out'].processOutput
+   * ```
+   *
+   * @param subjectFilter
+   *    Filter to select the subjects for which to invoke the interpret operation.
+   * @param start
+   *    Optional start of interpret operation (if applicable)
+   * @param end
+   *    Optional end of interpret operation (if applicable)
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * @see MlPipeline#interpret
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, pipeline.this")
+  interpret: member function(subjectFilter: !string,
+                             start: datetime,
+                             end: datetime,
+                             spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * Asynchronously score {@link #pipeline} for the given list of subjects.
+   *
+   * Usage:
+   * ```py
+   * operation_run = model.score(subjects=[wind_turbine_1, wind_turbine_2], start="2021-01-01", end="2021-02-01")
+   * model_scores = operation_run.result()
+   * ```
+   *
+   * @param subjects
+   *    List of subjects to score on.
+   * @param start
+   *    Optional start of score operation (if applicable)
+   * @param end
+   *    Optional end of score operation (if applicable)
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * @see MlPipeline#score.
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, yFeatures.this, pipeline.this")
+  score: member function(subjects: ![MlSubject],
+                         start: datetime,
+                         end: datetime,
+                         spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * Asynchronously score {@link #pipeline} for the subjects matching the provided subject filter.
+   *
+   * Usage:
+   * ```py
+   * operation_run = model.score(subjectFilter="blades == 3", start="2021-01-01", end="2021-02-01")
+   * model_scores = operation_run.result()
+   * ```
+   *
+   * @param subjectFilter
+   *    Filter to select the subjects for which to invoke the score operation.
+   * @param start
+   *    Optional start of score operation (if applicable)
+   * @param end
+   *    Optional end of score operation (if applicable)
+   * @param spec
+   *    Optional configuration for the {@link pipeline} execution. Optional {@link MlOperationSpec#xSnapshotIds}
+   *    and {@link MlOperationSpec#ySnapshotIds} are provided to evaluate the features from {@link Feature.Set.Snapshot}.
+   *    If {@link MlOperationSpec#xSnapshotIds} or {@link MlOperationSpec#ySnapshotIds} is provided, it is expected that
+   *    the {@link Feature.Set.Snapshot} exists.
+   *
+   * @return an instance of {@link MlOperationRun}.
+   *
+   * @see MlPipeline#score.
+   */
+  @dependency(include="this, project.subjectType, xFeatures.this, yFeatures.this, pipeline.this")
+  score: member function(subjectFilter: !string,
+                         start: datetime,
+                         end: datetime,
+                         spec: MlOperationSpec): !MlOperationRun<any>
+
+  /**
+   * List the metadata of {@link Feature}s associated with this model.
+   *
+   * @param filterByName
+   *    Optional filtering based on name of features.
+   * @param order
+   *    Optional listing order `ASC` or `DSC`
+   * @param offset
+   *    Optional offset for display of results
+   * @param limit
+   *    Optional limit for display of results
+   * @return the results as {@link Data}
+   */
+  @dependency(include="this, xFeatures.this, yFeatures.this")
+  featureSummary: member function(filterByName: string,
+                                  order: string enum('ASC', 'DSC'),
+                                  offset: int,
+                                  limit: int): !Data py
+
+  /**
+   * Scores calculated using {@link xFeatures} and {@link yFeatures} provided for {@link MlModel#train}.
+   * This field is automatically set on trained {@link MlModel} if {@link MlOperationSpec#scoreMlModel} is set to `true`.
+   * `trainScores` is a {@link Map}, whose keys are {@link MlPipeline#scoreNames} and values are respective score values.
+   */
+  trainScores: map<string, double>
+
+  /**
+   * Map of operation name to {@link MlOperationSpec} for executing the respective operation.
+   * Operation name is {@link MlDataOpName}, representing one of train, process, interpret or score operation.
+   * If this field is set, internal execution will use this `MlOperationSpec` for the respective operation, unless
+   * an {@link MlOperationSpec} is provided at execution time with {@link MlOperationSpec#overrideStaticSpec} set.
+   */
+  operationSpec: map<MlDataOpName, MlOperationSpec>
+
+  /**
+   * Replace persisted entity references in this {@link MlModel} with complete objects and remove identity of those references.
+   * DEVELOPER NOTE: MlModel developers need to implement this method to successfully register and load `MlModel`
+   * from `ModelRegistry`, if there are fields in `MlModel` that hold additional entity references in addition to
+   * platform supported defaults. It is required to invoke parent type's `replaceEntityReferences`
+   * using `super` in the overridden method at the start of method definition.
+   *
+   * @param pipeline
+   *    {@link MlPipeline} whose entities have been replaced with complete objects.
+   *
+   * @return an instance of {@link MlModel} with persisted references replaced with complete objects.
+   */
+  replaceEntityReferences: member function(pipeline: !MlPipeline): !MlModel
+
+  /**
+   * Upsert persistable references in this {@link MlModel}, and replace the complete objects with respective entity references.
+   * DEVELOPER NOTE: MlModel developers need to implement this method to successfully register and load `MlModel`
+   * objects from `ModelRegistry`, if there are additional fields in `MlModel` that hold entity references in addition to
+   * platform supported defaults.
+   * @return an instance of {@link MlModel} with complete reference objects replaced with respective entity references.
+   */
+  beforeCreate: ~
+
+  /**
+   * Helper method to sanitize (or default) the given operation spec.
+   *
+   * @param opName
+   *           operation name for the operation that will use the spec.
+   * @param spec
+   *           spec to sanitize.
+   * @return sanitized spec.
+   */
+  getOperationSpec: private inline member function(opName: !string serialized MlDataOpName,
+                                                   spec: MlOperationSpec): !MlOperationSpec
+
+  /**
+   * Helper method for calling route handling on an operation output.
+   *
+   * @param route
+   *           route to handle.
+   * @param operation
+   *           operation name for the operation that produced the output.
+   * @param subjects
+   *           list of subjects that the operation was performed on.
+   * @param start
+   *           start date for the data evaluated by the operation.
+   * @param end
+   *           end date for the data evaluated by the operation.
+   * @param output
+   *           the output of the operation.
+   * @param closeOutput
+   *           whether to clean up output after handling.
+   * @return list of errors from the handling. NOTE: all handlers will be attempted, even if some fail.
+   */
+  handleOutput: private inline function(route: !MlModel.Route,
+                                        operation: !string serialized MlDataOpName,
+                                        subjects: [MlSubject],
+                                        start: datetime,
+                                        end: datetime,
+                                        output: Tuple,
+                                        closeOutput: boolean): !?[Error]
+
+  /**
+   * Perform pre-operation validation for the given operation.
+   *
+   * @param opName
+   *           operation name for the operation to be validated.
+   * @param spec
+   *           spec for the operation to be validated.
+   */
+  validateOp: private inline member function(opName: !string serialized MlDataOpName, spec: MlOperationSpec)
+}

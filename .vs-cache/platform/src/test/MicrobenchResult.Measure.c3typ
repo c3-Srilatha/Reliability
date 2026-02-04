@@ -1,0 +1,81 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Measures can be accessed and formatted by name, which allows more compact formatting. Each supported measure is
+ * represented by an instance of this type (returned by #allMeasures and #recordedMeasures).
+ */
+type MicrobenchResult.Measure mixes Nameable, WithToString {
+
+  /**
+   * The internal name of the measure, same as the field name.
+   */
+  name: !string
+
+  /**
+   * A longer description of the measure, suitable as a tool tip or other help text.
+   */
+  description: string
+
+  /**
+   * Return true of this is a relative metric (such as {@link MicrobenchResult#timesX timesX}). These don't have
+   * an absolute value, but instead are a ratio for this run vs a baseline run.
+   */
+  isTimes: member function(): boolean
+
+  /**
+   * Return the value of this measure in the specified result.
+   *
+   * @param result result from which to take measurement
+   */
+  value: member function(result: !MicrobenchResult): number
+
+  /**
+   * Get the value of this measure from the result and format it appropriately as a string. If the measurement is
+   * null, a null string is returned.
+   *
+   * @param result result from which to take measurement
+   * @param unit unit for formatting (see #pickUnit)
+   */
+  format: member function(result: !MicrobenchResult, unit: Pair<double, string>): string
+
+  /**
+   * Format the specified value of this measure appropriately as a string.
+   *
+   * @param value numeric value to format
+   * @param unit unit for formatting (see #pickUnit)
+   */
+  format: member function(value: !number, unit: Pair<double, string>): string
+
+  /**
+   * Choose the unit based on the an actual value for this measure. This returns a pair of scale and unit name.
+   * For example, for "retainedMem" 5,123,000 (bytes) would map to `10⁻⁶, "Mb"` since it would be formatted as
+   * "5.12Mb". To handle smaller values one could pass `1` for scaleDigits, which would adjust the value by 10⁻¹
+   * mapping to `10⁻³, "Kb"` which would be formatted as "5,123Kb" (3+ digits as if the value were 1/10th as large).
+   *
+   * @param value measured value to determine scale
+   * @param scaleDigits adjust the values by 10⁻ⁿ to affect the chosen units
+   * @return pair of chosen scale and unit
+   */
+  pickUnit: member function(value: !number, scaleDigits: !int32 = 0): Pair<double, string>
+
+  /**
+   * An accessor to retrieve the measure value (or null if not recorded).
+   */
+  accessor: private !lambda(result: !MicrobenchResult): number
+
+  /**
+   * A function to choose the most appropriate unit for a value.
+   */
+  unitPicker: private lambda(value: !number, scaleDigits: !int32): Pair<double, string>
+
+  /**
+   * A function to format a value with the specified unit.
+   */
+  valueFormatter: private !lambda(value: !number, unit: Pair<double, string>): !string
+}

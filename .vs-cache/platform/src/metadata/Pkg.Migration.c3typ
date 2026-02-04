@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 Application Package migration script.
+ *
+ * @see Pkg.Category#MIGRATION
+ * @see Pkg.Store#migratePkg
+ */
+inline type Pkg.Migration {
+
+  /**
+   * Source C3 application package file.
+   */
+  file: !Pkg.File
+
+  /**
+   * Path from a declaring package.
+   */
+  path: property(): !Pkg.Path
+
+  /**
+   * Name of the migration, this is a part of the file name after `nnn-` prefix and before the file extension.
+   */
+  name: cached property(): !string
+
+  /**
+   * Sequence number of the migration i.e. `nnn-` prefix of the file name.
+   */
+  seq: cached property(): !int
+
+  /**
+   * Name of the declaring package.
+   */
+  package: cached property(): !string
+
+  /**
+   * Version of the migration scripts.
+   */
+  version: cached property(): !string
+
+  /**
+   * Lambda representing the migration logic.
+   */
+  action: cached property(): !Lambda<function(pkg: !Pkg)>
+
+  /**
+   * Execute migration for a given writable package.
+   *
+   * @param pkg
+   *         Writable package to migrate.
+   * @return true if the migration run and was successful, false migration was already run in the past.
+   */
+  run: member function(pkg: !Pkg): boolean
+}

@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Query for extracting a specific mask from {@link ReliabilityMlDatasetPreparationRunCommon#maskDatasets} given a
+ * {@link ReliabilityMlModel}.
+ *
+ * This timed data query retrieves the mask values (capsule) associated with the provided model and mask name,
+ * and builds a time range representing periods to be excluded from analysis (e.g., non-operational periods).
+ *
+ * Used to support charting and analytics that require masking out certain time intervals.
+ */
+type ReliabilityCapsuleTimedDataQuery mixes ReliabilityTimedDataSubquery<ReliabilityCapsuleTimedDataResult> {
+
+  /**
+   * The {@link ReliabilityMlModel} whose {@link ReliabilityMlDatasetPreparationRun} contains the mask to be queried.
+   */
+  model: !ReliabilityMlModel
+
+  /**
+   * The name of the mask to extract from the [dataset preparation run](ReliabilityMlDatasetPreparationRun).
+   *
+   * @see ReliabilityMlDatasetPreparationRunCommon#maskDatasets
+   */
+  maskName: !string
+
+  /**
+   * The label to show for the break time ranges. This can be a translation key.
+   */
+  label: string serialized Translation
+
+  /**
+   * Executes the timed data query to extract the specified mask from the dataset preparation run
+   * of the provided Reliability ML model and constructs exclusion time ranges based on the mask values.
+   *
+   * @param timeInfo The {@link TimeInfo} defining the time range and interval for the query.
+   * @return A ReliabilityCapsuleTimedDataResult containing the exclusion time ranges and associated mask data.
+   */
+  execute: ~ py
+}

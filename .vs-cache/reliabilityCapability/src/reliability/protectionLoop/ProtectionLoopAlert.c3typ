@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+remix type ProtectionLoopAlert mixes StateMachine<ProtectionLoopAlertHistory, ProtectionLoopAlertState, ProtectionLoopAlertTransition> {
+
+  /**
+   * The trigger value that made this alert. TODO: REL-4645 remove field once dataAlerting migrated.
+   */
+  triggerValue: Dimension
+
+  /**
+   * The parent {@link ProtectionLoop} this alert is on. TODO: REL-4645 remove field once dataAlerting migrated.
+   */
+  parent: !ProtectionLoop
+
+  /**
+   * The time the alert was triggered. TODO: REL-4645 remove field once dataAlerting migrated.
+   */
+  timestamp: !datetime
+
+  name: ~ calc concat(exists(parent.name) ? parent.name : parent.id, "_", formatDateTime(timestamp, "dd-MM-yyyy K:mma"))
+
+  /**
+   * The evaluation of protection loop health which led to this alert.
+   */
+  healthStatus: ProtectionLoopHealthHistory
+
+  /**
+   * Unhealthy sensors in the protection loop.
+   * {@link ProtectionLoop}
+   */
+  unhealthySensors: ~ stored calc healthStatus.sensorsWithHealthIssuesRelations.to
+
+  /**
+   * Closing previous open alerts.
+   */
+  openStateEntryAction: function(currentProtectionLoopAlert: !ProtectionLoopAlert) js-rhino
+
+  /**
+   * Close protection loops alerts that have been open for more than
+   * {@link ReliabilityProtectionLoopConfig#protectionLoopAlertClosePeriod} period of time.
+   */
+  closeAlerts: function() js-rhino
+
+  /**
+   * Fetch the sensors in the protection loop as well as their statuses at the time the alert was raised and
+   * their current statuses/health.
+   */
+  fetchSensorStatuses: member function(spec: FetchSpec): !FetchResultWithTotalCount<ProtectionLoopAlertSensorStatus> js-rhino
+}

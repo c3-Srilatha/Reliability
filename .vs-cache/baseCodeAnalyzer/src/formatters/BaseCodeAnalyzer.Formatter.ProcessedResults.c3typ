@@ -1,0 +1,69 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Formatter to get the components of the static code analysis processed results summary section.
+ */
+type BaseCodeAnalyzer.Formatter.ProcessedResults mixes Value js-rhino {
+
+  /**
+   * Helper to get a HTML table rows for a list of changes by severity for a metric.
+   *
+   * @param changedSeverities
+   *           The objects representing changed severities.
+   * @returns an HTML string with the changed metric values grouped by severity and packaged into HTML rows.
+   */
+  getHtmlTableRowForMetric: inline function(changedSeverities: [json]): !string
+
+  /**
+   * Helper to get changed package metric results information into a human-readable format that can be
+   * presented through a HTML table.
+   *
+   * @param processedResults
+   *           The processed code analysis metric results.
+   * @returns an object representing the formatted information.
+   */
+  getPackageResultContentInfo: inline function(processedResults: [BaseCodeAnalysis.Result.Processed]): !json
+
+  /**
+   * Helper to get the message to show when a package no metric results.
+   *
+   * @returns the message to show when a package has no metric results.
+   */
+  getNoPackageResultsMessage: inline function(): !string
+
+  /**
+   * Helper to get the message to show when a package no metric results.
+   *
+   * @param packageResultContentInfo
+   *           The processed code analysis metric results to show in the summary message.
+   * @returns the title to be shown in the package results section.
+   */
+  getPackageResultTitle: inline function(packageResultContentInfo: json): !string
+
+  /**
+   * Helper to get metadata about the change in a result's [stats](BaseCodeAnalysis.Metric.Result.Processed#stats).
+   *
+   * @param processedResult
+   *           The processed code analysis metric results to show in the summary message.
+   * @param fieldName
+   *           Either `errorCount` or `warningCount`.
+   * @returns the title to be shown in the package results section.
+   */
+  getChangedPkgMetricResultInfo: inline function(processedResult: BaseCodeAnalysis.Metric.Result.Processed, fieldName: string): !json
+
+  /**
+   * Helper to get the components for the static code analysis results summary section.
+   *
+   * @param processedResults
+   *           The processed code analysis metric results to show in the summary message.
+   * @returns the components for the static code analysis results summary section.
+   */
+  summarizeResults: inline function(processedResults: [BaseCodeAnalysis.Result.Processed]): BaseCodeAnalyzer.Formatter.SummarySection
+}

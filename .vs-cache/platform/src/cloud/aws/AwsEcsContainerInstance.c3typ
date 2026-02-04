@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * EC2 container instance used by AWS ECS
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=false,
+       hasResourceGroupName=false,
+       identityRoleOptions='REQUIRED',
+       cloudFunc='ecsci')
+type AwsEcsContainerInstance mixes AwsResource {
+
+  /**
+   * The short name or full Amazon Resource Name (ARN) of the cluster with which to register your container instance
+   */
+  clusterArn: string
+
+  /**
+   * This parameter returns true if the agent is actually connected to Amazon ECS
+   */
+  agentConnected: boolean
+
+  /**
+   * The status of the most recent agent update
+   */
+  agentUpdateStatus: string enum AwsEcsContainerInstanceAgentUpdateStatus
+
+  /**
+   * The attributes set for the container instance
+   */
+  attributes: [AwsEcsAttribute]
+
+  /**
+   * The EC2 instance ID of the container instance
+   */
+  ec2InstanceId: string
+
+  /**
+   * The number of tasks on the container instance that are in the PENDING status
+   */
+  pendingTasksCount: int
+
+  /**
+   * The Unix timestamp for when the container instance was registered
+   */
+  registeredAt: datetime
+
+  /**
+   * The number of tasks on the container instance that are in the RUNNING status
+   */
+  runningTasksCount: int
+
+  /**
+   * The status of the container instance
+   */
+  status: string enum AwsEcsServiceAndContainerStatus
+
+  /**
+   * The version counter for the container instance
+   */
+  version: int
+
+  /**
+   * The resources available on the instance.
+   */
+  totalResources: [AwsEcsResource]
+
+  /**
+   * The registered resources on the container instance. In other words, the resource total
+   * that can be allocated on the container instance to tasks.
+   */
+  registeredResources: [AwsEcsResource]
+
+  /**
+   * The remaining resources of the container instance that are available for new tasks
+   */
+  remainingResources: [AwsEcsResource]
+
+  /**
+   * The remaining memory of the container instance that is available for new tasks
+   */
+  remainingMemory: member function(): int
+
+  /**
+   * The remaining cpu on the container instance that is available for new tasks
+   */
+  remainingCpu: member function(): int
+
+  /**
+   * The total memory of the container instance that is available for all tasks
+   */
+  totalMemory: member function(): int
+
+  /**
+   * The total cpu on the container instance that is available for all tasks
+   */
+  totalCpu: member function(): int
+
+  hasTags: ~
+}

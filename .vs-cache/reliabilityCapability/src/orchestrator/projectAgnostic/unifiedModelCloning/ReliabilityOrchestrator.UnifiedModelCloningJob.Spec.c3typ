@@ -1,0 +1,182 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the parameters that will be used to retrain a model.
+ */
+type ReliabilityOrchestrator.UnifiedModelCloningJob.Spec mixes Spec {
+
+  /**
+   * The name of the model to retrain.
+   * This is used to identify the model in the system.
+   */
+  modelName: !string
+
+  /**
+   * The {@link ReliabilityMlModel} to retrain.
+   * From it, we will get the missing configuration for the data set if needed.
+   */
+  model: !ReliabilityMlModel
+
+  /**
+   * Validation time ranges of the retraining window
+   */
+  validationTimeRanges: ![TimeRange]
+
+  /**
+   * Training time ranges of the retraining window
+   */
+  trainingTimeRanges: ![TimeRange]
+
+  /**
+   * The excluded sensors for the new dataset that will be generated for the retrained model.
+   */
+  excludedSensors: [Sensor]
+
+  /**
+   * The included sensors for the new dataset that will be generated for the retrained model.
+   */
+  includedSensors: [Sensor]
+
+  /**
+   * The model template to use for this slot
+   */
+  template: ModelTemplate
+
+  /**
+   * The overrides to apply to the model template for this slot
+   */
+  hyperparameterOverrides: map<string, any>
+
+  /** Exclusion Agnostic masks */
+
+  /**
+   * Flag to preserve existing non-operational masks from the original model's dataset preparation run.
+   *
+   * When `true`, combines existing masks with new ones specified in {@link #nonOperationalMasks}.
+   * When `false` (default), replaces existing masks with new ones.
+   *
+   * **Note:** Only applies to non-CV models.
+   */
+  keepPreviousMasks: boolean
+
+  /**
+   * Array of rules indicating the time period when {@link ReliabilityAsset} was non-operational.
+   * {@link Triple} includes {@link Sensor}, operator (e.g. '>'), and value for the rule.
+   */
+  nonOperationalMasks: [ReliabilityDataPreparationRuleMaskSpec]
+
+  /**
+   * {@link TimeRange}s to exclude {@link Sensor} data from training data.
+   */
+  dateRangeMaskTimeRanges: [TimeRange]
+
+  /** Exclusion CV masks */
+
+  /**
+   * Flag to exclude time periods when the asset may have been under maintenance.
+   */
+  enableMaintenanceDatabaseFilter: boolean
+
+  /**
+   * Flag to enable the exclusion of extreme values during the sensor correlation. Ensuring that the asset is only
+   * monitored during an operational window.
+   *
+   * If enabled, it will read the range from #extremeValueFilterMin and #extremeValueFilterMax.
+   */
+  enableExtremeValueFilter: boolean
+
+  /**
+   * Percentage representation of the lower extreme data to be excluded from the sensor correlation.
+   *
+   * **NOTE**: It is expected for this field to be between 0 and 100.
+   */
+  extremeValueFilterMin: double
+
+  /**
+   * Percentage representation of the highest extreme data to be excluded from the sensor correlation.
+   *
+   * **NOTE**: It is expected for this field to be between 0 and 100, and higher than #extremeValueFilterMin
+   */
+  extremeValueFilterMax: double
+
+  /**
+   * Flag to enable the exclusion of very short periods of included data between excluded periods, so this filter
+   * will remove those periods, assuming that they are not a good representation of a normal asset operation.
+   *
+   * If enabled it will use the following fields:
+   * - {@link #excludeShortTimePeriod}
+   */
+  enableExcludeShortTimePeriodFilter: boolean
+
+  /**
+   * Exclude time periods that are shorter than this [duration](Period).
+   *
+   * Usually the {@link Duration} is set to {@link TemporalUnit#DAY}.
+   */
+  excludeShortTimePeriod: Duration
+
+  /**
+   * Flag to exclude time periods when the asset has been under manual mode.
+   *
+   * Typically, data from manual periods are not used for modeling since it may not represent "normal"
+   * operating behavior.
+   */
+  enableManualModeFilter: boolean
+
+  /**
+   * Flag to exclude time periods when the asset has a near-constant value.
+   *
+   * If enabled, it will use the following fields:
+   * - #constantPeriodMaximumAbsChange
+   * - #constantPeriodMinimumDuration
+   */
+  ignoreAlmostConstantPeriod: boolean
+
+  /**
+   * Maximum absolute change threshold to consider a period as constant.
+   */
+  constantPeriodMaximumAbsChange: double
+
+  /**
+   * Duration of time required for the Asset to be considered constant.
+   *
+   * Usually the {@link Duration} is set to {@link TemporalUnit#HOUR}.
+   */
+  constantPeriodMinimumDuration: Duration
+
+  /**
+   * Flag to exclude time periods when the Asset is demostrating rapid changes in opening.
+   * This usually represents an unstable process that should be ignored from modeling.
+   *
+   * If enabled, it will use the following fields:
+   * - {@link #fastTransientLagPeriod}
+   */
+  enableFastTransientFilterExclusion: boolean
+
+  /**
+   * Lag time is the windows over which to calculate the difference in opening (rapid change).
+   *
+   * Usually the {@link Duration} is set to {@link TemporalUnit#MINUTE}.
+   */
+  fastTransientLagPeriod: Duration
+
+  /**
+   * The minimum duration of the fast transient period to be considered for exclusion.
+   */
+  fastTransientThreshold: double
+
+  /**
+   * Flag to enable passing an algorithmically calculated training mask.
+   *
+   * **NOTE**: This field will not be used for sensor correlation but for the underlying data preparation that
+   * will be triggered before triggering a model configuration job through the Model Setup With Correlation UI flow.
+   */
+  enableAlgorithmicTrainingMask: boolean
+}

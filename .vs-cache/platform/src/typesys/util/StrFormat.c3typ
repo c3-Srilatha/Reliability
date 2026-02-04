@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility for formatting arbitrary data into text. Extends capabilities of Template by addition of Java printf style
+ * format and positional formatting arguments.
+ *
+ * Syntax is based on https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/Formatter.html with
+ * following additions:
+ *
+ * * `%v` - denotes "quoted value": i.e. if formatting argument is not null, boolean or number it will be quoted using
+ *          single quote character `'`
+ * * `%j` - denotes "single line json": i.e. if formatting argument will be converted to single line json and printed in
+ *          a single line
+ * * `%J` - denotes "pretty print json": i.e. if formatting argument will be converted to potentially  multi-line
+ *          indented json text
+ *
+ * E.g.:
+ * ```
+ * StrFormat.make("e = %+10.4f").format(Math.E)                               // "e =    +2,7183"
+ * StrFormat.make("Invalid values %v and %v").format("foo bar", 17)           // "Invalid values 'foo bar' and 17"
+ * StrFormat.make("Invalid User.id=${id} name=${quote(name)}").format(user)   // "Invalid User.id=BA name='B A'"
+ * ```
+ */
+inline type StrFormat mixes Template {
+
+  /**
+   * Formats values as text.
+   */
+  format: inline member function(args: !?any ...): string
+
+  format: inline ~
+
+  /**
+   * @return true if provided template requires positional arguments i.e. is based on `%` syntax vs `${..}`
+   */
+  isPositional: function(template: !string): boolean
+}

@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type to fetch data for Model Validation Training Summary UI components.
+ */
+type ModelValidationTrainingSummaryHelper {
+
+  /**
+   * Fetches data required for the training summary section of model validation.
+   *
+   * @param modelId
+   *           The ID of the model to fetch training summary data for
+   * @return The training summary data as JSON
+   */
+  fetchCardListData: function(modelId: !string): json js-rhino
+
+  /**
+   * Gets data required for alerting information for a given {@link ReliabilityRiskMlModel}.
+   *
+   * @param modelId
+   *           The ID of the model to get alerting information for
+   * @return The alerting information data as JSON
+   */
+  @deprecated(finalVersion='21.0.0', details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  getAlertingInformation: function(modelId: !string): json js-rhino
+
+  /**
+   * Gets data for training classification for a given {@link ReliabilityMlModel}.
+   *
+   * @param modelId
+   *           The ID of the model to get training classification information for
+   * @return The training classification information data as JSON
+   */
+  getTrainingClassificationInformation: function(modelId: !string): json js-rhino
+
+  /**
+   * Fetches a {@link ReliabilityRiskMlModel}'s features' directional weights and sigmoid parameters associated with the model's risk score pipe.
+   * @param modelId
+   *          The ID of the model for which to fetch the directional weights and sigmoid parameters.
+   * @return A list of directional weights and sigmoid parameters for the model's features.
+   */
+  @deprecated(finalVersion='21.0.0', details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  fetchDirectionalWeightsAndSigmoidParams: function(modelId: !string): [json] js-rhino
+
+  /**
+   * Fetches a {@link ReliabilityRiskMlModel}'s features' directional weights and sigmoid parameters associated with the model's risk score pipe.
+   * @param spec
+   *          The {@link FetchSpec} used to fetch the data. The spec filter should and will filter for exactly one model.
+   *          The {@link FetchSpec#include} field will be ignored. The remaining fields are used to paginate and order the results.
+   * @return A {@link FetchSpec} containing the directional weights and sigmoid parameters for the model's features.
+   */
+  @deprecated(finalVersion='21.0.0', details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  fetchDirectionalWeightsAndSigmoidParamsWithFetchSpec: function(spec: FetchSpec): FetchResult<json> js-rhino
+
+  /**
+   * Fetches the count of the directional weights and sigmoid parameters associated with the model's risk score pipe.
+   * @param spec
+   *          The {@link FetchSpec} used to fetch the data. The spec filter should and will filter for exactly one model.
+   *          All other spec fields are ignored.
+   * @return The count of the directional weights and sigmoid parameters.
+   */
+   @deprecated(finalVersion='21.0.0', details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  fetchDirectionalWeightsAndSigmoidParamsCount: function(spec: !FetchSpec): int js-rhino
+}

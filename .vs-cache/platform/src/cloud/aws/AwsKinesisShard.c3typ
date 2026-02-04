@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type AwsKinesisShard {
+
+  /**
+   * The unique identifier of the shard within the Amazon Kinesis stream.
+   */
+  id: string
+
+  /**
+   * The range of possible hash key values for the shard, which is a set of
+   * ordered contiguous positive integers.
+   */
+  hashKeyRange: AwsKinesisRange
+
+  /**
+   * The range of possible sequence numbers for the shard.
+   */
+  sequenceNumberRange: AwsKinesisRange
+
+  /**
+   * The shard Id of the shard's parent.
+   */
+  parentShardId: string
+
+  /**
+   * The shard Id of the shard adjacent to the shard's parent.
+   */
+  adjacentParentShardId: string
+
+  /**
+   * In the process of resharding, a parent shard transitions from an OPEN state to a CLOSED state to an EXPIRED state.
+   */
+  state: string enum AwsKinesisShardState
+}

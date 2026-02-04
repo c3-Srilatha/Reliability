@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type Data.Spark.MultiIndex mixes Data.Spark.Index {
+
+  dtypes:          abstract property(): ?Data.Spark.Series
+  hasnans:         abstract property(): ?boolean
+  inferred_type:   abstract property(): ?string
+  is_all_dates:    abstract property(): ?boolean
+  levshape:        abstract property(): ?any
+  name:            abstract property(): ?any
+  all:             abstract member function(): ?any
+  any:             abstract member function(): ?any
+  asof:            abstract member function(label: ?any): ?any
+  copy:            abstract member function(deep: ?boolean): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+  drop:            abstract member function(codes: ?[any], level: ?any): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+  drop_duplicates: abstract member function(keep: ?(boolean | string)): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+  equal_levels:    abstract member function(other: ?any): ?boolean
+  factorize:       abstract member function(sort: ?boolean,
+                                            na_sentinel: ?int): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  from_arrays: abstract function(arrays: ?[[any]],
+                                 sortorder: ?int,
+                                 names: ?[any]): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  from_frame: abstract function(df: ?any, names: ?[any]): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  from_product: abstract function(iterables: ?[[any]],
+                                  sortorder: ?int,
+                                  names: ?[any]): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  from_tuples: abstract function(tuples: ?[any],
+                                 sortorder: ?int,
+                                 names: ?[any]): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  get_level_values: abstract member function(level: ?any): ?Data.Spark.Index
+  insert:           abstract member function(loc: ?int, item: ?any): ?Data.Spark.Index
+  intersection:     abstract member function(other: ?any): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+  item:             abstract member function(): ?any
+  map:              abstract member function(mapper: ?any, na_action: ?string): ?Data.Spark.Index
+  nunique:          abstract member function(dropna: ?boolean, approx: ?boolean, rsd: ?float): ?int
+  swaplevel:        abstract member function(i: ?int, j: ?int): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  symmetric_difference: abstract member function(other: ?any,
+                                                 result_name: ?[any],
+                                                 sort: ?boolean): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+
+  to_frame:  abstract member function(index: ?boolean, name: ?[any]): ?Data.Spark.DataFrame
+  to_pandas: abstract member function(): ?(Data.Spark.Index | Data.Spark.MultiIndex)
+}

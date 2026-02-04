@@ -1,0 +1,95 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a MIMO Data Output Handler for the Reliability pipeline. This handler only supports
+ * {@link MlModel}s whose {@link MlPipeline} outputs the following:
+ * 1. `riskScore`, `riskScoreNormalized`. and `alert` from {@link MlPipeline#process}, and optionally
+ *    `reconstructions` and `residuals`
+ * 2. `residuals` from {@link MlPipeline#interpret}
+ * These names are also defined in {@link ReliabilityMLOutputConfig}. For each corresponding {@link Data} output, this
+ * handler will perform the following operations:
+ * 1. For each subject, find the corresponding {@link TimedDataHeader} using {@link #targetPointType}. If it doesn't
+ *    exist, create one. The header id is created using the MD5 hash
+ * 2. For each point in the {@link Data} output, create a new {@link #targetPointType}.
+ *
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+type MlModel.ReliabilityOutputHandler mixes MlModel.DataOutputHandler {
+
+  /**
+   * The batch size for merging new {@link #targetPointType} points.
+   */
+  mergeBatchSize: int = 25000
+
+  /**
+   * A {@link TimedDataPoint} type with a parent {@link TimedDataHeader} Type. A new instance of
+   * {@link #targetPointType} is created for each row in the output {@link Data}. A new instance of the
+   * corresponding {@link TimedDataHeader} is created for each column in each output {@link Data}
+   *
+   * @see ReliabilityRiskScoreMlPrediction
+   * @see ReliabilityRiskScoreMlContribution
+   * @see ReliabilityRiskScoreMlValidationPrediction
+   * @see ReliabilityRiskScoreMlValidationContribution
+   */
+  targetPointType: !Type<<TimedDataPoint>>
+
+  /**
+   * Flag used to determine if the {@link MlModel.ReliabilityOutputHandler} is being used to write
+   * {@link ReliabilityRiskScoreMlValidationContribution}s and {@linkReliabilityRiskScoreMlValidationPrediction}s
+   * @see ReliabilityRiskMlModel#doOperation
+   */
+  isHandlerForValidation: boolean = false
+
+  /**
+   * Validates that the given {@link MlModel model} contains the required output names for the specific operation.
+   * Throws an exception if the model is missing required output names.
+   */
+  validate: ~ py
+
+  process: ~ py
+
+  /**
+   * Process the MIMO output for the given {@link MlModel.Route}. This method will throw an exception if `output`
+   * is an instance of {@link Data}.
+   * @see MlModel.DataOutputHandler#doProcess
+   */
+  doProcess: member function(route: !MlModel.Route, output: map<string, Data>) py
+  doProcess: ~ py
+
+  /**
+   * Transform and save the output predictions.
+   *
+   * @param route
+   *    the route argument passed to {@link process}
+   * @param output
+   *    the MIMO output to convert; the columns are mapped using {@link columnMapping}
+   */
+  write: private member function(route: !MlModel.Route, output: !map<string, Data>) py
+
+  /**
+   * Method to get the expected output names for {@link MlDataOpName#PROCESS} and {@link MlDataOpName#INTERPRET}.
+   */
+  getExpectedOutputNames: function(op: MlDataOpName): Tuple py
+
+  /**
+   * Method that idempotently returns the {@link TimedDataHeader} for the provided parameters.
+   */
+  findOrCreateHeader: function(headerType: !Type, headerId: !string,
+    relation: !Type, subject: MlSubject, name: !string): !Type py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

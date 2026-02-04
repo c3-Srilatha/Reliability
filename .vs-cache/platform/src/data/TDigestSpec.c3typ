@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines spec for TDigest instance
+ */
+type TDigestSpec mixes Spec {
+
+  /**
+   * Compression parameter for scale function. In general, the higher this value is,
+   * the more accurate the estimate will be, and the more clusters will be present after a merge
+   */
+  compressionParam: !double = 200
+
+  /**
+   * Capacity of buffer. Once full, the buffer will merge with the clusters.
+   */
+  bufferSize: !int = 1000
+
+  /**
+   * If true, will merge all values initially added regardless of buffer size.
+   * If false, will only merge values that fill up the buffer.
+   */
+  flush: boolean = true
+}

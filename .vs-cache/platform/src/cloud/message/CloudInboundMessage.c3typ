@@ -1,0 +1,129 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type for defining cloud message broker subscriber.
+ * CloudInboundMessage is a singleton
+ */
+abstract type CloudInboundMessage<T> mixes CloudMessageDispatcher, Configurable<CloudMessageDispatcherConfig> {
+
+  /**
+   * Registers a subtype of {@link CloudInboundMessage} to receive messages from a {@link CloudMessageBroker}.
+   */
+  register: final function()
+
+  /**
+   * Un-registers a subtype of {@link CloudInboundMessage} to receive messages from a {@link CloudMessageBroker}.
+   */
+  unregister: final function()
+
+  /**
+   * Checks whether a subtype of {@link CloudInboundMessage} is registered to receive messages from a {@link CloudMessageBroker}.
+   *
+   * @return whether the subtype (non-identifiable) or id (identifiable) is registered to receive messages.
+   */
+  registered: final function(): !boolean
+
+  /**
+   * Batch version of callback on message receive; handle processing of the message here!
+   * Important Note: The message delivery mechanism guarantees AT LEAST once semantic but NOT EXACTLY ONCE. This means
+   * that the same message can be sent to this function and this function should be idempotent
+   * <p>
+   * Implement {@link #process}
+   */
+  process: abstract function(messages: [T])
+
+  /**
+   * Find the CloudInboundMessage configured for the given {@link CloudMessageBroker}
+   * @param cloudMessageBroker
+   *               Named cloud message broker
+   * @return CloudInboundMessage typeRefs configured for the cloud message broker.
+   */
+  typeRefsForCloudMessageBroker: function(cloudMessageBroker: !CloudMessageBroker): [Type]
+
+  /**
+   * Find the CloudInboundMessage configured for the given {@link CloudMessageBroker} and filtered by CloudMessage.
+   * @param cloudMessageBroker
+   *           Named cloud message broker
+   * @param message
+   *           cloud Message which satisfies filter configured for CloudInboundMessage. If message is null
+   *
+   * @return CloudInboundMessage typeRefs configured for the cloud message broker.
+   */
+  typeRefsForCloudMessage: function(cloudMessageBroker: !CloudMessageBroker, message: !?CloudMessage): [Type]
+
+  /**
+   * set cloud message broker name and it's type.
+   * ```
+   *  TestInboundMessage.setBrokerName("CanonicalTestAssetTopic", "ApacheKafkaTopic")
+   * ```
+   */
+  setBrokerName: function(brokerName: !string, brokerType: !Type)
+
+  /**
+   * set batch size to receive messages from broker.
+   * ```
+   *  TestInboundMessage.setBatchSize(1000)
+   * ```
+   */
+  setBatchSize: function(batchSize: int)
+
+  /**
+   * set sub batch size to process messages received from broker.
+   * ```
+   *  TestInboundMessage.setSubBatchSize(100)
+   * ```
+   */
+  setSubBatchSize: function(subBatchSize: int)
+
+  /**
+   * set cloud consumer to receive messages from broker.
+   */
+  setCloudConsumer: function(cloudConsumer: string)
+
+  /**
+   * set timeout in milliseconds to receive messages from broker.
+   * ```
+   *  TestInboundMessage.setTimeoutMillis(1000)
+   * ```
+   */
+  setTimeoutMillis: function(timeoutMillis: int)
+
+  /**
+   * set to true, to ignore bad content when parsing content.
+   */
+  setIgnoreBadContent: function(ignore: boolean)
+
+  /**
+   * set to true to skip any extra fields in the content.
+   */
+  setSkipExtraFields: function(skip: boolean)
+
+  /**
+   * set filter to be applied to applicable messages.
+   */
+  setFilter: function(filter: !string)
+
+  /**
+   * set contentTypeOverride to specify the content type of the data in messages.
+   */
+  setContentTypeOverride: function(contentTypeOverride: !?string)
+
+  /**
+   * set contentEncodingOverride to specify the content encoding of the data in messages.
+   */
+  setContentEncodingOverride: function(contentEncodingOverride: !?string)
+
+  /**
+   * clear cached metadata about CloudInboundType to CloudMessageBroker, if the config is modified.
+   */
+  clearCache: private function()
+
+  dispatchMessage:  ~
+  dispatchMessages: ~
+}

@@ -1,0 +1,111 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Location of a bounding box surrounding a detected symbol
+ *
+ * We follow OpenCV conventions
+ *
+ * ```
+ * 0/0---X--->
+ * |
+ * |
+ * Y
+ * |
+ * |
+ * v
+ * ```
+ */
+type DiagramParsingBoundingBox mixes BoundingBox {
+
+  /**
+   * Height (Y) of the image this box is generated from
+   */
+  imgHeight: !int
+
+  /**
+   * Width (X) of the image this box is generated from
+   */
+  imgWidth: !int
+
+  /**
+   * The true class of this bounding box for model training, such as "TAG" or "LMI"
+   */
+  classLabel: string enum DiagramParsingClassLabel
+
+  /**
+   * Scale the current bounding box from original image size to a image with
+   * different size, this can only be performed if the two images have very
+   * similar aspect ratio. A ((0,0), (50,50)) bounding box generated from a
+   * (100, 100) image can be mapped to an bounding box ((0,0), (5,5)) of a
+   * (10,10) size image
+   *
+   * @param newHeight new image height in pixels
+   * @param newWidth new image width in pixels
+   * @return bounding box mapped to the new base image dimension
+   */
+  scaleImg: inline member function(
+    newHeight: !int,
+    newWidth: !int
+  ): !BoundingBox py
+
+  /**
+   * Unlike {@link scaleImg} that will scale the bouding box coordinates this method only
+   * update the base image dimension and perserve the current bouding box
+   * coordinates.
+   *
+   * @param newHeight new image height in pixels
+   * @param newWidth new image width in pixels
+   * @return bounding box with the new base image dimension
+   */
+  updateBase: inline member function(
+    newHeight: !int,
+    newWidth: !int
+  ): !BoundingBox py
+
+  /**
+   * Move the bounding box by dx and dx, it assumes the new bounding
+   * box will use the same image height and width and check bounds
+   *
+   * @param dy translation pixels on vertical direction
+   * @param dx translation pixels on horizontal direction
+   * @return bounding box translated to the new location
+   */
+  move: inline member function(
+    dy: !int,
+    dx: !int
+  ): !BoundingBox py
+
+  /**
+   * Check if two bounding boxes intersects. Two bounding boxes have to be
+   * mappable to each other
+   *
+   * @param other a bounding box mappable from this instance
+   * @return if two bouding boxes intersects
+   */
+  intersect: inline member function(
+    other: !BoundingBox
+  ): !boolean py
+
+  /**
+   * Obtain the normalized coorindates for the bounding box in the order of
+   * [xmin, ymin, xmax, ymax]
+   *
+   * @return length 4 of normalized coordindates [xmin, ymin, xmax, ymax]
+   */
+  normalized: inline member function(): ![float] py
+}

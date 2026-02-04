@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type GcpIdpConfig mixes CloudIdpConfig {
+
+  /**
+   * The id of the project the GCS buckets belong to.
+   */
+  BUCKET_PROJECT_ID: private const string = "cicd-360621"
+
+  /**
+   * The id of the project the service accounts belong to.
+   */
+  SERVICE_ACCOUNT_PROJECT_ID: private const string = "local-test-326015"
+
+  /**
+   * The prefix of the service account name that is created when provisioning secrets for users.
+   */
+  ACCOUNT_NAME_PREFIX: private const string = "dev-gcs-sa"
+
+  /**
+   * The name of the datasets bucket in cicd project.
+   */
+  DATASETS_BUCKET_ID: private const string = "c3--datasets"
+
+  /**
+   * The name of the local bucket in cicd project.
+   */
+  LOCAL_BUCKET_ID: private const string = "c3--local"
+
+  /**
+   * GCP restriction on the maximum number of service accounts per project.
+   */
+  MAX_ACCOUNT_COUNT_PER_PROJECT: private const int = 100
+
+  /**
+   * The maximum number of service accounts created through platform that should exist in the project.
+   * The 100 service account limit for the project should not all be used up for developers.
+   */
+  MAX_ACCOUNT_COUNT: private int = 75
+
+  /**
+   * The role the service account will have in the buckets.
+   */
+  SERVICE_ACCOUNT_ROLE: private const string = "roles/storage.admin"
+
+  /**
+   * The role the service account will have in the project the buckets are located in.
+   * This should be a custom role pre-created without any roles in it.
+   */
+  SERVICE_ACCOUNT_PROJECT_ROLE: private const string = "projects/cicd-360621/roles/DefaultNoPermissions"
+
+  /**
+   * Map of project id -> access token string of admin user in the project.
+   * The access tokens are generated through gcloud CLI for the provSecret admin accounts in the project.
+   */
+  credentialPerProject: private map<string, GcpCredentials>
+}

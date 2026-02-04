@@ -1,0 +1,509 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an unauthenticated user and aids in all admin related activities that can be performed on the user.
+ */
+// TODO: PLAT-87388 Remove user-admin from type level and put on methods
+@restful(endpoint='user')
+@action(group+='user-admin')
+@db(domain='system')
+entity type User mixes UserBasicAuthFields, AccessControlEntity, Cached, Restful {
+
+  /**
+   * Unique identifier for user. If IDP is configured with @see {@link IdpUserIdFormatKind.LOWERCASE_EMAIL} then string
+   * contains only lowercase characters if it is in email format.
+   */
+  id: ~
+
+  /**
+   * Idp userId
+   */
+  idpUserId: string
+
+  /**
+   * User Name
+   */
+  name: !~
+
+  /**
+   * User's email address.
+   */
+  email: string
+
+  /**
+   * User's last name.
+   */
+  lastName: string
+
+  /**
+   * User's first name
+   */
+  firstName: string
+
+  /**
+   * User's public key
+   */
+  publicKey: string
+
+  /**
+   * Okta user id.
+   */
+  oktaUserId: string
+
+  /**
+   * Identity provider which manages this user.
+   */
+  idp: IdentityProvider
+
+  /**
+   * List of {@link Env} this user have access to or have logged in
+   */
+  envs: [Env]
+
+  /**
+   * List of {@link App} this user have access to or have logged in
+   */
+  apps: [App]
+
+  // TODO: PLAT-60634 Move samlSessionIndex from User.c3typ to SessionToken.c3typ
+
+  /**
+   * User's session index for SAML login
+   */
+  samlSessionIndex: private string
+
+  /**
+   * User's session sequence for C3 login
+   */
+  @deprecated(finalVersion="8.5",
+              details="Use User#userSessionSequence to get the sequence of the user and User.Session to store the sequence.")
+  sessionSequence: private !int
+
+  /**
+   * Kind of user ex: system, human, app
+   */
+  // TODO: PLAT-106077 - Unignore kind field
+  // kind: private User.Kind
+
+  /**
+   * Returns a session token for the current user if available in the memory, generates one otherwise.
+   */
+  // TODO: PLAT-104167 Delete deprecated sessionToken when 8.5 end of life
+  @deprecated(finalVersion="8.5",
+              details="Use #mySessionToken to obtain token for current user, use SessionToken#generate to obtain for other users.")
+  sessionToken: member function(): !SessionToken
+
+  /**
+   * Returns a session token for current user if available in the memory, generates one otherwise.
+   */
+  @action(inline=true)
+  mySessionToken: inline function(): !SessionToken
+
+  /**
+   * Generates session for the current user with the specified expiry. If expiry is not specified, it defaults to 24 hours
+   * If a token is compromised, invalidation the session for the user and it will invalidate the token. {@see #invalidateSessions}
+   * @param expiry
+   *            Datetime when this token should expire. Dates in the past will result in already expired tokens. Max time is 1 year
+   * @return a new session token for the current user with the specified expiry.
+   */
+  generateSessionToken: member function(expiry: datetime): !SessionToken
+
+  /**
+   * Invalidates all of the user's sessions
+   */
+  invalidateSessions: member function()
+
+  /**
+   * Set user's public key
+   */
+  setPublicKey: member function(publicKey: !string)
+
+  /**
+   * All the {@link UserGroup}s this user is a member of.
+   */
+  groups: [!UserGroup]
+
+  /**
+   * All the groups that the user is assigned from the IDP. It is a mapping of the groups that the
+   * idp assigned to the user mapped to their corresponding C3 UserGroup.
+   * On login, the newly received idpGroups will be assigned to the User if there are differences between the two.
+   */
+  idpGroups: private [!UserGroup]
+
+  /**
+   * List of groups that the user was assigned from the idp.
+   * Mapping from string serialized idp to idp-assigned groups
+   */
+  idpAssignedGroups: private map<string serialized IdpConfig, ?[string]>
+
+  /**
+   * All the groups that the user is assigned from c3 server
+   */
+  c3Groups: private [!UserGroup]
+
+  /**
+   * Adds this user to the application
+   *
+   * @param app
+   *       {@link App} argument.
+   */
+  addToApp: member function(app: !App)
+
+  /**
+   * Adds this user to the environment
+   *
+   * @param app
+   *       {@link Env} argument.
+   */
+  addToEnv: member function(env: !Env)
+
+  /**
+   * Adds this user to the given group.
+   *
+   * @param groupId
+   *           the c3 UserGroup id.
+   * @return the User object.
+   */
+  @action(authz='always')
+  addToGroup: member function(groupId: !string): !User
+
+  /**
+   * Adds the specified users to the given group.
+   *
+   * @param groupId
+   *           the c3 UserGroup id.
+   * @return the User object.
+   */
+  @action(authz='always')
+  addUsersToGroup: function(userIds: ![string], groupId: !string): [User]
+
+  /**
+   * Remove this user from the given group.
+   *
+   * @param groupId
+   *           the c3 UserGroup id.
+   */
+  @action(authz='always')
+  removeFromGroup: member function(groupId: !string)
+
+  /**
+   * Removes the specified users from the given group.
+   * @param userIds
+   *          The users to remove from the group
+   * @param groupId
+   *           the c3 UserGroup id.
+   */
+  @action(authz='always')
+  removeUsersFromGroup: function(userIds: ![string], groupId: !string): [User]
+
+  /**
+   * Get all the {@link UserGroup userGroups} for the this user
+   *
+   * @return an array of userGroup objects that the User is part of.
+   */
+  @action(inline=true, group='read')
+  allGroups: cached inline member function(): [UserGroup]
+
+  /**
+   * Get all the {@link Role roles} this user has
+   *
+   * @return an array of Role objects that the User has.
+   */
+  @action(inline=true, group='read')
+  allRoles: inline member function(): [Role]
+
+  /**
+   * Gets all the Permissions for this user.
+   *
+   * @return array of Permission.
+   */
+  @action(inline=true)
+  allPermissions: inline member function(): [Permission]
+
+  /**
+   * Gets all the DataPermissions for this user.
+   *
+   * @return array of DataPermission.
+   */
+  @action(inline=true)
+  allDataPermissions: inline member function(): [DataPermission]
+
+  /**
+   * Gets all apps this user is member of and optionally filter by console access available from the current URL.
+   *
+   * @param consoleAccess
+   *             limit to apps for which user has console access
+   *
+   * @return applications
+   */
+  allApps: member function(consoleAccess: boolean): [App]
+
+  /**
+   * Gets all apps this user is member of and optionally filter by console access available from the specified URL.
+   *
+   * @param appUrl
+   *             apps available from specified URL
+   * @param consoleAccess
+   *             limit to apps for which user has console access
+   *
+   * @return applications
+   */
+  allApps: member function(appUrl: !AppUrl, consoleAccess: boolean): [App]
+
+  /**
+   * Gets all environments this user is member of and optionally filter by console access.
+   *
+   * @param consoleAccess
+   *             limit to apps for which user has console access
+   *
+   * @return environments
+   */
+  allEnvs: member function(consoleAccess: boolean): [Env]
+
+  /**
+   * Gets the DateTime and App for this user's last login for the current app.
+   *
+   * @return {@link User.Event.Login}
+   */
+  lastLogin: member function(): User.Event.Login
+
+  /**
+   * Get the last login DateTime the given user last logged in to the given application.
+   * NOTE: this is an expensive calculation and should use lastLogins for multiple users.
+   *
+   * @param user
+   *          {@link User} argument.
+   * @param app
+   *           app.id where to check the last login info for.
+   *
+   * @return DateTime or null if it has never logged-in to the given app.
+   *         throws C3RuntimeException if the User doesn't exist in the given app.
+   */
+  @call(app='app')
+  lastLoginInApp: private member function(app: !string serialized AppId): datetime
+
+  /**
+   * Bulk fetch last login times for multiple users to avoid N+1 query problem.
+   * This is the optimized version of {@link #lastLogin} for batch operations.
+   * Searches for the user's last login in the current app, environment, and cluster levels,
+   * prioritizing app-level login if available, then environment-level, then cluster-level.
+   *
+   * @param userIds Array of user IDs to fetch login data for
+   * @return UserEvent.Login array containing login data for the specified users
+   */
+  lastLogins: function(userIds: [!string]): [User.Event.Login]
+
+  /**
+   * Bulk fetch last login times for multiple users in a specific app to avoid N+1 query problem.
+   * This is the optimized version of {@link #lastLoginInApp} for batch operations.
+   *
+   * @param userIds Array of user IDs to fetch login data for
+   * @param app App ID to check login data for
+   * @return UserEvent.Login array containing login data for the specified users and app
+   */
+  @call(app='app')
+  lastLoginsInApp: function(userIds: [!string], app: !string serialized AppId): [User.Event.Login]
+
+  /**
+   * Get the securityLevel based on all Roles assigned to this User.
+   * The lowest value (highest security level) is returned.
+   *
+   * @return security level value, null if no security level for User.
+   */
+  @action(inline=true)
+  securityLevel: cached inline member function(): int
+
+  /**
+   * @return context user of the current action.
+   */
+  @action(inline=true)
+  myUser: inline function(): !User
+
+  /**
+   * Checks if user is a member of the group
+   * @param groupId
+   *         group identifier
+   * @return true or false
+   */
+  @action(inline=true)
+  hasGroup: inline member function(groupId: !string): boolean
+
+  /**
+   * Returns all page groups that this user has access to
+   */
+  @action(inline=true)
+  @deprecated(finalVersion="8.10", details="Read Role-based access control for application developers")
+  allPageGroups: inline member function(): [PageGroup]
+
+  /**
+   * @return true if provided user name is not a well known machine user like 'worker' or 'provisioner' or an appId.
+   */
+  @action(inline=true)
+  isHuman: inline member function(): boolean
+
+  /**
+   * @return true if provided user name is an appId.
+   */
+  @action(inline=true)
+  isApp: inline function(userId: !string): boolean
+
+  /**
+   * @return true if provided user name is a system user:
+   * ['root,', 'worker', 'provisioner', 'tester', 'anonymous', 'public', 'BA'].
+   */
+  @action(inline=true)
+  isSystemUser: private cached inline member function(): boolean
+
+  /**
+   * Is the user a Cluster Administrator.
+   *
+   * @return True if the user is a Cluster Administrator.
+   */
+  @action(inline=true)
+  isClusterAdmin: inline member function(): boolean
+
+  /**
+   * @return system user for executing background jobs.
+   */
+  @action(inline=true)
+  worker: private cached inline function(): !User
+
+  /**
+   * @return root user for executing privileged actions
+   */
+  root: private cached function(): !User
+
+  /**
+   * @return public user for executing non-privileged actions
+   */
+  @action(inline=true)
+  public: private cached inline function(): !User
+
+  /**
+   * @return artifact reader user with role C3.ArtifactReader for accessing content from artifact hub through REST end points.
+   */
+  @action(inline=true)
+  artifactreader: private cached inline function(): !User
+
+  /**
+   * @return librarymanager user with role C3.LibraryManager which will be used by library managers like conda and npm.
+   */
+  @action(inline=true)
+  librarymanager: private cached inline function(): !User
+
+  /**
+   * Return User with permission to access public and unprotected resources.
+   *
+   * @return Anonymous User
+   */
+  @action(inline=true)
+  anonymous: private cached inline function(): !User
+
+  /**
+   * @return provisioner user
+   */
+  @action(inline=true)
+  provisioner: private cached inline function(): !User
+
+  /**
+   * @return list of reserved user names.
+   */
+  reservedUsers: private cached function(): [string]
+
+  /**
+   * @return list of system user names.
+   */
+  systemUsers: private cached function(): [string]
+
+  /**
+   * @return list of strictly test system user names.
+   */
+  systemTestUsers: private cached function(): [string]
+
+  /**
+   * Is the user a Environment Administrator.
+   *
+   * @return True if the user is a Environment Administrator.
+   */
+  @action(inline=true)
+  isEnvAdmin: inline member function(): boolean
+
+  /**
+   * Is the user a App Administrator.
+   *
+   * @return True if the user is a App Administrator.
+   */
+  @action(inline=true)
+  isAppAdmin: inline member function(): boolean
+
+  /**
+   * Is the user an Anonymous User
+   *
+   * @return True if the user is an Anonymous User
+   */
+  @action(inline=true)
+  isAnonymous: inline member function(): boolean
+
+  /**
+   * @return true if user data is synchronized / persisted in the database
+   */
+  @action(inline=true)
+  isSyncEnabled: private inline function(): boolean
+
+  /**
+   * Synchronizes / persist User attributes to database; return `true` if user record for create / updated
+   */
+  upsertUser: private function(user: !User): boolean
+
+  /**
+   * Persists a new login event for a specific application
+   */
+  newLoginEvent: private function(userId: !string, appId: !string): User.Event.Login
+
+  /**
+   * Removes all User.Event.Login entries that are older than the given duration on the current app.
+   * @return the number of User.Event.Login entries removed
+   */
+  // TODO: PLAT-77198 Implement DB TTL (time to live)
+  // remove this
+  @action(group="developer")
+  cleanupLoginEvents: private function(confirm: boolean): int
+
+  /**
+   * @return user with the provided email
+   */
+  @action(inline=true)
+  getUserForEmail: inline function(email: !string): User
+
+  /**
+   * @return the *federated* session sequence of specified user. See {@link User.Session#sequence}
+   */
+  @action(inline=true)
+  userSessionSequence: inline function(userId: !string): !int
+
+  /**
+   * Clears cache for all dependent caches that could be affected by User.
+   */
+  @action(inline=true)
+  clearDependentCaches: inline function()
+
+  @action(inline=true)
+  forId: inline ~
+
+  @action(inline=true)
+  produce: inline ~
+
+  @action(inline=true)
+  produceAll: inline ~
+
+  beforeCreate: ~
+  beforeUpdate: ~
+  beforeRemove: ~
+  afterCreate:  ~
+}

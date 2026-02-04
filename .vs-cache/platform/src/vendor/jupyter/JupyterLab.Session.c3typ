@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 type that represents an interface for running a Jupyter kernel.
+ *
+ * This type partially implements the Jupyter Notebook [Messaging API](https://jupyter-client.readthedocs.io/en/latest/messaging.html) to run code using Jupyter kernel and collect results and outputs.
+ *
+ * # Example: Usage
+ * ```javascript
+ * JupyterLab.ensureService()
+ *              .startSession('py-mlbase') \
+ *              .run([
+ *                {'source': '1 + 2'}
+ *              ])
+ * ```
+ *
+ * To run {@link JupyterNotebook} see {@link JupyterNotebook#run}.
+ */
+private type JupyterLab.Session {
+
+  /**
+   * Id of this session.
+   */
+  id: !string
+
+  /**
+   * {@link JupyterLab.Kernel} assigned to this session.
+   */
+  kernel: !JupyterLab.Kernel
+
+  /**
+   * Returns {@link JupyterLab.Api} corresponding to this {@link JupyterLab.Session}.
+   */
+  api: private cached property(): !JupyterLab.Api
+
+  /**
+   * Run list of cells in JupyterLab. Returns copy of the input cells with updated outputs.
+   */
+  run: member function(cells: ![!JupyterNotebook.Cell],
+                       spec: JupyterLab.Session.CellExecutionSpec): ![!JupyterNotebook.Cell] py-notebook_runner-py4j
+
+  /**
+   * Interrupt kernel of this session.
+   */
+  interrupt: member function()
+
+  /**
+   * Stop kernel and remove this session.
+   */
+  stop: member function()
+}

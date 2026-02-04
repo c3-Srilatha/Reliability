@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Email-related methods for Gen AI
+ */
+entity type Genai.Mail mixes DefaultInstance {
+
+  /**
+   * All admin group user emails.
+   */
+  adminEmails: [string] calc getUserEmailsForRoles(['Genai.AdminUser'])
+
+  inst: ~ js-rhino
+
+  /**
+   * Sends an email using the given template to the given email addresses.
+   *
+   * @param emailTemplate
+   *           The email template to send.
+   * @param toEmails
+   *           The email addresses to send the email to. This is not required if {@link Genai.Mail.Template#dynamicTo}
+   *           is defined for the given `emailTemplate`.
+   */
+  sendEmailFromTemplate: function(emailTemplate: Genai.Mail.Template, toEmails: [string]): Mail js-rhino
+
+  /**
+   * Returns the content of the email template, with all tokens replaced.
+   */
+  getEmailTemplateContent: private function(emailTemplate: Genai.Mail.Template): string js-rhino
+
+  /**
+   * Given one of the common replace tokens, returns the value for that token.
+   *
+   * See Genai.Mail.Template#commonReplaceTokens
+   */
+  replaceCommonToken: private function(
+    token: string enum Genai.Mail.Template.CommonReplaceTokenEnum
+  ): string | [string] js-rhino
+}

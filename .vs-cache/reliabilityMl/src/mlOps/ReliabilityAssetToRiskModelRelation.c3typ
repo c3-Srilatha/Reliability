@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An extension of {@link ReliabilityAssetToModelRelation} representing timed relations between
+ * a {@link ReliabilityAsset} and a model belonging to the `reliabilityRisk` {@link MlProject}.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityAssetToRiskModelRelation extends ReliabilityAssetToModelRelation type key 'RR' {
+  /**
+   * The {@link ReliabilityRiskMlModel} referenced by the relation
+   */
+  to: !ReliabilityRiskMlModel
+
+  /**
+   * Timed predictions for this relation.
+   */
+  timedPredictions: [ReliabilityRiskScoreMlPredictionHeader] (parent)
+
+  /**
+   * Timed contribution for this relation.
+   */
+  timedContributions: [ReliabilityRiskScoreMlContributionHeader] (parent)
+
+  /**
+   * Timed scores for this relation.
+   */
+  timedScores: [ReliabilityRiskScoreMlScoreHeader] (parent)
+
+  /**
+   * The id of the current reliability risk {@link MlProject}. Fetched from {@link ReliabilityMLConfig}.
+   */
+  reliabilityRiskMLProjectId: string stored calc getConfigValue('ReliabilityMLConfig', 'reliabilityRiskMLProjectId')
+
+  /**
+   * This field stores the historical information of the predicion status and reasons of failure for this relation.
+   */
+  @db(order='descending(end)')
+  predictionHistory: [RiskMlModelPredictionHistory](parent)
+
+  /**
+   * Denotes if the relation has any prediction histories populated.
+   * The stored calc was added since predictionHistory is in kv store
+   * and kv store does not support `exists(predictionHistory)`.
+   */
+  isPredictionHistory: boolean stored calc exists(predictionHistory)
+
+  /**
+   * The latest record of {@link RiskMlModelPredictionHistory} for which the model is predicting.
+   */
+  latestPrediction: datetime calc predictionHistory.(isPredicting==true)[0].end
+
+  /**
+   * The earliest record of {@link RiskMlModelPredictionHistory} for which the model is non-predicting.
+   */
+  earliestPrediction: datetime stored calc predictionHistory.(isPredicting==false && end < latestPrediction)[0].end
+
+  /**
+   * Method used for validating the {@link ReliabilityRiskMlModel} against the {@link ReliabilityAsset}
+   * in this relation. It will create an instance of the {@link ReliabilityAssetToRiskModelValidationRelation} idempotently and call
+   * {@link ReliabilityAssetToRiskModelValidationRelation#doValidate} to invoke the validation logic.
+   */
+  validate: member function(validationPeriod: TimeRange) py
+
+  /**
+   * The duration (in days) for which this relation has been non-predicting.
+   */
+  nonPredicitngDuration: double calc latestPrediction ? floor(temporalDistance('1d', latestPrediction, now())) : floor(temporalDistance('1d', latestPrediction, start)) schema suffix 'NPD'
+}

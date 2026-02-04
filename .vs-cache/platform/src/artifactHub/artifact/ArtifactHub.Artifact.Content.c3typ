@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * {@link ArtifactHub} type used to distribute and receive content efficiently. Inherited {@link Content} APIs can
+ * be used like they normally would for other subtypes (ex. {@link File}).
+ */
+type ArtifactHub.Artifact.Content mixes Microservice.Content {
+
+  /**
+   * A unique identifier used by {@link ArtifactHub} to identify the correct content.
+   */
+  id: ~
+
+  /**
+   * The name of the content. During {@link ArtifactHub.Artifact#register}, this field will be used as a
+   * {@link File#name} by the service.
+   */
+  name: ~
+
+  serviceIface: ~
+
+  /**
+   * The {@link AppId} of ArtifactHub that hosts this content.
+   * This field is used to let the ArtifactHub service know if content should be read from an upstream source.
+   */
+  sourceHub: string serialized AppId
+
+  /**
+   * The date at which the artifact expires.
+   */
+  expiresAt: datetime
+
+  /**
+   * Whether to keep the artifact forever.
+   */
+  keepForever: boolean
+}

@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * REST APIs to make to AzureDevOps visual studio's (the previous branding) - 'https://app.vssps.visualstudio.com' APIs
+ */
+type AzureDevOpsVisualStudio mixes REST {
+
+  /**
+   * Gets the profile of a Azure DevOps user
+   * https://docs.microsoft.com/en-us/rest/api/azure/devops/profile/profiles/get?view=azure-devops-rest-6.0
+   *
+   * IMPORTANT: The auth token that is used must be configured for "All accessible organizations",
+   * not just the organization for the git repository, or the request will return HTTP 401.  See
+   * https://developercommunity.visualstudio.com/content/problem/902833/azure-devops-personal-access-token-does-not-work-w.html
+   * ("You must create a PAT that is applicable to all organizations and not a single one" in the
+   * Microsoft Resolution)
+   *
+   * @param id
+   *   The id of the user. To get the profile of the user making the REST call, set this field to `me`
+   */
+  @rest(method='GET', skipThis=true)
+  profile: abstract member function(@rest(partOfURI=true, uriPrefix='/_apis/profile/profiles/')
+                                    id: !string,
+                                    @rest(queryParameter=true, parameterName='api-version')
+                                    apiVersion: string = '7.1'): json
+}

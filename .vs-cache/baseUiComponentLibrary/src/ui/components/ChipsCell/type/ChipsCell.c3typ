@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * c3-analysis-disable c3-excessive-method-params -- ChipsCell methods require multiple parameters
+ */
+
+/**
+ * Custom grid cell that will render an array of values in the form of individual
+ * chip/pill shapes to make distinguishing items in lists easier.
+ *
+ * Each chip can trigger an action when clicked. To enable this, specify a
+ * {@link UiSdlDataGridDataSpecColumnFieldSetting#actionSuffix} for the column
+ * rendering the cell.
+ */
+type ChipsCell mixes UiSdlDataGridCell {
+
+  /**
+   * The styles to apply to all chips that don't match any values in
+   * [#groupingOptions.valuesToStyles](ChipsCellGroupingOptions#valuesToStyles).
+   * Defaults to the style of a primary {@link UiSdlButton}.
+   */
+  defaultStyle: ChipStyle = {
+    customColorSettings: {
+      DARK: {
+        primaryColor: '#82B0FF',
+        invertFontColor: true
+      },
+      LIGHT: {
+        primaryColor: '#2266F0',
+        invertFontColor: true
+      }
+    }
+  }
+
+  /**
+   * Options for how chips should be grouped, styled, and arranged based on their values.
+   */
+  groupingOptions: ChipsCellGroupingOptions
+
+  /**
+   * If true, the chips will be rendered with transparent backgrounds. They'll
+   * still have borders that are colored according to {@link ChipStyle}.
+   */
+  outlined: boolean = false
+
+  /**
+   * [#dataItem.obj](UiSdlDataGridDataItem#obj) can be an array of either strings
+   * or {@link Obj}s.
+   *
+   *   - If it's an array of {@link Obj}s, this field must be provided to extract
+   *     the display value from each {@link Obj}.
+   *   - If it's an array of strings, this field should be empty.
+   */
+  fieldPath: string serialized FieldPath
+
+  /**
+   * The maximum number of chips to display before the rest are hidden and a button
+   * to reveal #numChipsToReveal more chips is shown. If not specified, all chips
+   * will be displayed at all times.
+   */
+  @constraint(
+    condition='collapseThreshold > 0',
+    message='collapseThreshold must be a positive integer')
+  collapseThreshold: int
+
+  /**
+   * The number of chips to reveal when the `+{n} more` button is clicked. If not
+   * specified, the `+{n} more` button will reveal all chips.
+   */
+  @constraint(
+    condition='exists(collapseThreshold) && numChipsToReveal > 0',
+    message='numChipsToReveal must be a positive integer, and can only be specified when a collapseThreshold has been specified')
+  numChipsToReveal: int
+
+  /**
+   * Dispatches an action indicating that a specific chip in a chips cell has been clicked.
+   *
+   * @param componentId
+   *        The ID of the [grid component](UiSdlDataGrid) that's dispatching this action.
+   * @param actionSuffix
+   *        The suffix to append to `CHIP_CLICK_` to form the action type.
+   * @param dataItem
+   *        The record for the specific row in the data grid.
+   * @param selectedValue
+   *        The value of the chip that was clicked. See #fieldPath.
+   *
+   * @returns A `CHIP_CLICK_${actionSuffix}` action.
+   */
+  @uiSdlActionCreator(actionType='CHIP_CLICK_${actionSuffix}')
+  clickChipAction: function(
+    componentId: !string,
+    actionSuffix: !string,
+    dataItem: !json,
+    selectedValue: !(string | json)
+  ): !ChipClickAction ts-client
+}

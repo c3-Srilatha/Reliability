@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Tracks the details for a single batch run of an unstructured job.
+ */
+@db(index = ['jobRun, runNumber'])
+entity type GenaiCore.Unstructured.Job.BatchRun {
+
+  /**
+   * The run sequence number of the {@link GenaiCore.Unstructured.Job.Run} that this batch run is part of.
+   * This field is 1-indexed.
+   */
+  runNumber: !int
+
+  /**
+   * Reference to the job run.
+   */
+  jobRun: !GenaiCore.Unstructured.Job.Run
+
+  /**
+   * A summary of the batch run represented by a mapping of job steps (e.g., initialization, processing
+   * embedding, vector store) to their respective metrics.
+   */
+  summary: map<string, map<string, string>>
+}

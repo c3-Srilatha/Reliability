@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * TAS representation of a testcase. Contains the original error message, {@link Tas.MatchedIssue}, etc.
+ */
+entity type Tas.TestCase {
+
+  /**
+   * Name of test case
+   */
+  testCaseName: !string
+
+  /**
+   * The error message or stacktrace of the failed/errored testcase
+   */
+  errorMessage: string
+
+  /**
+   * The {@link Tas.MatchedIssue} that matched the `errorMessage`
+   */
+  matchedIssue: Tas.MatchedIssue
+
+  /**
+   * Describes whether the matchedIssue was used to suppress the testcase error.
+   * False if the matchedIssue was a flipper or the errorMessage not known
+   */
+  suppressed: boolean = false
+
+  /**
+   * Type of failure, e.g. Regression or Flipper, or Unknown
+   */
+  failureType: string enum Tas.InstabilityType
+}

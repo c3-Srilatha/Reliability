@@ -1,0 +1,131 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(cloudFunc='k8spo', hasRole=true)
+@k8s(nativeKind='pod', nativeKindPlural='pods', immutable='true')
+type K8sPod mixes CloudComputeInstance, K8sPodModel, K8sNamespacedResource {
+
+  region: ~
+  isOk:   ~
+
+  /**
+   * Represents the status of all containers for this pod. If a container is failing, a message will be attached for
+   * why the container is in its current state.
+   *
+   * @return the current status of all containers in the pod along with details elaborating on that state.
+   */
+  containerStatuses: member function(): map<string, Pair<string, string>>
+
+  /**
+   * Represents the status of a user specified container for this pod. If the container is failing, a message will be
+   * attached for why the container is in its current state.
+   *
+   * @param containerName
+   *         Name of the container in this pod to inspect.
+   * @return the current status of the container along with details elaborating on that state.
+   */
+  resolveContainerStatus: member function(containerName: !string): Pair<string, string>
+
+  /**
+   * Provide logs for the containers in this pod.
+   *
+   * @param spec
+   *         for specifying optional parameters to the log API
+   * @return the logs if available, else null
+   */
+  logs: member function(spec: K8sPodLogSpec): string
+
+  /**
+   * Execute a command in a container within this pod.
+   *
+   * @param containerName
+   *         Name of the container to execute the command in
+   * @param command
+   *         The command to execute
+   * @return the output of the command execution
+   */
+  exec: member function(containerName: !string, command: !string): string
+
+  /**
+   * Convert {@link K8sPod} into a {@link Server} object.
+   *
+   * @return the {@link Server} object
+   */
+  toServer: member function(): Server
+
+  /**
+   * Get all the volumeMounts for a specific container in the {@link K8sPod}.
+   *
+   * @return the {@link K8sVolumeMount} array.
+   */
+  volumeMountsForContainer: member function(containerName: !string): [K8sVolumeMount]
+
+  /**
+   * Fetches the single {@link K8sVolumeMount} representing the root directory for each PVC {@link K8sVolume}
+   * of a {@link K8sPod} in a container, if such a mount exists.
+   *
+   * A root directory {@link K8sVolumeMount} is identified as a VolumeMount without a subPath, where its mountPath
+   * is considered the root directory of the volume/storage. Typically, there is only one VolumeMount
+   * associated with the root directory of a PVC {@link K8sVolume} in a standard c3-server deployment.
+   *
+   * If multiple such mounts exist, only one will be returned.
+   *
+   * @return the {@link K8sVolumeMount} representing the root directory for each PVC {@link K8sVolume}
+   *         of a {@link K8sPod}, if present.
+   */
+  rootPvcMountByVolume: member function(containerName: !string): MapBuilder<K8sVolume, K8sVolumeMount>
+
+  /**
+   * Fetches the single {@link K8sVolumeMount} representing the root directory for each emptyDir {@link K8sVolume}
+   * of a {@link K8sPod} in a container, if such a mount exists.
+   *
+   * A root directory {@link K8sVolumeMount} is identified as a VolumeMount without a subPath, where its mountPath
+   * is considered the root directory of the volume/storage. Typically, there is only one VolumeMount
+   * associated with the root directory of an emptyDir {@link K8sVolume} in a standard c3-server deployment.
+   *
+   * If multiple such mounts exist, only one will be returned.
+   *
+   * @return the {@link K8sVolumeMount} representing the root directory for each emptyDir {@link K8sVolume}
+   *         of a {@link K8sPod}, if present.
+   */
+  rootEmptyDirMountByVolume: member function(containerName: !string): MapBuilder<K8sVolume, K8sVolumeMount>
+
+  /**
+   * Get the map of {@link K8sVolumeMount} backed by the according emptyDir {@link K8sVolume} of {@link K8sPod} for a container.
+   * Note that the emptyDir volume backed by "Memory" will not be returned here.
+   * Note: All emptyDir volumes will be returned including the ones which are not mounted yet.
+   * @return the MapBuilder of {@link K8sVolume} and the Array of {@link K8sVolumeMount} backed by that {@link K8sVolume}.
+   */
+  emptyDirMountsByVolumeForContainer: member function(containerName: !string)
+                                               : MapBuilder<K8sVolume, Array<K8sVolumeMount>>
+
+  /**
+   * Get the map of {@link K8sVolume} and the array of {@link K8sVolumeMount} backed by the according pvc {@link K8sVolume} of {@link K8sPod} for a container.
+   * Note: All pvc volumes will be returned including the ones which are not mounted yet.
+   * @return the MapBuilder of {@link K8sVolume} and the Array of {@link K8sVolumeMount} backed by that {@link K8sVolume}.
+   */
+  pvcMountsByVolumeForContainer: member function(containerName: !string): MapBuilder<K8sVolume, Array<K8sVolumeMount>>
+
+  /**
+   * @param containerName
+   *         Name of the container for which the directory belongs to.
+   * @param dirPath
+   *         the path for which the user is trying to find the according volume.
+   * @param failIfMissing
+   *         If true and cannot find the volume backing the dirPath an error will be thrown.
+   * @return the {@link K8sVolume} which is backing the dirPath.
+   */
+  volumeForDir: member function(containerName: !string, dirPath: !string, failIfMissing: boolean): K8sVolume
+
+  /**
+   * Inferred state of the pod based on status classification.
+   * Uses priority-based classification where first matching condition wins.
+   */
+  @beta
+  inferredState: property(): K8sPodInferredState
+}

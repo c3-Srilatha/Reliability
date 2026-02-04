@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state for the Diagram Parsing Application.
+ * All shared data sources become fields in this application state.
+ */
+@beta
+@typeScript
+type DiagramParsingApplicationState mixes UiSdlApplicationState {
+
+  /**
+   * Used to store {@link Sensor} objects, to be shown as options in sensor column's dropdown in verification grid.
+   */
+  options: json
+
+  /**
+   * Used to store {@link Sensor} objects, to be shown as options in sensor column's dropdown in verification grid
+   * based on the user's search query
+   */
+  sensorSearchOptions: json
+
+  /**
+   * Flag that helps to know if Master Sensor List is available
+   */
+  isMasterSensorsAvailable: boolean
+
+  /**
+   * An action to change a field in this state.
+   *
+   * @param field
+   *            The field in application state to be updated.
+   * @param value
+   *            The value to update the state field with.
+   * @returns a Redux action of type `SET_FIELD`.
+   */
+  @uiSdlActionCreator(actionType='SET_FIELD')
+  setFieldAction: private function(field: !string,
+                                   value: json): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FIELD` and store selected value in application state.
+   *
+   * @param state
+   *           Redux state
+   * @param action
+   *           Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_FIELD')
+  setFieldReducer: private inline function(state: !UiSdlReduxState,
+                                           action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A K8s Watch Utility that runs only on the ClusterApp (c3-c3).
+ * Responsible for housekeeping tasks such as watching specific K8sResources and persisting them into DB (termed as observing).
+ */
+@action(group='cluster-admin')
+type K8sWatcher {
+
+  /**
+   * Responsible for observing the following resources in the configured {@link K8s#namespaceNameForCluster}:
+   * 1) {@link K8sPod} are stored as {@link ObservedK8sPod}
+   * 2) {@link K8sEvent} are stored as {@link ObservedK8sEvent}
+   */
+  run: function()
+
+  /**
+   * Returns the last stored K8sResourceVersion in the DB for the provided {@link K8sResource}
+   */
+  lastObservedResourceVersion: function(type: !Type<<ObservedK8sResource>>): string
+}

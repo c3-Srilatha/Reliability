@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Various options to control the behavior of the {@link Gettable#getMissing} function.
+ */
+type GetMissingSpec mixes Spec {
+
+  /**
+   * Include spec representing the minimum desired set of fields to be present in the returned instance.  By default,
+   * if the instance was already fetched with an include that fully contains this include, the input instance is
+   * simply returned.  Otherwise, the requested include is used to fetch a new instance and that instance is returned.
+   */
+  include: !string
+
+  /**
+   * By default, if the input instance contains an id and we need to perform a fetch to get the missing data, if the
+   * instance does not exist in the database, an error is thrown.
+   * If True, the input instance will be returned with the `meta.referenceInvalid` flag set to true.
+   */
+  ignoreIfMissing: boolean
+
+  /**
+   * If true and the input instance doesn't contain an id and we need to perform a fetch to get the missing data, an
+   * error is thrown.  Otherwise, the input instance will be returned with the `meta.referenceInvalid` flag set to true.
+   */
+  failIfIdMissing: boolean
+
+  /**
+   * If true and we need to perform a fetch to get the missing data, the newly fetched instance will be fetched with
+   * the requested include merged with the input's `meta.fetchInclude`.  Otherwise only the requested include will be
+   * used.
+   */
+  mergeResult: boolean
+
+  /**
+   * By default, entity references retrieved via {@link Persistable#fetch} and {@link Persistable#get} only include the
+   * `id` of the reference, unless additional fields in the referenced type are added as part of the include spec.
+   * Also, for references to extended/parametric types, the returned instances will have the type of the the field's
+   * reference type, rather than the concrete type of the actual instances themselves.
+   *
+   * If this flag is set to true, then those instances will be of the correct concrete type if they aren't already.
+   * Note that this requires additional queries/joins (up to 1 for each referenced field) so it should only be used when
+   * having the instances of the concrete type is necessary.
+   */
+  resolveRefTypes: boolean
+}

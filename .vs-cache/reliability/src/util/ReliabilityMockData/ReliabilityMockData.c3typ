@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type utilizes a {@link Workflow}-based approach to load backend & UI mock data for development &
+ * QA testing purposes. The methods on this type are designed to invoke the code path utilized by the Reliability
+ * application in production settings. This ensures that the mock data is loaded in a manner that is consistent with
+ * how data realistically flows through the application in all scenarios (development / QA / PSR / production).
+ */
+type ReliabilityMockData {
+
+  /**
+   * Method to idempotently load mock data into the application.
+   * Note that this method removes existing data from the application.
+   * It is expected that the asynchronous workflow execution takes approximately 30 minutes to complete on a
+   * Single Node Environment.
+   * Load the mock data and poll the status of the workflow by running:
+   * ```js
+   * var run = ReliabilityMockData.loadMockData();
+   * run.status();
+   * ```
+   * If the workflow `status` shows as `failed`, run `InvalidationQueue.countAll()` to inspect the failed queue entries.
+   * The error message for failed queue entries can then be obtained by running `<QueueName>.errors()` and checking the
+   * `detail.errorMsg` value for debugging purposes.
+   *
+   * @param spec
+   *        Optional parameters to configure attributes of the generated data.
+   * @return A workflow run object for monitoring the mock data loading process
+   */
+  // TODO: REL-13986 Reduce data loading time.
+  loadMockData: function(spec: ReliabilityMockDataSpec = {}): !Workflow.Run py
+
+  /**
+   * Entry point method called by {@link loadMockData} to generate UI Data. This function calls other helper methods such as
+   * {@link createCases}, {@link createWorkOrders}, {@link createProtectionLoops} etc. to generate UI specific data.
+   */
+  loadUiData: private function() js-rhino
+
+  /**
+   * Method that creates one {@link ReliabilityAssetCase} for each {@link ReliabilityAssetAlert}.
+   */
+  createCases: private function() js-rhino
+
+  /**
+   * Method that creates {@link ReliabilityAssetAlertSimilarity} objects for similar alerts and automatically
+   * adds them to {@link ReliabilityAssetCase}s. Alert similarities will only be generated when the
+   * {@link ReliabilityAlertTriagingConfiguration#automaticallyAddToCase} is set to `true`.
+   */
+  createAlertSimilarities: private function() js-rhino
+
+  /**
+   * Method that creates one {@link WorkOrder} for each {@link ReliabilityAsset}.
+   */
+  createWorkOrders: private function() js-rhino
+
+  /**
+   * Method that creates one {@link ProtectionLoop} for each {@link ReliabilityAsset}.
+   */
+  createProtectionLoops: private function() js-rhino
+
+  /**
+   * Method that creates a {@ ModelTemplate} containing {@link ModelTemplate#defaultHyperparamsForHpo hyperparameters}
+   * for running Hyperparameter Optimization (HPO) Jobs, and a {@link ReliabilityMl.Project} which has the created
+   * {@link ModelTemplate} as its {@link ReliabilityMl.Project#defaultModelTemplate}.
+   *
+   * Since HPO is a beta feature, this method is not called by #loadMockData. It is intended to be called by the user to create the
+   * necessary data for running HPO Jobs.
+   *
+   * @return The created {@link ReliabilityMl.Project}.
+   */
+  @beta
+  createDataForHpo: private function(): ReliabilityMl.Project py
+
+  /**
+   * Method that creates dummy {@link MasterSensor}s without any mapping with actual {@link Sensor}s.
+   *
+   * @return A list of created master sensors
+   */
+  createMasterSensors: private function(): [MasterSensor] py
+
+  /**
+   * Method that creates dummy {@link MasterSensor}s without any mapping with actual {@link Sensor}s. Used for end to end testing.
+   * Takes in a file name for a file found in resource/E2ETesting.Setup and a {@link Facility} name to link the sensors to.
+   *
+   * @param fileName
+   *           The name of the file in resource/E2ETesting.Setup
+   * @param facilityName
+   *           The name of the facility to link sensors to
+   * @return A list of created master sensors for E2E testing
+   */
+  createMasterSensorsForE2E: private function(fileName: !string, facilityName: !string): [MasterSensor] py
+
+  /**
+   * Method that connects preloaded {@link ReliabilityAssetEvent}s to the correct {@link ReliabilityAsset}s. Used for end to end
+   * testing. Takes in the name of the parent {@link ReliabilityAsset} that the {@link ReliabilityAsset}s are linked to.
+   *
+   * @param parent
+   *           The name of the parent reliability asset
+   */
+  connectAssetEventsForE2E: private function(parent: !string) py
+
+  /**
+   * Creates a MlProject Agnostic model. The spec is not required. By default, it creates a
+   * Z-Score model, promotes it to champion, and runs inference on it.
+   *
+   * @param spec
+   *           The specification for setting up the ML project agnostic model
+   * @return A workflow run object for monitoring the model setup process
+   */
+  setupMlProjectAgnosticModel: private function(spec: ReliabilityMockDataSetupMlProjectAgnosticModelSpec): !Workflow.Run py
+
+  /**
+   * WARNING - this will remove all WorkOrder Data and  generate work orders for spare parts
+   * you will lose case links and any other data.
+   */
+  loadWorkOrdersForSpareParts: private function() py-ml
+}

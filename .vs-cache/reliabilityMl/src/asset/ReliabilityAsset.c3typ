@@ -1,0 +1,158 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * @inheritdoc
+ */
+remix type ReliabilityAsset mixes DataValidationSubject, ReliabilityMlDatasetPreparationHelper {
+
+  /**
+   * All model relations for this asset.
+   */
+  @db(order='descending(meta.created)')
+  modelRelations: [ReliabilityAssetToModelRelation] (from)
+
+  /**
+   * All current model relations for this asset.
+   */
+  @db(filter='!exists(end)', order='descending(meta.created)')
+  currentModelRelations: [ReliabilityAssetToModelRelation] (from)
+
+  /**
+   * Whether the asset has any #currentModelRelations.
+   */
+  hasCurrentModelRelations: boolean stored calc count(currentModelRelations) > 0
+
+  /**
+   * Count of #currentModelRelations. Models type or status not considered. Used in the UI.
+   */
+  totalModelCount: int stored calc count(currentModelRelations)
+
+  /**
+   * Count of projects that the {@link ReliabilityAssetToModelRelation}s with status 'CHAMPION' belong to.
+   */
+  countOfLiveProjects: int calc count(unique(currentModelRelations.(status.label == 'CHAMPION').to.project.id))
+
+  /**
+   * Count of projects that the {@link ReliabilityAssetToModelRelation}s belong to.
+   */
+  countOfProjects: int calc count(unique(currentModelRelations.to.project.id))
+
+  /**
+   * Count of champion {@link ReliabilityMlModel}s that are muted.
+   */
+  mutedModels: int stored calc count(currentModelRelations.(exists(to.currentMutedPeriod.end) && status.label == 'CHAMPION'))
+
+  /**
+   * All model validation relations for reliabilityRisk models for this asset.
+   */
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  riskModelValidationRelations: [ReliabilityAssetToRiskModelValidationRelation] (from)
+
+  /**
+   * All model relations for reliabilityRisk models for this asset.
+   */
+  @db(order='descending(meta.created)')
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  reliabilityRiskModelRelations: [ReliabilityAssetToRiskModelRelation] (from)
+
+  /**
+   * All current model relations for reliabilityRisk models for this asset.
+   */
+  @db(filter='!exists(end)', order='descending(meta.created)')
+  @deprecated(
+    finalVersion='21.0.0',
+    details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  currentReliabilityRiskModelRelations: [ReliabilityAssetToRiskModelRelation] (from)
+
+  /**
+   * Alerts belonging directly to this asset.
+   */
+  @db(order='descending(timestamp)')
+  directAlerts: [ReliabilityAssetAlert](parent)
+
+  /**
+   * Most recent alert belonging directly to this asset
+   */
+  latestAlert: ReliabilityAssetAlert stored calc directAlerts[0]
+
+  /**
+   * Alerts belonging to this asset and its descendant assets.
+   */
+  alerts: [ReliabilityAssetAlert] calc unique(currentChildrenAndSelf.directAlerts)
+
+  /**
+   * Function to generate {@link SensorDataReport} for all the sensors in {@link ReliabilityAssetSensorRelation} based on a time window.
+   * @param spec
+   *     {@link SensorReportSpec} contains the arguments to generate {@link SensorDataReport}.
+   * @return an array of {@link SensorDataReport}
+   */
+  generateSensorDataReport: member function(spec: !SensorReportSpec): [SensorDataReport] js-rhino
+
+  /**
+   * Fetches sensor relations {@link ReliabilityAssetSensorRelation} for a {@link ReliabilityAsset}
+   * given a selected {@link AssetClass}, identifying missing {@link ExpectedSensor}s in the asset class.
+   *
+   * This method is used when swapping the asset class for a {@link ReliabilityAsset}. It retrieves
+   * all current {@link ExpectedSensor}s associated with the {@link ReliabilityAsset} and identifies
+   * {@link ReliabilityAssetSensorRelation}s for the given {@link AssetClass} that were not
+   * previously associated with the asset.
+   *
+   * @param assetClass
+   *    The {@link AssetClass} for which sensor relations should be fetched.
+   *    Must be a non-null value representing the asset class ID.
+   *
+   * @param spec
+   *    A {@link FetchSpec} defining parameters for the fetch operation, including filtering,
+   *    sorting, and pagination.
+   *
+   * @returns {@link FetchResultWithTotalCount<ReliabilityAssetSensorRelation>}
+   *    A result containing the fetched sensor relations along with a total count of matches.
+   *    The total count includes all sensor relations, even if pagination limits the returned results.
+  */
+  @action(group='asset-onboarding-read')
+  fetchSensorRelationsWithExpectedSensorsMissingInAssetClass: member function(
+    assetClass: !AssetClass,
+    spec: FetchSpec): FetchResultWithTotalCount<ReliabilityAssetSensorRelation> js-rhino
+
+  /**
+   * Fetches sensor relations {@link ReliabilityAssetSensorRelation} for a {@link ReliabilityAsset}
+   * given a selected {@link AssetClass}, identifying missing {@link ExpectedSensor}s in the asset class.
+   *
+   * This method is used when swapping the asset class for a {@link ReliabilityAsset}. It retrieves
+   * all current {@link ExpectedSensor}s associated with the {@link ReliabilityAsset} and identifies
+   * {@link ReliabilityAssetSensorRelation}s for the given {@link AssetClass} that were not
+   * previously associated with the asset.
+   *
+   * This method is similar to
+   * {@link ReliabilityAsset#fetchSensorRelationsWithExpectedSensorsMissingInAssetClass}
+   * but returns a stream of sensor relations instead of a result with total count.
+   *
+   * @param assetClass
+   *    The {@link AssetClass} for which sensor relations should be fetched.
+   *    Must be a non-null value representing the asset class ID.
+   *
+   * @param spec
+   *    A {@link FetchSpec} defining parameters for the fetch operation, including filtering,
+   *    sorting, and pagination.
+   *
+   * @returns {stream<ReliabilityAssetSensorRelation>}
+   *    A stream of sensor relations associated with the asset class and not previously linked
+   *    to the {@link ReliabilityAsset}.
+   */
+  @action(group='asset-onboarding-read')
+  fetchSensorRelationsWithExpectedSensorsMissingInAssetClassObjStream: member function(
+    assetClass: !AssetClass,
+    spec: FetchSpec): stream<ReliabilityAssetSensorRelation> js-rhino
+
+}

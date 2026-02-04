@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type AzureServiceBusConsumer mixes CloudQueue<CloudMessage> {
+
+  /**
+   * In ReceiveAndDelete mode, receive is a single-shot operation. The Service Bus receives a read request for a message
+   * in a queue, it marks the message as being consumed and returns it to the application. ReceiveAndDelete mode
+   * works best for scenarios in which an application can tolerate not processing a message in the event of a failure.
+   * To understand this, consider a scenario in which the consumer issues the receive request and then crashes before
+   * processing it. Because Service Bus has marked the message as being consumed, then when the application restarts
+   * and begins consuming messages again, it has missed the message that was consumed prior to the crash.
+   *
+   * In PeekLock mode, receive becomes a two stage operation, which makes it possible to support applications that
+   * cannot tolerate missing messages. When Service Bus receives a request, it finds the next message to be consumed,
+   * locks it to prevent other consumers receiving it, and then returns it to the application. After the application
+   * finishes processing the message (or stores it reliably for future processing), it completes the second stage of
+   * the receive process by calling Delete on the received message. When Service Bus sees the Delete call, it marks the
+   * message as being consumed and remove it from the queue.
+   */
+  consumptionMode: string enum AzureServiceBusReceiveMode = PEEKLOCK
+
+  /**
+   * Maximum number of concurrent calls to the callback the service bus should initiate.
+   */
+  asyncMaxConcurrentComputes: int = 1
+
+  /**
+   * Indicates whether service bus should automatically complete the messages after returning from async callback.
+   * true indicates the complete will be handled by the async callback.
+   */
+  autoCompleteMessages: boolean
+
+  /**
+   * Frequency with which to renew the service bus lock in minutes.
+   */
+  autorenewDuration: int = 1
+}

@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A subtype of {@link GenaiCore.Tool.C3Method.Spec} to add additional
+ * fields specific to {@link GenaiCore.Tool.C3MemberMethod}
+ */
+type GenaiCore.Tool.C3MemberMethod.Spec mixes GenaiCore.Tool.C3Method.Spec {
+  /**
+   * Indicates how {@link GenaiCore.Tool.C3MemberMethod#instance} should be instantiated for use.
+   * By default,
+   *      * {@link Persistable} (entity) instances will be instantiated via `forId`
+   *      * {@link Engine} instances will be instantiated via `forName`
+   *      * All other instances will be instantiated via `make` using the full instance json at the time
+   *        {@link GenaiCore.Tool.C3MemberMethod#createFromMethodType} was called)
+   *
+   * This field is **optional** and is only necessary if you want to override the default behavior described above.
+   */
+  instantiationMethod: string enum('forName', 'forId', 'make')
+}

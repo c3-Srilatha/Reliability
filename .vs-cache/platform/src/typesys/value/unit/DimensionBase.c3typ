@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type DimensionBase<T> {
+
+  /**
+   * Value of the Dimension
+   */
+  value: !T
+
+  /**
+   * Unit of the Dimension
+   */
+  unit: Unit
+
+  /**
+   * Perform conversion of Dimension to a different unit, with the value updated accordingly
+   *
+   * Example1: If convertible between the unit in dimension and target unit:
+   *       var d = Dimension.make({value: 1000, unit: {id: "watt_hour"}});
+   *       var newD = d.convert({id: "megawatt_hour"});
+   * newD.value will be 0.001 and newD.unit will have id as "megawatt_hour"
+   * Example2: If it's inconvertible between the unit in dimension and the target unit:
+   *       var d = Dimension.make({value: 1000, unit: {id: "watt_hour"}});
+   *       var newD = d.convert({id: "USD"})
+   * An exception will be thrown.
+   *
+   * @param target
+   *            The target unit to be converted to
+   * @return If convertible between the unit in dimension and target unit, return a new Dimension with updated value
+   * and target unit; else, an exception will be thrown.
+   */
+  convert: abstract inline member function(target: !Unit): !mixing DimensionBase
+
+  /**
+   * Check if all fields required for conversion of a Dimension/ExactDimension to the target unit have been populated.
+   *
+   * @param target
+   *            The target unit to be converted to
+   *
+   * @throws C3RuntimeException with message pertinent to the root cause
+   */
+  validateConversion: inline member function(target: Unit)
+
+  /**
+   * returns existing unit or dimensionless
+   */
+  safeUnit: inline member function(): !Unit
+
+  /**
+   * Constructor for creating a Dimension / ExactDimension object
+   */
+  fromValue: inline function(value: !number, unit: Unit): !mixing DimensionBase
+}

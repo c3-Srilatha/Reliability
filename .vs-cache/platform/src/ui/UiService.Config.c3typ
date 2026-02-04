@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for the default UI content server and default UI router.
+ *
+ * @see UiService
+ */
+type UiService.Config mixes Config, Singleton {
+
+  /**
+   * The default default file name (standard index page).
+   */
+  INDEX: const string = "index.html"
+
+  /**
+   * If a request is made for a resource directory, we check if that directory contains any of the these files and
+   * generate a 302 Found response to the complete path. This is also known as an "index page" or "default document".
+   *
+   * By default, the file "index.html" is checked, but if this configuration specifies other files, those will be
+   * checked first.
+   *
+   * @see https://en.wikipedia.org/wiki/Web_server_directory_index
+   */
+  defaultFiles: [string]
+
+  /**
+   * If the root path is accessed, and none of the #defaultFiles are valid there, this path is used. This allows
+   * a {@link Ann.Restful @restful endpoint} to be used for example.
+   *
+   * If used, the server will return a 302 [Found](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/302)
+   * response so that the browser will have the correct path.
+   */
+  rootPath: string
+
+  /**
+   * If desired, file responses can be returned with a custom `Cache-Control` header with this value. For example,
+   * "max-age=86400" would allow the resource to be cached for a day and "no-cache" would force the browser to
+   * revalidate the cache each time.
+   *
+   * In fact, "no-cache" is the default since {@link UiService} supports `ETag` / `If-None-Match`.
+   *
+   * Note that if the path matches #fingerprintRegex, #fingerprintedCacheControl is used _instead_.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/If-None-Match
+   */
+  cacheControl: string = 'no-cache'
+
+  /**
+   * Regular expression to match a fingerprint suffix. This is used to trigger a different `Cache-Control` directive
+   * specified in #fingerprintedCacheControl. The file must still exist with this exact path; this only serves to
+   * change which header value is returned.
+   */
+  fingerprintRegex: string = '\\.[0-9a-fA-F]{20,}\\.(js|css)$'
+
+  /**
+   * If files match the #fingerprintRegex, use this `Cache-Control` directive instead of #cacheControl.
+   * (Fingerprinted files can be cached much more aggressively.)
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+   */
+  fingerprintedCacheControl: string = 'max-age=31536000'
+
+  /*
+   * The maximum size of the content cache in number of package path. If the cache exceeds this size, the least recently
+   * used content will be removed from the cache.
+   */
+  contentCacheSize: int
+
+  _fingerprintPat: private cached member function(): @java(class="java.util.regex.Pattern") native
+}

@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * It combines data from {@link Feature.Set} and {@link MlModel}
+ * for an overview of a {@link Feature.Set}
+ */
+type Feature.Set.Overview mixes FeatureOverviewBase {
+
+  /**
+   * {@link Feature.Set#features}
+   */
+  features: set<!string serialized Feature>
+
+  /**
+   * count of {@link Feature.Set#columns} if featureSet is lambda backed and {@link Feature.Set#features} otherwise
+   */
+  featureCount: int = 0
+
+  /**
+   * Fetch method for the bridge
+   *
+   * @param spec
+   *          spec of the fetch call
+   *
+   * @return a collection of {@link Feature.Set.Overview} objects
+   */
+  fetch: function(spec: FetchSpec): FetchResult<Feature.Set.Overview>
+
+  /**
+   * Fetch count method for the bridge
+   *
+   * @param spec
+   *          spec of the fetch call
+   *
+   * @return the number of total {@link Feature.Set.Overview}
+   */
+  fetchCount: function(spec: FetchFilterSpec): !int
+}

@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A React Hook to get a {@link Config} value.
+ */
+@typeScript
+type UiSdlUseConfig {
+
+  /**
+   * Finds the value for the given {@link Config} `typeName` and `configPath`. If the value is not already
+   * in the Redux store, this Hook will retrieve it from the server and store it in the Redux store.
+   *
+   * It is advisable to use Config types in the following order (from best practice, to least preferrable):
+   *
+   * 1. Use UiSdlConfig as the Config type and extend it through UiSdlApplicationConfig. This will be
+   * preloaded by the framework.
+   * 2. Define your own singleton Config type (mixes DefaultInstance). All configs values will be eagerly
+   * retrieved from the server using @{DefaultInstance#inst}.
+   * 3. Use any Config type. Only the config for the given path and optional configId will be retrieved
+   * from the server.
+   *
+   * @param typeName
+   *           The name of the requested {@link Config} Type.
+   * @param configPath
+   *           The path to the config on the Type. For example, the field name for top-level
+   *           config fields, or a dot-delimited path for nested config fields.
+   * @param configId
+   *           Optional, the ID for the instance of the config.
+   * @param singleton
+   *           Optional, when true, the config type is assumed to be mixing {@link DefaultInstance}.
+   *           Also, as a optimization, {@link DefaultInstance#inst} will be used to retrieve all config paths and
+   *           configPath will only be used to return the specified's path value.
+   *
+   * @return `null` when the config hasn't been loaded yet, otherwise the config value.
+   */
+  useConfig: inline function(typeName: string, configPath: string, configId: string, singleton: boolean): any ts-client
+}

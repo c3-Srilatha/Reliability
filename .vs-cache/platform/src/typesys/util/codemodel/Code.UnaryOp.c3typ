@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "unary expression" represents setting an operator that takes a single expression, such as `!`. Unary expressions
+ * all have separate types. For example {@link Code.Not} for logical not (`!`).
+ *
+ * @see Code.BinaryOp
+ */
+abstract type Code.UnaryOp mixes Code.OpExpr {
+
+  /**
+   * The expression this operator takes.
+   */
+  expr: member function(): !Code.Expr
+
+  _expr: private !Code.Expr
+  op:    ~: string enum Code.UnaryOperator
+  arity: ~
+}

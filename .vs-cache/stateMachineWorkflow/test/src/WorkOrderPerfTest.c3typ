@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Entity type `WorkOrderPerfTest` represents a work order performance test schema used to track the status
+ * of work orders within a given state machine. The entity includes fields for the work order status 
+ * and its parent state machine.
+ */
+@db(datastore='kv', partitionKeyField='parent', persistDuplicates=true)
+entity type WorkOrderPerfTest schema name 'WRKRDR_PRF_TST' {
+
+  /**
+   * `status`: A required `string` field that indicates the current status of the work order. It can either
+   * be 'open' or 'closed'.
+   */
+  status: !string enum('open', 'closed')
+
+  /**
+   * `parent`: A required reference to the `TestStateMachine` entity that acts as the parent of this work order.
+   * It establishes the relationship between the work order and the state machine that controls its state.
+   */
+  parent: !TestStateMachine
+}

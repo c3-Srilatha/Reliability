@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Outer class for Cron (WIP).
+ */
+type Cron {
+
+  /**
+   * @return true if sync is required (e.g. active jobs don't match queue entries).
+   */
+  needsSync: function(): boolean
+
+  /**
+   * Syncs the cron jobs for the current app with the queue entries, adding any missing entries and removing any entries
+   * for jobs that no longer exist or are not active.
+   *
+   * @param clearCache
+   *        if true, the cache will be cleared before fetching the active jobs.
+   */
+  syncJobs: function(clearCache: boolean)
+
+  /**
+   * Disables cron synchronization for the current app.  When disabled, the CronJobs are not synchronized with the
+   * {@link CronQueue}. So no entries will be added to the queue for newly created/activated CronJobs and no queue
+   * entries will be removed for deleted/deactivated CronJobs.
+   */
+  disableSync: function()
+
+  /**
+   * Enables cron synchronization if it has been disabled by {@link disableSync}.
+   */
+  enableSync: function()
+
+  /**
+   * @return true if cron synchronization is disabled for the current app.
+   */
+  isSyncDisabled: function(): boolean
+}

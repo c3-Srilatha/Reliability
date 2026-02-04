@@ -1,0 +1,122 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for configs that define the credentials for a connection to an external LLM service.
+ */
+@config(doNotDefaultIfMissing=true)
+abstract type Genai.Llm.ExternalLlm.Config mixes Named, DefaultInstance, Config {
+  /**
+   * Sets up the credentials for this config in the calling process. This should not be called directly.
+   * It is called internally by base_llm.py when an LLM is being set up.
+   */
+  setupCredentials: private inline member function() py
+
+  /**
+   * Fetches data from the external LLM service.
+   * @param spec
+   *   The specification for the fetch.
+   * @return
+   *   The result of the fetch.
+   */
+  fetch: function(spec: FetchSpec): json js-rhino
+
+  /**
+   * Fetches data from the external LLM service and returns the count of the number of items fetched.
+   * @param spec
+   *   The specification for the fetch.
+   * @return
+   *   The count of the number of items fetched.
+   */
+  fetchCount: function(spec: FetchSpec): int js-rhino
+
+  /**
+   * Delete the config
+   * @param providerType
+   *   The provider type of the config to delete.
+   * @param name
+   *   The name of the config to delete.
+   * @return
+   *   The result of the delete operation.
+   */
+  deleteConfig: function(providerType: !string, name: !string ): !Genai.Llm.ExternalLlm.DeleteResult js-rhino
+
+  /**
+   * Fetch helper function that contains the logic for filtering and ordering the data fetched.
+   * @param spec
+   *   The specification for the fetch.
+   * @param data
+   *   The data to be filter and ordered
+   * @return
+   *   The information ordered and filtered.
+   */
+  fetchFilterOrderLogic: private function(spec: FetchSpec, data: [json]): json js-rhino
+
+  /**
+   * function to create or update an config from a spec.
+   * @param spec
+   *           The {@link Genai.Llm.CredentialSpec} to create the API key from.
+   */
+  setFromSpec: function(spec: !Genai.Llm.CredentialSpec, overwrite: boolean) py
+
+  /**
+   * Set the Genai.Llm.*.Config credential to GenaiCore.Llm.*.Auth
+   */
+  populateGenaiCoreCredential: private function(config: !Genai.Llm.ExternalLlm.Config) js
+
+  /**
+   * Get the list of providers.
+   * @return
+   *   A map object with the list of providers.
+   */
+  getProviderList: private function(): !map<string, string> js-rhino
+
+  /**
+   * Get the fields that are required for authentication.
+   * @param requiredOnly
+   *   If true, only return the fields that are required for authentication.
+   *
+   * @return
+   *   A JSON object with the fields that are required for authentication.
+   */
+  getAuthFields: function(requiredOnly: boolean): !map<string, map<string, any>> js-rhino
+
+  /**
+   * Get the fields and values that are required for authentication.
+   * @param name
+   *   The name of the config to get the auth fields for.
+   * @param requiredOnly
+   *   If true, only return the fields that are required for authentication.
+   *
+   * @return
+   *   A JSON object with the fields that are required for authentication.
+   */
+  getAuthFieldsInfo: function(name: !string, requiredOnly: boolean): !map<string, map<string, any>> js-rhino
+
+  /**
+   * No longer supported.
+   */
+  @deprecated(finalVersion="7.0", details="No longer supported.")
+  maxBackoffSeconds: int = 120
+
+  /**
+   * No longer supported.
+   */
+  @deprecated(finalVersion="7.0", details="No longer supported.")
+  maxRetryCount: int = 8
+
+  /**
+   * No longer supported.
+   */
+  @config(secret=true)
+  @deprecated(finalVersion="7.0", details="No longer supported.")
+  alternateCredentials: [json]
+
+  inst: ~ py
+}

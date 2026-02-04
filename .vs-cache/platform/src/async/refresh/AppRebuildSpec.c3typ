@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type AppRebuildSpec mixes RefreshDepsSpec {
+
+  /**
+   * Only used when {@link metricDeps} is specified.  If true, all instances of {@link MetricDependency} will be
+   * removed prior to rebuilding them.  If false, existing entries will remain.
+   *
+   * Important!: Note that if there are a lot of existing entries, removing them may take a very long time.
+   */
+  initialLoad: boolean
+
+  /**
+   * By default, certain errors (e.g. stored calc array overflow) are handled by creating {@link CalcFieldIssue} entries
+   * rather than causing the rebuild operation to fail.  Set this to true to cause those errors to fail the rebuild
+   * process instead.
+   */
+  dontAllowDataIssues: boolean
+}

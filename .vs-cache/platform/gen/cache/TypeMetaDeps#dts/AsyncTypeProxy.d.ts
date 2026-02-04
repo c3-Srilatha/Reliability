@@ -1,0 +1,106 @@
+// TypeScript definitions for the C3 type AsyncTypeProxy
+
+/**
+ * The {@link AsyncThinTypeSystem thin type system} returns a simpler interface to a type that has a different set of
+ * methods than the full {@link Type}/{@link TypeMeta} exposed by the {@link AsyncTypeSystem full type system}.
+ * In particular, the individual methods of types are not exposed directly, but must be invoked using the generic
+ * #call/#callByName/#callByPosition methods of the proxy. Since this is an async proxy, these all return promises.
+ *
+ * @remarks this represents a value passed to a method that expects an instance of AsyncTypeProxy
+ */
+declare interface IAsyncTypeProxy {
+}
+
+/**
+ * The {@link AsyncThinTypeSystem thin type system} returns a simpler interface to a type that has a different set of
+ * methods than the full {@link Type}/{@link TypeMeta} exposed by the {@link AsyncTypeSystem full type system}.
+ * In particular, the individual methods of types are not exposed directly, but must be invoked using the generic
+ * #call/#callByName/#callByPosition methods of the proxy. Since this is an async proxy, these all return promises.
+ *
+ * @remarks this represents a made instance of AsyncTypeProxy
+ */
+declare class AsyncTypeProxy {
+
+  /**
+   * @return the name of the type
+   */
+  name(): string;
+
+  /**
+   * @return whether or not this type is persistable (and whether this is a persistable proxy)
+   */
+  isPersistable(): boolean;
+
+  /**
+   * Get a synchronous proxy for this type. If this instance is a synchronous version, the same value is returned.
+   *
+   * @return instance of this proxy that dispatches actions in a synchronous manner
+   */
+  sync(): TypeProxy;
+
+  /**
+   * Get an asynchronous proxy for this type. If this instance is an asynchronous version, the same value is returned.
+   *
+   * @return instance of this proxy that dispatches actions in a asynchronous manner using Promise
+   */
+  async(): AsyncTypeProxy;
+
+  /**
+   * Get the instance of the type system that created this proxy.
+   */
+  typeSystem(): AsyncThinTypeSystem;
+
+  /**
+   * Get the connection on which this proxy operates.
+   *
+   * @return server connection
+   */
+  connection(): ServerConnection;
+
+  /**
+   * Get the persistable version of proxy this proxy if the underlying type is persistable.
+   */
+  asPersistable(failIfNot?: boolean): AsyncPersistableProxy | null;
+
+  /**
+   * Call a method on this type, specifying the arguments as varargs. It handles both static and member functions. For
+   * static methods thisArg should be `null`. If target method is overloaded, will match overload based on argument
+   * value types.
+   *
+   * This matches the JavaScript `Function.call` or any language's positional argument syntax (`fn(arg1, arg2, ...)`).
+   *
+   * @see #callByName
+   * @see #callByPosition
+   */
+  call(action: string, thisArg?: any | null, ...args: any | null[]): C3.Promise<any | null> | null;
+
+  /**
+   * Call a method on this type, specifying the arguments as name/value pairs. It handles both static and member
+   * functions. For member methods args should contain `this` key. If target method is overloaded will match overload
+   * based on argument value types.
+   *
+   * This matches Python's dict unpacking (`fn(**args)`).
+   *
+   * @see #call
+   */
+  callByName(action: string, args?: any | null): C3.Promise<any | null> | null;
+
+  /**
+   * Call a method on this type, specifying the arguments positionally as an array. It handles both static and member
+   * functions. For static methods thisArg should be `null`. If target method is overloaded, will match overload based
+   * on argument value types.
+   *
+   * This matches the JavaScript `Function.apply` or Python's list unpacking (`fn(*args)`).
+   *
+   * Additionally, you can specify a {@Link TimeoutSpec} for the call. Consequently the {@link Action} dispatched as a
+   * result of this call will have a timeout of the specified value. Alternatively, you can only choose to specify the
+   * {@link Duration} after which you would like the action to be interrupted; in that case, the action will be stopped
+   * after a duration that is twice the specified interrupt duration.
+   *
+   * @see #call
+   * @see Action#interrupt
+   * @see Action#stop
+   */
+  callByPosition(action: string, thisArg?: any | null, args?: C3.Array<any | null>, timeout?: string | null | TimeoutSpec | null | null): C3.Promise<any | null> | null;
+}
+

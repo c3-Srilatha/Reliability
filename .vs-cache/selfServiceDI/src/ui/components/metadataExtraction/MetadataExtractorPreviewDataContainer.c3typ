@@ -1,0 +1,380 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Metadata Extractor Preview Data Container Type
+ *
+ * This type defines the interface for the preview data container component
+ * that displays file tree, file preview, and extraction results in a three-panel layout.
+ */
+@typeScript
+type MetadataExtractorPreviewDataContainer mixes UiSdlComponent<UiSdlNoData> {
+
+  // ============================================================================
+  // Component State
+  // ============================================================================
+
+  /**
+   * Currently selected file for preview
+   */
+  selectedFile: string
+
+  /**
+   * Collection of files available for preview
+   */
+  files: [json]
+
+  /**
+   * Current extraction results
+   */
+  extractionResults: [json]
+
+  /**
+   * Loading state for data fetching operations
+   */
+  loading: boolean
+
+  /**
+   * Error state for failed operations
+   */
+  error: string
+
+  // ============================================================================
+  // File Content Reading
+  // ============================================================================
+
+  /**
+   * Currently loaded file content for preview
+   */
+  fileContent: any
+
+  /**
+   * Loading state for file content reading operations
+   */
+  isReadingContent: boolean
+
+  /**
+   * Error state for file content reading failures
+   */
+  contentError: string
+
+  // ============================================================================
+  // Source Collection Files
+  // ============================================================================
+
+  /**
+   * Files fetched from the SourceCollection for preview and processing
+   *
+   * This array contains file objects fetched from FileSourceCollection.listFiles.
+   * Each file object includes metadata such as id, name, size, type, and kind.
+   * This data is used for file selection and preview functionality.
+   */
+  sourceCollectionFiles: [json]
+
+  /**
+   * Extracted tags rendered in the grid
+   */
+  extractedTags: [json]
+
+  /**
+   * Whether tag extraction is running
+   */
+  isExtractingTags: boolean
+
+  /**
+   * Error during tag extraction
+   */
+  extractError: string
+
+  // ============================================================================
+  // Actions and Reducers
+  // ============================================================================
+  // ============================================================================
+  // FETCH_SOURCE_COLLECTION_FILES Action and Reducer
+  // ============================================================================
+
+  /**
+   * Fetch files from a SourceCollection for preview and processing
+   *
+   * This action triggers the fetching of files from FileSourceCollection.listFiles.
+   * It requires a sourceCollectionName parameter to specify which collection to fetch from.
+   * The epic will handle the async operation and dispatch a success/failure action.
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param sourceCollectionName - Name of the SourceCollection to fetch files from
+   * @returns Redux action for fetching source collection files
+   */
+  @uiSdlActionCreator(actionType='FETCH_SOURCE_COLLECTION_FILES')
+  fetchSourceCollectionFilesAction: function(componentId: !string,
+                                             sourceCollectionName: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Action for successful source collection files fetch
+   *
+   * This action is dispatched when files are successfully fetched from a SourceCollection.
+   * It contains the fetched files data and component ID.
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param files - Array of files fetched from the SourceCollection
+   * @returns Redux action for successful file fetch
+   */
+  @uiSdlActionCreator(actionType='FETCH_SOURCE_COLLECTION_FILES_SUCCESS')
+  fetchSourceCollectionFilesSuccessAction: function(componentId: !string, files: ![json]): !UiSdlReduxAction ts-client
+
+  /**
+   * Action for failed source collection files fetch
+   *
+   * This action is dispatched when file fetching fails from a SourceCollection.
+   * It contains the error message and component ID.
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param error - Error message describing the failure
+   * @returns Redux action for failed file fetch
+   */
+  @uiSdlActionCreator(actionType='FETCH_SOURCE_COLLECTION_FILES_FAILURE')
+  fetchSourceCollectionFilesFailureAction: function(componentId: !string, error: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer for handling source collection files fetch actions
+   *
+   * This reducer is called when files are successfully fetched from a SourceCollection.
+   * It updates the sourceCollectionFiles field with the fetched file data.
+   *
+   * @param state - Current application state
+   * @param action - Redux action containing componentId and files
+   * @returns Updated state with the fetched source collection files
+   */
+  @uiSdlReducer(actionType='FETCH_SOURCE_COLLECTION_FILES_SUCCESS')
+  fetchSourceCollectionFilesSuccessReducer: function(state: !UiSdlReduxState,
+                                                     action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Get the currently fetched source collection files from the component state
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param state - Current application state
+   * @returns Array of source collection files
+   */
+  getSourceCollectionFiles: function(componentId: !string, state: !UiSdlReduxState): ![json] ts-client
+
+  // ============================================================================
+  // READ_FILE_CONTENT Actions and Reducer
+  // ============================================================================
+
+  /**
+   * Read the content of a selected file for preview
+   *
+   * This action triggers the reading of file content from File.readContentValue.
+   * It requires a fileUrl parameter to specify which file to read.
+   * The epic will handle the async operation and dispatch success/failure actions
+   * based on the API response.
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param fileUrl - URL of the file to read content from
+   * @returns Redux action for reading file content
+   */
+  @uiSdlActionCreator(actionType='READ_FILE_CONTENT')
+  readFileContentAction: function(componentId: !string, fileUrl: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Action for successful file content reading
+   *
+   * This action is dispatched when file content is successfully read.
+   * It contains the file content data and component ID.
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param fileContent - Content of the file that was read
+   * @param fileMetadata - Metadata about the file (optional)
+   * @returns Redux action for successful file content reading
+   */
+  @uiSdlActionCreator(actionType='READ_FILE_CONTENT_SUCCESS')
+  readFileContentSuccessAction: function(componentId: !string,
+                                         fileContent: !any,
+                                         fileMetadata: !any): !UiSdlReduxAction ts-client
+
+  /**
+   * Action for failed file content reading
+   *
+   * This action is dispatched when file content reading fails.
+   * It contains the error message and component ID.
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param error - Error message describing the failure
+   * @returns Redux action for failed file content reading
+   */
+  @uiSdlActionCreator(actionType='READ_FILE_CONTENT_FAILURE')
+  readFileContentFailureAction: function(componentId: !string, error: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer for handling file content reading success actions
+   *
+   * This reducer is called when file content is successfully read.
+   * It updates the fileContent, isReadingContent, and contentError fields.
+   *
+   * @param state - Current application state
+   * @param action - Redux action containing componentId, fileContent, and fileMetadata
+   * @returns Updated state with the file content and cleared loading/error states
+   */
+  @uiSdlReducer(actionType='READ_FILE_CONTENT_SUCCESS')
+  readFileContentSuccessReducer: function(state: !UiSdlReduxState,
+                                          action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Reducer for handling file content reading failure actions
+   *
+   * This reducer is called when file content reading fails.
+   * It updates the contentError field and clears the loading state.
+   *
+   * @param state - Current application state
+   * @param action - Redux action containing componentId and error
+   * @returns Updated state with the error message and cleared loading state
+   */
+  @uiSdlReducer(actionType='READ_FILE_CONTENT_FAILURE')
+  readFileContentFailureReducer: function(state: !UiSdlReduxState,
+                                          action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Get the currently loaded file content from the component state
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param state - Current application state
+   * @returns The file content or null if not loaded
+   */
+  getFileContent: function(componentId: !string, state: !UiSdlReduxState): !any ts-client
+
+  /**
+   * Get the current file content reading loading state
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param state - Current application state
+   * @returns True if currently reading file content, false otherwise
+   */
+  getIsReadingContent: function(componentId: !string, state: !UiSdlReduxState): !boolean ts-client
+
+  /**
+   * Get the current file content reading error state
+   *
+   * @param componentId - Unique identifier for the component instance
+   * @param state - Current application state
+   * @returns Error message if file content reading failed, empty string otherwise
+   */
+  getContentError: function(componentId: !string, state: !UiSdlReduxState): !string ts-client
+
+  /**
+   * Trigger tag extraction for a file
+   */
+  @uiSdlActionCreator(actionType='EXTRACT_TAGS')
+  extractTagsAction: function(componentId: !string,
+                              fileUrl: !string,
+                              llmClientName: string,
+                              categoryIds: ![string],
+                              systemPrompt: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Store successful extraction results
+   */
+  @uiSdlReducer(actionType='EXTRACT_TAGS_SUCCESS')
+  extractTagsSuccessReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Store extraction error
+   */
+  @uiSdlReducer(actionType='EXTRACT_TAGS_FAILURE')
+  extractTagsFailureReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Selector for extracted tags
+   */
+  getExtractedTags: function(componentId: !string, state: !UiSdlReduxState): ![json] ts-client
+
+  /**
+   * Selector for loading state
+   */
+  getIsExtractingTags: function(componentId: !string, state: !UiSdlReduxState): !boolean ts-client
+
+  /**
+   * Selector for error
+   */
+  getExtractError: function(componentId: !string, state: !UiSdlReduxState): !string ts-client
+
+  /**
+   * Set extracting tags loading state
+   */
+  @uiSdlActionCreator(actionType='SET_EXTRACTING_TAGS')
+  setExtractingTagsAction: function(componentId: !string, isExtracting: !boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Set extraction error state
+   */
+  @uiSdlActionCreator(actionType='SET_EXTRACT_ERROR')
+  setExtractErrorAction: function(componentId: !string, error: !string): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer for setting extracting tags loading state
+   */
+  @uiSdlReducer(actionType='SET_EXTRACTING_TAGS')
+  setExtractingTagsReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Reducer for setting extraction error state
+   */
+  @uiSdlReducer(actionType='SET_EXTRACT_ERROR')
+  setExtractErrorReducer: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  // ============================================================================
+  // Epic for Source Collection Files
+  // ============================================================================
+
+  /**
+   * Epic for fetching files from a SourceCollection
+   *
+   * This epic handles the async operation of fetching files from FileSourceCollection.listFiles.
+   * It listens for FETCH_SOURCE_COLLECTION_FILES actions and dispatches success/failure actions
+   * based on the API response.
+   *
+   * @param actionStream - Stream of Redux actions
+   * @param stateStream - Stream of Redux state
+   * @returns Observable of Redux actions
+   */
+  @uiSdlEpic(actionType='FETCH_SOURCE_COLLECTION_FILES')
+  fetchSourceCollectionFilesEpic: private function(actionStream: !UiSdlActionsObservable,
+                                                   stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+
+  // ============================================================================
+  // Epic for File Content Reading
+  // ============================================================================
+
+  /**
+   * Epic for reading file content
+   *
+   * This epic handles the async operation of reading file content from File.readContentValue.
+   * It listens for READ_FILE_CONTENT actions and dispatches success/failure actions
+   * based on the API response.
+   *
+   * @param actionStream - Stream of Redux actions
+   * @param stateStream - Stream of Redux state
+   * @returns Observable of Redux actions
+   */
+  @uiSdlEpic(actionType='READ_FILE_CONTENT')
+  readFileContentEpic: private function(actionStream: !UiSdlActionsObservable,
+                                        stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+
+  // ============================================================================
+  // Epic for Tag Extraction
+  // ============================================================================
+
+  /**
+   * Epic for metadata tag extraction
+   *
+   * Triggers GenaiCore.Unstructured.ProcessorComponent.TagExtraction.metadataExtraction with
+   * llm client by name and tag categories by ID references.
+   */
+  @uiSdlEpic(actionType='EXTRACT_TAGS')
+  extractTagsEpic: private function(actionStream: !UiSdlActionsObservable,
+                                    stateStream: !UiSdlStatesObservable): !UiSdlActionsObservable ts-client
+}

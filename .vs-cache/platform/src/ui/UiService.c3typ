@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Default UI content server and default UI router. This handles requests for web resources which are not backed by
+ * custom endpoints (other types which mixin {@link Restful} or use {@link Ann.Restful @restful}).
+ *
+ * @see UiService.Config
+ */
+type UiService mixes Restful {
+
+  handle: ~
+
+  /**
+   * Generates a {@link HttpResponse} for the content at the given metadataPath. Returns 404 if no content is found.
+   */
+  responseWithContentCaching: function(metadataPath: !string serialized Pkg.Path, req: HttpRequest): HttpResponse
+
+  /**
+   * Generates a {@link HttpResponse} with the appropriate cookies
+   */
+  responseWithContent: function(content: Content, req: HttpRequest): HttpResponse
+
+  /**
+   * Return the list of default files checked if the URL ends in a directory. This always includes "index.html".
+   *
+   * @see UiService.Config#defaultFiles
+   * @see UiService.Config#INDEX
+   */
+  defaultFiles: cached function(): [string]
+}

@@ -1,0 +1,118 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type implements methods necessary to interact with JWT (Json Web Token) format bound services
+ */
+type Jwt {
+
+  /**
+   * State for managing all header claims
+   */
+  header: map<string, string>
+
+  /**
+   * State for managing all payload claims
+   */
+  payload: map<string, any>
+
+  /**
+   * Returns payload claim as string
+   *
+   * @param claimKey
+   *        claim key
+   * @return
+   *        claim value as string if success; null otherwise
+   */
+  claimToStr: inline member function(claimKey: !string, failIfMissing: boolean): string
+
+  /**
+   * Returns payload claim as boolean
+   *
+   * @param claimKey
+   *        claim key
+   * @return
+   *        claim value as boolean if success; null otherwise
+   */
+  claimToBoolean: inline member function(claimKey: !string, failIfMissing: boolean): boolean
+
+  /**
+   * Returns payload claim as double
+   *
+   * @param claimKey
+   *        claim key
+   * @return
+   *        claim value as double if success; null otherwise
+   */
+  claimToDouble: inline member function(claimKey: !string, failIfMissing: boolean): double
+
+  /**
+   * Returns payload claim as long
+   *
+   * @param claimKey
+   *        claim key
+   * @return
+   *        claim value as long if success; null otherwise
+   */
+  claimToLong: inline member function(claimKey: !string, failIfMissing: boolean): int
+
+  /**
+   * Returns payload claim as string array
+   *
+   * @param claimKey
+   *        claim key
+   * @return
+   *        claim values as string array if success; empty otherwise
+   */
+  claimToStrArray: inline member function(claimKey: !string, failIfMissing: boolean): [string]
+
+  @deprecated(finalVersion = "8.8", details="Use verify(Jwt.Spec.Verify spec, boolean failIfInvalid) instead")
+  verify: inline function(token: !string, algKind: !string enum JwsAlgorithmKind, key: !string, oidcCertKind: string enum OidcCertKind, failIfInvalid: boolean) : Jwt
+
+  /**
+   * Validates JWT token using the user supplied {@link JwtVerificationSpec}
+   *
+   * @param spec
+   *        spec that specifies the verification parameters
+   * @param failIfInvalid
+   *        if true, throws an error if the token is invalid, else returns empty token
+   *
+   * @return Jwt token if succeed; empty token otherwise
+   */
+  verify: inline function(spec: !Jwt.Spec.Verify, failIfInvalid: boolean): Jwt
+
+  /**
+   * Decodes JWT token. This method helps a user to inspect the contents of a Jwt token.
+   * It does not check for the authenticity of a token. If user intends to verify Jwt claims before consuming them, user
+   * must use verify (@see Jwt) method.
+   *
+   * @param token
+   *        JWT Encoded token
+   *
+   * @return jwt token if succeed; empty token otherwise
+   */
+  decode: inline function(token: !string, failIfInvalid: boolean): Jwt
+
+  @deprecated(finalVersion = "8.8", details="Use sign(Jwt.Spec.Sign spec) instead")
+  sign: inline member function(key: !string, algKind: !string enum JwsAlgorithmKind): !string
+
+  /**
+   * Creates a JWT token and signs it using the algorithm specified.
+   *
+   * @param spec
+   *        spec that specifies the signing parameters
+   *
+   * @return the serialized signed token string
+   */
+  sign: inline member function(spec: Jwt.Spec.Sign): !string
+
+  /**
+   * Returns true if the token is Jwt; false otherwise
+   */
+  isJwt: cached inline function(token: !string): boolean
+}

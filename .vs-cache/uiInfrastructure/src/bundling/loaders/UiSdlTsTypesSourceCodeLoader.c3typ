@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type source code loader (non-React *.c3typ annotated with @typescript).
+ */
+@codeGeneratorWithCaching
+private type UiSdlTsTypesSourceCodeLoader mixes UiSdlFileLoader {
+
+  /**
+   * Generates source code for each type.
+   */
+  produceAll: ~ js-server
+
+  /**
+   * Generates source code for one type.
+   */
+  produceOne: function(typeName: string): string js-server
+
+  /**
+   * Generates source code for multiple types.
+   */
+  produceBatch: function(typeNames: [string]): UiSdlCodeGenBatchResult js-server
+
+  /**
+   * Adds imports and exports for epics, reducers, action creators and default values.
+   *
+   * @param code
+   *           The raw code that will have imports/exports added
+   * @param componentType
+   *           The typeRef that refers to the type that is getting migrated
+   * @return The modified code
+   */
+  addImportsAndExports: function(code: string, componentTypeMeta: TypeMeta): string js-server
+
+  /**
+   * Calls {@link addImportsAndExports} for each input
+   * @param inputs
+   *            Pair.fst represents `code` parameter in addImportsAndExports;
+   *            Pair.snd represents `componentType` parameter in addImportsAndExports
+   * @return outputs from {@link addImportsAndExports} in the same order as the inputs parameter
+   */
+  addImportsAndExportsBatch: function(inputs: [Pair<string, Type>]): [UiSdlMetadataLoaderResult] js-server
+
+  /**
+   * Adds a defaultValues export, if the type is not *React
+   *
+   * @param typeRef
+   *           The typeRef whose type will have defaultValues added
+   * @return export statement
+   */
+  addDefaultValuesExport: function(typeMeta: TypeMeta): string js-server
+}

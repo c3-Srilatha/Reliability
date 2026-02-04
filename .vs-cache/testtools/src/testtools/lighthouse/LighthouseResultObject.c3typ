@@ -1,0 +1,95 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Lighthouse Results is the output of lighthouse, it contains some metadata about the run and the results in the various subproperties.
+ * see https://github.com/GoogleChrome/lighthouse/blob/master/docs/understanding-results.md
+ */
+type LighthouseResultObject {
+
+  /**
+   * The version of Lighthouse with which these results were generated.
+   */
+  lighthouseVersion: string
+
+  /**
+   * The ISO-8601 timestamp of when the results were generated.
+   */
+  fetchTime: datetime
+
+  /**
+   * The user agent string of the version of Chrome that was used by Lighthouse.
+   */
+  userAgent: string
+
+  /**
+   * Lighthouse result environment object
+   */
+  environment: LighthouseResultEnvironment
+
+  /**
+   * The URL that was supplied to Lighthouse and initially navigated to.
+   */
+  requestedUrl: string
+
+  /**
+   * The URL that Lighthouse ended up auditing after redirects were followed.
+   */
+  finalUrl: string
+
+  /**
+   * The overall score 0-100, a weighted average of all category scores.
+   * NOTE: Only the PWA category has a weight by default
+   */
+  score: double
+
+  /**
+   * An object containing the results of the audits.
+   */
+  audits: map<string, LighthouseResultsAudit>
+
+  /**
+   * An object containing information about the configuration used by Lighthouse.
+   */
+  configSettings: LighthouseConfigSettings
+
+  /**
+   * An object containing information about how long Lighthouse spent auditing.
+   */
+  timing: LighthouseResultsTiming
+
+  /**
+   * An array containing the different categories, their scores, and the results of the audits that comprise them.
+   */
+  categories: map<string, LighthouseResultsReportCategories>
+
+  /**
+   * An object containing the display groups of audits for the report.
+   */
+  categoryGroups: map<string, LighthouseConfigGroup>
+
+  /**
+   * List of run warnings.
+   */
+  runWarnings: [string]
+
+  /**
+   * Runtime error object.
+   */
+  runtimeError: LighthouseResultObjectRuntimeError
+
+  /**
+   * i18n object
+   */
+  i18n: LighthouseResultObjectI18n
+
+  /**
+   * An array of stack packs as found in the artifacts object.
+   */
+  stackPacks: [LighthouseResultObjectStackPack]
+}

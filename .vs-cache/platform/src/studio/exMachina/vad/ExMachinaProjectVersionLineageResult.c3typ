@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents one {@link ExMachinaProject} in a flat project hierarchy list under an {@link ExMachinaProjectRoot}.
+ */
+type ExMachinaProjectVersionLineageResult {
+
+  /**
+   * The id of the {@link ExMachinaProject}
+   */
+  id: string
+
+  /**
+   * The id of the parent {@link ExMachinaProject}
+   */
+  parent: string
+
+  /**
+   * The version number of the {@link ExMachinaProject}
+   */
+  version: int
+
+  /**
+   * The version number of the {@link parent} {@link ExMachinaProject}
+   */
+  parentVersion: int
+
+  /**
+   * The version numbers of the {@link ExMachinaProject}s that have the current project as a parent
+   */
+  childrenVersions: [int]
+
+  /**
+   * When the {@link ExMachinaProject} was created
+   */
+  created: datetime
+
+  /**
+   * When the {@link ExMachinaProject} was last updated
+   */
+  updated: datetime
+
+  /**
+   * The name of the {@link ExMachinaProject}
+   */
+  name: string
+
+  /**
+   * Whether the {@link ExMachinaProject} is the head project for the {@link ExMachinaProjectRoot}
+   */
+  isHead: boolean
+
+  /**
+   * The description for the {@link ExMachinaProject}
+   */
+  description: string
+
+  /**
+   * The datasets used in the {@link ExMachinaProject}
+   */
+  datasets: [ExMachinaDatasetMetadata]
+
+  /**
+   * A list of dataset ids for any {@link ExMachinaDatasetMetadata} objects used in the
+   * {@link ExMachinaProject.definition} that could not be fetched by the user, either because the dataset was deleted
+   * or due to ACLs.
+   */
+  unavailableDatasetIds: [string]
+}

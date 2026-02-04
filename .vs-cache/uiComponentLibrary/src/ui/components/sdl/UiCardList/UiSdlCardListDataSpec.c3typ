@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The specification of data retrieval for instances of the {@link UiSdlCardList} component type.
+ */
+@typeScript
+type UiSdlCardListDataSpec mixes UiSdlFieldBasedDataSpec {
+
+  /**
+   * Spec for how to configure the link on a card.
+   */
+  link: UiSdlCardListLinkFieldSetting
+
+  /**
+   * Spec for how to configure the header field of a card.
+   */
+  header: UiSdlFieldBasedDataDynamicValueSpecSetting
+
+  /**
+   * Spec for how to configure the subheader field of a card.
+   */
+  subHeader: UiSdlFieldBasedDataDynamicValueSpecSetting
+
+  /**
+   * Spec for how to configure the numerical indicator field of a card.
+   */
+  numericalIndicator: UiSdlCardListNumericalIndicatorFieldSetting
+
+  /**
+   * Spec for how to configure the content body field of a card.
+   */
+  contentBodyText: UiSdlCardListContentBodyTextFieldSetting
+
+  /**
+   * Spec for how to configure the footer field of a card.
+   */
+  footerText: UiSdlFieldBasedDataDynamicValueSpecSetting
+
+  /**
+   * Number of cards to display in card list. Use -1 to show all card items.
+   */
+  numberOfCards: int = 4
+
+  /**
+   * Converts the data spec to a partially applied action.
+   */
+  toPartiallyAppliedActions: ~ ts-client
+
+  /**
+   * {@link FetchFilterSpec} to be used in the fetch call in toPartiallyAppliedActions method.
+   */
+  filterSpec: FetchFilterSpec
+
+  /**
+   * Array of spec to be used as a universal sorting bucket.
+   */
+  sortFields: [UiSdlCardListSortFieldDataSpecSetting]
+}

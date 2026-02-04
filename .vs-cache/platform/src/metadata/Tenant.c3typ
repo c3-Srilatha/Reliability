@@ -1,0 +1,94 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@deprecated
+@db(unique=['name'], index+=['name'], archive=true, versionHistory=true)
+@facade(tenant='c3', tag='c3')
+@action(group+='cluster-admin')
+entity type Tenant mixes EnvBillable, Value schema name 'TENANCY_TENANT' {
+
+  /**
+   * Name must match the id (enforced in beforeCreate) and can't be changed.
+   */
+  @db(writeOnce=true)
+  name: ~ = id
+
+  description: string
+  alias:       string
+  defaultTag:  string
+
+  /**
+   * The organization that owns this tenant (e.g. C3, Enel).
+   * This field is to be used to associate Tenants with their respective owner organizations.
+   * PLAT-12139 is the work to consume this field
+   */
+  @beta
+  owner: string
+
+  /**
+   * Creates or updates a tenant and tag and enables active metadata for it. There needs to be a package in one of
+   * the known metadata repositories that match the tenant name. If tag is not provided then creates tag with the
+   * name of "prod".
+   */
+  upsertWithActiveMetadata: function(name: !string, tag: string): !Tag
+
+  /**
+   * This function will verify that access control is setup correctly for a tenant
+   * that will be shared across other tenants (for example the 'reference' tenant).
+   * It will make sure that the 'Public' and 'EVERYONE' Users exist.
+   */
+  verifySharedAuthz: function(tenantId: string): boolean js-server
+
+  /**
+   * Rename tenant
+   */
+  rename: function(oldId: string, newId: string) js-server
+
+  /**
+   * Check if a tenant exists.
+   *
+   * @param tenant
+   *           Tenant id to check.
+   * @return true the tenant exists.
+   */
+  tenantExists: function(tenant: !string): boolean
+
+  /**
+   * Return all tags for the specified tenants.  If tagSpec is provided, Tag#fetch is performed with that spec.
+   *
+   * @param tenants
+   *           list of tenants to fetch
+   * @param tagSpec
+   *           spec applied to each tag fetch
+   */
+  tenantsTags: function(tenants: !?[string], tagSpec: FetchSpec): map<string, [Tag]>
+
+  /**
+   * Destroy tenant datastore if per tenant datastores is enabled
+   *
+   * @param tenantName
+   *           name of the tenant
+   */
+  destoryPerTenantDs: private function(tenantName: !string)
+
+  /**
+   * List of tenants in the server. For a RemoteTag server only c3 and remote tenant is returned
+   */
+  tenants: function(spec: FetchSpec): [Tenant]
+
+  /**
+   * @return list of worker node ids assigned to this tenant
+   */
+  workerAllocation: member function(): [string]
+
+  beforeCreate: ~
+  beforeUpdate: ~
+  beforeRemove: ~
+  afterCreate:  ~
+  afterUpdate:  ~
+}

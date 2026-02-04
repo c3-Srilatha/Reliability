@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Enum specifying the types of aggregation supported for populating fields of
+ * {@link Observability.Trace} from the values of {@link Observability.Span#attributes} of spans within the trace.
+ * Aggregations are calulated incrementally as each new span is added.
+ *
+ * @See Observability.Trace#aggregationMapper for additional details.
+ */
+@beta
+enum type Observability.Trace.Aggregation {
+
+  /**
+   * Trace field will be populated using minimum of span attribute values recorded so far.
+   * This operation is applicable to primitive numeric attribute values only.
+   */
+  MIN = 'min'
+
+  /**
+   * Trace field will be populated using maximum of span attribute values recorded so far.
+   * This operation is applicable to primitive numeric attribute values only.
+   */
+  MAX = 'MAX'
+
+  /**
+   * Trace field will be populated using summation of span attribute values recorded so far.
+   * This operation is applicable to primitive numeric attribute values only.
+   */
+  SUM = 'sum'
+
+  /**
+   * Trace field will be populated by counting the existence of a span attribute key recorded so far.
+   * This operation is applicable to any span attribute key, irrespective of its value.
+   */
+  COUNT = 'count'
+
+  /**
+   * Trace field will be populated using "OR" of span attribute values recorded so far.
+   * This operation is applicable to boolean attribute values only.
+   */
+  ANY = 'any'
+
+  /**
+   * Trace field will be populated using "AND" of span attribute values recorded so far.
+   * This operation is applicable to boolean attribute values only.
+   */
+  ALL = 'all'
+
+  /**
+   * Trace field will be populated by appending span attribute values recorded so far.
+   * To use this feature, trace field type must be a list or array. This aggregation will be applied on root spans only
+   * to propagate attribute values from root spans to trace.
+   * Root {@link Observability.Span}s are spans whose {@link Observability.Span#parentSpanId} is null.
+   */
+  // Developer Note: There may be more than one root span until context propagation is enabled.
+  APPEND = 'append'
+}

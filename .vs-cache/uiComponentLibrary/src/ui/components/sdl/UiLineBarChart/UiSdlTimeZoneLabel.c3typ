@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to represent a time zone label for the UI and its respective actions to update the prop.
+ */
+@typeScript
+type UiSdlTimeZoneLabel {
+
+  /**
+   * Whether or not to show the timezone label below chart.
+   */
+  showTimeZoneLabel: boolean = false
+
+  /**
+   * The label to display below the chart.
+   * By default the label is the time zone configured for the component. But it can be overridden setting a value here.
+   */
+  timeZoneLabel: string | UiSdlDynamicValueSpec
+
+  /**
+   * The format to use for the time zone label.
+   * - [longGeneric](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#longgeneric): Display the time zone name in long format (e.g. "Pacific Time").
+   * - [shortGeneric](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#shortgeneric): Display the time zone name in short format (e.g. "PT").
+   * Default value is 'longGeneric'.
+   */
+  timeZoneNameFormat: string enum ('longGeneric', 'shortGeneric') = 'longGeneric'
+
+  /**
+   * Triggered when time zone label visibility needs to be changed.
+   *
+   * @param id
+   *           Id of the component.
+   * @param showLabel
+   *           Whether or not to show the timezone label below chart.
+   *
+   * @returns An `TZ_LABEL_VISIBILITY_CHANGE` action for this instance.
+   *   - payload {string} The id of the component where timeZone label is rendered.
+   */
+  @uiSdlActionCreator(actionType='TZ_LABEL_VISIBILITY_CHANGE')
+  changeLabelVisibilityAction: function(id: string, showLabel: !boolean): !UiSdlTimeZoneLabelVisibilityAction ts-client
+
+  /**
+   * Listens for actions of type `TZ_LABEL_VISIBILITY_CHANGE`, then updates {@link showTimeZoneLabel} flag.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='TZ_LABEL_VISIBILITY_CHANGE')
+  labelVisibilityChangeReducer: function(state: !UiSdlReduxState,
+                                           action: UiSdlTimeZoneLabelVisibilityAction): !UiSdlReduxState ts-client
+}

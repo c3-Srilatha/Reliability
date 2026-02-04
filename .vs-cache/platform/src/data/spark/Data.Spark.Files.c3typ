@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represent a collection of files of the same contentType and schema
+ * to be read together into a {@link Data.Spark.DataFrame} by {@link SparkCluster}
+ */
+private type Data.Spark.Files {
+
+  /**
+   * List of urls represent the collection of files
+   */
+  urls: [string]
+
+  /**
+   * {@link MediaType} of this collection of files.
+   * Supported mediaType: PLAIN_TEXT, CSV, PARQUET, JSON, AVRO, XML
+   */
+  mediaType: MediaType
+
+  /**
+   * Schema (column name along with {@link ValueType}) of the files in this collection.
+   * e.g. TupleType.fromString("{col1: string, col2: int, col3: datetime}")
+   */
+  schema: TupleType
+
+  /**
+   * Spark data source options
+   * See https://spark.apache.org/docs/latest/sql-data-sources.html for available options of different data sources.
+   */
+  options: map<string, any>
+
+  /**
+   * Update a {@link Data.Spark.Files} instance with a list of {@link SourceFile}.
+   * If mediaType or schema is null, it will be inferred from the given source files.
+   */
+  withSourceFiles: member function(files: ![SourceFile]): Data.Spark.Files
+}

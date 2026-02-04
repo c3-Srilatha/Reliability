@@ -1,0 +1,111 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The config object is the primary method of customizing Lighthouse to suit your use case.
+ * Using a custom config, you can limit the audits to run, add additional loads of the page under special conditions, add your own custom checks, tweak the scoring, and more.
+ */
+type LighthouseConfig {
+
+  /**
+   * The extends property controls if your configuration should inherit from the default Lighthouse configuration.
+   */
+  extends: string
+
+  /**
+   * The settings property controls various aspects of running Lighthouse such as CPU/network throttling and audit whitelisting/blacklisting.
+   * This is an example:
+   *      {
+   *       settings: {
+   *         onlyCategories: ['performance'],
+   *         onlyAudits: ['works-offline'],
+   *       }
+   *      }
+   */
+  settings: LighthouseConfigSettings
+
+  /**
+   * The passes property controls how to load the requested URL and what information to gather about the page while loading.
+   * Each entry in the passes array represents one load of the page (e.g. 4 entries in passes will load the page 4 times), so be judicious about adding multiple entries here to avoid extending run times.
+   * This is an example:
+   *      {
+   *       passes: [
+   *         {
+   *           passName: 'fastPass',
+   *           recordTrace: true,
+   *           useThrottling: false,
+   *           networkQuietThresholdMs: 0,
+   *           gatherers: ['fast-gatherer'],
+   *         },
+   *         {
+   *           passName: 'slowPass',
+   *           recordTrace: true,
+   *           useThrottling: true,
+   *           gatherers: ['slow-gatherer'],
+   *         }
+   *       ]
+   *      }
+   */
+  passes: [LighthouseConfigPass]
+
+  /**
+   * The audits property controls which audits to run and include with your Lighthouse report.
+   * This is an example:
+   *      {
+   *       audits: [
+   *         'first-meaningful-paint',
+   *         'first-interactive',
+   *         'byte-efficiency/uses-optimized-images',
+   *       ]
+   *      }
+   */
+  audits: [string]
+
+  /**
+   * The categories property controls how to score and organize the audit results in the report.
+   * Each category defined in the config will have an entry in the reportCategories property of Lighthouse's output. The category output contains the child audit results along with an overall score for the category.
+   * This is an example:
+   *      {
+   *       categories: {
+   *         performance: {
+   *           name: 'Performance',
+   *           weight: 0.5,
+   *           description: 'This category judges your performance',
+   *           audits: [
+   *             {id: 'first-meaningful-paint', weight: 2, group: 'perf-metric'},
+   *             {id: 'first-interactive', weight: 3, group: 'perf-metric'},
+   *             {id: 'consistently-interactive', weight: 5, group: 'perf-metric'},
+   *           ],
+   *        }
+   *       }
+   *      }
+   */
+  categories: map<string, LighthouseConfigCategory>
+
+  /**
+   * The groups property controls how to visually group audits within a category.
+   * For example, this is what enables the grouped rendering of metrics and accessibility audits in the report.
+   * This is an example:
+   *      {
+   *       categories: {
+   *         performance: {
+   *           audits: [
+   *             {id: 'my-performance-metric', weight: 2, group: 'perf-metric'},
+   *           ],
+   *         }
+   *       },
+   *       groups: {
+   *         'perf-metric': {
+   *           title: 'Metrics',
+   *           description: 'These metrics encapsulate your web app\'s performance across a number of dimensions.'
+   *         },
+   *       }
+   *      }
+   */
+  groups: map<string, LighthouseConfigGroup>
+}

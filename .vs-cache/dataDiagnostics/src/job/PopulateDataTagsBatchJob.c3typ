@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The batch job to populate data tags on a cron schedule.
+ */
+entity type PopulateDataTagsBatchJob extends BatchJob<PopulateDataTagsBatchJob, PopulateDataTagsBatchJobOptions, PopulateDataTagsBatch> type key 'PDTBJ' {
+
+  /**
+   * Starts a {@link PopulateDataTagsBatchJob}.
+   * @param cronJob
+   *           The {@link CronJob} which kicked off this batch job.
+   * @param batchSize
+   *           The number of {@link DataTag}s placed in a single batch.
+   * @return A started {@link PopulateDataTagsBatchJob}.
+   */
+  startJob: function(cronJob: !CronJob, batchSize: int = 10): !PopulateDataTagsBatchJob js-rhino
+
+  doStart:      ~ js-rhino
+  processBatch: ~ js-rhino
+
+  /**
+   * Based on {@link PopulateDataTagsBatchJobConfig} this function may optionally persist {@link DataTagCountHistory}
+   * instances for each data tag called in the scope of this job.
+   */
+  allComplete: ~ js-rhino
+
+  /**
+   * Applies all of the expressions inside of the {@link DataTagBase} instances passed in on a subset of entities
+   * of type {@link DataTagBase#srcType}. Function used to batch all enabled {@link DataTagBase} instances on the same
+   * type in a {@link MapReduce}-like way.
+   * @param entityIds
+   *           The set of entities of type {@link DataTagBase#srcType} which the baseDataTags are being evaluated on.
+   * @param baseDataTags
+   *           The set of {@link DataTagBase} instances which are having their expressions evaluated
+   */
+  applyBatchedExpressions: function(entityIds: ![string], baseDataTags: ![DataTagBase]) js-rhino
+}

@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Holder for one of a variety of common types. At most one field may be non-null.
+ */
+inline type PrimitiveOrObj {
+
+  obj:    Obj
+  number: decimal
+  date:   datetime
+  bool:   ?boolean
+  str:    string
+  blob:   binary
+
+  /**
+   * Extract the value from the single non-null field.
+   */
+  value: member function(): any java | js
+
+  /**
+   * Guess the value type from the single non-null field. If all fields are non, return null.
+   */
+  valueType: member function(): ValueType java | js
+
+  /**
+   * Constructs a new `PrimitiveOrObj` or the calling type that mixes it in from a value and an optional value type.
+   *
+   * @param value
+   *        Value to construct the instance for
+   *
+   * @param valueType
+   *        If provided, will be used to disambiguate the correct type for the instance (e.g. dealing with boxed
+   *        primitives.
+   *
+   * @return The requested instance or null if the value is null.
+   */
+  fromValueAndValueType: inline function(value: any, valueType: ValueType): mixing PrimitiveOrObj
+}

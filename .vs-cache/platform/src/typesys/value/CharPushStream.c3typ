@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The specialized CharacterStream type provides extra support for streams of characters.
+ * In particular, they can be processed as string blocks instead of one character at a time.
+ *
+ * Note that characters generally do not correspond to bytes, so the number of characters
+ * will *not* be the same as the number of bytes processed. For example in UTF-8 encoding
+ * each character requires from 1 to 6 bytes.
+ */
+abstract type CharPushStream mixes BlockPushStream<int32, string>, Value {
+
+  write:       abstract inline ~
+  writeStream: abstract inline ~
+  writeBatch:  abstract inline ~
+  writeBlock:  abstract inline ~
+  doClose:     abstract inline ~
+  createBlock: ~ java | js
+}

@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Table returned in {@link SqlSchema.allTables} and {@link SqlSchema.allExtensionTables}.
+ */
+type SqlTable {
+
+  /**
+   * Name of the table.
+   */
+  name: string
+
+  /**
+   * Schema the table exists in.
+   */
+  schema: string
+
+  /**
+   * Type that first defines the table (e.g. defines an arry/mapp field using the table).
+   */
+  ownerType: Type
+
+  /**
+   * Type of the table itself (e.g. root, mapp, etc.)
+   */
+  tableType: string enum SqlTableTypeEnum
+
+  /**
+   * Collection field that uses the table.  Will be null for non-collection tables.
+   */
+  collectionField: string
+
+  /**
+   * All of the columns defined in the table.
+   */
+  columns: [SqlColumn]
+
+  /**
+   * Indexes defined on the table.
+   */
+  indexes: [Db.Index]
+
+  /**
+   * The primary key index defined on the table.
+   */
+  primaryKey: Db.Index
+
+  /**
+   * Foreign keys defined on the table.
+   */
+  foreignKeys: [SqlForeignKey]
+
+  /**
+   * Foreign keys defined on other tables that refer to this tables primary key
+   */
+  foreignKeyRefs: [SqlForeignKey]
+}

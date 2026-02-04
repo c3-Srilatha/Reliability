@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type CsvSerDeser mixes SerDeser {
+
+  /**
+   * Generates the csv header for the given type. If there are no fields on the type an empty string will be returned
+   * This will only generate csv header for primitive fields & entity reference fields.
+   * Currently doesn't handle array, map, non entity reference fields
+   * @param type
+   *            Type for which csv header is desired
+   * @param contentType
+   *            The contentType of the file of interest which includes various content parameters such as delimiter
+   * @return csv header string for the given type
+   */
+  csvHeader: function(type: !Type, contentType: string): !string
+
+  /**
+   * Reads CSV file header if content contains it or retrieves header from content metadata or spec#csvHeader.
+   */
+  readCsvHeader: member function(content: !Content, spec: FileObjsOperSpec): [string]
+
+  /**
+   * Deserializes content from CSV content into a stream of row i.e. column values. Note that first element in the
+   * stream will be CSV header read either from content or from it's metadata or from spec#csvHeader.
+   */
+  readCsvRows: member function(content: !Content, spec: FileObjsOperSpec): stream<[string]>
+
+  readJsonLines: ~
+}

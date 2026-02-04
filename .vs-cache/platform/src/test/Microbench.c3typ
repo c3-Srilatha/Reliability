@@ -1,0 +1,159 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A single performance-centric unit test. An instance can be created and executed explicitly or one of the convenience
+ * methods can be used set up a set of related tests to be executed together for comparison purposes.
+ *
+ * These are called "micro benchmarks" because they are focused unit tests. For larger-scale distributed PSR testing,
+ * see {@link MaximGun}.
+ *
+ * When these tests are run, summary output is printed and the results are logged in the {@link PerfMetric} database.
+ * The details of this behavior can be configured using the {@link MicrobenchSpec}. The results are collected into a
+ * {@link MicrobenchResultSet}.
+ *
+ * The code being tested is always wrapped in a lambda, which is passed to #test, #compare, #measureKpi, etc.
+ * This is what the microbench framework "sees" and is the smallest amount of code execution that is measured.
+ * Each time tested this lambda will be executed, making a "run".
+ *
+ * Initially, {@link MicrobenchSpec#numRuns} and {@link MicrobenchSpec#runTime runTime} will be used, but over time
+ * runs will only be executed until the historical average is beaten. See {@link MicrobenchSpec#resultsToBeat}.
+ *
+ * Note that if the code being tested executes so fast that the measurement would swamp the actual execution time,
+ * looping must be done inside the lambda itself. A rule of thumb is that the lambda should take a second or more, not
+ * only for measurement overhead, but also so that Java and JavaScript code is fully compiled into machine code.
+ *
+ * @see MicrobenchResultSet
+ */
+type Microbench mixes Nameable {
+
+  /**
+   * The name is the label under which this test will be recorded in the PerfMetric database. It usually comes from
+   * the type and method name, for example "Type.fromString".
+   */
+  name: !string
+
+  /**
+   * The action to be measured in a single run of the test.
+   *
+   * A sample lambda should look like this:
+   *
+   *     ```
+   *     (lambdaIterations) -> {
+   *         for (int i = 0; i < lambdaIterations; i++) {
+   *             Dog.make()
+   *         }
+   *     }
+   *     ```
+   *
+   * Note `lambdaIterations` is a parameter that will be used by the framework during measuring. With this parameter, the
+   * framework can dynamically compute an ideal number of iterations to execute the action so that the lambda runs for
+   * _at least_ 5 seconds (configurable, see {@link MicrobenchSpec#runTime}) to get a stable result. The framework will
+   * also scale the result as if the action runs `numIterations` time, which is the goal of the measurement. The minimum
+   * running time allows both just-in-time code generation and garbage collection to stabilize. Normally, the first run
+   * will be the longest and successive runs will be several times faster. If the lambda returns an object, its size is
+   * measured and recorded as "retained memory" (see {@link MicrobenchResult#retainedMem}).
+   *
+   * Note that if the lambda returns a {@link MicrobenchResult} object, the measurement should be done by the lambda
+   * itself and the test will pick up the returned MicrobenchResult object as the test result.
+   */
+  // TODO PLAT-40794: hide lambdaIterations from the interface since it's an implementation detail
+  oneRun: !lambda(lambdaIterations: !int): any
+
+  /**
+   * Options for running this test.
+   */
+  options: MicrobenchSpec
+
+  /**
+   * Execute this micro benchmark and measure its performance.
+   */
+  @call(stayInEngine=true)
+  exec: member function(): !MicrobenchResultSet java | js | py
+
+  /**
+   * Execute a single micro benchmark of the specified action and measure its performance. This is a convenience
+   * function that creates an instance with a lambda which calls the action and then calls #exec.
+   *
+   * @param action action to be executed
+   * @param spec testing options
+   */
+  // TODO: test: function(action: !PartiallyAppliedAction, spec: MicrobenchSpec): !MicrobenchResultSet
+
+  /**
+   * Execute a single micro benchmark of the specified lambda and measure its performance. This is a convenience
+   * function that creates an instance with the lambda and then calls #exec.
+   *
+   * @param name name for the test instance
+   * @param lambda code to be tested
+   */
+  test: function(name: !string, call: !lambda(lambdaIterations: !int): any): !MicrobenchResultSet
+
+  /**
+   * Execute a single micro benchmark of the specified lambda and measure its performance. This is a convenience
+   * function that creates an instance with the lambda and then calls #exec.
+   *
+   * @param spec testing options, which must include the name
+   * @param lambda code to be tested
+   */
+  test: function(spec: !MicrobenchSpec, call: !lambda(lambdaIterations: !int): any): !MicrobenchResultSet
+
+  /**
+   * Execute a set of related micro benchmarks and compare their performance. This form is used when multiple tests
+   * should be directly compared with each other, such as when comparing different implementation techniques.
+   * The spec specified to this method (if any) is used of no #options are specified to any of the individual tests.
+   *
+   * @param tests a map of names to test instances
+   * @param spec testing options
+   */
+  compare: function(tests: ![Microbench], spec: MicrobenchSpec): !MicrobenchResultSet
+
+  /**
+   * Execute a set of related micro benchmarks and compare their performance. This form is used when multiple tests
+   * should be directly compared with each other, such as when comparing different implementation techniques.
+   *
+   * @param tests a map of names to test code to be tested
+   * @param spec testing options
+   */
+  compare: function(tests: !map<string, !lambda(lambdaIterations: !int): any>,
+                    spec: MicrobenchSpec): !MicrobenchResultSet
+
+  /**
+   * Main entry point for executing a single KPI test. This uses #exec, records them in the perf. metrics DB and
+   * asserts that there were no regressions. This is mainly called by the code generated for poly KPI tests.
+   *
+   * Note that if the call lambda returns a {@link MicrobenchResult} object, the measurement should be done by the
+   * lambda itself and the test will pick up the returned MicrobenchResult object as the test result.
+   *
+   * @param name the single test name, which forms the basis for the reported metrics
+   * @param spec testing options
+   * @param call code to be tested
+   */
+  @call(stayInEngine=true)
+  measureKpi: inline function(name: !string,
+                              spec: MicrobenchSpec,
+                              call: !lambda(lambdaIterations: !int): any): !MicrobenchResultSet java | js | py
+
+  /**
+   * Report elapsed time gathered by a one-shot run, this is only used when the function that want to be measured can't
+   * be measured in a KPI testing environment. Note the sole purpose of this function is to report.
+   *
+   * @param name the single test name, which forms the basis for the reported metrics
+   * @param time duration in seconds that will be recorded in the MicrobenchResult
+   */
+  reportKpiTime: function(name: !string, time: !double): !MicrobenchResultSet
+
+  /**
+   * Report metrics gathered by a one-shot run, this is only used when the function that want to be measured can't
+   * be measured in a KPI testing environment. Note the sole purpose of this function is to report.
+   *
+   * @param name the single test name, which forms the basis for the reported metrics
+   * @param result results to be recorded
+   */
+  reportKpi: function(name: !string, result: !MicrobenchResult): !MicrobenchResultSet
+}

@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Determines the data for a {@link UiApTimeseriesChart}.
+ */
+type UiApTimeseriesChartDataConfig {
+  /**
+   * All the timeseries data to be plotted in the chart.
+   */
+  tsDataset: UiApTimeseriesChartTsDataset
+
+  /**
+   * A map of event type to dataset to be plotted in the chart.
+   */
+  eventDatasets: map<string, UiApTimeseriesChartEventDataset>
+
+  /**
+   * The thresholds to be plotted in the chart. These correspond to one of the {@link #tsDataset} dimensions
+   * and are automatically plotted in the chart when that dimension is plotted.
+   */
+  tsThresholds: map<string, [UiApTimeseriesChartTsThreshold]>
+
+  /**
+   * The time ranges to be shaded in the chart. These can be used to highlight specific periods of interest,
+   * such as maintenance windows or outages. These will be plotted regardless of the {@link UiApTimeseriesChartRenderConfig}
+   * of the chart.
+   */
+  shadedTimeRanges: [UiApTimeseriesChartShadedTimeRanges]
+
+  /**
+   * The time ranges to be visually "broken" or omitted in the chart's time axis.
+   * When this field is populated, the chart will display visual breaks or discontinuities
+   * for the specified time intervals, indicating periods that should not be shown as continuous,
+   * such as missing data or scheduled downtime.
+   *
+   * **NOTE**: These breaks will apply to all the plots.
+   */
+  breakTimeRanges: [UiApTimeseriesChartBreakTimeRanges]
+
+  /**
+   * The query keys of that generated this
+   * {@link UiApTimeseriesChartDataConfig}. This can be used to change the
+   * {@link UiApTimeseriesChartRenderConfig} without having to re-execute the query.
+   */
+  queryKeys: map<string, [string]>
+
+}

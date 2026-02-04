@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Builder for authoring a class.
+ *
+ * @see Code.Authoring
+ */
+type Code.Authoring.DefinedClass mixes Code.DefinedClass, Code.Authoring.WithName {
+
+  /**
+   * Set a modifier on this class.
+   */
+  mod: member function(mod: !string enum Code.Mod): !mixing Code.Authoring.DefinedClass
+
+  /**
+   * Add a constructor to this class.
+   */
+  constr: member function(mods: string enum Code.Mod ...): !Code.Authoring.Constructor
+
+  /**
+   * Add a regular method to this class.
+   */
+  method: member function(name: string, mods: string enum Code.Mod ...): !Code.Authoring.Method
+
+  /**
+   * Add a property getter to this class.
+   */
+  getter: member function(name: string, mods: string enum Code.Mod ...): !Code.Authoring.Getter
+
+  /**
+   * Add a property setter to this class.
+   */
+  setter: member function(name: string, mods: string enum Code.Mod ...): !Code.Authoring.Setter
+
+  /**
+   * Add a field declaration to this class.
+   */
+  field: member function(name: string, mods: string enum Code.Mod ...): !Code.Authoring.FieldVar
+
+  /**
+   * Add an inner class declaration to this class.
+   */
+  innerClass: member function(name: string, mods: string enum Code.Mod ...): !Code.Authoring.DefinedClass
+
+  /**
+   * Set the documentation comment body text for this class.
+   */
+  doc: member function(text: !string): !mixing Code.Authoring.DefinedClass
+
+  _classType: ~ = Code.ClassType.CLASS
+}

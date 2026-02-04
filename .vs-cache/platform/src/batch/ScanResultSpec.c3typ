@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Argument to the {@link Batch#scanResult} function.
+ */
+type ScanResultSpec mixes Spec {
+
+  /**
+   * The action to invoke.
+   */
+  action: PartiallyAppliedAction
+
+  /**
+   * The initial context to pass to the (first) callback.
+   */
+  initialContext: any
+
+  /**
+   * The number of results to pass to the callback in each call.
+   */
+  batchSize: int = 100
+
+  /**
+   * The callback which processes the batches of results.
+   * Each call of the callback will be made with an array of one or
+   * more results, up to the number specified by {@link #batchSize}.
+   *
+   * State can be carried between callbacks via the context parameter.
+   * The {@link #initialContext} value is passed to the first callback
+   * and each callback's return value is passed to the next callback.
+   *
+   * The final callback's return value is returned by {@link Batch#scanResult}.
+   */
+  callback: Lambda<function(results: [any], context: any): any>
+}

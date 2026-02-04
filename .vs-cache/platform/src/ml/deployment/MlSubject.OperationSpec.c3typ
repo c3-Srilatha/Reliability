@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Parameters used in several functions to compute ML outputs from a {@link MlSubject}.
+ *
+ * @see MlSubject#process
+ */
+type MlSubject.OperationSpec mixes TimeRange, Spec {
+
+  /**
+   * Filter to get a subset of the models; the filter is applied on the {@link MlModel.Route.Status}
+   * of the {@link MlModel.Route routes} applicable to the subject.
+   */
+  statusFilter: string serialized Filter
+
+  /**
+   * The project from which the models are retrieved.
+   */
+  project: !MlProject
+
+  /**
+   * If `true`, {@link MlModel.OutputHandler output handlers} specified on {@link MlModel.Route relevant routes}
+   * won't be processed.
+   */
+  doNotHandleOutputs: boolean
+
+  /**
+   * Map of {@link MlModel} `x` inputs names to corresponding snapshot ids for feature sets.
+   * The {@link Feature.Set.Snapshot}s for snapshot ids is expected to be created by users prior to supplying snapshot ids
+   * for executing a {@link MlSubject.OperationJob}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#xFeatures}.
+   */
+  xSnapshotIds: map<string, string>
+
+  /**
+   * Map of {@link MlModel} `y` inputs names to corresponding snapshot ids for feature sets.
+   * The {@link Feature.Set.Snapshot}s for snapshot ids is expected to be created by users prior to supplying snapshot ids
+   * for executing a {@link MlSubject.OperationJob}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#yFeatures}.
+   */
+  ySnapshotIds: map<string, string>
+
+  /**
+   * Map of {@link EvalFeatureSpec#projection} for {@link #xFeatures}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#xFeatures}.
+   * The values of this map are comma-separated feature names to evaluate.
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3',
+   * if we want to evaluate only the feature 'f1' and 'f2', we can use either "f1, f2" or "metricFs.f1, metricFs.f2".
+   * If the {@link MlModel model} is trained or already has {@link MlModel#xProjections projections} set,
+   * providing this value would raise an error.
+   */
+  xProjections: map<string, string>
+
+  /**
+   * Map of {@link EvalFeatureSpec#projection} for {@link #yFeatures}.
+   * The keys of this map must be same or subset of keys of {@link MlModel#yFeatures}.
+   * The values of this map are comma-separated feature names to evaluate.
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3',
+   * if we want to evaluate only the feature 'f1' and 'f2', we can use either "f1, f2" or "metricFs.f1, metricFs.f2".
+   * If the {@link MlModel model} is trained or already has {@link MlModel#yProjections projections} set,
+   * providing this value would raise an error.
+   */
+  yProjections: map<string, string>
+
+  /**
+   * Optional globally unique ID of a "snapshot" of a Feature
+   *
+   * If no snapshot exists then will evaluate with current state of Feature and will persist it a snapshot with provided
+   * id
+   */
+  @deprecated(details='Use `xSnapshotIds` and `ySnapshotIds` instead.')
+  snapshotId: string
+
+  /**
+   * Maximum time to wait for a single {@link MlModel} operation to complete.
+   */
+  operationTimeoutMinutes: int
+}

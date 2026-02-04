@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Allows the construction and execution of queries for sensor timeseries data.
+ *
+ * Usage example:
+ * ```
+ * // Query sensor timeseries data for specific sensors.
+ * ReliabilitySensorTimedDataQuery.make({
+ *   sensors: ['sensor1', 'sensor2']
+ * }).execute({start: '2020-01-01', end: '2021-01-01', interval: 'QUARTER_HOUR'})
+ * ```
+ */
+type ReliabilitySensorTimedDataQuery mixes ReliabilityTimedDataSubquery<map<string serialized Sensor, Timeseries<any>>> {
+
+  /**
+   * The sensors to get timeseries data for.
+   */
+  sensors: [Sensor]
+
+  execute: ~ js-rhino
+}

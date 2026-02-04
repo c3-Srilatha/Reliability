@@ -1,0 +1,122 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A set is a 1-dimensional, unordered set of elements that does _not_ allow duplicates. All values are kept in memory.
+ * Attempts to add duplicate elements to sets are silently ignored.
+ */
+type Set<E> mixes Collection<E>, CollectionWithIndex<E>, CollectionConstructors<E>, CollectionBuilderConstructors<SetBuilder<E>>, CollectionInMemory<E>, Value {
+
+  /**
+   * Get an element of the set by index (like an array). Not all sets are indexed, so this method may not be supported.
+   * It also may not be efficient, so iteration should be used instead of a loop to process all elements.
+   * (Indexing makes the set have a stable order, but does not mean index-based access is as fast as an array.)
+   *
+   * @return element of this set at provided 0 based index. If index is out of bounds returns `null`.
+   *
+   * @see CollectionType#isIndexed
+   */
+  get: member function(index: !int): E java | js
+
+  /**
+   * @return new set of unique items, in order, that are present in one or more of the input collections.
+   */
+  union: function<T>(collections: Collection<T> ...): set<T> java | js | py
+
+  /**
+   * @return new set by evaluating provided expression over each element.
+   */
+  map: member function<T>(expr: !string serialized Expr): set<T> java | js
+
+  /**
+   * @return new instance of set of provided element type by applying builder lambda.
+   */
+  build: function<T>(elementType: !ValueType, builder: !lambda(b: !SetBuilder<T>)): set<T>
+
+  /**
+   * @return new instance of set of any by applying builder lambda.
+   */
+  buildAny: function<T>(builder: !lambda(b: !SetBuilder<T>)): set<T>
+
+  /**
+   * @return new instance of set of ints by applying builder lambda.
+   */
+  buildInts: function(builder: !lambda(b: !SetBuilder<int>)): set<int>
+
+  /**
+   * @return new instance of set of int16s by applying builder lambda.
+   */
+  buildInt16s: function(builder: !lambda(b: !SetBuilder<int16>)): set<int16>
+
+  /**
+   * @return new instance of set of int32s by applying builder lambda.
+   */
+  buildInt32s: function(builder: !lambda(b: !SetBuilder<int32>)): set<int32>
+
+  /**
+   * @return new instance of set of floats by applying builder lambda.
+   */
+  buildFloats: function(builder: !lambda(b: !SetBuilder<float>)): set<!float>
+
+  /**
+   * @return new instance of set of doubles by applying builder lambda.
+   */
+  buildDbls: function(builder: !lambda(b: !SetBuilder<double>)): set<!double>
+
+  /**
+   * @return new instance of set of string by applying builder lambda.
+   */
+  buildStrs: function(builder: !lambda(b: !SetBuilder<string>)): set<string>
+
+  /**
+   * @return new instance of set of provided C3 type by applying builder lambda.
+   */
+  buildObjs: function<O: Obj>(type: !Type, builder: !lambda(b: !SetBuilder<O>)): set<O>
+
+  /**
+   * @return new instance of SetBuilder with current set's content as initial content.
+   */
+  toBuilder: member function(): SetBuilder<E> java | js
+
+  collectionType:    ~: !SetType java | py
+  builderOf:         ~ java | js
+  builderOfAny:      ~ java | js
+  builderOfBool:     ~ java | js
+  builderOfByte:     ~ java | js
+  builderOfDateTime: ~ java | js
+  builderOfDbl:      ~ java | js
+  builderOfFloat:    ~ java | js
+  builderOfInt16:    ~ java | js
+  builderOfInt32:    ~ java | js
+  builderOfInt:      ~ java | js
+  builderOfObj:      ~ java | js
+  builderOfStr:      ~ java | js
+  collect:           ~ java | js
+  isEmpty:           ~ java | py
+  map:               ~ java | js
+  mapTo:             ~ java | js
+  mapToSame:         ~ java | js
+  mapToStr:          ~ java | js
+  of:                ~ java | js
+  ofAny:             ~ java | js
+  ofBool:            ~ java | js
+  ofInt:             ~ java | js
+  ofInt32:           ~ java | js
+  ofInt16:           ~ java | js
+  ofFloat:           ~ java | js
+  ofDbl:             ~ java | js
+  ofByte:            ~ java | js
+  ofDateTime:        ~ java | js
+  ofStr:             ~ java | js
+  ofObj:             ~ java | js
+  toString:          ~ java | js
+  fromJson:          ~ java | js | py-client
+  size:              ~ java | py-client
+  each:              ~ java | js
+  valueTypeOf:       ~ java | js | py
+}

@@ -1,0 +1,166 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Tree Node component to be rendered in a {@link PresentationalTreeView} for hierarchical data
+ */
+@typeScript
+type PresentationalTreeNode mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Triggered when a node in the tree view's action item is clicked
+   */
+  actionGroupClickAction: private function(componentId: string, nodeId: string, suffix: string): !UiSdlReduxAction ts-client
+
+  /**
+   * The actions to display for this node
+   */
+  actions: [UiSdlAction]
+
+  /**
+   * Whether the node should be checked or not
+   */
+  checked: boolean
+
+  /**
+   * The children nodes of this node
+   */
+  children: [PresentationalTreeNode]
+
+  /**
+   * The content to display for this node
+   */
+  content: string | UiSdlDynamicValueSpec
+
+  /**
+   * An array of the ids of the descendants of this node, used internally for performance reasons
+   */
+  descendantsIds: private [string]
+
+  /**
+   * Whether the node should be disabled or not
+   */
+  disabled: boolean
+
+  /**
+   * Whether the node should be expanded or not
+   */
+  expanded: boolean
+
+  /**
+   * Unique identifier for a node
+   */
+  id: !string
+
+  /**
+   * Icon to display before the content of this node
+   */
+  icon: string
+
+  /**
+   * the tooltip text for the node icon
+   */
+  iconTooltip: string
+
+  /**
+   * Whether the node should render its checkbox in the indeterminate state (this is, the "dash" icon)
+   */
+  indeterminate: boolean
+
+  /**
+   * Color for the icon to display
+   */
+  iconColor: string
+
+  /**
+   * Path to the image to display before the content of this node. If defined, it will take precedence over the #icon
+   */
+  image: string
+
+  /**
+   * The icon to overlay on top of the image
+   */
+  overlayIcon: string
+
+  /**
+   * The color of the overlayed icon
+   */
+  overlayIconColor: string
+
+  /**
+   * Handler function to be called when the node checkbox is clicked
+   */
+  onCheck: private function() ts-client
+
+  /**
+   * Handler function to be called when the node is expanded or collapsed
+   */
+  onExpand: private function() ts-client
+
+  /**
+   * Parent node of the current node
+   */
+  parent: private PresentationalTreeNode
+
+  /**
+   * Whether the node is the selected node of the tree (only one node can be selected)
+   */
+  selected: boolean
+
+  /**
+   * Whether the node should be selectable or not. If the tree is selectable, this property will be ignored
+   */
+  selectable: boolean
+
+  /**
+   * Whether the node should be expandable or not.
+   */
+  expandable: boolean
+
+  /**
+   * Whether the node should show a checkbox or not
+   */
+  showCheckbox: boolean
+
+  /**
+   * Whether the title should show the number of children this node has (if any)
+   */
+  showChildrenCount: boolean
+
+  /**
+   * Whether the node should show a minized map of its children overlay icons when it is collapsed.
+   * This is useful for giving visibility to children state from the parent node
+   */
+  showMinimizedChildren: boolean
+
+  /**
+   * The different statuses aggregated based on the children nodes.
+   */
+  statuses: [PresentationalTreeNodeStatus]
+
+  /**
+   * Icon that is rendered to the right of the node content.
+   */
+  rightIcon: string
+
+  /**
+   * The color of the `rightIcon`.
+   */
+  rightIconColor: string
+
+  /**
+   * The tooltip text of the `rightIcon`
+   */
+  rightIconTooltip: string
+
+  /**
+   * Path to the right image to display after the content of this node. If defined, it will take precedence over the #rightIcon
+   */
+  rightImage: string
+
+}

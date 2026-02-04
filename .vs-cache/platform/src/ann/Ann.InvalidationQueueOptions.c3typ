@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Persistence extensions for Modules
+ */
+@annotation(appliesTo=['type'])
+type Ann.InvalidationQueueOptions mixes Annotation {
+
+  /**
+   * enum ("targetObj", "none") = targetObj
+   */
+  grouping: string
+
+  /**
+   * enum("normal", "high", "urgent") = normal
+   */
+  priority: string
+
+  maxConcurrency: int
+
+  /**
+   * Comma separated list of fields to group by in the default report for the queue.
+   *
+   * @format(formatter = "InvalidationQueueGroupSpec")
+   */
+  defaultReportGrouping: string
+
+  /**
+   * Comma separated list of fields to group by in the detail report for the queue.
+   *
+   * @format(formatter = "InvalidationQueueGroupSpec")
+   */
+  detailReportGrouping: string
+
+  /**
+   * Comma separated list of fields to group by in the default report for the queue errors.
+   *
+   * @format(formatter = "InvalidationQueueErrorGroupSpec")
+   */
+  defaultErrorReportGrouping: string
+
+  /**
+   * Comma separated list of fields to group by in the detail report for the queue errors.
+   *
+   * @format(formatter = "InvalidationQueueErrorGroupSpec")
+   */
+  detailErrorReportGrouping: string
+}

@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An extension of {@link UiSdlTabPanel} that allows for dynamic hiding and showing of tab components.
+ *
+ * This is necessary since the `tabComponents` prop consists of React elements, which are not settable
+ * using `derivedProps`.
+ */
+type UiDynamicTabPanel mixes UiSdlTabPanel {
+  /**
+   * A map of tab component ids to boolean values indicating whether the tab component is visible.
+   * If a tab component is not in the map, it is assumed to be visible.
+   *
+   * Currently, this can only be set using {@link UiSdlConnected#derivedProps}.
+   */
+  tabComponentVisibility: map<string, boolean>
+
+  /**
+   * If true, the tab panel will be rendered with a separate tab bar and tab components.
+   * Normally, these are contained within the tab panel. This leads to performance gains since only parts of
+   * the component tree are re-rendered when the tab is changed, and there is less dependency of the tab component
+   * on the tab panel. This should achieve feature parity with the normal tab panel, but is disabled by default to avoid
+   * regressions.
+   */
+  useSeparateTabComponent: boolean
+}

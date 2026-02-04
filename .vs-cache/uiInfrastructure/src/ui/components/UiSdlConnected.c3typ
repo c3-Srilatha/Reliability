@@ -1,0 +1,301 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Connected UI components get their configurations from a state management store.
+ *
+ * The rendered component will behave as a singleton, when rendered
+ */
+@uiComponentCategorizer(name='Connected', category='Patterns', hide=true)
+type UiSdlConnected<T: UiSdlComponent> mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Props that are derived from UI state and will be passed into the component renderer.
+   * For example:
+   * `dataCollection` will be resolved from the application state and passed into the `UiSdlDataGrid` component renderer.
+   * ```json
+   * {
+   *  "type": "UiSdlConnected<UiSdlDataGrid>",
+   *  "derivedProps": {
+   *    "dataCollection": {
+   *      "type": "UiSdlApplicationStateValueParam",
+   *      "id": "TestApp.UiSdlApplicationStateTestApp",
+   *      "path": "users"
+   *     }
+   *   }
+   * }
+   * ```
+   */
+  derivedProps: map<string, UiSdlDynamicValueSpecParam | map<string, UiSdlDynamicValueSpecParam | map<string, UiSdlDynamicValueSpecParam | map<string, UiSdlDynamicValueSpecParam | map<string, any>>>>>
+
+  /**
+   * Collection of extra async {@link UiSdlEffectTrigger}.
+   *
+   * Effect triggers are registered globally. They are registered dynamically at runtime when the component instance
+   * they are defined on is being loaded. All registered observers subscribing to the same action will be notified when the
+   * action is dispatched regardless of which page defined the trigger.
+   */
+  effectTriggers: [UiSdlEffectTrigger]
+
+  /**
+   * A component ref pointing to a non-connected component to be rendered.
+   * Useful when you want to reuse component metadata but want to use different ids.
+   */
+  componentRef: UiSdlComponentRef<T>
+
+  /**
+   * Slice of UiSdlComponentMetadataStore for components.  Holds information about component metadata.
+   * Explicitly exported as a const from the .ts file
+   */
+  REDUX_NAMESPACE: private const string = 'components'
+
+  /**
+   * Slice of UiSdlComponentMetadataStore for metadata.  Holds information about the current definitions of components.
+   * Explicitly exported as a const from the .ts file
+   */
+  CURRENT: private const string = 'metadata'
+
+  /**
+   * Slice of UiSdlComponentMetadataStore for initial metadata.  Holds information about the original definitions of components.
+   * Explicitly exported as a const from the .ts file
+   */
+  INITIAL: private const string = 'initialMetadata'
+
+  /**
+   * Inline component definition. This is useful when you don't want to reuse
+   * the rendered component somewhere else or if you want to override configuration of
+   * the referenced component in `componentRef`.
+   */
+  component: !T
+
+  /**
+   * Helper method that converts a json value to an immutable
+   */
+  convertToImmutable: function(value: !any): any ts-client
+
+  /**
+   * A reference to a `UiSdlApplicationState` to be initialized by the component
+   */
+  applicationStateRef: UiSdlApplicationStateRef | [UiSdlApplicationStateRef]
+
+  /**
+   * Retrieves initial config value from the state.
+   *
+   * @param componentId
+   *           Id of the component.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   * @returns Redux state.
+   */
+  getInitialConfigFromState: function(componentId: !string,
+                                      state: !UiSdlReduxState,
+                                      dataPath: [string]): !UiSdlReduxState ts-client
+
+  /**
+   * Sets initial config value in the state.
+   *
+   * @param componentId
+   *           Id of the component.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   * @param value
+   *           The config value to set.
+   * @returns Redux state.
+   */
+  setInitialConfigInState: function(componentId: !string,
+                                    state: !UiSdlReduxState,
+                                    dataPath: [string],
+                                    value: !any): !UiSdlReduxState ts-client
+
+  /**
+   * State selector for a given configuration.
+   *
+   * @param componentId
+   *           Id of the component.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   *
+   * @returns The configuration of given data path in state.
+   */
+  getConfigFromState: function(componentId: !string,
+                               state: !UiSdlComponentMetadataStore,
+                               dataPath: [string]): any ts-client
+
+  /**
+   * Set config value in the state.
+   *
+   * @param componentId
+   *           Id of the component.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   * @param value
+   *           The config value to set.
+   *
+   * @returns Redux state.
+   */
+  setConfigInState: function(componentId: !string,
+                             state: !UiSdlComponentMetadataStore,
+                             dataPath: [string],
+                             value: !any): !UiSdlReduxState ts-client
+
+  /**
+   * Remove config value in the state.
+   *
+   * @param componentId
+   *           Id of the component.
+   * @param state
+   *           Redux state.
+   * @param dataPath
+   *           The path to the config value.
+   *
+   * @returns Redux state.
+   */
+  removeConfigInState: function(componentId: !string,
+                                state: !UiSdlComponentMetadataStore,
+                                dataPath: [string]): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the key used in state to store the given configuration.
+   */
+  keyForConfig: function(typeName: !string, configPath: !string, configId: string, singleton: boolean): string ts-client
+
+  /**
+   * Returns the data source id that is being used for the given data field.
+   */
+  getCollectionDataSourceId: function(fieldName: string, componentId: string): string ts-client
+
+  /**
+   * Helper function to retrieve a value from the {@link UiSdlReduxState} of a Reduxable object
+   * @param id
+   *           Id of the data source.
+   * @param state
+   *          The {@link UiSdlReduxState}
+   * @param originalData
+   *         If true get the original data back from the state.  Otherwise get the modified
+   */
+  getDataFromState: member function(id: !string,
+                                    state: !UiSdlReduxState,
+                                    originalData: boolean): UiSdlReduxState ts-client
+
+  /**
+   * Helper function to set a value in the {@link UiSdlReduxState}.  Uses the `entities` namespace in the UiSdlReduxState
+   * @param id
+   *           Id of the data source.
+   * @param state
+   *          The {@link UiSdlReduxState}
+   * @param value
+   *         The new value set
+   * @param originalData
+   *         If true set the original data.  Otherwise set the modified
+   */
+  setDataInState: member function(id: !string,
+                                  state: !UiSdlReduxState,
+                                  value: !any,
+                                  originalData: boolean): UiSdlReduxState ts-client
+
+  /**
+   * Find all the data sources ids linked to the current component.
+   * @param componentId The component with linked data sources
+   * @param state The Redux state
+   * @param dataSpecFieldName
+   *           The name of the field which has a dataSpec annotation
+   * @returns The list of data source ids linked to the component
+   */
+  getAllComponentDataSourceIds: function(componentId: string, state: UiSdlReduxState): [string] ts-client
+
+  /**
+   * Retrieves the tunnel configuration from the redux store.
+   *
+   * @param state
+   *     The {@link UiSdlReduxState}.
+   * @param siteId
+   *     The side id for which to retrieve the tunnel configuration.
+   * @returns The tunnel configuration object.
+   */
+  getTunnelConfigurationFromState: function(state: !UiSdlReduxState,
+                                            siteId: string): UiSdlTunnelConfiguration ts-client
+
+  /**
+   * Sets the tunnel configuration in the redux store.
+   * @param state
+   *           Redux state.
+   * @param tunnelConfiguration
+   *           The tunnel configuration to set in the state.
+   * @returns The updated Redux state.
+   */
+  setTunnelConfigurationInState: function(state: !UiSdlReduxState,
+                                          tunnelConfiguration: UiSdlTunnelConfiguration): !UiSdlReduxState ts-client
+
+  /**
+   * Finds the value of a pageParam in the state.
+   * @param state
+   *     {@link UiSdlReduxState}
+   * @param paramId
+   *     The ID of the parameter to fetch within pageParams. Example values are `componentId`, `pageId`
+   * @returns The value of the supplied key within pageParam
+   */
+  getPageParamFromState: function(state: !UiSdlReduxState, paramId: !string): string | [string] ts-client
+
+  /**
+   * Gets all the pageParams in the state.
+   * @param state
+   *           {@link UiSdlReduxState}
+   * @return the map of the page params key and their current values. If there are no page params, an empty object is
+   *         returned.
+   */
+  getPageParamsFromState: function(state: !UiSdlReduxState): map<string, string | [string]> ts-client
+
+  /**
+   * Sets pageParams value to the state.
+   *
+   * @param state
+   *           Redux state.
+   * @param paramId
+   *           The ID of the parameter to store within pageParams.
+   * @param value
+   *           The pageParam value to set.
+   * @returns Redux state.
+   */
+  setPageParamInState: function(state: !UiSdlReduxState, paramId: !string, value: !any): !UiSdlReduxState ts-client
+
+  /**
+   * Copy over additional filters for data sources based on the given data specs and c3arguments
+   *
+   * @param componentId
+   *      The component with the data specs
+   * @param state
+   *      The Redux state {@link UiSdlReduxState}
+   * @param fromDataSpec
+   *      The data spec of the data source to copy from
+   * @param toDataSpec
+   *      The data spec of the data source to copy to
+   * @param actionArgsToCopy
+   *      The path relations in fromDataSource to be copied over to toDataSource. Only use `from` and `to` fields,
+   *        leave `to` empty if `from` = `to`
+   * ```
+   *  For example
+   *  { from: ['c3arguments', 'spec', 'include'], to: ['customArguments', 'spec', 'includedFields'] }
+   *    or
+   *  { from: ['c3arguments', 'spec', 'include'] }
+   * ```
+   * @returns The modified Redux state
+   */
+  copyRequestArgumentsInState: function(componentId: !string,
+                                        state: !UiSdlReduxState,
+                                        fromDataSpec: !string,
+                                        toDataSpec: !string,
+                                        actionArgsToCopy: Relation<[string]>): !UiSdlReduxState ts-client
+}

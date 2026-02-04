@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type to store intermediate and final results for a given {@link ReliabilityOrchestrator.ReliabilityRisk.ModelCreationJob}.
+ * The final result stored is the {@link MlModel.Train.Job} that is created by the
+ * {@link ReliabilityOrchestrator.ReliabilityRisk.ModelCreationJob}. This job can then be used to subsequently train all the
+ * {@link ReliabilityRiskMlModel}s that are created by the {@link ReliabilityOrchestrator.ReliabilityRisk.ModelCreationJob}.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+entity type ReliabilityOrchestrator.ReliabilityRisk.ModelCreationJobTracker {
+
+  /**
+   * An {@link ReliabilityRiskMlModel} that is created by the {@link #modelCreationJob}
+   */
+  model: ReliabilityRiskMlModel
+
+  /**
+   * The {@link ReliabilityMlDatasetPreparationRun} that is used to train the given {@link #model}
+   */
+  datasetPreparationRun: ReliabilityMlDatasetPreparationRun
+
+  /**
+   * The {@link MlOperationSpec} that will be used to train the created {@link ReliabilityRiskMlModel}
+   */
+  mlOperationSpec: MlOperationSpec
+
+  /**
+   * The {@link ReliabilityOrchestrator.ReliabilityRisk.ModelCreationJob} that is used to create the given {@link #model}
+   */
+  modelCreationJob: ReliabilityOrchestrator.ReliabilityRisk.ModelCreationJob
+
+  /**
+   * The {@link MlModel.Train.Job} that is created by the {@link #modelCreationJob}
+   */
+  modelTrainingJob: MlModel.Train.Job
+}

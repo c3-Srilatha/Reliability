@@ -1,0 +1,130 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Location organizes resource consuming assets in a way so as to produce
+ * commercial or social value. Location is where an Asset is in space.
+ * Location is only of interest because it holds some assets at some point of
+ * time either in the past, present or future.
+ * Locations can vary in levels of granularity: a Location could be a campus,
+ * facility or plant but it could also be a room or a floor in a building.
+ * Thus Locations can contain or be contained in other Locations. However, a
+ * granular Location can never be contained in more than one higher level
+ * Location. Thus Locations can be organized into a strict hierarchy but
+ * cannot be part of a M:M recursion: a building cannot be part of two
+ * different campuses and a floor cannot be part of two different buildings.
+ * How is a building Location different from a Fixed Asset building? A
+ * building Location is only about the place of the building in space. If we
+ * want to know facts such as the size of the building, we would find that
+ * building as a Fixed Asset.
+ *
+ * (type1A="[
+ * { id: 'empty', name: 'Empty', address: {raw: 'Empty'}}
+ * ]")
+ */
+@db(index+=['meta.timestamp', 'address.geometry.latitude, address.geometry.longitude'])
+@weather(countryName="address.components.(types.id == 'country').name",
+         countryAbbr="address.components.(types.id == 'country').abbr",
+         zipcode="$postalCodeComponent = address.components.(types.id == 'postal_code')[0]; exists($postalCodeComponent.abbr) ? $postalCodeComponent.abbr : $postalCodeComponent.name",
+         latitude='address.geometry.latitude',
+         longitude='address.geometry.longitude')
+entity type Location mixes Geometry, WeatherAware, AclEnabled, MetricEvaluatable schema name 'STRUCT_LOC' {
+
+  /**
+   * Detailed address components of the location.
+   */
+  address: InlineAddress schema suffix 'ADR'
+
+  /**
+   * Postal code of the location, extracted from the address components.
+   */
+  postalCode: string stored calc address.components.(types.id == 'postal_code').name;
+
+  /**
+   * Street address of the location, extracted from the address components.
+   */
+  streetAddress: string stored calc address.components.(types.id=='street_address').name;
+
+  /**
+   * City of the location, extracted from the address components.
+   */
+  city: string stored calc address.components.(types.id=='locality').name;
+
+  /**
+   * State abbreviation of the location, extracted from the address components.
+   */
+  state: string stored calc address.components.(types.id=='administrative_area_level_1').abbr;
+
+  /**
+   * A shortened version of the postal code.
+   */
+  shortPostalCode: string;
+
+  /**
+   * Elevation of the location above sea level.
+   */
+  elevation: Dimension;
+
+  /**
+   * Function to find an address component of a specific type and field.
+   * 
+   * @param loc
+   *          The location to search.
+   * @param addressType
+   *          The type of address component to search for.
+   * @param field
+   *          The specific field to extract from the address component.
+   * 
+   * @returns The value of the address component field.
+   */
+  findAddressComponent: function(loc: Location, addressType: string, field: string): string js-server
+
+  /**
+   * For a given {@link Location}, updates geocoding information using Google Geocoding API.
+   * This function retrieves geocoding data from the raw address text and updates the location's geometry,
+   * and optionally the address components and formatted address.
+   * 
+   * @param loc
+   *           The location for which geocoding should be updated.
+   * @param includeComponents
+   *           If true, the address components and formatted address will also be updated.
+   * @return true if the geocoding update was successful.
+   */
+  updateGeocoding: function(loc: Location, includeComponents: boolean): boolean js-server
+
+  /**
+   * For a given list of {@link Location} entities, updates geocoding information using Google Geocoding API.
+   * This function processes multiple locations and updates their geocoding, including geometry and optionally
+   * address components and formatted addresses.
+   * 
+   * @param locations
+   *           List of Location entities to be updated.
+   * @param includeComponents
+   *           If true, address components and formatted addresses will be updated.
+   * @return the list of Location entities that were successfully updated.
+   */
+  updateGeocodingBatch: function(locations: [Location], includeComponents: boolean): ObjList<Location> js-server
+
+  /**
+   * Updates geocoding for filtered {@link Location}s based on the provided filter expression.
+   * This action performs a {@link MapReduce} job on selected locations to update their geocoding information.
+   * 
+   * @param filter
+   *           Location expression to filter locations for geocoding update (e.g., location with empty geometry).
+   * @param includeComponents
+   *           If true, address components and formatted address will be updated.
+   * @param forceUpdate
+   *           If true, address geometry will be updated even if it already exists.
+   * 
+   * Returns the job that was started for updating geocoding on filtered locations.
+   */
+  updateGeocodingAll: function(filter: string,
+                               includeComponents: boolean,
+                               forceUpdate: boolean): LocationGeocodingJob js-server
+}

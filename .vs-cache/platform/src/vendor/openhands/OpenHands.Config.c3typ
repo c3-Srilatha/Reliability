@@ -1,0 +1,95 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration type for OpenHands CloudService.
+ * Provides configuration options for the All Hands development environment.
+ */
+@beta
+type OpenHands.Config mixes CloudServiceConfig {
+
+  /**
+   * Cpu request for docker side car container for open hands
+   */
+  @ser(path="dockerSidecar.resource.requests.cpu")
+  dockerRequestCpu: string
+
+  /**
+   * Memory request for docker side car container for open hands
+   */
+  @ser(path="dockerSidecar.resource.requests.memory")
+  dockerRequestMemoryGiB: string
+
+  /**
+   * Disk request for docker side car container for open hands
+   */
+  @ser(path="persistence.docker.size")
+  dockerDiskSizeGiB: string
+
+  /**
+   * Github token to be configured in the Open Hands environment
+   */
+  @ser(path="GITHUB_TOKEN")
+  @config(secret=true)
+  githubToken: string
+
+  /**
+   * Jira server url to be configured in the Open Hands environment
+   */
+  @ser(path="JIRA_SERVER_URL")
+  jiraServerUrl: string
+
+  /**
+   * Jira username to be configured in the Open Hands environment
+   */
+  @ser(path="JIRA_USERNAME")
+  jiraUserName: string
+
+  /**
+   * Jira api token to be configured in the Open Hands environment
+   */
+  @ser(path="JIRA_API_TOKEN")
+  @config(secret=true)
+  jiraApiToken: string
+
+  /**
+   * App url for Open Hands for the specific env/app e.g. /myEnv/myApp
+   * OpenHands#ensureConfig will set this to the current app host
+   */
+  @ser(path="APP_URI")
+  appUri: private string
+
+  /**
+   * Cluster domain for this cluster e.g. demo.c3ci.cloud
+   * OpenHands#ensureConfig will set this to the current cluster host
+   */
+  @ser(path="CLUSTER_DOMAIN")
+  clusterDomain: private string
+
+  version: ~ = "0.51.1-alpha"
+
+  /**
+   * Image repository for the C3 Openhands;
+   *
+   * Will be set as {@link CloudServiceConfig#logicalImageRegistry}'s url
+   */
+  @ser(path="image.registry")
+  imageRegistry: private string = "registry.c3.ai"
+
+  /**
+   * Image repository for the C3 Openhands
+   */
+  @ser(path="image.repository")
+  imageRepository: string = "c3openhands/c3-openhands"
+
+  /**
+   * Image tag for the C3 Openhands
+   */
+  @ser(path="image.tag")
+  imageTag: string = "0.51.1-alpha"
+}

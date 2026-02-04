@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The "Gaussian" sampler returns a value from the collection with the probability of returning each value based on
+ * a normal distribution.
+ *
+ * By default the mean is set to the middle of the array, but can also be set to the beginning or end to create a
+ * weighted distribution using #meanFraction.
+ *
+ * The standard deviation is chosen so that the furthest end of the collection from the mean index will be sampled with
+ * a probably of <1%, 3σ. Note that #sample uses {@link Rnd#gaussian} which is only capable of producing values in
+ * mean ± 3σ.
+ */
+type Rnd.GaussianSampler<E> mixes Rnd.Sampler<E> {
+
+  /**
+   * The relative position in the array for the center of the distribution. This is the array index that will be the
+   * most likely value produced.
+   *  - `0.0` will be the start of the array (0)
+   *  - `0.5` will be the middle of the array (length/2)
+   *  - `1.0` will be the end of the array (length-1)
+   */
+  meanFraction: !double = 0.5
+
+  /**
+   * The index at which the peak of the distribution will be located. This is calculated from the collection size and
+   * #meanFraction.
+   */
+  meanIndex: property(): !double
+
+  /**
+   * The number of indexes that correspond to one standard deviation. This is calculated from the collection size and
+   * #meanFraction. In particular: $$max(meanIndex, size - meanIndex) / 3$$ to reach all values within 3σ.
+   */
+  stddevLength: property(): !double
+}

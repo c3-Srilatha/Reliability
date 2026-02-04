@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Aws Vpn Connection.
+ */
+@cloud(hasResourceArn=false,
+       hasResourceId=true,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='vpn')
+type AwsVpnConnection mixes AwsResource, AwsCustomerGatewayMember, AwsVpnGatewayMember {
+
+  /**
+   * The configuration information for the VPN connection's customer gateway (in the native XML format).
+   */
+  customerGatewayConfiguration: string
+
+  /**
+   * Indicates whether the VPN connection uses static routes only.
+   */
+  hasStaticRoutesOnly: boolean
+
+  /**
+   * The static routes associated with the VPN connection.
+   */
+  routes: [AwsVpnStaticRoute]
+
+  /**
+   * The current state of the VPN connection.
+   */
+  state: string enum CloudResourceState
+
+  /**
+   * The type of VPN connection.
+   */
+  gatewayType: string enum AwsGatewayType
+
+  /**
+   * Information about the VPN tunnel.
+   */
+  vgwTelemetries: [AwsVgwTelemetry]
+}

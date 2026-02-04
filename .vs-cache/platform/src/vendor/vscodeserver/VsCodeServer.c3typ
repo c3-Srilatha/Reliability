@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Cloud service for browser-based VS Code
+ */
+// TODO PLAT-110980: Audit and Guard write actions on VsCodeServer.c3typ
+@cloud(cloudFunc='k8svscs')
+@restful(endpoint='vscode')
+type VsCodeServer mixes CloudService<VsCodeServer.Config>, Singleton, Restful {
+
+  /**
+   * Endpoint of the cloud service, i.e. `<cluster URL>/env/c3/vscode`.
+   */
+  endpoint: const string = 'vscode'
+
+  /**
+   * K8s Secret suffix for the auth token
+   */
+  TOKEN_SECRET_SUFFIX: private const string = '-code-server-authtoken'
+
+  /**
+   * The k8s secret key at which to store the token
+   */
+  TOKEN_KEY: private const string = "authToken"
+
+  /**
+   * Validates that the token is valid for the current instance of VsCodeServer.
+   * The user making the call must be the same as the user that started the VsCodeServer.
+   * If the user is valid, but token is not, then a new token is generated and returned.
+   * @param token
+   *       The token that is used for actions between vscode and c3server, stored as a K8s Secret
+   * @returns a TokenValidationResult object with the result of the validation, with a new token if necessary
+   */
+  @action(inline=true)
+  validateToken: inline function(token: @value(secret=true) string): VsCodeServer.ValidateResult
+
+  inst:          ~
+  status:        ~
+  ensureConfig:  ~
+  ensureService: ~
+  handle:        ~
+}

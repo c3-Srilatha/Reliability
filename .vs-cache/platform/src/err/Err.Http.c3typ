@@ -1,0 +1,106 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing unsupported or incorrect value or state.
+ */
+type Err.Http mixes Error {
+
+  @error(message='${statusCode} ${reasonPhrase}')
+  httpStatus: function(statusCode: !int32, reasonPhrase: string): !Err.Http
+
+  @error(message='${statusCode} ${reasonPhrase}: ${msg}')
+  httpStatusMsg: function(statusCode: !int32, reasonPhrase: !?string, msg: !string): !Err.Http
+
+  @error(message='Multiple values found for header ${header}')
+  multipleHeaders: function(header: !string): !Err.Http
+
+  @error(message='Account does not exist', httpCode=401)
+  accountDoesNotExist: function(): !Err.Http
+
+  @error(message='Env app mismatch', httpCode=401)
+  envAppMismatch: function(): !Err.Http
+
+  @error(message='Http internal server error')
+  httpInternalServerError: function(): !Err.Http
+
+  @error(message='Http not implemented', httpCode=501)
+  httpNotImplemented: function(): !Err.Http
+
+  @error(message='Http bad gateway', httpCode=502)
+  httpBadGateway: function(): !Err.Http
+
+  @error(message='Http service unavailable', httpCode=503)
+  httpServiceUnavailable: function(): !Err.Http
+
+  @error(message='Http gateway timeout', httpCode=504)
+  httpGatewayTimeout: function(): !Err.Http
+
+  @error(message='Http insufficient storage', httpCode=507)
+  httpInsufficientStorage: function(): !Err.Http
+
+  @error(message='Object not found', httpCode=404)
+  objectNotFound: function(): !Err.Http
+
+  @error(message='Invalid input param', httpCode=400)
+  invalidInputParam: function(): !Err.Http
+
+  @error(message='Invalid input value', httpCode=400)
+  invalidInputValue: function(): !Err.Http
+
+  @error(message='No such annotation', httpCode=404)
+  noSuchAnnotation: function(): !Err.Http
+
+  @error(message='Invalid reference', httpCode=400)
+  invalidReference: function(): !Err.Http
+
+  @error(message='Invalid return', httpCode=400)
+  invalidReturn: function(): !Err.Http
+
+  @error(message='Invalid text format', httpCode=400)
+  invalidTextFormat: function(): !Err.Http
+
+  @error(message='Bad request', httpCode=400)
+  badRequest: function(): !Err.Http
+
+  @error(message='Precondition failed', httpCode=412)
+  preconditionFailed: function(): !Err.Http
+
+  @error(message='Unsupported media type', httpCode=415)
+  unsupportedMediaType: function(): !Err.Http
+
+  @error(message='Bad field', httpCode=400)
+  badField: function(): !Err.Http
+
+  @error(message='Invalid canonical data', httpCode=400)
+  invalidCanonicalData: function(): !Err.Http
+
+  @error(message='Bad action for target', httpCode=400)
+  badActionForTarget: function(): !Err.Http
+
+  @error(message='Bad type for target', httpCode=400)
+  badTypeForTarget: function(): !Err.Http
+
+  @error(message='Invalid app path ${env}/${app} for url', httpCode=400)
+  badEnvAppForTarget: function(env: !string, app: !string): !Err.Http
+
+  @error(message='Invalid content type', httpCode=400)
+  invalidContentType: function(): !Err.Http
+
+  @error(message='Provision in progress', httpCode=503)
+  provisionInProgress: function(): !Err.Http
+
+  @error(message='Invalid tunnel timeout')
+  invalidTunnelTimeout: function(): !Err.Http
+
+  @error(message='Missing HTTP header ${quote(name)}', httpCode=400)
+  missingHttpHeader: function(name: !?string): !Err.Http
+
+  @error(message='Multiple HTTP headers ${quote(name)}', httpCode=400)
+  multipleHttpHeader: function(name: !?string): !Err.Http
+}

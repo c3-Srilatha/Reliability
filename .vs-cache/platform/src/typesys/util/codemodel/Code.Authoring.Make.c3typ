@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Builder for authoring an Obj make expression. This ends up being a function call, possibly chained.
+ *
+ * @see Code.Authoring
+ */
+type Code.Authoring.Make mixes Code.Make, Code.Authoring.Expr {
+
+  /**
+   * Set the reference to type to make.
+   */
+  objType: member function(type: !Code.TypeRef): !mixing Code.Authoring.Make
+
+  /**
+   * Set the type to make (simple case of ref).
+   */
+  objType: member function(type: !Type): !mixing Code.Authoring.Make
+
+  /**
+   * Add a field value initialization.
+   */
+  field: member function(name: !string, expr: !Code.Authoring.Expr): !mixing Code.Authoring.Make
+}

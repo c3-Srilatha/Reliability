@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Use options from this Type to invoke {@link ReliabilityAssetSensorAssociationRun#selectTopSensorsForAsset}.
+ * A combination of {@link associationRange} and {@link topN}, will be used to select sensors. If both are provided,
+ * then first {@link Sensor}s are filtered based on the cutoff {@link associationRange}, and if there are more than
+ *  {@link topN} sensors remaining, then the top `n` sensors are selected from the filterd list.
+ *
+ * Example 1:
+ * If we set {@link #associationRange} to `c3.Pair.ofDbl(0.7, 0.9)`, {@link #topN} is 20 and 15 sensors have correlations
+ * between 0.7 and 0.9, then 15 sensors are returned.
+ *
+ * Example 2:
+ * If we set {@link #associationRange} to `c3.Pair.ofDbl(0.7, 0.9)`, {@link #topN} is 20 and 25 sensors have correlations
+ * between 0.7 and 0.9, then the top 20 correlated sensors are returned.
+ */
+@beta
+type ReliabilityAssetSensorSelectionSpec mixes Spec {
+
+  /**
+   * The name of the asset-level {@link Feature} for which you want to select the most associated
+   * {@link Sensor}s.
+   */
+  featureName: !string
+
+  /**
+   * {@link ReliabilityAssetSensorAssociationJob#getAssociationRuns} returns {@link Sensor} associations
+   * with two pieces of information, i.e., `associationStrength` and `associationStrengthDirectional`.
+   * `associationStrength` is simply the magnitude of `associationStrengthDirectional`, where
+   * association may sometimes be negative. For example, pearson correlation coefficient can be negative.
+   * Use this field to indicate how to select the top {@link Sensor}s, should the selection be based on
+   * the magnitude of association or the association with the directionality.
+   */
+  associationType: string enum('magnitude','raw') = 'magnitude'
+
+  /**
+   * The threshold range on the `associationStrength` or `associationStrengthDirectional`
+   * for selecting top associated {@link Sensor}s.
+   *
+   * NOTE: The lower of the two values must always be provided as the first value in the pair.
+   */
+  associationRange: Pair<double, double>
+
+  /**
+   * If the top {@link Sensor}s should be selected based on simply the top
+   * `n` {@link Sensor}s ranked by `associationStrength` or `associationStrengthDirectional`,
+   * then set this field to an integer value. If {@link #associationRange}
+   * is specified already, then `topN` is applied to the sensors after they are filtered based
+   * on the `associationRange.`
+
+   * Notice that it is possible that even if only `topN` is specified, it is possible that
+   * less than `topN` sensors are selected if the number of sensors with
+   * non-NaN association scores is less than `topN`.
+   *
+   * Note: use topN < 0 if you want to select all the sensors filtered by {@link #associationRange}.
+   */
+  topN: int = 20
+}

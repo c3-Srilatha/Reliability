@@ -1,0 +1,366 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The interface for interacting with {@link ArtifactHub}.
+ */
+abstract type ArtifactHubIface mixes Microservice.Content.Iface, Microservice.Iface, DefaultInstance {
+
+  /**
+   * Returns where the ArtifactHub is currently configured to write artifacts to.
+   */
+  artifactsMount: abstract function(): string serialized FileUrl
+
+  /**
+   * Retrieves the most recent version of the given artifact.
+   */
+  artifactForId: abstract function(artifactId: !string): ArtifactHub.Artifact
+
+  /**
+   * Retrieves the specific version of an artifact.
+   */
+  artifactForVersion: abstract function(name: !string,
+                                        version: !string serialized SemanticVersion): ArtifactHub.Artifact
+
+  /**
+   * Retrieves the unique names of registered {@link ArtifactHub.Artifact}s.
+   *
+   * @param spec
+   *           A spec which can be used to filter and limit the number of results
+   * @return A list of {@link ArtifactHub.Artifact#names} registered in {@link ArtifactHub}.
+   */
+  availableArtifacts: abstract function(spec: ArtifactHub.EvaluateSpec): [string]
+
+  /**
+   * Retrieves the unique kinds of registered {@link ArtifactHub.Artifact}s.
+   *
+   * @param spec
+   *           A spec which can be used to filter and limit the number of results
+   * @return A list of {@link ArtifactHub.Artifact#kinds} registered in {@link ArtifactHub}.
+   */
+  availableArtifactKinds: abstract function(spec: ArtifactHub.EvaluateSpec): [string]
+
+  /**
+   * Retrieves the unique versions of registered {@link ArtifactHub.Artifact}s.
+   *
+   * @param spec
+   *           A spec used to describe what data to fetch. It can be used to filter and limit the number of results.
+   * @return An array of {@link ArtifactHub.Artifact}s which fit the spec passed in.
+   */
+  availableVersions: abstract function(spec: ArtifactHub.FetchSpec): [ArtifactHub.Artifact]
+
+  /**
+   * Retrieves the highest versions of {@link ArtifactHub.Artifact}s requested.
+   *
+   * @param spec
+   *           A spec used to describe what data to fetch. It can be used to filter and limit the number of
+   *           records being processed.
+   * @return A map of {@link ArtifactHub.Artifact#name} to artifact with the highest version out of the requested
+   *         range in the given spec.
+   */
+  bestVersions: abstract function(spec: ArtifactHub.FetchSpec): map<string, ArtifactHub.Artifact>
+
+  /**
+   * Retrieves the best set of dependencies for the given spec. This will return a recursively flattened list of
+   * dependencies.
+   *
+   * The chosen version of each dependency will be the highest version available that adheres to the
+   * requested set of {@link ArtifactHub.DependencyResolutionSpec#ranges} and does not conflict with the
+   * nested dependencies of any other chosen dependency versions.
+   *
+   * Dependency versions are chosen in topological order starting with dependencies that have no dependents.
+   *
+   * For example:
+   * ```
+   * ranges: { pkgA: "8", pkgB: "*" }
+   * available versions: pkgA:8.2.0, pkgA:8.1.0, pkgB:3.0.0, pkgB:4.0.0
+   * relations: pkgA:8.2.0 -> pkgB:3.*, pkgA:8.1.0 -> pkgB:4.*
+   * topological order: pkgA -> pkgB
+   * resolution: pkgA:8.2.0, pkgB:3.0.0
+   * ```
+   *
+   * @param spec
+   *           A spec used to describe what dependencies to fetch. It can be used to filter and limit the number of
+   *           records being processed.
+   * @return A flattened array with the best versions of all required dependencies for the given spec
+   */
+  resolveDependencies: abstract function(spec: ArtifactHub.DependencyResolutionSpec): [ArtifactHub.Artifact]
+
+  /**
+   * Wrapps {@link #resolveDependencies} in a try/catch and returns structured resolution information
+   * back to the user.
+   *
+   * Backwards compatibility is not guaranteed for this api and its return structure.
+   */
+  @beta
+  resolveDependenciesDebugFrames: abstract function(spec: ArtifactHub.DependencyResolutionSpec): json
+
+  /**
+   * Registers a new set of {@link ArtifactHub.Artifact}s in {@link ArtifactHub}.
+   *
+   * @param artifacts
+   *           A array of {@link ArtifactHub.Artifact}s to be registered in {@link ArtifactHub} along with
+   *           the type of content for the artifact.
+   * @return An array of registered artifacts with writable {@link Content} instances for each field in the subtype
+   *         mixing {@link Content}. The type of {@link Content} is defined by the spec.
+   */
+  registerArtifacts: abstract function(artifacts: [ArtifactHub.Artifact]): [ArtifactHub.Artifact]
+
+  /**
+   * Deletes the {@link ArtifactHub.Artifact}s matching the given spec.
+   *
+   * @param spec
+   *           A spec used to describe what data to delete. It can be used to filter and limit the number of records
+   *           being processed.
+   * @param force
+   *           If true, the artifacts will be deleted immediately. If false, they will be marked for deletion and
+   *           eventually be cleaned up by the service.
+   */
+  deleteArtifacts: abstract function(spec: !ArtifactHub.FetchSpec, force: boolean)
+
+  /**
+   * Retrieves the semanticVersion for {@link ArtifactHub.Artifact}s matching the most recent sha.
+   *
+   * @param shas
+   *           An array of order commit shas, to find the most recent sha in  {@link ArtifactHub}
+   * @param filter
+   *           A filter describing which {@link ArtifactHub.Artifact}s to evaluate
+   * @return the most recent matching sha
+   */
+  bestVersion: abstract function(shas: ![string], filter: string serialized Filter): string serialized SemanticVersion
+
+  /**
+   * @return A temporary session token for {@link User#artifactReader User ArtifactReader} with an expiration time of 1 hour.
+   */
+  generateTempToken: abstract function(): SessionToken
+
+  /**
+   * Update expiration settings for a {@link ArtifactHub.Artifact}.
+   * If keepForever is not provided, it is assumed to be false.
+   */
+  updateExpiration: abstract function(spec: !ArtifactHub.FetchSpec, expiration: DateTime, keepForever: boolean)
+
+  /**
+   * Return whether ArtifactHub service is in air-gap mode.
+   * In air-gap mode, if an artifact is missing, it will throw object not found error when accessed through
+   * the {@link serve content ArtifactHub.RestfulContentHandler#serveContent} REST end point.
+   * If it is not in air-gap mode, it will try to pull the artifact from an external repository and put it in ArtifactHub.
+   */
+  pullThroughCachingDisabled: abstract function(): !boolean
+
+  /**
+   * Produces an {@link ArtifactHub.Artifact} with content containing other {@link ArtifactHub.Artifact artifacts}
+   * metadata and their {@link ArtifactHub.Artifact.Content content}. It is used together with {@link importArtifacts}
+   * to move artifacts across clusters.
+   * It is assumed that callers of this API will have already validated that the artifacts are valid and can be exported.
+   * Callers can leverage {@link validateArtifactDependencies} to help with this validation.
+   *
+   * Example:
+   * ```
+   * var export = ArtifactHub.exportArtifacts({
+   *   filter: Filter.eq("kind", ArtifactHub.ArtifactKind.CONDA_PKG),
+   * }, DateTime.now().plusHours(1));
+   * var exportFile = C3.File.fromString(export.content.safeUrl());
+   * ```
+   *
+   * @param spec
+   *        {@link ArtifactHub.FetchSpec} that specifies which artifacts to export. The API expects artifacts fetchable by the `spec`
+   *        to be a self contained export, meaning all dependencies must be included in the `spec`.
+   * @param expiresAt
+   *        At what point in time the generated export should be deleted
+   * @param keepForever
+   *        Whether the artifact should be kept forever
+   * @return An artifact representing the export
+   */
+  exportArtifacts: abstract function(spec: !ArtifactHub.FetchSpec,
+                                     expiresAt: datetime,
+                                     keepForever: boolean): !ArtifactHub.Artifact
+
+  /**
+   * Validates that for the given `source` artifacts, all `resolvedDependencies` of the `source` artifacts are present in the specified
+   * {@link ArtifactHub.Artifact.DependencyValidationSpec#scope}.
+   * Will throw an error if any dependencies are not found.
+   * @param source
+   *           The list of artifacts to validate dependencies for. The "name", "kind", "semanticVersion", and "resolvedDependencies" fields must be populated.
+   * @param validationSpec
+   *          The specification for how to validate the dependencies of the `source` artifacts.
+   */
+  validateArtifactDependencies: abstract function(source: !?[ArtifactHub.Artifact],
+                                                  validationSpec: ArtifactHub.Artifact.DependencyValidationSpec)
+
+  /**
+   * Accepts the url to a zip file containing the {@link ArtifactHub.Artifact#content} of an export generated by
+   * {@link #exportArtifacts} and imports the exported artifacts.
+   *
+   * Example:
+   * ```
+   * ArtifactHub.importArtifacts("gcs://bucket/path/export.zip");
+   * ```
+   *
+   * @param exportLocation
+   *        The url to the zip file containing the exported artifacts
+   * @param deleteExportZip
+   *        Whether to delete the zip file after importing the artifacts. Will only delete on successful import.
+   * @return
+   *        An array of all of the artifacts imported
+   */
+  importArtifacts: abstract function(exportLocation: !string, deleteExportZip: boolean): [ArtifactHub.Artifact]
+
+  /**
+   * Accepts a spec and imports (pulls) matching {@link ArtifactHub.Artifact}s from an upstream {@link ArtifactHub}.
+   *
+   * Example:
+   * ```
+   * var spec = { ranges: { artifact1: "1.0.0", artifact2: "2.0.0" } };
+   * var imported = ArtifactHub.importArtifacts(spec);
+   * imported // artifact1-1.0.0+1, artifact1-1.0.0+2, artifact2-2.0.0+1, artifact2-2.0.0+2
+   * ```
+   *
+   * @param spec
+   *        Specifies which artifacts to import from the upstream {@link ArtifactHub}.
+   * @return
+   *        An array of all of the artifacts imported.
+   */
+  importUpstreamArtifacts: abstract function(spec: !ArtifactHub.FetchSpec): [ArtifactHub.Artifact]
+
+  /**
+   * Registers a set of {@link ArtifactHub.Artifact}s in an upstream Artifact Hub.
+   * Validates that the artifacts being registered have all dependencies included or already existing upstream.
+   *
+   * For example if you wanted to automatically promote artifacts from a development environment
+   * to a staging environment, you could use this method to register the artifacts in the staging
+   * environment.
+   *
+   * Example:
+   * ```
+   * // Assuming an administrator has configured your ArtifactHub to point to staging ArtifactHub
+   * var spec = { filter: Filter.eq("semanticVersion", "1.0.0-pre+specific.build") };
+   * ArtifactHub.registerArtifactsUpstream(spec);
+   * // Now the artifacts with semanticVersion "1.0.0-pre+sepcific.build" are available in the upstream ArtifactHub
+   * ```
+   *
+   * @param spec
+   *           A spec used to describe which artifacts to promote
+   * @param targetHub
+   *          The name of the {@link ArtifactHubProxy} to register the artifacts in
+   */
+  registerArtifactsUpstream: abstract function(spec: !ArtifactHub.FetchSpec, targetHub: string serialized ArtifactHub)
+
+  /**
+   * Registers a set of {@link ArtifactHub.Artifact}s in an upstream Artifact Hub with an expiration time.
+   * Validates that the artifacts being registered have all dependencies included or already existing upstream.
+   * @param spec
+   *           A spec used to capture all the artifacts to move upstream.
+   * @param targetHub
+   *          The name of the {@link ArtifactHubProxy} to register the artifacts in
+   * @param expiration
+   *          The time at which the registered artifacts will expire in the upstream hub. If set, keepForever cannot be true.
+   * @param keepForever
+   *          Whether to keep the registered artifacts forever in the upstream hub. If true, expiration must be null.
+   */
+  registerArtifactsUpstream: abstract function(spec: !ArtifactHub.FetchSpec,
+                                               targetHub: string serialized ArtifactHub,
+                                               expiration: datetime,
+                                               keepForever: boolean)
+
+  /**
+   * Registers an independently deployable {@link ArtifactHub.Artifact} in an upstream Artifact Hub.
+   * @param spec
+   *           A spec used to capture all the artifacts to move upstream. Only the artifacts that of kind "LEGACY_PKG" will be included.
+   * @param targetHub
+   *          The name of the {@link ArtifactHubProxy} to register the artifact in
+   * @param expiration
+   *          The time at which the registered artifact will expire in the upstream hub. If set, keepForever cannot be true.
+   * @param keepForever
+   *          Whether to keep the registered artifact forever in the upstream hub. If true, expiration must be null.
+   */
+  registerDeployableArtifactsUpstream: abstract function(spec: !ArtifactHub.FetchSpec,
+                                                         targetHub: string serialized ArtifactHub,
+                                                         expiration: datetime,
+                                                         keepForever: boolean): [ArtifactHub.Artifact]
+
+  /**
+   * Registers a new set of {@link ArtifactHub.Resource}s in {@link ArtifactHub}.
+   *
+   * @return An array of registered resources that are writable {@link Content} instances.
+   */
+  registerResources: abstract function(resources: [ArtifactHub.Artifact.Resource]): [ArtifactHub.Artifact.Resource]
+
+  /**
+   * Registers a {@link ArtifactHub.Artifact} in {@link ArtifactHub}. This method can be called for the artifact by multiple
+   *   nodes or threads at the same time. The method will ensure that only one of the calls will register the artifact.
+   *
+   * @param artifact
+   *           The {@link ArtifactHub.Artifact}s to be registered in {@link ArtifactHub} along with
+   *           the type of content for the artifact.
+   * @param urlToPullFrom
+   *           The url to pull the content of the artifact from.
+   * @return The registered artifacts with writable {@link Content} instances for each field in the subtype
+   *         mixing {@link Content}. The type of {@link Content} is defined by the spec.
+   */
+  registerArtifactAndPull: abstract function(artifact: !ArtifactHub.Artifact,
+                                             urlToPullFrom: Url): !ArtifactHub.Artifact
+
+  /**
+   * Fetch all the metrics related to artifacts to be shown on the UI.
+   */
+  fetchArtifactMetrics: abstract function(): json
+
+  /**
+   * Submit a request to the service
+   * @param topic
+   *        The topic to which the request is submitted
+   * @param data
+   *        Data associated with the request for the topic.
+   */
+  submitRequest: abstract function(topic: !string, data: !string, spec: ArtifactHub.SpecBase): C3RequestFields
+
+  /**
+   * Cancels the request corresponding to the given id or throws if id not found.
+   */
+  cancelRequest: abstract function(topic: !string,
+                                   requestId: !string,
+                                   deciderSpec: C3Request.DeciderSpec,
+                                   spec: ArtifactHub.SpecBase)
+
+  /**
+   * Fetch a set of requests from the service based off the spec
+   */
+  requests: abstract function(topic: !string, spec: ArtifactHub.FetchSpecBase): [C3RequestFields]
+
+  /**
+   * Approves the request corresponding to the given id or throws if id not found.
+   * Approving a request must be done in the ArtifactHub that owns the request, there is no ability to approve a request upstream.
+   */
+  approveRequest: abstract function(topic: !string, requestId: !string, deciderSpec: C3Request.DeciderSpec)
+
+  /**
+   * Denies the request corresponding to the given id or throws if id not found.
+   * Denying a request must be done in the ArtifactHub that owns the request, there is no ability to deny a request upstream.
+   */
+  denyRequest: abstract function(topic: !string, requestId: !string, deciderSpec: C3Request.DeciderSpec)
+
+  /**
+   * Fetch existing entitlements for this client from the service
+   */
+  availableEntitlements: abstract function(spec: ArtifactHub.FetchSpecBase): [ArtifactHub.Artifact.Entitlement]
+
+  /**
+   * Updates the content of a registered {@link ArtifactHub.Artifact} in {@link ArtifactHub} if the urlToPullFrom has
+   * updated content. This method can be called for the artifact by multiple nodes or threads at the same time.
+   * The method will ensure that only one of the calls will update the artifact content.
+   *
+   * @param artifact
+   *           The {@link ArtifactHub.Artifact}s to be updated in {@link ArtifactHub}.
+   * @param urlToPullFrom
+   *           The url to pull the content of the artifact from.
+   * @return The registered artifact.
+   */
+  updateRegisteredArtifactContent: private abstract function(artifact: !ArtifactHub.Artifact,
+                                                             urlToPullFrom: Url): !ArtifactHub.Artifact
+}

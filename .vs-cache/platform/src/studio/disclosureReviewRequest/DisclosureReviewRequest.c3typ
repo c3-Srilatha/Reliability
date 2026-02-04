@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base request type for artifacts that need to go through the disclosure review cycle.
+ */
+extendable entity type DisclosureReviewRequest mixes AclEnabled {
+
+  /**
+   * The status of the request. See {@link DisclosureReviewRequest.Status}.
+   */
+  status: string enum DisclosureReviewRequest.Status
+
+  /**
+   * The requestor of the request.
+   */
+  requestedBy: User
+
+  /**
+   * The description of the request filled by the requestor.
+   */
+  description: string
+
+  /**
+   * The expiration timestamp of the request.
+   */
+  expiresAt: datetime
+
+  /**
+   * Approve a request.
+   */
+  @action(group='disclosure-reviewer')
+  approveRequest: abstract member function(): DisclosureReviewRequest js-server
+
+  /**
+   * Reject a request.
+   */
+  @action(group='disclosure-reviewer')
+  rejectRequest: abstract member function(): DisclosureReviewRequest js-server
+
+  /**
+   * Expire a request.
+   */
+  @action(group='disclosure-reviewer')
+  expireRequest: abstract member function(): DisclosureReviewRequest js-server
+
+  /**
+   * Scan all requests and mark expired if expiration timestamp is in the past.
+   */
+  updateExpired: function() js-server
+
+  /**
+   * Whether a user can be auto-approved in the disclosure review process
+   */
+  @action(group='disclosure-requestor')
+  isAutoApproved: function(user: User): boolean js-server
+
+  /**
+   * Whether a user can review other User's data requests
+   */
+  @action(group='disclosure-requestor')
+  isDisclosureReviewer: function(user: User): boolean js-server
+
+  /**
+   * Whether a user can review other User's data requests
+   */
+  @action(group='disclosure-requestor')
+  isDisclosureRequestor: function(user: User): boolean js-server
+
+  /**
+   * Whether the current {@link User} is a Disclosure Reviewer
+   */
+  @action(group='disclosure-requestor')
+  amIDisclosureReviewer: function(): boolean js-server
+}

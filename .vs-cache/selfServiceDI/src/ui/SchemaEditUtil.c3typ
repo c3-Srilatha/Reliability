@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper methods to abtract away the differences between schema edit tabs
+ * in different parts of selfServiceDI
+ */
+@typeScript
+type SchemaEditUtil {
+
+  /**
+   * Based on the sourceCategory, determine where to retrieve the schema type meta in state
+   */
+  getTypeMetaFromSourceCategory: function(sourceCategory: !string enum('file-upload', 'sql', 'main-page'),
+                                          state: !UiSdlReduxState): DataFusionUiTypeMeta ts-client
+
+  /**
+   * Based on the sourceCategory, what action is dispatched to update the schema type meta in state
+   */
+  getTypeMetaEditActionFromSourceCategory: function(sourceCategory: !string enum('file-upload', 'sql', 'main-page'),
+                                                    state: !UiSdlReduxState,
+                                                    typeMeta: TypeMeta): UiSdlReduxAction ts-client
+
+  /**
+   * Based on the schemaData, return is description exists
+   */
+  checkSchemaDescription: function(schemaData: DataFusionUiTypeMeta): boolean ts-client
+}

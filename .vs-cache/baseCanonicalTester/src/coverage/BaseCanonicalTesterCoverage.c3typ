@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test coverage for each Canonical This only validates that the canonical target types have an expected field for their
+ * projections in the canonical transformation.  It does not validate custom transformers, or fields not defined within
+ * the transform.
+ */
+private entity type BaseCanonicalTesterCoverage schema name 'BCL_TST_COV' {
+
+  /**
+   * The source type that we are validating coverage against.
+   */
+  sourceType: !string
+
+  /**
+   * The target type that we are validating coverage against.
+   */
+  targetType: !string
+
+  /**
+   * If test coverage is complete for the {@link transformName}.
+   */
+  testCoverageComplete: !boolean
+
+  /**
+   * If test coverage is complete for the {@link transformName}.
+   */
+  status: string enum BaseCanonicalTesterResults.Status
+
+  /**
+   * The fields that are missing from the test coverage.
+   */
+  transformName: !string
+
+  /**
+   * This is utilized by {@link BaseCanonicalTester#runCanonicalTests} to persist the test coverage results.
+   *
+   * @param results
+   *            The return object call from {@link BaseCanonicalTester#testAllCanonicals} or
+   *            {@link BaseCanonicalTester#testAllSources}.  The expected behavior is to concatenate the results.
+   * @return
+   *            The persisted test coverage results.
+   */
+  persistTestCoverage: private function(results: [BaseCanonicalTesterResults]): [BaseCanonicalTesterCoverage] js-server
+}

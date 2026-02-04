@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The Type that contains information about a directive to disable or reenable
+ * {@link BaseCodeAnalysis.Metric}s for certain lines of code.
+ *
+ * The following directives are supported:
+ *
+ * | Directive Kind                  | Description                                                               |
+ * | ------------------------------- | ------------------------------------------------------------------------- |
+ * | `c3-analysis-disable`           | Disable selected code analysis metrics.                                   |
+ * | `c3-analysis-enable`            | Reenable selected code analysis metrics if they were previously disabled. |
+ * | `c3-analysis-disable-next-line` | Disable selected code analysis metrics for the next line.                 |
+ */
+type BaseCodeAnalysis.Metric.Directive {
+
+  /**
+   * The code of the metric that's being ignored or re-enabled. If no code is
+   * specified, the Code Analyzer is disabled (or enabled) entirely.
+   */
+  metricCode: string enum BaseCodeAnalysis.Metric.Code
+
+  /**
+   * The reason of the exclusion.
+   */
+  reason: string
+
+  /**
+   * The line number where the exclusion message locates.
+   */
+  line: !int
+
+  /**
+   * The column number where the exclusion message locates.
+   */
+  column: !int
+
+  /**
+   * The enum value indicating if the directive enables or disables the metric.
+   */
+  kind: string enum BaseCodeAnalysis.Metric.Directive.Kind
+}

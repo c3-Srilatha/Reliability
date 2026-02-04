@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Input component type for text area input.
+ */
+@typeScript
+@uiComponentCategorizer(name='Textarea', category='Components')
+type UiSdlTextAreaInput mixes UiSdlComponent<UiSdlNoData>, UiSdlDebounceableInput {
+
+  /**
+   * Content to appear in the input when the textarea is empty.
+   */
+  placeholder: string
+
+  /**
+   * Whether the textarea will take the full width of its parent.
+   */
+  fluid: boolean
+
+  /**
+   * Triggered when text area changes.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `TEXT_AREA_CHANGE` action for this instance with the following properties:
+   * - payload.componentId {string} The componentId of the component on which the action was triggered.
+   */
+  @uiSdlActionCreator(actionType='TEXT_AREA_CHANGE')
+  textAreaChange: function(id: string): UiSdlReduxAction<UiSdlComponentActionPayload> ts-client
+
+  /**
+   * Triggered when text area is blurred.
+   *
+   * @param id
+   *            Id of the component.
+   *
+   * @returns A `TEXT_AREA_BLUR` action for this instance with the following properties:
+   * - payload.componentId {string} The componentId of the component on which the action was triggered.
+   */
+  @uiSdlActionCreator(actionType='TEXT_AREA_BLUR')
+  textAreaBlur: function(id: string): UiSdlReduxAction<UiSdlComponentActionPayload> ts-client
+}

@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines a set of functions for expression evaluation and metric calculations within the diagram parsing process.
+ * It combines functionality from {@link ExpressionEngineFunction} and {@link MetricFunctionLibrary}.
+ */
+type DiagramParsingExpressionEngineFunction mixes ExpressionEngineFunction, MetricFunctionLibrary {
+
+  /**
+   * Used to map {@link ParsedSensor#matchConfidenceScore} to the {@link ParsedSensor#matchConfidenceLevel}.
+   * The level is determined by {@link DiagramParsingConfig#matchConfidenceLevels},
+   * and uses {@link DiagramParsingConfig#matchConfidenceScoreUpperBounds} as thresholds.
+   *
+   * @param matchConfidenceScore
+   *               match confidence score of the {@link ParsedSensor}
+   * @return the corresponding qualitative measure of confidence for the {@link ParsedSensor},
+   * which can be any of the {@link DiagramParsingConfig#matchConfidenceLevels}
+   */
+  getMatchConfidenceLevel: function(matchConfidenceScore: double): string js-rhino
+
+  /**
+  * Removes the PDF extension from the P&ID string.
+  * @param sourceDiagram {string}
+  *     The P&ID test string to modify.
+  * @return {string}
+  *     The modified P&ID test string without the PDF extension.
+  */
+  @action(group='read')
+  removePdfExtension: function(
+    sourceDiagram: string): string js-rhino
+}

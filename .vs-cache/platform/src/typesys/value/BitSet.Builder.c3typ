@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A way to quickly construct a {@link BitSet}. It can also function as a mutable BitSet if desired, although it may
+ * be less efficient than a normal, immutable instance.
+ */
+type BitSet.Builder mixes WithType, Builder<BitSet>, Value {
+
+  /**
+   * Get the bit at the specified index.
+   */
+  bitAt: member function(idx: !int32): boolean js | py | java
+
+  /**
+   * @return if the builder has no bit set to 1
+   */
+  isEmpty: member function(): boolean js | py | java
+
+  /**
+   * Set the bit at the specified index to the specified value.
+   */
+  setAt: member function(idx: !int32, value: !boolean): !mixing BitSet.Builder js | py | java
+
+  /**
+   * Change the bit at the specified index to the negation of its current value.
+   */
+  toggleAt: member function(idx: !int32): !mixing BitSet.Builder js | py | java
+
+  /**
+   * Clear all bits to false (empty the builder).
+   */
+  clear: ~ js | py | java
+
+  /**
+   * Produce an instance of {@link BitSet} with the bits set in the builder so far.
+   */
+  build: ~ js | py | java
+}

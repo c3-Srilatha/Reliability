@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Locale is defined by language and region.
+ */
+@db(unique=['name'])
+entity type Locale mixes SeedData<Locale>, MetaLocale schema name 'L10N_LOCALE' {
+
+  /**
+   * e.g. en, zh, fr, ja
+   */
+  language: !string
+
+  /**
+   * e.g. US, CN or leave it empty
+   */
+  region: string
+
+  /**
+   * Returns the user's locale as set in http request header.
+   * If not available, the default locale string, 'en_US' is returned.
+   */
+  getUserLocaleString: function(): string
+
+  /**
+   * Generate translations for a module within the passed in locale.
+   * If moduleName is omitted, then translations for all modules will be generated
+   * Returns number of translations created/updated
+   * Note: This is a proxy for L10Utility.generateTranslations() -- see below.
+   *
+   * @param locale - the locale for which to generate translations
+   * @param tenantName - the tenant
+   * @param tagName - the tag
+   * @param moduleName - the module name (optional)
+   *
+   * @return count of translations created or updated.
+   */
+  generateTranslationsForLocale: function(locale: Locale,
+                                          tenantName: string,
+                                          tagName: string,
+                                          moduleName: string): int js-server
+
+  /**
+   * Generate translations for a module. Values will be automatically translated by making a call to Google Translate.
+   * If moduleName is omitted, then translations for all modules will be generated.
+   * Returns number of translations created/updated
+   * Note: This is a proxy for L10Utility.generateTranslationsWithAutoTranslate() -- see below.
+   *
+   * @param locale - the locale for which to generate translations
+   * @param tenantName - the tenant
+   * @param tagName - the tag
+   * @param moduleName - the module name (optional)
+   *
+   * @return count of translations created or updated.
+   */
+  generateTranslationsForLocaleWithAutoTranslate: function(locale: Locale,
+                                                           tenantName: string,
+                                                           tagName: string,
+                                                           moduleName: string): int js-server
+
+  /**
+   * e.g. en_US, zh_CN, fr, ja
+   */
+  name: !~
+
+  beforeCreate: ~
+
+  /**
+   * Returns an id for a give Locale which would match its language and region
+   */
+  idFromLocale: private inline function(locale: !Locale): !string
+}

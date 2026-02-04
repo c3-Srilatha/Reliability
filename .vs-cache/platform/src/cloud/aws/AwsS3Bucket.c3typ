@@ -1,0 +1,153 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AWS S3 Bucket.
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='REQUIRED',
+       cloudFunc='s3')
+type AwsS3Bucket mixes AwsResource {
+
+  /**
+   * Owner of this bucket.
+   */
+  owner: AwsS3BucketOwner
+
+  /**
+   * A list of access control policies for the bucket.
+   */
+  grants: [AwsS3Grant]
+
+  /**
+   * The geographical region where the bucket resides in.
+   */
+  location: string
+
+  /**
+   * Truncates provided bucket by deleting all files.
+   *
+   * @return number files deleted
+   */
+  truncate: member function(): !int
+
+  /**
+   * Returns whether the bucket exists.
+   *
+   * @param bucketName
+   *
+   * @return true if bucket exists.
+   */
+  exists: function(bucketName: !string, spec: CloudResourceOperationSpec): boolean
+
+  /**
+   * Returns instance of AwsS3Bucket.
+   *
+   * @param name
+   *
+   * @return instance of AwsS3Bucket
+   */
+  fromName: function(name: !string): AwsS3Bucket
+
+  /**
+   * The URL that serves as the entry point for accessing the S3 bucket.
+   */
+  endpoint: member function(): !string
+
+  /**
+   * @return instance of c3.server.aws.client.AwsS3Client for the bucket.
+   */
+  s3Client: private inline member function(): native
+
+  /**
+   * @return notification configurations for the bucket.
+   * Notification configuration consists of user given name, list of events AwsS3Bucket listeners,
+   * and ARN of AWS resource where notification is sent.
+   */
+  notificationConfigs: member function(): map<string, AwsS3BucketNotificationConfig>
+
+  /**
+   * This method is used to set notification configurations for the bucket. Configuration on the bucket is uniquely
+   * identified using user given name. This method will overwrite configurations if configuration with same name
+   * already exists, otherwise it will create a new configuration.
+   *
+   * @param configs is a map of user given template name and notification configuration template.
+   *          Template consists of list of events AwS3Bucket listens on S3 objects, and ARN of AWS resource
+   *          where notification is sent. I
+   */
+  upsertNotificationConfigs: member function(configs: !?map<string, AwsS3BucketNotificationConfig>)
+
+  /**
+   * Returns static website configurations for the bucket.
+   */
+  websiteConfiguration: member function(): AwsS3BucketWebsiteConfig
+
+  /**
+   * This method is used to set up static website configurations for the bucket. This method will overwrite configurations
+   * if configuration already exists, otherwise it will create a new configuration.
+   *
+   * @param config
+   *            The configuration of the static website.
+   */
+  upsertWebsiteConfiguration: member function(config: !AwsS3BucketWebsiteConfig)
+
+  /**
+   * This method is used to set up static website configurations for the bucket. This method will overwrite configurations
+   * if configuration already exists, otherwise it will create a new configuration.
+   */
+  destroyWebsiteConfiguration: member function()
+
+  /**
+   * Returns an existing policy on the bucket.
+   * Bucket Policy provide access control management at the bucket level for both the bucket resource
+   * and contained object resources. Only one policy may be specified per bucket.
+   */
+  policy: member function(): json
+
+  /**
+   * Upserts policy on the bucket.
+   */
+  @action(group+='cluster-admin')
+  upsertPolicy: private member function(policy: !json)
+
+  /**
+   * Delete policy on the bucket.
+   */
+  @action(group+='cluster-admin')
+  deletePolicy: private member function()
+
+  /**
+   * Gets the default server-side bucket encryption algorithm.
+   *
+   * @return null if encryption is not enabled.
+   */
+  defaultSseEncryption: member function(): string
+
+  /**
+   * Caches the result of defaultSseEncryption for a bucket name,
+   * so we don't have to send an API request every time we need this value.
+   */
+  cachedSseEncryption: cached function(bucketName: !string): string
+
+  /**
+   * Blocks public access to this bucket.
+   */
+  blockPublicAccess: member function()
+
+  awsServiceName:              ~
+  hasRegion:                   ~
+  generateResourceSecondaryId: ~
+
+  @typesys(todo="PLAT-130531 - Remove Cached#clearCache override from AwsS3Bucket")
+  clearCache: ~
+
+  doClearCache: ~
+}

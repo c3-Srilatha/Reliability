@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specific message inside a chat that a user sent to the generative model.
+ */
+entity type Genai.Query.ChatMessage schema name "CHTMSSG" {
+
+  /**
+   * The original query that the user made and then had a follow-up chat on.
+   */
+  parentAiResult: !Genai.Query.Result
+
+  /**
+   * The message sent by the user to the generative model.
+   */
+  message: !string
+
+  /**
+   * The time the message was sent in the UI.
+   */
+  sentTime: !datetime
+
+  /**
+   * {@link User} who sent the message.
+   */
+  user: !User
+
+  /**
+   * The {@link Genai.Query.Result} response from the model.
+   */
+  responseAiResult: !Genai.Query.Result
+}

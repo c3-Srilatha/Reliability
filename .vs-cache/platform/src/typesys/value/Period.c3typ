@@ -1,0 +1,330 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A period is a pair of a count and logical time unit, for example "30 days". This can be naturally represented as a
+ * string of the form "30d", which is used as the serialization format. The logical time units are a subset of the
+ * possible time series {@link Interval intervals}.
+ *
+ * Periods may also have offsets of the next smaller unit. For example, the Muslim week would be "w@6", starting on
+ * Saturday (Monday is 1, Saturday is 6).
+ *
+ * To convert this into a duration or other fixed period, assumptions must be made about the actual length of a units
+ * larger than a day. For example, a day is 24 hours except during daylight-savings (DST) transitions. We call a
+ * canonical day 24 hours, a canonical month 30 canonical days and a canonical year 365 canonical days long.
+ *
+ * @see Duration
+ * @see Interval
+ * @see TemporalUnit
+ */
+inline type Period mixes StringSerializable {
+
+  /**
+   * Same as {@link Interval#SECOND}.
+   */
+  SECOND: const Period = "1s"
+
+  /**
+   * Same as {@link Interval#MINUTE}.
+   */
+  MINUTE: const Period = "1m"
+
+  /**
+   * Same as {@link Interval#FIVE_MINUTE}.
+   */
+  FIVE_MINUTE: const Period = "5m"
+
+  /**
+   * Same as {@link Interval#TEN_MINUTE}.
+   */
+  TEN_MINUTE: const Period = "10m"
+
+  /**
+   * Same as {@link Interval#QUARTER_HOUR}.
+   */
+  QUARTER_HOUR: const Period = "15m"
+
+  /**
+   * Same as {@link Interval#HALF_HOUR}.
+   */
+  HALF_HOUR: const Period = "30m"
+
+  /**
+   * Same as {@link Interval#HOUR}.
+   */
+  HOUR: const Period = "1h"
+
+  /**
+   * Same as {@link Interval#DAY}.
+   */
+  DAY: const Period = "1d"
+
+  /**
+   * Same as {@link Interval#MONTH}.
+   */
+  MONTH: const Period = "1mo"
+
+  /**
+   * Same as {@link Interval#YEAR}.
+   */
+  YEAR: const Period = "1y"
+
+  /**
+   * The number seconds in a canonical (24 hour) day.
+   *
+   * Note that this will be wrong two days a year in a time zone that switches between daylight and standard time.
+   */
+  SECS_IN_DAY: const !int = 86400
+
+  /**
+   * The number of days in a week.
+   */
+  DAYS_IN_WEEK: const int32 = 7
+
+  /**
+   * The canonical number of days in a month.
+   *
+   * Note that this will be wrong for half the actual months (Gregorian calendar) which have 28/29 or 31 days.
+   */
+  DAYS_IN_MONTH: const int32 = 30
+
+  /**
+   * The canonical number of days in a quarter (3 months).
+   *
+   * Note that this will be wrong for most actual quarters due to the variation in month lengths.
+   */
+  DAYS_IN_QUARTER: const int32 = 91
+
+  /**
+   * The canonical number of days in a year.
+   *
+   * Note that this will be wrong for leap years.
+   */
+  DAYS_IN_YEAR: const int32 = 365
+
+  /**
+   * The number of units in period.
+   */
+  count: !int32
+
+  /**
+   * The period unit.
+   */
+  unit: !string enum TemporalUnit
+
+  /**
+   * An optional ordinal in the next smaller unit from the nominal start of the period. For example, for quarters of a
+   * fiscal year that starts in February, the offset would be "2" (February). E.g., "Q@2" would be:
+   * "February, May, August, November".
+   *
+   * This is supported for periods greater than DAY:
+   * - WEEK: 1-7 (Mon-Sun)
+   * - MONTH: 1-31 (day of month)
+   * - QUARTER & YEAR; 1-12 (Jan-Dec)
+   *
+   * Note that non-positive values are illegal and 1 is the trivial (default) offset ordinal.
+   *
+   * This is exclusive with #start.
+   */
+  offset: int32
+
+  /**
+   * Return a {@link Duration} that corresponds to this period. Note that because periods are logical, this
+   * assumes canonical values for day and larger periods (month, quarter, year).
+   *
+   * @see #toDurationAt
+   */
+  toDuration: cached member function(): !Duration
+
+  /**
+   * Return a {@link Duration} that corresponds to this period, starting at the specified time. Note that because
+   * this method allows the period to be anchored, the duration will be exact. For example, the month of February will
+   * be 28 (or 29) days long instead of the canonical 30.
+   *
+   * @see #toDurationAt
+   */
+  toDurationAt: member function(start: !utc datetime): !Duration
+
+  /**
+   * Return the fractional number of milliseconds this period represents. Note that because periods are logical, this
+   * assumes canonical values for larger periods (month, quarter, year).
+   *
+   * @see #toDays
+   * @see #toDurationAt
+   */
+  toMilliseconds: cached member function(): !double
+
+  /**
+   * Return the fractional number of seconds this period represents. Note that because periods are logical, this
+   * assumes canonical values for larger periods (month, quarter, year).
+   *
+   * @see #toDays
+   * @see #toDurationAt
+   */
+  toSeconds: cached member function(): !double
+
+  /**
+   * Return the fractional number of days this period represents. Note that because periods are logical, this
+   * assumes canonical values for larger periods (month, quarter, year).
+   *
+   * @see #toSeconds
+   * @see #toDurationAt
+   */
+  toDays: cached member function(): !double
+
+  /**
+   * The actual start and end of the period with the start at the specified time.
+   */
+  toTimeRange: member function(start: !utc datetime): !TimeRange
+
+  /**
+   * Return true if the logical length of this period represents _more_ time than the specified period.
+   *
+   * Where the two periods have different units, canonical lengths are used to compare. For example, "30 days" is _not_
+   * longer than "1 month" (it is the same length since the canonical length of a logical month is 30 days).
+   * Note that for an accurate comparison of actual periods on the calender, #toDurationAt should be used instead.
+   *
+   * @see #isShorter
+   * @see #toDuration
+   * @see #toDurationAt
+   */
+  isLonger: member function(other: !Period): boolean
+
+  /**
+   * Return true if the logical length of this period represents _more_ time than the specified period string.
+   *
+   * Where the two periods have different units, canonical lengths are used to compare. For example, "30 days" is _not_
+   * longer than "1 month" (it is the same length since the canonical length of a logical month is 30 days).
+   * Note that for an accurate comparison of actual periods on the calender, #toDurationAt should be used instead.
+   *
+   * @see #isShorter
+   * @see #toDuration
+   * @see #toDurationAt
+   */
+  isLonger: member function(other: !string serialized Period): boolean
+
+  /**
+   * Return true if the logical length of this period represents _less_ time than the specified period.
+   *
+   * Where the two periods have different units, canonical lengths are used to compare. For example, "1000 ms" is _not_
+   * shorter than "1 second" (it's the same length). Note that for an accurate comparison of actual periods on the
+   * calender, #toDurationAt should be used instead.
+   *
+   * @see #isLonger
+   * @see #toDuration
+   * @see #toDurationAt
+   */
+  isShorter: member function(other: !Period): boolean
+
+  /**
+   * Return true if the logical length of this period represents _less_ time than the specified period string.
+   *
+   * Where the two periods have different units, canonical lengths are used to compare. For example, "1000 ms" is _not_
+   * shorter than "1 second" (it's the same length). Note that for an accurate comparison of actual periods on the
+   * calender, #toDurationAt should be used instead.
+   *
+   * @see #isLonger
+   * @see #toDuration
+   * @see #toDurationAt
+   */
+  isShorter: member function(other: !string serialized Period): boolean
+
+  /**
+   * Generates datetime instances for the {@link TimeRange} at {@link Period} intervals.
+   * If {@link TimeRange#start} and {@link TimeRange#end} are not specified, returns empty array.
+   * If {@link TimeRange#start} is not specified, assumes minus 1 {@link Period} from {@link TimeRange#end}.
+   * If {@link TimeRange#end} is not specified, assumes plus 1 {@link Period} from {@link TimeRange#start}.
+   * If the {@link Period} is greater than the time between {@link TimeRange#start} and {@link TimeRange#end},
+   * returns only {@link TimeRange#start}.
+   * @param timeRange
+   *            The {@link TimeRange} to fill
+   * @param endInclusive
+   *            By default {@link TimeRange} is exclusive of the end date. If this is set to true,
+   *            will return a time range that includes the end date, if it aligns with the interval.
+   * @return Array of datetime instances for the given interval within the time range.
+   */
+  fill: member function(timeRange: TimeRange, endInclusive: boolean): [datetime]
+
+  /**
+   * Construct a Period from the serialization format.
+   *
+   * The period is a single integer/unit pair: "1h" and "60m" would represent the same {@link Duration duration}, but
+   * are different periods because both the count and unit are different.
+   *
+   * The supported units are:
+   *  - year (y)
+   *  - quarter (q)
+   *  - month (mo)
+   *  - week (w)
+   *  - day (d)
+   *  - hour (h)
+   *  - minute (m)
+   *  - second (s)
+   *  - millisecond (ms)
+   *  - microsecond (µs)
+   *  - nanosecond (ns)
+   *
+   * An offset (calender ordinal) may also be specified for WEEK and larger units. For example, to specify weeks
+   * _starting_ on Sunday, one could use "W@7" (1 is Monday, 7 is Sunday). This sets the #offset field.
+   * Note that this is different from Pandas where "W-MON" indicates weeks _ending_ on Monday (Tue-Mon).
+   *
+   * @param s
+   *           input string
+   * @return the parsed duration
+   *
+   * @see Duration#fromString
+   */
+  fromString: ~
+
+  /**
+   * @param failIfMissing
+   *        if period is not an existing interval, throws an error if true, otherwise return null by default
+   * @return the interval this period corresponds to.
+   */
+  toInterval: member function(failIfMissing: boolean): !string enum Interval
+
+  /**
+   * Get the Period as a Joda Period instance.
+   *
+   * @see http://joda-time.sourceforge.net/apidocs/org/joda/time/Period.html
+   */
+  @deprecated(finalVersion="8.7")
+  toJodaPeriod: private cached member function(): @java(class="org.joda.time.Period") !native
+
+  /**
+   * Return a alignedTimePoint when specified with an offset or anchored with a start date, else return the input dt as the newStart
+   * Always take the left end of the period as the new start, when the given dt is not aligned with the period
+   * If the period is 1w@3, week starting from Wednesday, input dt is not wednesday, the newStart will be the previous Wednesday
+   * Anchored start date is used to determine newStart closed to the period on the left end.
+   *
+   * For Example:
+   *    - `alignedTimePoint("1w@3", "2024-01-01")` returns "2023-12-27", 2024-01-01 is a Monday and the week starting from Wednesday is 2023-12-27
+   *    - `alignedTimePoint("1w@1", "2024-01-01")` returns "2024-01-01", as 2024-01-01 is a Monday.
+   *    - `alignedTimePoint("2w@4", "2024-01-01")` returns "2023-12-28", 2024-01-01 is a Monday and the week starting from Thursday is 2023-12-28
+   *    - `alignedTimePoint("30d", "2024-01-01")` returns "2024-01-01".
+   *
+   * @param the period to be used for the new start
+   * @param the input datetime, if period is not anchored
+   * @return the new start datetime
+   */
+  alignedTimePoint: member function(dt: !datetime): !datetime
+
+  /**
+   * Convert this period to a cron expression for scheduling.
+   *
+   * Supported units: s (second), m (minute), h (hour), d (day).
+   *
+   * Examples:
+   *  - "5m" → "0 0/5 * * * ?" (every 5 minutes)
+   *  - "1h" → "0 0 0/1 * * ?" (every hour)
+   *  - "30s" → "0/30 * * * * ?" (every 30 seconds)
+   *
+   * @return cron expression string
+   */
+  toCronExpr: member function(): !string
+}

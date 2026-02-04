@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type CloudStreamReceiveMessagesSpec mixes CloudReceiveMessagesSpec {
+
+  /**
+   * The partition of the cloud stream that receiveMessages reads data from
+   */
+  partition: !string
+
+  /**
+   * receiveMessages reads data starting from this sequence number.
+   * If this field is not specified, receiveMessages reads from start of stream.
+   * Here number is represented as string to support large numbers some cloud streams use e.g {@link AwsKinesis}
+   * uses sequenceNumber which is string of digits up to 128.
+   */
+  sequenceNumber: string
+
+  /**
+   * Name of cloud consumer used to read messages
+   */
+  cloudConsumer: string
+
+  /**
+   * Name of cloud consumer used to read messages. Will return default value if one does not exist.
+   */
+  safeCloudConsumer: member function(): !string
+}

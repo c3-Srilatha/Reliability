@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * When responding with an access token, the server must also include the additional Cache-Control: no-store and
+ * Pragma: no-cache HTTP headers to ensure clients do not cache this request.
+ */
+private type OAuthAccessTokenResponse {
+
+  /**
+   * The access token string as issued by the authorization server. (required)
+   */
+  access_token: !string
+
+  /**
+   * The type of token this is, typically just the string “bearer”. (required)
+   */
+  token_type: !string
+
+  /**
+   * If the access token expires, the server should reply with the duration of time in seconds
+   * the access token is granted for. (recommended)
+   */
+  expires_in: int
+
+  /**
+   * Useful to obtain another access token. However, tokens issued with the implicit grant cannot be
+   * issued a refresh token. (optional)
+   */
+  refresh_token: string
+
+  /**
+   * If the scope the user granted is identical to the scope the app requested, this parameter is optional.
+   * If the granted scope is different from the requested scope, such as if the user modified the scope,
+   * then this parameter is required.
+   */
+  scope: string
+}

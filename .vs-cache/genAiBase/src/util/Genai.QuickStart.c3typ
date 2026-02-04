@@ -1,0 +1,225 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util Type for quick setup of standard GenAi deployment.
+ */
+type Genai.QuickStart {
+  /**
+  * Sets up application infrastructure and configurations.
+  * Includes setting up leader, GPU task node, query configurations, retriever, and toolkit.
+  *
+  * Setup Instructions:
+  * 1. Set LLM keys in static console.
+  * 2. Run setup script.
+  * 3. Configure 'default' whitelisted data model.
+  *
+  * Important:
+  * - The node pools configured in the script may not be may not be suitable for production environments or handling large-scale data. To skip node pool configuration, use setupApp.
+  * - If processing large datasets (e.g., millions of data points), disable cache broadcasting post-setup.
+  *
+  * @param setupSpec
+  *    Specify hosted model name, GPU node for indexing, etc.
+  */
+  setup: function(setupSpec: !Genai.QuickStart.SetupSpec) js-client
+
+  /**
+   * Sets up app to use {@link Genai.Agent.Dynamic.Persistable} for querying.
+   * Can be used to configure SNE for development or customer environment.
+   */
+  setupApp: private function(setupSpec: !Genai.QuickStart.SetupSpec) js-client
+
+  /**
+   * Sets up app query configurations, project, retriever, and toolkit.
+   * Can be used to configure SNE for development or customer environment.
+   */
+  setupLegacyApp: private function(setupSpec: !Genai.QuickStart.SetupSpec) js-client
+
+  /**
+   * Configures one leader node with recommended hardware profile (30GB memory, 5 cpu, 120GB disk space)
+   * @param setupSpec
+   *    Specify hosted model name, GPU node for indexing, etc.
+   */
+  setupLeader: private function(setupSpec: Genai.QuickStart.SetupSpec) js-client
+
+  /**
+   * Configures one task node with recommended hardware profile (20GB+ memory, 1+ GPU, 120GB disk space)
+   * @param hwpName
+   *    Name of the hardware profile to use for the task node.
+   */
+  setupTask: private function(hwpName: string): HardwareProfile js-client
+
+  /**
+   * Creates default project with corresponding source collection, retriever, and toolkit.
+   * @param queryOrchestratorConfigName
+   *    The name of the {@link Genai.Agent.Config} to configure for the project. If none specified, uses default QO config.
+   * @param setupSpec
+   *    Specify hosted model name, GPU node for indexing, etc.
+   */
+  setupDefaultProject: private function(queryOrchestratorConfigName: string, setupSpec: Genai.QuickStart.SetupSpec): !Genai.Project js-client
+
+  /**
+   * Creates project with corresponding source collection, retriever, and toolkit for legacy tools.
+   * @param queryOrchestratorConfigName
+   *    The name of the {@link Genai.Agent.Config} to configure for the project. If none specified, uses QO config for legacy tools.
+   * @param setupSpec
+   *    Specify hosted model name, GPU node for indexing, etc.
+   */
+  setupLegacyProject: private function(queryOrchestratorConfigName: string, setupSpec: Genai.QuickStart.SetupSpec): !Genai.Project js-client
+
+  /**
+   * Creates pg vector retriever for default project.
+   * @param project
+   *     Project to create retriever for. If not specified, uses the default project.
+   * @param setupSpec
+   *    Specify hosted model name, GPU node for indexing, etc.
+   */
+  setupDefaultRetriever: private function(project: Genai.Project, setupSpec: Genai.QuickStart.SetupSpec) js-client
+
+  /**
+   * Sets up embedder spec to be used for encoding memories.
+   * @param defaultEmbedderSpec
+   *    The spec to pass to {@link Genai.Embedder#getEmbedder} to create a {@link GenaiCore.Embedder} for embedding
+   *    text such as passages or queries.
+   */
+  setupMemoryConfigEmbedderSpec: private function(defaultEmbedderSpec: Genai.Embedder.Spec) js-client
+
+
+  /**
+   * Sets up embedder spec for embedding text such as {@link Genai.FewShotExample}s.
+   * @param defaultEmbedderSpec
+   *    The spec to pass to {@link Genai.Embedder#getEmbedder} to create a {@link GenaiCore.Embedder} for embedding
+   *    text such as passages or queries.
+   */
+  setupAgentConfigEmbedderSpec: private function(defaultEmbedderSpec: Genai.Embedder.Spec) js-client
+
+  /**
+   * Configures toolkit for default project to use unstructured query tool, eval query tool, and MSS.
+   */
+  setupDefaultToolkit: private function() js-client
+
+  /**
+   * Sets all query configurations (unstructured, structured, MSS) to use the specified hosted model.
+   *
+   * @param modelConfigName
+   *     Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} to use for all query configs.
+   *     Refer to the documentation on {@link Genai.QuickStart.SetupSpec} for the list of supported models.
+   */
+  setQueryConfigs: function(modelConfigName: !string) js-client
+
+  /**
+   * Sets the structured db agent config to use the specified model config name for code gen and table answering
+   *
+   * @param modelConfigName
+   *     Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} to use for all query configs.
+   *     Refer to the documentation on {@link Genai.QuickStart.SetupSpec} for the list of supported models.
+   *
+   */
+  setStructuredDbAgentConfig: function(modelConfigName: !string) js-client
+
+  /**
+   * Sets the dynamic agent config to use the specified llm config
+   *
+   * @param llmClientConfigName
+   *     Name of {@link GenaiCore.Llm.Completion.Client} to use.
+   *     Refer to the documentation on {@link Genai.QuickStart.SetupSpec#llmClientConfigName} for the list of supported models.
+   */
+  setDynamicAgentConfig: function(llmClientConfigName: !string) js-client
+
+  /**
+   * Validates connection to hosted model is successful using keys set.
+   */
+  validateLlmKeys: private function(modelConfigName: !string) js-client
+
+
+  /**
+   * Sets model for suggested follow-up queries
+   */
+  setSuggestedFollowUpQueryConfig: function(model: !string) js-client
+
+  /**
+   * Sets model for MSS.
+   */
+  setMssConfig: function(modelConfigName: !string) js-client
+
+  /**
+   * Sets up cron job to eagerly install runtimes across all leader and task nodes every 30 minutes.
+   */
+  setupJobs: private function() js-client
+
+  /**
+   *  Creates a new {@link Genai.Project} called help with corresponding source collection, retriever, and toolkit.
+   *  This project can be used to perform queries related to the generativeAI project.
+   *  @param modelConfigName
+   *     Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} to use for all query configs.
+   *     Refer to the documentation on {@link Genai.QuickStart.SetupSpec} for the list of supported models.
+   *
+   */
+  setUpHelpProject: function(modelConfigName: !string) js-client
+
+  /**
+   * Warmup engines.
+   */
+  warmupEngines: private function() js-rhino
+
+  /**
+   * Sets the engine threadpool to a fixed size for engines {@link Genai.Agent.QueryOrchestrator},
+   * {@link Genai.UnstructuredQuery.Engine}
+   */
+  setupEngineThreadPools: function(threadPoolSize: int, nodePools: [string]) js-rhino
+
+  /**
+   * Sets the engine threadpool to a fixed size for engines {@link Genai.Llm}
+   */
+  setupLlmEngine: private function(threadPoolSize: int, nodePools: [string], modelConfigName: string) js-rhino
+
+  /**
+   * Set the Genai.Llm.*.Config credentials on GenaiCore.Llm.*.Auth
+   */
+  migrateAllCredentialsToGenaiCore: private function() js
+
+  /**
+   * Set the Genai.Llm.OpenAI.Config credentials on GenaiCore.Llm.AzureOpenAi.Auth
+   */
+  migrateAzureCredentialsToGenaiCore: private function() js
+
+  /**
+   * Set the Genai.Llm.Gcp.Config credentials on GenaiCore.Llm.VertexAi.Auth
+   */
+  migrateGcpCredentialsToGenaiCore: private function() js
+
+  /**
+   * Set the Genai.Llm.AwsBedrock.Config credentials on GenaiCore.Llm.Bedrock.Auth
+   */
+  migrateAwsCredentialsToGenaiCore: private function() js
+
+  /**
+   * Migrate all {@link Genai.UnstructuredQuery.Engine.ModelConfig}  to {@link GenaiCore.Llm.Completion.Client}
+   * of OpenAI, GCP, and AWS deployments.
+   */
+  migrateAllModelConfigsToGenaiCore: private function() js
+
+  /**
+   * Enables automatic metadata tagging for all {@link Genai.SourceFile}s but allow skipping previously tagged files by default.
+   * Will overwrite the {@link Genai.SourceFile.Metadata.Tagging.Config#seededCategories} if provided.
+   *
+   * @param seededMetadataCategories
+   *    list of strings corresponding to the labels of {@link Genai.SourceFile.Metadata.Category}s
+   */
+  setupAutomaticMetadataTagging: private function(seededMetadataCategories: [string]) js
+
+  /**
+    * Enables Mew3 library for multi-modal processing of documents.
+    * Validates LLM auth configured, model files uploaded, and task node pool meets requirements
+    * @param fileExtensions
+    *    Optional array of file extensions for which to enable Mew3. Defaults to ['.pdf'].
+    *    NOTE: Currently only '.pdf' extension is supported for Mew3 per GEN-14088
+    */
+  enableMew3: function(fileExtensions: [string]) js-client
+}

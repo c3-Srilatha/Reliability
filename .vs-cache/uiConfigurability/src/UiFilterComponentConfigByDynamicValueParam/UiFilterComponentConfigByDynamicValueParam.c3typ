@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link UiSdlDynamicValueSpecParam} that takes an JS object array from a component's configuration
+ * and filters this array down based on #filterConditions that are specified for specific objects in this array.
+ *
+ * It is intended to be used with [derived props](UiSdlConnected#derivedProps).
+ *
+ * This type does not work for filtering out [component refs](UiSdlComponentRef). For filtering out component
+ * refs, use {@link UiConfigComponent}s.
+ */
+@typeScript
+type UiFilterComponentConfigByDynamicValueParam mixes UiSdlStateValueParam {
+
+  extract: ~
+
+  /**
+   * The path from the root state of the id to the desired value.
+   * Each level in the state should be traversed through a dot (.) delimiter. Ex: 'c3arguments.arg1.field1'
+   *
+   * Must target an array of objects
+   */
+  path: ~
+
+  /**
+   * Specifies the path to the value of the elements in the targeted object array.
+   * This specifies what values the keys of #filterConditions should have.
+   */
+  elementValuePath: string = 'id'
+
+  /**
+   * For each element in the object array whose value at #elementValuePath is a key of `filterConditions`, only render
+   * this element if at least one of matching UiSdlDynamicValueSpecParam(s) extracts a truthy value.
+   */
+  filterConditions: map<string, UiSdlDynamicValueSpecParam | [UiSdlDynamicValueSpecParam]>
+}

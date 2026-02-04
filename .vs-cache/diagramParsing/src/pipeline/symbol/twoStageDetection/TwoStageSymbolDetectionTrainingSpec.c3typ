@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Parameters controlling the model training behavior of a {@link TwoStageSymbolDetectionPipe}
+ */
+type TwoStageSymbolDetectionTrainingSpec mixes Spec {
+
+  /**
+   * The number of {@link LabeledDiagram}s in the input data that will be randomly selected as the
+   * validation set for early stopping in the training process. The value of this field must be
+   * greater than 0.
+   */
+  numValidDiagrams: !int = 1
+
+  /**
+   * Target symbols that the detector can detect. If the target labels the user want to detect are
+   * different from the ones in the previously trained {@link TwoStageSymbolDetectionPipe#proposer}
+   * and {@link TwoStageSymbolDetectionPipe#classifier}, the user can override the targets here. Notice
+   * that if {@link TwoStageSymbolDetectionPipe#proposer} and {@link TwoStageSymbolDetectionPipe#classifier}
+   * are not specified before {@link TwoStageSymbolDetectionPipe#train}, the pipe will use the default
+   * pre-trained proposers and classifiers which have targets determined by {@link DiagramParsingMLConfig},
+   * i.e., `c3.DiagramParsingMLConfig.inst().configValue("targets")`
+   */
+  targetsOverride: [string enum DiagramParsingClassLabel]
+
+  /**
+   * Anchor boxes that are rough estimate of the target object sizes, the closer the number is, the easier
+   * the task for the model to learn. If this field is not specified, the pipe will use the same anchor boxes
+   * the previously trained {@link TwoStageSymbolDetectionPipe#proposer}. Notice that if
+   * {@link TwoStageSymbolDetectionPipe#proposer} is not specified before {@link TwoStageSymbolDetectionPipe#train},
+   * the pipe will use a default pre-trained proposer which has a wide range of anchor box shapes.
+   */
+  anchorBoxShapesOverride: [Pair<int, int>]
+
+  /**
+   * Parameters controlling the model training behavior of a region proposer.
+   */
+  proposerTrainingSpec: !RegionProposerTrainingSpec schema suffix 'PTS'
+
+  /**
+   * Parameters controlling the model training behavior of an region classifier.
+   */
+  classifierTrainingSpec: !RegionClassifierTrainingSpec schema suffix 'CTS'
+}

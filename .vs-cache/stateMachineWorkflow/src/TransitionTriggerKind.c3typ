@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines how a particular {@link TransitionTrigger} is triggered.
+ */
+enum type TransitionTriggerKind {
+
+  /**
+   * Automatic transition trigger. Checks the {@link StateMachineTransition#condition} after
+   * every update to an entity, and if satisified transitions {@link StateMachine}s asynchronously.
+   */
+  AUTOMATIC
+
+  /**
+   * Automatic and synchronous transition trigger. Transitions {@link StateMachine}s synchronously.
+   * Since these transitions are synchronous, creating transitions with this trigger kind
+   * directly affect the speed of updating a {@link StateMachine}. This can make
+   * updating of the {@link StateMachine} at least 60 times slower, so it should not be used
+   * in cases where >100 {@link StateMachine}s are updated at the same time.
+   * Be careful when using this trigger kind, as it may cause performance issues. To avoid such issues, use the
+   * {@link #AUTOMATIC} trigger instead.
+   *
+   * Also, if there are entry/transition/exit actions specified that would cause a state machine to transition
+   * to a different state than the state it is transitioning to, this will cause your state histories to be out
+   * of order. The `currentState` would also be set incorrectly. So, avoid such actions that would affect the state
+   * machine's state.
+   *
+   * Only use this kind of trigger if the synchronous behavior is required. Use this
+   * if state updates have to happen immediately after UI actions.
+   */
+  AUTOMATIC_SYNC
+
+  /**
+   * Periodic transition trigger. Transitions {@link StateMachine}s periodically.
+   */
+  PERIODIC
+}

@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * NOTE: This type is not used and is for documenting the structure only of client SDK method request json payload
+ *
+ * This envelope structure is used to wrap the arguments(args) and keyword arguments(kwargs) for a request to invoke
+ * method on a Type.
+ */
+inline type Api.Request {
+
+  /**
+   * For member method calls the
+   * "this" instance should be passed as `#thisArg` and for static method calls, `thisArg` can optionally be passed as
+   * specific sub-type of this type.
+   */
+  thisArg: any
+
+  /**
+   * List of positional arguments
+   */
+  args: ?[any]
+
+  /**
+   * Flag array to indicate if a null positional argument is missing at that index. If the value is true, the argument
+   * at that index is missing and we should apply the defaults value for that argument. If the value is false, the argument at that index is null and we should not
+   * apply the default value for that argument.
+   */
+  missingArgs: [boolean]
+
+  /**
+   * Key-Value pair of named arguments with their value.
+   */
+  kwargs: ?map<string, any>
+
+  /**
+   * Context to be propagated to server for this request.
+   */
+  caller: Action.Context
+}

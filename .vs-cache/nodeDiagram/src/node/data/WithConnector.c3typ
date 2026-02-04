@@ -1,0 +1,24 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link NodeDiagramNodeData} subTypes with `kind` field. This is required for a connector to render on the {@link NodeDiagramNode}.
+ */
+abstract type WithConnector {
+
+  /**
+   * Dictates which connectors to render on the node. If not defined, does not render any connectors.
+   * `input`: Indicates that this node is an input to other nodes (ie. is a source node). There are no
+   *          edges expected with this node as the target node.
+   * `output`: Indicates that this node is an output for other nodes (ie is a terminal node). There are no
+   *          edges expected with this node as the source node.
+   * `passthrough`: Indicates that this node can be both input and output and will have ports for both.
+   * `island`: Indicates that this node has neither inputs nor outputs.
+   */
+  kind: string enum('input', 'output', 'passthrough', 'island') = 'passthrough'
+}

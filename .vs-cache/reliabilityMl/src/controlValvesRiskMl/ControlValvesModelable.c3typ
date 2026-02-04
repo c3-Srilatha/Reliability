@@ -1,0 +1,119 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * Copyright 2009-2023 C3 (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is an extension of the {@link ControlValvesModelableBase} type to provide an SME recommended approach for
+ * modeling Control Valves. In this approach, the input data should contain features for the PERCENT_OPEN,
+ * PROCESS_VARIABLE, SETPOINT, MODE and ON_OFF {@link ExpectedSensor}s instrumented on a Control Valve. Then, if the input data
+ * also contains a feature for the FLOW_THROUGH_VALVE {@link ExpectedSensor}, a regressor will be trained to predict the
+ * percentOpen based on the other features.
+ *
+ * If the input data does not contain data for the FLOW_THROUGH_VALVE {@link ExpectedSensor}, a rule based approach will be used
+ * where the reconstruction is the SETPOINT, and the residual is the difference between the PROCESS_VARIABLE and SETPOINT.
+ *
+ *
+ *
+ * If the generated reconstructions are computed from the regressor based approach, the riskScore is set to the absolute value
+ * of the residual (difference between the actual and reconstructed values of the percentOpen feature).
+ *
+ * However, for rows where the percentOpen is < 5, if the {@link flowThroughValve}
+ * is > {@link flowThroughValveThreshold}, the riskScore is set to {@link highRiskScoreValue}, else to {@link lowRiskScoreValue}.
+ *
+ * If the generated reconstructions are computed from the rule based approach, the riskScore is set to
+ * |residual|/reconstruction,which is the absolute percentage difference between the
+ * {@link processVariable} and the {@link setpoint}.
+ *
+ *
+ *
+ * If the generated reconstructions are computed from the regressor based approach, feature contributions are generated using SHAP, and
+ * scaled to sum up to the risk score. Note that in order to generate feature contributions, the
+ * {@link ReliabilityRiskMl.Reconstruction.ControlValvesPipe#regressor} must be a tree based model or a linear model.
+ * However for rows where the percentOpen is < 5, the feature contribution for the flowThroughValve is set to the risk
+ * score, and the feature contributions for the other features are set to 0.
+ *
+ * If the generated reconstructions are computed from the rule based approach, feature contribution for the {@link processVariable} is set to
+ * the risk score.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ControlValvesModelable extends ControlValvesModelableBase type key 'CVMBM' {
+
+  /**
+   * The {@link Feature} that represents the PROCESS_VARIABLE sensor instrumented on the Control Valve.
+   */
+  processVariable: !string = 'Feature_PROCESS_VARIABLE'
+
+  /**
+   * The {@link Feature} that represents the SETPOINT sensor instrumented on the Control Valve.
+   */
+  setpoint: !string = 'Feature_SETPOINT'
+
+  /**
+   * The {@link Feature} that represents the MODE sensor instrumented on the Control Valve.
+   */
+  mode: !string = 'Feature_MODE'
+
+  /**
+   * The {@link Feature} that represents the ON_OFF sensor instrumented on the Control Valve.
+   */
+  onOff: !string = 'Feature_ON_OFF'
+
+  /**
+   * The {@link Feature} that represents the FLOW_THROUGH_VALVE sensor instrumented on the Control Valve.
+   */
+  flowThroughValve: string = 'Feature_FLOW_THROUGH_VALVE'
+
+  /**
+   * When a regressor is used to generate reconstructions, use this field to specify a threshold value to manually set the
+   * riskScore for rows corresponding to when the Control Valve is closed (the percentOpen is < 5.
+   *
+   * For these rows, if the flowThroughValve is > {@link flowThroughValveThreshold}, the riskScore
+   * will be set to {@link highRiskScoreValue} indicating leakage, else it will be set to {@link lowRiskScoreValue}.
+   */
+  flowThroughValveThreshold: float = 0.0
+
+  /**
+   * When manually setting the riskScore for rows corresponding to when the Control Valve is closed, use this field to specify
+   * the value of the riskScore when the flowThroughValve is > {@link flowThroughValveThreshold}.
+   * If not specified, the risk score will be set to the maximum absolute residual value in the training data.
+   */
+  highRiskScoreValue: float
+
+  /**
+   * When manually setting the riskScore for rows corresponding to when the Control Valve is closed, use this field to specify
+   * the value of the riskScore when the flowThroughValve is < {@link flowThroughValveThreshold}.
+   * If not specified, the risk score will be set to 0.
+   */
+  lowRiskScoreValue: float = 0
+
+  /**
+   * When a rule based model is used to generate reconstructions, use this field to compute the risk score to avoid division by 0
+   * errors when the {@link setpoint} is 0.
+   */
+  tolerance: float = 0.01
+
+  doTrainReconstruction: ~ py
+
+  doProcessReconstruction: ~ py-data
+
+  doTrainRiskScore: ~ py
+
+  doProcessRiskScore: ~ py-data
+
+  doInterpret: ~ py-data-science-lightgbm
+}

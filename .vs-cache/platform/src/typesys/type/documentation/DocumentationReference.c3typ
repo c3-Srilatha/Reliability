@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An inline reference to a piece of structure to be rendered as a link.
+ */
+type DocumentationReference mixes DocumentationSpan {
+
+  /**
+   * The type of the destination of the reference. Note that this may be built documentation (type, topic, etc) or
+   * it may be a file in the package (poly test, notebook) or even an external URL.
+   */
+  toKind: string enum DocumentationKind
+
+  /**
+   * The path name of the destination of the reference.
+   *
+   * This contains the parent if the kind needs to be qualified.
+   * For example, fields will include their containing type as in `TypeName#fieldName`.
+   */
+  toName: string
+
+  /**
+   * The anchor of the link. This can be any span, including with nested markup. Note that #text will be the plain
+   * text extracted from the anchor.
+   */
+  anchor: DocumentationSpan
+
+  /**
+   * The title text for the link (if any).
+   */
+  titleText: string
+
+  /**
+   * The source of the reference.
+   */
+  refKind: string enum DocumentationReferenceKind
+
+  /**
+   * Whether this link is to a {@link TopicDocumentation documentation topic} (#toKind is "TOPIC").
+   *
+   * @see DocumentationKind#TOPIC
+   */
+  isTopic: member function(): boolean
+
+  /**
+   * Whether this link is to {@link TypeDocumentation type documentation} (#toKind is "TYPE").
+   *
+   * @see DocumentationKind#TYPE
+   */
+  isType: member function(): boolean
+
+  /**
+   * Whether this link is to an external URL (#toKind is "URL").
+   *
+   * @see DocumentationKind#URL
+   */
+  isUrl: member function(): boolean
+
+  /**
+   * Whether this link is to a {@link poly-test.c3doc.md poly test} (#toKind is "POLY_TEST").
+   *
+   * @see DocumentationKind#POLY_TEST
+   */
+  isPolyTest: member function(): boolean
+
+  /**
+   * Whether this link is to a {@link Notebook notebook} (#toKind is "NOTEBOOK").
+   *
+   * @see DocumentationKind#NOTEBOOK
+   */
+  isNotebook: member function(): boolean
+
+  toMarkdown: ~
+  toText:     ~
+  style:      ~ = LINK
+}

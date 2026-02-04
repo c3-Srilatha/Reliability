@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Information for each possible type that can be generated.
+ */
+type DataGenMixtureModel.TypeModel mixes Nameable {
+
+  /**
+   * type name
+   */
+  name: !~
+
+  /**
+   * relative likelihood of generating this type
+   */
+  weight: !int
+
+  /**
+   * total dimensions in model (only fields with 1 or more scalars)
+   */
+  dimensions: !int
+
+  /**
+   * per-field model breakdown
+   */
+  fieldModels: [DataGenMixtureModel.FieldModel] schema suffix 'FLD'
+
+  /**
+   * distribution of values per scalar
+   */
+  scalarModels: [DataGenMixtureModel.ScalarModel] schema suffix 'SCL'
+
+  /**
+   * components of the mixture model
+   */
+  components: [DataGenMixtureModel.Component] schema suffix 'CMP'
+
+  /**
+   * loaded model used for generation
+   */
+  @java(class='org.apache.commons.math3.distribution.MixtureMultivariateNormalDistribution')
+  fittedModel: private native not persistable
+
+  /**
+   * seed-tracking RNG used for mixture model sampling
+   */
+  @java(class='org.apache.commons.math3.random.RandomGenerator')
+  rng: private native not persistable
+}

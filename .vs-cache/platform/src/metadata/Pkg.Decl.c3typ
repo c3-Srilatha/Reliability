@@ -1,0 +1,104 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a C3 application package declaration fields.
+ *
+ * @see Pkg
+ */
+type Pkg.Decl {
+
+  /**
+   * The name of the package. Has to be globally unique.
+   */
+  name: !string
+
+  /**
+   * Description of the package.
+   */
+  description: string
+
+  /**
+   * The name of the author(s) of the package.
+   */
+  author: string
+
+  /**
+   * The link of the package icon image file.
+   */
+  icon: string
+
+  /**
+   * version of the package.
+   */
+  version: !string serialized SemanticVersion
+
+  /**
+   * version up to what this package is compatible to; i.e. if another package can depend on this package by
+   * version >= #compatibleToVersion then this package implementation promises to be compatible, i.e. execute all API
+   * calls supported by that specific version.
+   *
+   * @see Pkg.Category#COMPAT
+   */
+  @implicit(parsed="compatibleToVersionMajorMinor")
+  compatibleToVersion: string serialized SemanticVersion.MajorMinor
+
+  /**
+   * The list of packages that this one depends on. Order of dependencies is significant if more then one package is
+   * re-mixing the same type. I.e. in this case changing order of dependencies can change a resulting re-mixed type.
+   */
+  dependencies: map<string, string serialized SemanticVersion.MajorMinor> schema suffix 'DEP'
+
+  /**
+   * The dependency max versions.
+   */
+  dependencyMajorMinors: cached property(): map<string, SemanticVersion.MajorMinor>
+
+  /**
+   * {@link Db.Domain} if this package's entity types belong to a specific Dd.Domain
+   */
+  dbDomain: string serialized Db.Domain
+
+  /**
+   * Default {@link TestRunnerConfig} used by {@TestRunner.testPackage} when no parameter is explicitly passed.
+   */
+  testRunnerConfig: TestRunnerConfig schema suffix 'TRC'
+
+  /**
+   * List of configurations to use for ESLint. Equivalent to contents of .eslintrc, but storing the config in the *.c3pkg.json is
+   * preferred for persisting the config in {@link MetadataStore}
+   */
+  eslintConfig: json schema suffix 'ESLC'
+
+  /**
+   * When true, exclude implicit dependencies (e.g. genaiPlatform) during pkg wiring.
+   * Platform is always included regardless of this flag.
+   * 
+   * Note: For implicit dependencies to be completely excluded from the dependency graph,
+   * this flag must also be set to true on all transitive dependencies. If a dependency
+   * does not have this flag set, it may still include implicit dependencies which will
+   * then appear transitively in this package's dependency graph.
+   */
+  excludeImplicitDependencies: boolean
+
+  /**
+   * The kinds of code generation required by this package. Expected valid values are "Col", "Java", "Js", "Poly",
+   * "Py", "React", "StdLib", "Type". A valid value must match precisely the prefix of an existing code generator class
+   * name, of an error will be thrown.
+   */
+  codeGen: set<string> schema suffix 'CG'
+
+  fromJava: [string] schema suffix 'FJAV'
+  area:     [string] schema suffix 'AR'
+
+  /**
+   * Returns all packages specified in {@link #dependencies} with a corresponding compatible version.
+   */
+  @beta
+  allDependencyVersions: private member function(): map<string, string>
+}

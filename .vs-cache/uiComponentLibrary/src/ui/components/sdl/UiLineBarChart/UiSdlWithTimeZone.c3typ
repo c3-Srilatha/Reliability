@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to represent the abstract data spec for types mixing {@link UiSdlLineBarChart}.
+ */
+@typeScript
+type UiSdlWithTimeZone {
+
+  /**
+   * Sets the timezone id for displaying dates on the y-axis.
+   * The timezone determines how the dates are formatted and displayed.
+   * Timezone offsets are not allowed.
+   */
+  timeZone: string serialized TimeZone
+
+  /**
+   * Checks if a time zone id or time zone offset is valid.
+   * IANA timezone names are valid and offsets in the format "+HH:mm", "-HH:mm" "+HH", "-HH" or "Z".
+   * @param timeZone
+   *          the time zone to check
+    * @return true if the time zone is valid, false otherwise
+   */
+  isValidTimeZoneId: private function(timeZone: !string): boolean ts-client
+
+  /**
+   * Gets the time zone offset in minutes between a given time zone and the local time zone
+   * @param timeZone
+   *          the time zone to get the offset for
+   * @return the time zone offset in minutes
+   */
+  getOffsetFromLocalTimeZone: private function(timeZone: !string): int ts-client
+
+  /**
+   * Adjusts a date to a given time zone.
+   * Echarts does not support timezones, so we need to adjust the date to the specified timezone before passing it to the chart to display dates in the correct timezone.
+   * @param date
+   *          the date to adjust
+   * @param timeZone
+   *          the time zone to adjust the date to
+   * @return the new adjusted date in ISO string format
+   */
+  adjustDateToTimeZone: private function(date: !string, timeZone: !string): string ts-client
+
+  /**
+   * Gets the time zone that should be used to display data based on the noTimeZoneConversion flag and the timeZoneName configuration
+   * If noTimeZoneConversion is false and the timeZoneName is invalid, the local time zone will be used
+   * @param noTimeZoneConversion
+   *          if true, the time zone id will be set to NONE
+   * @param timeZoneName
+   *          the time zone name to get the id for
+   * @return the time zone id
+   */
+  getTimeZone: private function(noTimeZoneConversion: !boolean, timeZoneName: string): string ts-client
+
+  /**
+   * Formats a given IANA time zone identifier or UTC offset to a human-readable time zone string.
+   * @param locale The locale to use. Accepts IANA Language Subtag Registry language tags.
+   * @param timeZone The time zone to format. Can be an IANA time zone identifier or a UTC offset.
+   * @returns The localized time zone label.
+   */
+  formatTimeZone: private function(
+    locale: string serialized Locale,
+    timeZone: string serialized TimeZone,
+    timeZoneName: string enum ('shortGeneric', 'longGeneric')
+  ): string ts-client
+}

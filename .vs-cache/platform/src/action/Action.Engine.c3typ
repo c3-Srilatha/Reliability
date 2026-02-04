@@ -1,0 +1,229 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Action engines can execute {@link Action actions}. The most important elements of an action engine are the {@link Action.Engine#runtime runtime}
+ * the {@link Action.Engine#languageVersion language version}, the {@link Action.Engine#location location}, and the {@link Action.Engine#executor executor}.
+ *
+ * @see understanding-action-engines.c3doc.md
+ */
+@cache(compile=true)
+abstract inline private type Action.Engine mixes Named {
+
+  /**
+   * The name of an Action.Engine consists of the following parts:
+   * {@link Action.Engine#runtime runtime}, {@link Action.Engine#languageVersion language version}, {@link Action.Engine#location location}, and {@link Action.Engine#executor executor}.
+   * A test action engine which can run tests will end with the suffix "-test".
+   * For example, the action engine "py-data_312-server-jep" has:
+   *  - runtime: py-data_312
+   *  - languageVersion: 3.12
+   *  - location: SERVER
+   *  - executor: JEP
+   * The action engine "py.3.12-foo-server-py4j" has:
+   *  - runtime: py-foo
+   *  - languageVersion: 3.12
+   *  - location: SERVER
+   *  - executor: Py4J
+   */
+  name: !~
+
+  /**
+   * @return The {@link ImplLanguage language} used by this instance of Action.Engine.
+   */
+  language: cached property(): !string serialized ImplLanguage
+
+  /**
+   * @return The logical {@link ImplLanguage.RuntimeLocation location} of this instance of Action.Engine.
+   */
+  location: cached property(): !string enum ImplLanguage.RuntimeLocation
+
+  /**
+   * @return The {@link ImplLanguage.Runtime runtime} for this instance of Action.Engine.
+   */
+  runtime: cached property(): !string serialized ImplLanguage.Runtime
+
+  /**
+   * @return The {@link ImplLanguage.Executor executor} used by {@link Action actions} executed using this instance of Action.Engine.
+   */
+  executor: cached property(): !string enum ImplLanguage.Executor
+
+  /**
+   * @return The version of the {@link ImplLanguage language} associated with this {@link Action.Engine}.
+   */
+  languageVersion: cached property(): !string
+
+  /**
+   * Find the runtime that can be installed for this instance of Action.Engine.
+   * It should return an {@link ImplLanguage.ResolvedRuntime}.
+   */
+  installedRuntime: cached property(): !ImplLanguage.ResolvedRuntime
+
+  /**
+   * @return A new runtime consisting of the input runtime with {@Link Action.Engine#baseRuntimeForExecutor}, {@Link Action.Engine#baseRuntimeForLocation},
+   * and {@Link Action.Engine#testRuntime} as parents.
+   */
+  runtimeWithEngineLibraries: cached member function(runtime: !ImplLanguage.Runtime): !ImplLanguage.Runtime
+
+  /**
+   * Retrieve thunk for generic dispatch of the C3 Action - i.e. application of function on a C3 Type. Should handle
+   * both static and member functions. For static methods #ths parameter will be `null`. If target method is overloaded
+   * and language supports overloading runtime should dispatch appropriately.
+   *
+   * Note that parameters have already been verified and converted so implementations should avoid redundancy in this
+   * area.
+   *
+   * However expectation is that return value is properly converted to expected value type but not validated.
+   *
+   * In general assumption is that sub-types implement only minimal integration with underlying language runtime.
+   *
+   * @see TypeMeta#call
+   */
+  callThunk: private abstract member function(methodType: !MethodType)
+                                       : @java(class='c3.platform.typesys.type.MethodThunk') native
+
+  /**
+   * Retrieve thunk for dispatch of the C3 Action that is being invoked through a call to `super()`. The `methodType`
+   * corresponds to the mixin Type's implementation, while the `callingType` corresponds to the Type by which `super()`
+   * was originally called in this `super()` call chain.
+   *
+   * @see WithType#super
+   * @see Type#super
+   */
+  superCallThunk: private abstract member function(methodType: !MethodType,
+                                                   callingType: !Type)
+                                            : @java(class='c3.platform.typesys.type.MethodThunk') native
+
+  /**
+   * @return implementation language specific compiled and shared scope if any for all methods on the given type
+   */
+  scope: private abstract member function(typ: !Type): native
+
+  /**
+   * @return True if this instance of {@link Action.Engine} can run the actionRequirement else False
+   */
+  canRun: cached member function(actionRequirement: !Action.Requirement): boolean
+
+  /**
+   * Determine whether the given scope contains a method implementation for a given method type. This means its code
+   * contains a top-level function with the same name as the type method. For languages that support overloads (i.e. Java), the
+   * parameter list must also match.
+   *
+   * @see #scope
+   * @see ImplLanguage#functions
+   */
+  implementsMethod: private abstract member function(methodType: !MethodType, sharedScope: !?native): boolean
+
+  /**
+   * {@link RegexPattern} to validate names of engines
+   */
+  regexPattern: private cached function(): !RegexPattern
+
+  forName: cached ~
+
+  /**
+   * @return The unique {@link Action.Engine} for the java executor in the server.
+   */
+  java: cached inline function(): !Action.Engine.Java
+
+  /**
+   * @return An {@link Action.Engine} for the java executor in the specified location.
+   */
+  java: inline function(location: !string enum ImplLanguage.RuntimeLocation): !Action.Engine.Java
+
+  /**
+   * @return The unique {@link Action.Engine} for the jep executor. If the parameter isTest is true we return the test version
+   * of the {@Link Action.Engine}.
+   */
+  // TODO PLAT-48997 Remove isTest Parameter
+  pyJep: cached function(isTest: boolean): !Action.Engine.Jep
+
+  /**
+   * @return The {@link Action.Engine} for the py4j executor with the 'py' runtime.
+   */
+  pyPy4j: cached function(): !Action.Engine.Py4j
+
+  /**
+   * @return The {@link Action.Engine} for the ipython executor with the 'py' runtime.
+   */
+  pyIPython: cached function(): !Action.Engine.IPython
+
+  /**
+   * @return The unique {@link Action.Engine} for the rhino executor. If the parameter isTest is true we return the test version
+   * of the {@Link Action.Engine}.
+   */
+  // TODO PLAT-48997 Remove isTest parameter
+  jsRhino: cached function(isTest: boolean): !Action.Engine.Rhino
+
+  /**
+   * @return The unique {@link Action.Engine} for the browser executor with 'js' runtime.
+   */
+  jsBrowser: cached function(): !Action.Engine.Browser
+
+  /**
+   * @return The {@link Action.Engine} for the node executor with the 'js' runtime for server location.
+   */
+  jsNode: cached function(): !Action.Engine.Node
+
+  fromString: ~
+
+  /**
+   * @return The resolved runtime of runtime with {@Link Action.Engine#baseRuntimeForExecutor}, {@Link Action.Engine#baseRuntimeForLocation},
+   * and {@Link Action.Engine#testRuntime} included as parents. This takes a runtime as input instead of using {@Link Action.Engine#runtime}
+   * because  {@Link Action.Engine#runtime} may not be seeded.
+   */
+  resolveRuntime: member function(runtime: !ImplLanguage.Runtime,
+                                  doNotValidate: boolean): !ImplLanguage.ResolvedRuntime
+
+  /**
+   * @return The runtime containing libraries used by the {@Link Action.Engine#executor}. The naming convention is {language-dsl}-{executor}_{location}-executor.
+   * So for the {@link Action.Engine} "py-data_312-server-jep", it is "py-jep_server-executor".
+   */
+  runtimeForExecutor: member function(): !ImplLanguage.Runtime
+
+  /**
+   * @return The runtime containing libraries needed for the {@Link Action.Engine#location}.The naming convention is {language-dsl}-{executor}_{location}-location.
+   * So for the {@link Action.Engine} "py-data_312-server-jep", it is "py-jep_server-location".
+   */
+  runtimeForLocation: cached property(): !ImplLanguage.Runtime
+
+  /**
+   * @return The runtime containing libraries for running tests.The naming convention is {language-dsl}-{executor}_{location}-tester.
+   * So for the {@link Action.Engine} "py-data_312-server-jep", it is "py-jep_server-tester".
+   */
+  runtimeForTester: member function(): !ImplLanguage.Runtime
+
+  /**
+   * @return Whether this engine can run tests.
+   */
+  // TODO PLAT-48997 Remove this property
+  isATestEngine: cached property(): boolean
+
+  /**
+   * @return Whether the executor of this engine supports custom runtime.
+   */
+  supportsCustomRuntime: cached property(): boolean
+
+  /**
+   * @return whether the executor for this engine jep
+   */
+  isJep: cached property(): boolean
+
+  canRunLanguageVersion: member function(languageVersion: string): boolean
+
+  /**
+   * @return the {@link Action.Engine} or {@link Action.Requirement} full name generated by the specified String components.
+   * It applies the latest languageVersion from corresponding {@link ImplLanguage.Runtime} if not provided.
+   * It also does not verify the validity of the returned string.
+   */
+  fullNameFromParts: private function(runtimeName: !string serialized ImplLanguage.Runtime,
+                                      location: !string enum ImplLanguage.RuntimeLocation,
+                                      executor: !string enum ImplLanguage.Executor,
+                                      languageVersion: string,
+                                      isTest: boolean,
+                                      includeDefaultLanguageVersion: boolean): !string serialized Action.Engine
+}

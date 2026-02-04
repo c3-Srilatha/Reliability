@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to be mixed when we have a graph structure that needs to be denormalized (flattened)
+ */
+@db(shortId=true, shortIdReservationRange=10000)
+type HierarchyDenorm<T> mixes RelationFields<T> {
+
+  EDGE_SEPARATOR: const string = ":::"
+
+  /**
+   * If the current edge stems from a root node (root node is one where vertex doesn't have any incident edges)
+   */
+  isRoot: boolean
+
+  /**
+   * Distance of node 'from' to node 'to'. An immediate edge in the graph is always distance 1, similarly,
+   * distance is always 0 if both the 'from' and the 'to' nodes are same.
+   */
+  distance: int = 1
+
+  /**
+   * Place holder field. Not being used in internal computation
+   */
+  versionNumber: int = 0
+
+  /**
+   * Main api on this type. Call to denormalize (flatten) the graph associated with this type.
+   * This api is responsible for starting a batch job one for every edge type in async mode.
+   * The given graph associated with this type will be completely flattened (denormalized) and stored as a flat table
+   * as a result of this action. Once the batch jobs complete, look at the type on which this action was called to see
+   * results.
+   * @param batchSize
+   *                No of objs in one batch. Default 1000
+   * @param batchWeight
+   *                Total depth of all the objs in the current batch. Default 10000
+   * @param async
+   *                If true (default), the call returns by simply triggering the denormalization process.
+   *                If false, the call returns only when the hierarchy has been completely denormalized.
+   * @param edgeType
+   *                Type of edge for which hierarchy denorm needs to be triggered. Optional field, if not set, then
+   *                denormalize hierarchy will be triggered for all the edge types associated with this type.
+   * @return a list of batch jobs one per edge type in async mode indicating status of the denorm
+   */
+  denormalizeHierarchy: function(batchSize: int,
+                                 batchWeight: int,
+                                 async: boolean,
+                                 edgeType: Type): [HierarchyDenormBatchJob]
+
+  /**
+   * For internal use only. Invalidation queue compute task will call this when data is created / changed and the platform
+   * computes the delta. This api does the least amount of work necessary to bring the denormalized graph in sync with
+   * the current state of the graph.
+   * @param batchSize
+   *               No of objects allowed in one batch. Default is 1000
+   * @param batchWeight
+   *                Total depth of all the objs in the current batch. Default 10000
+   * @param async
+   *                If true (default), the call returns by simply triggering the denormalization process.
+   * @param invalidatedVertices
+   *                List of vertices that were affected causing a need for this incremental denormalization
+   *                The format of each entry is "fromNodeId:::toNodeId". This indicates the from and the to node path
+   *                affected and the platform will correctly calculate the edges that need to be re-computed as a part of
+   *                this change
+   * @param edgeType
+   *                Type of edge for which hierarchy denorm needs to be triggered. Optional field, if not set, then
+   *                denormalize hierarchy will be triggered for all the edge types associated with this type.
+   * @param edgesRemoved
+   *                Flag indicating if there were any removals as a part of this incremental denormalization. The platform
+   *                does some special handling in case of removals and hence it is an important flag to set.
+   * @return a list of batch jobs one per edge type in async mode indicating status of the denorm
+   */
+  denormalizeIncrementally: function(batchSize: int,
+                                     batchWeight: int,
+                                     async: boolean,
+                                     invalidatedVertices: [string],
+                                     edgeType: Type,
+                                     edgesRemoved: boolean): [HierarchyDenormBatchJob]
+
+  /**
+   * Provides an API to fetch descendants based on the spec. This api is typically used when certain queries regarding
+   * child nodes need to be run on the denormed graph according to specific conditions (spec)
+   * @param parents
+   *            Parents whose children are to be fetched. If parent is null, we return root objects.
+   * @param spec
+   *            Spec indicating what descendants should be returned from the computed denormed table
+   * @return descendant objects satisfying the input parents and spec.
+   */
+  getDescendants: function(parents: [T], spec: DescendantsSpec): DescendantsResult
+
+  /**
+   * Provides an API to get a count of descendants based on the spec. This api should be used only when interested in
+   * computing questions like "how many children satisfying the given condition", etc.
+   * @param parents
+   *            Parents whose children are to be counted. If parent is null, we count root objects.
+   * @param spec
+   *            Spec indicating what descendants should be returned from the computed denormed table
+   * @return descendant count satisfying the input parents and spec.
+   */
+  countDescendants: function(parents: [T], spec: DescendantsSpec): DescendantsResult
+
+  /**
+   * Provides an API to fetch ancestors based on the spec. This api is typically used when certain queries regarding the
+   * parent nodes need to be run on the denormed graph according to the given conditions (spec)
+   * @param nodes
+   *            Nodes whose ancestors are to be fetched. If no nodes are provided, we return ancestors for all objects matching the spec.
+   * @param spec
+   *            Spec indicating what ancestors should be returned from the computed denormed table
+   * @return ancestor hierarchy for every node specified according to the spec
+   */
+  getAncestors: function(nodes: [T], spec: AncestorsSpec): [AncestorsResult]
+
+  /**
+   * Placeholder field. Not used in current computation.
+   */
+  involvement: ~ = 1.0
+}

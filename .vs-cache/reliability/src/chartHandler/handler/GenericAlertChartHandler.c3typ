@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Handles query data and returning a chart configuration for the Generic Alert Detail page.
+ */
+type GenericAlertChartHandler {
+
+  /**
+   * Queries the data for the Generic Alert Detail page and returns a chart configuration to render a {@link UiApTimeseriesChart}.
+   *
+   * @param filterSpec
+   *          The filter spec containing the selected values from the Generic Alert Detail filter panel.
+   *
+   * @param chartSpec
+   *           The chart spec containing the configuration for the chart.
+   *
+   * @param project
+   *           The project associated with the alert.
+   * @returns A {@link UiApTimeseriesChartConfig} that can be used to render the chart.
+   */
+  getChartConfig: inline function (
+    filterSpec: GenericAlertFilterPanelSpec,
+    chartSpec: UiApTimeseriesChartSpec,
+    project: ReliabilityMl.Project
+  ): UiApTimeseriesChartConfig js-rhino
+
+  /**
+   * Creates a render configuration for the {@link UiApTimeseriesChart} based on the provided chart spec
+   * and query keys.
+   * @param chartSpec The chart spec containing the configuration for the chart.
+   * @param queryKeys The keys used previously to query the data for the chart. This is stored on the chartconfiguration to avoid having to query the data again.
+   * @return A {@link UiApTimeseriesChartRenderConfig} that can be used to render the chart.
+   */
+  createRenderConfig: inline function (
+    chartSpec: UiApTimeseriesChartSpec,
+    queryKeys: map<string, [string]>
+  ): UiApTimeseriesChartRenderConfig js-rhino
+}

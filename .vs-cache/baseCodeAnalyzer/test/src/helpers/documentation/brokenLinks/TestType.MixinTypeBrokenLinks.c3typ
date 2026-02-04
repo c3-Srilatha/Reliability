@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test Type for ensuring broken links on mixins are only reported on the base Type.
+ */
+type TestType.MixinTypeBrokenLinks mixes TestType.BaseTypeBrokenLinks {
+
+  // The broken links from the base Type shouldn't be reported here.
+  fieldA: ~
+
+  /**
+   * These are new docs so they should be reported. {@link BbaseCodeAnalysis}
+   *
+   * @see BbaseCodeAnalyzer
+   */
+  fieldB: ~
+
+  // The broken links from the inherited overload shouldn't be reported here.
+  methodA: ~
+
+  /**
+   * This is the second overload of `methodA` and these broken links should be reported.
+   *
+   * @param a
+   *           A parameter.
+   * @param b
+   *           B parameter.
+   * @return An integer
+   *
+   * @see some-fake-topic.c3doc.md
+   */
+  methodA: function(a: int, b: int): int js-rhino
+
+  /**
+   * The broken links from the new docs for this inherited overload should be reported.
+   *
+   * @param a
+   *           A parameter. {@link BaseCodeAnalyzerrr}
+   * @return An integer
+   *
+   * @see BbbaseCodeAnalyzer
+   */
+  methodB: ~
+
+  /**
+   * This is the second overload of `methodB` and these broken links should be reported.
+   *
+   * @param a
+   *           A parameter. {@link BaseCodeAnalysisss}
+   * @param b
+   *           B parameter. [broken link](BaseCodeAnalysis.Metricc)
+   * @return A string
+   *
+   * @see basecodeanalyzer-overview.c3doc.md
+   */
+  methodB: function(a: string, b: string): string js-rhino
+}

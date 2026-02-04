@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * During provisioning, we transpile JavaScript sources file written in defined versions of ECMAScript down when needed
+ * for the declared package runtimes. The target version is always the lowest-common denominator (ES5). If the type is
+ * not annotated with a specific JS version, ES5 is assumed and no transpilation is performed.
+ *
+ * For any type which requires transpilation (has a JavaScript implementation and declares a higher ECMAScript version
+ * than ES5), a metadata file will be produced for the transpiled source and the source map. For "foo.js", "foo.js5"
+ * and "foo.js_map" will be produced. The transpiled file will appear in the type's source map for the language
+ * "JavaScript5".
+ *
+ * Transpilation is actually performed using {@link https://babeljs.io/ Babel}, to provide consistency with delivery
+ * through the web application.
+ */
+type JavaScriptTranspiler {
+
+  /**
+   * The version to which we transpile. This is JavaScript supported by the Rhino (server) runtime as well as all
+   * supported browsers.
+   */
+  TARGET_VERSION: const string = 'ES5'
+
+  /**
+   * Transpile a block of JavaScript in the specified version to the target version of JavaScript. Note that this will
+   * fail if there is a problem running the transpiler, but not necessarily if there is a syntax error with the input.
+   * The result contains metadata issues, which should be checked for warnings and errors.
+   *
+   * @param src
+   *        string of EcmaScript-compatible or TypeScript code to be transpiled
+   * @param path
+   *        string of the file path containing the code. It can be a {@link {Pkg.Path}} or a glob pattern.
+   *        e.g. "<package>/path/to/the/test/file", or "**\/folder/subfolder"
+   *        It can be null if the code is not from a {@link Pkg.Path}.
+   * @param spec
+   *        {@link JavaScriptTranspileSpec} for Babel's config.
+   * @return {@link JavaScriptTranspileResult} of the transpilation.
+   */
+  @nodejs(typeSystem=true)
+  transpile: function(src: !string,
+                      path: string serialized Pkg.Path,
+                      spec: JavaScriptTranspileSpec): !JavaScriptTranspileResult js-babel-node
+}

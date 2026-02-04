@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configurations for Reliability asset onboarding functionality.
+ */
+type ReliabilityAssetOnboardingConfig mixes Singleton, Config {
+
+  /**
+   * Flag indicating if {@link ReliabilityAsset} id should be generated from lineage for {@link ReliabilityExcelParser#preprocessExcelTemplateFile}.
+   * Set to true if id should be generated from lineage, set to false to preserve the original id from customer data.
+   */
+  createAssetIdFromLineage: boolean = false
+
+  /**
+   * For purposes of the Excel Asset Hierarchy workflow ({@link ReliabilityExcelParser#preprocessExcelTemplateFile}), the depths of {@link ReliabilityAsset}
+   * which will be linked to {@link Sensor} entities for ML purposes through {@link ReliabilityAssetSensorRelation}.
+   * Defaults to [-1], which will take the deepest level.
+   */
+  sensorRelationAssetDepths: [int] = [-1]
+
+  /**
+   * Asset Hierarchy-related types to clear on the re-upload of an Asset Hierarchy Excel file with the same name.
+   * Entities of these types populated by a previous upload of an Excel file with the same name will be removed.
+   * Relation types will already be automatically removed if references are no longer valid.
+   *
+   * Types in this list:
+   *   * must mix in {@link AssetOnboardingMeta}
+   *   * should not have entities which may be referenced by more than one Excel file, if uploading multiple Excel files containing different pieces of data
+   */
+  typesToClearOnExcelReuploads: [string] = ['ReliabilityAsset', 'Sensor', 'FailureModeLineItem', 'FailureModeRecommendation']
+
+  /**
+   * Types in the below list that have hierarchial relationship, which needs to be cleared when {@link AssetOnboardingSourceFile#clearUploadedEntities}
+   * is called.
+   */
+  relationTypesToClearBadTemplateData: [string] = ['FacilityReliabilityAssetHierarchicalRelation', 'ReliabilityAssetHierarchicalRelation',
+    'ReliabilityAssetSensorHierarchicalRelation', 'ReliabilityAssetSensorRelation']
+
+  /**
+   * Types in the below list are non-relational types, which needs to be cleared when {@link AssetOnboardingSourceFile#clearUploadedEntities}
+   * is called.
+   */
+  nonRelationTypesToClearBadTemplateData: [string] = ['FailureModeLibrary', 'FailureMode', 'ExpectedSensor', 'Facility', 'ReliabilityAsset', 'Sensor',
+    'FailureModeLineItem', 'FailureModeRecommendation']
+
+  /**
+   * Determines whether {@link ReliabilityExcelParser#preprocessExcelTemplateFile} returns assets cleared during the Excel re-upload
+   * Asset type is based on ReliabilityAssetOnboardingConfig#assetTypeName
+   *
+   * Note:
+   *  * setting this to true will result in performance degradation.
+   *  * however, it will provide clarity of what assets were cleared on a bad asset uploads.
+   */
+  returnAssetsClearedOnExcelReuploads: boolean = false
+
+  /**
+   * Flag indicating if {@link PointPhysicalMeasurementSeries} instances should be created based on the Sensor column of {@link AssetClass}.
+   * Set to true if {@link PointPhysicalMeasurementSeries} should be created for each {@link Sensor} in the {@link AssetClass}.
+   * Set to false if {@link PointPhysicalMeasurementSeries} will be ingested through the appropriate canonical.
+   */
+  createPpmsFromSensors: boolean = true
+
+  /**
+   * If {@link createPpmsFromSensors} is set to true, this field is used to set the default grain for {@link PointPhysicalMeasurementSeries}.
+   */
+  defaultPpmsGrain: string enum Interval = QUARTER_HOUR
+
+  /**
+   * The type name that represents the Asset entity.
+   */
+  assetTypeName: string = 'ReliabilityAsset'
+
+  /**
+   * Additional custom type names that need to be ingested.
+   */
+  additionalTypeNames: [string]
+
+  /**
+   * Flag to indicate if at the end of the Asset Hierarchy Load, we should refresh the
+   * {@link PointPhysicalMeasurementSeries} for the newly created {@link Sensor} entities.
+   */
+  refreshNormalization: boolean = false
+
+  /**
+   * Flag to indicate if at the end of the Asset Hierarchy Load, we should refresh the {@link Facility} ACLs.
+   */
+  refreshFacilityACLs: boolean = true
+
+  /**
+   * The Limit for fetching Asset Classes. The default value is set to 2000 but can be increased.
+   */
+  assetClassLimit: int = 2000
+}

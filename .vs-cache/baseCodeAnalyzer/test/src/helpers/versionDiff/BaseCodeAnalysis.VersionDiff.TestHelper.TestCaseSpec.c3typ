@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec for {@link BaseCodeAnalysis.VersionDiff.TestHelper#constructResultsSpec}.
+ */
+type BaseCodeAnalysis.VersionDiff.TestHelper.TestCaseSpec mixes Spec {
+
+  /**
+   * The version and list of Types to generate for the previous mocked version.
+   */
+  prevAppInfoSpec: !BaseCodeAnalysis.VersionDiff.TestHelper.AppInfoSpec
+
+  /**
+   * The version and list of Types to generate for the current mocked version.
+   */
+  curAppInfoSpec: !BaseCodeAnalysis.VersionDiff.TestHelper.AppInfoSpec
+
+  /**
+   * A map of package name to any {@link BaseCodeAnalysis.VersionDiff.TypeMetaChanges} for
+   * the given test case. If this is specified, it will be used instead of the result from
+   * {@link BaseCodeAnalysis.VersionDiff#detectStructuralChanges}. Otherwise, that result
+   * will be generated and used.
+   */
+  typeMetaChanges: map<!string, BaseCodeAnalysis.VersionDiff.TypeMetaChanges>
+
+  /**
+   * How to determine structural changes between #prevAppInfoSpec and #curAppInfoSpec.
+   *
+   *   - **DETECT:**   Call {@link BaseCodeAnalysis.VersionDiff#detectStructuralChanges} and
+   *                   use those results directly.
+   *   - **OVERRIDE:** Don't call {@link BaseCodeAnalysis.VersionDiff#detectStructuralChanges}.
+   *                   Instead use #typeMetaChanges directly.
+   */
+  detectStructuralChangesMode: !string enum ('DETECT', 'OVERRIDE') = 'DETECT'
+}

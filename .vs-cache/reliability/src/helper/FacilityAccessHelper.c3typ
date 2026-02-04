@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type to populate the data grids on the Facility Access page.
+ */
+type FacilityAccessHelper {
+
+  /**
+   * Method to fetch all the [facilities](Facility) to display in the Facility Access grid.
+   *
+   * @param spec
+   *        The {@link FetchSpec} used to return the paginated result of accessible facilities.
+   * @return The list of facilities, with the number of users with access to each facility.
+   */
+  getFacilities: function(spec: FetchSpec = {}): FetchResult<json> js-rhino
+
+  /**
+   * Method to get the {@link Facility} total data count to display in the Facility Access grid.
+   *
+   * @param spec
+   *        The {@link FetchSpec} used to specify which [facilities](Facility) should be included in the count.
+   * @return The {@link Facility} count.
+   */
+  getFacilitiesCount: function(spec: FetchSpec = {}): int js-rhino
+
+  /**
+   * Method to fetch the {@link User}s that are assigned to a given {@link Facility}.
+   * This is used to populate the nested data grid of users when a row in the Facility Access grid is expanded.
+   *
+   * @param facilityId
+   *        The ID of the facility.
+   * @param gridType
+   *        The identity of the nested grid ("Core" / "Additional") that is calling the method. This is used to
+   *        update the `spec.filter` to fetch the correct list of {@link User}s.
+   * @param spec
+   *        The {@link FetchSpec} used to return the paginated result of users who have access to the facility.
+   * @return The list of user objects with access to the given facility.
+   */
+  getUsersForFacility: function(
+    facilityId: !string,
+    gridType: !string,
+    spec: FetchSpec = {}
+  ): FetchResult<json> js-rhino
+
+  /**
+   * Method to count the total number of {@link User}s that are assigned to a given {@link Facility}.
+   * This is used to populate the total data count for the nested data grid of users
+   * when a row in the Facility Access grid is expanded.
+   *
+   * @param facilityId
+   *        The ID of the facility.
+   * @param gridType
+   *        The identity of the nested grid ("Core" / "Additional") that is calling the method. This is used to
+   *        update the `spec.filter` to fetch the correct list of {@link User}s.
+   * @param spec
+   *        The {@link FetchSpec} used to specify which {@link User}s should be included in the count.
+   * @return The total number of users with access to the given facility.
+   */
+  getUsersCountForFacility: function(
+    facilityId: !string,
+    gridType: !string,
+    spec: FetchSpec = {}
+  ): int js-rhino
+}

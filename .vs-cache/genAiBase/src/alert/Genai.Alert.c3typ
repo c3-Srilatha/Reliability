@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Alerting functions to notify the user when a process fails or gets stuck.
+ * Required {@link SendGridApi} to execute functions
+ * eg)
+ * var token = <'tokenNumber'>;
+ *
+ * SendGridApi.setApiUrlAndAuth(
+ *   'https://api.sendgrid.com/v3',
+ *   'Bearer ' + token,
+ *    ConfigOverride.APP);
+ */
+type Genai.Alert {
+  /**
+   * Sends the submitted message as an alert {@link Genai.Mail} to configured end users, when {@link  Genai.Retriever.IndexAction#monitorLongRunningIndexAction} fails
+   * @param logString
+   *           Log string with the {@link  Genai.Retriever.IndexAction#monitorLongRunningIndexAction} information
+   */
+  alertLongRunningIndexAction: function(logString: !string): Mail js
+
+  /**
+   * Sends an error message as an alert {@link Genai.Mail} to configured end users, when the inputed indexPassages function fails
+   * @param logString
+   *           Log string with the {@link Genai.Retriever.IndexAction} that failed
+   */
+  alertFailedIndexAction: function(logString: !string): Mail js-rhino
+
+  /**
+   * Sends an error message as an alert {@link Genai.Mail} to configured end users, when the inputed {@link Genai.Query.Handler#doChatQuery} failed
+   * @param logString
+   *           Log string with the {@link Genai.Query.Handler} that failed
+   * @param logError
+   *           Log Error from the {@link Genai.Query.Handler} that failed
+   */
+  alertFailedQuery: function(logString: !json, logError: !json): Mail js-rhino
+}

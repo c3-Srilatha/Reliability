@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A table block, which contains rows and columns and optionally a heading row.
+ * The heading row has a separate element here, but the body rows are in {@link DocumentationBlock#blocks}.
+ *
+ * Authoring tables follows the
+ * [GitHub markdown extensions](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown).
+ * A table always has a single header row and zero or more data rows.  The second line must be a separator
+ * between the header and data rows.
+ *
+ * For example:
+ *
+ * ```
+ * | Type     | Legs | Shape       | Leaves |
+ * | -------- | ---- | ----------- | ------ |
+ * | dining   |    4 | rectangular |      3 |
+ * | kitchen  |    4 | oval        |      0 |
+ * | gateleg  |    4 | rectangular |      2 |
+ * | pedestal |    1 | round       |      0 |
+ * ```
+ *
+ * Renders as:
+ *
+ * | Type     | Legs | Shape       | Leaves |
+ * | -------- | ---- | ----------- | ------ |
+ * | dining   |    4 | rectangular |      3 |
+ * | kitchen  |    4 | oval        |      0 |
+ * | gateleg  |    4 | rectangular |      2 |
+ * | pedestal |    1 | round       |      0 |
+ *
+ * The table need not be aligned with spaces and the leading and trailing pipe symbols are optional:
+ *
+ * ```
+ * Type|Legs|Shape|Leaves
+ * -|-|-|-
+ * dining|4|rectangular|3
+ * kitchen|4|oval|0
+ * gateleg|4|rectangular|2
+ * pedestal|1|round|0
+ * ```
+ *
+ * Explicit column alignment may be specified in the header separator line by using colons:
+ *
+ * ```
+ * |Type|Legs|Shape|Leaves|
+ * |-|-:|-|-:|
+ * ```
+ *
+ * Renders as:
+ *
+ * |Type|Legs|Shape|Leaves|
+ * |-|-:|-|-:|
+ * |dining|4|rectangular|3|
+ * |kitchen|4|oval|0|
+ * |gateleg|4|rectangular|2|
+ * |pedestal|1|round|0|
+ */
+type DocumentationTable mixes DocumentationBlock {
+
+  /**
+   * The heading row, if specified.
+   */
+  head: DocumentationBlock
+
+  /**
+   * The column alignment: `left`, `center` or `right`, if specified.
+   */
+  alignment: [string enum('left', 'center', 'right')]
+
+  /**
+   * The number of columns in the table (the largest in any row).
+   */
+  columns: int
+
+  toMarkdown: ~
+  toText:     ~
+  kind:       ~ = TABLE
+}

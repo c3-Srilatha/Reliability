@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to represent settings set by users in Bulk Model Config UI
+ * One model will be created for every combination of templateSlot and dataset
+ */
+type BulkModelConfigUiSettings {
+  /**
+   * Template Slots selected
+   */
+  templateSlots: [BulkModelConfigUiTemplateSlot]
+
+  /**
+   * Datasets selected
+   */
+  datasets: [ReliabilityMlDatasetPreparationRun]
+
+  /**
+   * {@link ReliabilityAssetSensorAssociationRun} selected
+   */
+  sensorAssociations: [ReliabilityAssetSensorAssociationRun]
+
+  /**
+   * Optional name for the job
+   */
+  jobName: string
+
+  /**
+   * If set, all created models will be named with this prefix and a random set of characters appended.
+   *
+   * Ex: `<Prefix>_u12i34`
+   *
+   * If only one model is created, the model will be named `<Prefix>`.
+   *
+   * If this prefix is not set, the model will be prefixed with its template name, resulting in
+   * `<Template Name>_u12i34`.
+   *
+   */
+  modelNamePrefix: string
+
+  /**
+   * The {@link ReliabilityMl.Project} related to this Bulk Model Config Ui
+   */
+  project: ReliabilityMl.Project
+
+  /**
+   * Takes all the {@link #templateSlots} as given by the UI and sets their
+   * {@link BulkModelConfigUiTemplateSlot#hyperparameterOverrides} to be nested maps.
+   *
+   * For MlProject Agnostic Models, we expect the overrides to be a nested map.
+   * For Reliability Risk Models, we expect the overrides to be a map where the keys are nested paths.
+   *
+   * To resolve this, the UI passes a map where keys are nested paths. If the project is not Reliability Risk,
+   * this function is called to convert the map to a nested map.
+   * @return The updated {@link BulkModelConfigUiSettings} with nested hyperparameter overrides.
+   */
+  nestHyperparameterOverrides: private inline member function (): BulkModelConfigUiSettings js-rhino
+
+  /**
+   * Converts the UI settings into an orchestrator training job.
+   * @return A {@link ReliabilityOrchestrator.TrainingJobSpec}.
+   */
+  toSpec: member function(): ReliabilityOrchestrator.TrainingJobSpec py
+
+  /**
+   * Converts the UI settings into an orchestrator spec for hyperparameter optimization.
+   * @param modelConfigRun
+   *           The model configuration run to use for the HPO spec.
+   * @return A {@link ReliabilityOrchestrator.HpoSpec}.
+   */
+  toHpoSpec: member function(modelConfigRun: !ModelConfigRun): ReliabilityOrchestrator.HpoSpec py
+
+  /**
+   * Converts the UI settings into an orchestrator spec tailored to the reliabilityRisk project.
+   * @return A {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining}.
+   */
+  toRiskSpec: member function(): ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining py
+
+  /**
+   * See {@link ReliabilityOrchestrator.HpoSpec#nCombinations}. This field is only used when running HPO.
+   */
+  nCombinations: int = -1
+}

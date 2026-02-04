@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type representation of Intl.DateTimeFormatOptions
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat
+ * Add more as appropriate.
+ * Only use if ICU formatting directly in the externalized string is not an option.
+ * http://userguide.icu-project.org/formatparse/datetime
+ */
+@typeScript
+type UiSdlDateTimeParamKindFormatSpec mixes UiSdlDynamicValueSpecParamFormatSpec {
+
+  /**
+   * The representation of the year. For example:
+   * - "numeric" (e.g., 2012).
+   * - "2-digit" (e.g., 12).
+   */
+  year: string enum('numeric', '2-digit')
+
+  /**
+   * The representation of the month. For example:
+   * - "numeric" (e.g., 3).
+   * - "2-digit" (e.g., 03).
+   * - "long" (e.g., March).
+   * - "short" (e.g., Mar).
+   * - "narrow" (e.g., M).
+   */
+  month: string enum('numeric', '2-digit', 'long', 'short', 'narrow')
+
+  /**
+   * The representation of the day. For example:
+   * - "numeric" (e.g., 1).
+   * - "2-digit" (e.g., 01).
+   */
+  day: string enum('numeric', '2-digit')
+
+  /**
+   * The representation of the hour. For example:
+   * - "numeric" (e.g., 1).
+   * - "2-digit" (e.g., 01).
+   */
+  hour: string enum('numeric', '2-digit')
+
+  /**
+   * The representation of 12 hour time.
+   * - true (e.g. 01:00:00 PM)
+   * - false (e.g. 13:00:00)
+   */
+  hour12: boolean
+
+  /**
+   * The representation of the minute. For example:
+   * - "numeric" (e.g., 1).
+   * - "2-digit" (e.g., 01).
+   */
+  minute: string enum('numeric', '2-digit')
+
+  /**
+   * The representation of the second. For example:
+   * - "numeric" (e.g., 1).
+   * - "2-digit" (e.g., 01).
+   */
+  second: string enum('numeric', '2-digit')
+
+  /**
+   * The representation for the name of the time zone. For example:
+   * - "long" (e.g., Pacific Standard Time).
+   * - "short" (e.g., PST, GMT-8).
+   */
+  timeZoneName: string enum('long', 'short')
+
+  /**
+   * The time zone {@link TimeZone} to use.
+   */
+  timeZone: string serialized TimeZone
+}

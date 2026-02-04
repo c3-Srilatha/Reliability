@@ -1,0 +1,149 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+/**
+ * A persistable Python module stored in the C3 platform.
+ *
+ * This type provides methods to:
+ * - Upload and download module code with path-aware zipping and unzipping logic
+ * - Import symbols from Python packages/modules dynamically
+ *
+ * Modules are stored under namespaced paths in both local and remote environments based on the format:
+ * `<type>/<id>/<name>/`, ensuring uniqueness and safe multi-user isolation.
+ */
+entity type Genai.PythonModule mixes Genai.ForNameHelperImpl {
+  /**
+   * Unique name of the Python module.
+   *
+   * This name is used both as a folder name in the local and remote file systems,
+   * and as the package name during import (e.g., `from name import ...`).
+   */
+  name: !string
+
+  /**
+   * Remote C3 FileSystem path where this module is stored.
+   *
+   * This path may point to either a `remote://` or `meta://` location, where depending on
+   * how the module was created. It serves as the base for locating all files
+   * belonging to the module.
+   */
+  modulePath: string
+
+  /**
+   * Returns a sanitized version of the `modulePath` ensuring it ends with a `/`.
+   *
+   * This is used internally when constructing full paths for zipping/unzipping
+   * and listing files in a consistent, platform-safe way.
+   */
+  sanitizedModulePath: inline property(): !string py
+
+  /**
+   * Returns the full C3 FileSystem URL of the remote-side directory that stores this module.
+   *
+   * Used to namespace and locate zipped module archives via `_instance_key()`.
+   *
+   * @return Remote-based URL path (e.g., `fs://Genai.PythonModule/123/MyModule/`)
+   */
+  fileSystemDirPath: inline property(): !string py
+
+  /**
+   * Returns the base local directory path used to namespace this module.
+   *
+   * This path does NOT include the module name. Used as the root location for storing any modules
+   * under `~/Genai.PythonModule/<id>/`.
+   *
+   * @return Local base directory path (e.g., `~/Genai.PythonModule/123/`)
+   */
+  localModulePath: inline property(): !string py
+
+  /**
+   * Returns the full local path where this module is stored.
+   *
+   * This is used to load Python packages from disk and represents the unpacked module folder
+   * (i.e., the destination of `downloadDirToLocal`).
+   *
+   * @return Full path to local module directory (e.g., `~/Genai.PythonModule/123/MyModule/`)
+   */
+  localDirPath: inline property(): !string py
+
+  /**
+   * Returns the zipped archive of this module in the remote C3 FileSystem.
+   *
+   * The archive is stored at `<fileSystemDirPath>/zipped_module.zip` and is used for
+   * uploading, downloading, and namespacing module files.
+   *
+   * @return A {@link File} representing the zipped module archive.
+   */
+  cloudFSModuleArchive: inline property(): !File py
+
+  /**
+   * Uploads a local directory to the C3 FileSystem as a zipped archive, preserving structure.
+   *
+   * The uploaded archive is extracted server-side into a namespaced location.
+   *
+   * @param dirPath
+   *        Full path to the local module directory to upload.
+   * @return The file containing the archived module.
+   */
+  uploadDirFromLocal: member function(dirPath: !string): !File py
+
+  /**
+   * Downloads this module from the remote FileSystem to the local machine.
+   *
+   * Handles unzipping and stripping the instance key prefix so the resulting structure
+   * matches exactly `localDirPath`.
+   *
+   * @return Local path to the extracted module directory.
+   */
+  downloadDirToLocal: member function(): string py
+
+  /**
+   * Creates a new PythonModule and populates it from a given local directory.
+   *
+   * @param name
+   *        Name of the module (should match the folder name inside `modulePath`).
+   * @param localPath
+   *        Parent directory containing the module folder.
+   * @param id_
+   *        Unique identifier for the module instance.
+   * @return The created and uploaded Genai.PythonModule instance.
+   */
+  upsertFromLocal: function(name: !string, localPath: !?string, id_: string): !Genai.PythonModule py
+
+  /**
+   * Dynamically loads a symbol (class/function/etc.) from a Python module at a specified path.
+   * Emulates from package.submodule import MyClass.
+   *
+   * @param from_
+   *        Dotted module path (e.g., `package.submodule`).
+   * @param import_
+   *        Symbol name to import (e.g., `MyClass`).
+   * @param modulePath
+   *        Path to the root of the Python module folder.
+   * @param forceReload
+   *        Whether to force reloading even if already imported.
+   * @return The dynamically loaded Python object.
+   */
+  importSymbolFromModulePath: function(from_: !string, import_: !string, modulePath: !?string, forceReload: boolean): !native py
+
+  /**
+   * Loads a Python symbol from this module.
+   * Emulates from package.submodule import MyClass.
+   *
+   * @param from_
+   *        Dotted module path (e.g., `package.submodule`).
+   * @param import_
+   *        Symbol name to import.
+   * @param forceReload
+   *        Whether to reload even if already cached.
+   * @return The dynamically loaded Python object.
+   */
+  importSymbolFromModule: member function(from_: !string, import_: !string, forceReload: boolean): !native py
+}

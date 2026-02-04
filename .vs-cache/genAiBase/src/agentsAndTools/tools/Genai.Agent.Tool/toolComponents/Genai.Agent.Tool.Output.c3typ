@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Output from {@link Genai.Agent.Tool#run}.
+ */
+type Genai.Agent.Tool.Output {
+  /**
+   * The result that is in the process of getting generated.
+   */
+  inProgressResult: !Genai.Query.Result
+
+  /**
+   * The specific output from the {@link Genai.Agent.Tool}.
+   * Used in tool post-processing to generate relevant visualizations or rationale if applicable.
+   */
+  output: any
+
+  /**
+   * The {@link Genai.StructuredQuery.Spec} used to generate `output` if the tool is a structured query tool.
+   */
+  structuredQuerySpec: Genai.StructuredQuery.Spec
+
+  // TODO GEN-7228 Remove this field and update code to extract data from Tool.Output
+  /**
+   * Data retrieved when the tool was run
+   */
+  retrievedData: Genai.Agent.Tool.DataRetriever.Output
+}

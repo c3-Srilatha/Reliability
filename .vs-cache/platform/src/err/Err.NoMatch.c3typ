@@ -1,0 +1,22 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing "not a match" error.
+ */
+type Err.NoMatch mixes Error {
+
+  @error(message="Match was not found!")
+  noMatch: function(): !Err.NoMatch
+
+  @error(message="${src} does not match ${target}!")
+  noMatch: function(src: !any, target: !any): !Err.NoMatch
+
+  @error(message="${srcName} ${src} does not match ${targetName} ${target}!", httpCode=400)
+  noMatch: function(srcName: !string, src: !any, targetName: !string, target: !any): !Err.NoMatch
+}

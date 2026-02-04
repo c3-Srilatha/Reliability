@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper type to represent GitHub Repository file urls.
+ */
+@deprecated(finalVersion='8', details='Use GitUrl')
+type GitHubUrl mixes GitUrl {
+
+  scheme: ~ = "github"
+
+  /**
+   * @return GitHub instance with based on this url. if url has username and password, basic auth token will be set.
+   */
+  gitHub: member function(): GitHub
+
+  /**
+   * @param fullRepositoryName
+   *           full repository path (e.g. `c3-e/c3server`).
+   * @param reference
+   *           May be a branch, tag, or commit SHA.
+   * @param token
+   *           Authentication token.
+   * @param encodedPath
+   *           Optional encodedPath (e.g. `base/myPackage/src/MyType.c3typ`).
+   * @return the GitUrl constructed from the input.
+   */
+  fromRepoAndReference: function(fullRepositoryName: !string,
+                                 reference: !string,
+                                 token: !string,
+                                 encodedPath: string): GitUrl
+
+  /**
+   * Return the part of the url that contains the organization and repository: orgName/repoName
+   */
+  fullRepositoryName: inline member function(): !string
+
+  fromString: ~ java
+  toString:   ~ java
+  authority:  ~
+}

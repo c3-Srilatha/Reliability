@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Support for executing blocks of code in a single db/SQL transaction
+ * IMPORTANT: NOTE THE FOLLOWING RESTRICTIONS
+ *
+ * 1. Nested transactions are not supported.
+ * 2. Only supports "sql" datastore.  Any other datastores accessed (e.g. external or KV) will throw an exception.
+ * 3. No internal retry of steps since any SQL error rolls back the transaction.  Retry should be implemented outside
+ *    of the transaction.
+ * 4. All `upsert` operations run implicitly with {@link UpsertSpec.forceAsyncCalcFieldRefresh} set
+ * 5. All invalidations are committed after the main transaction is committed to avoid them firing prematurely.  As
+ *    such, there is no ability (or reason) to "wait" for queues to finish computing.
+ * 6. Not appropriate for jobs/async (e.g. batch, mapReduce, or workflow, AsyncAction, etc.).
+ * 7. All types participating in the transaction must be in the default Db.Domain (e.g. they can't specify
+ *    {@link Ann.Db#domain}).  An exception will be thrown if any such types are accessed.
+ * 8. Types that specify the "system" domain may be accessed in the transaction but will not participate in the
+ *    transaction.
+ * 9. Accessing a {@link Cached} type that doesn't specify the "system" domain" within a transiction is not supported
+ *    will throw an exception as cache invalidation will not work properly within the transaction semantics.
+ */
+type Db.Transaction mixes Value {
+
+  /**
+   * Executes the code in the lambda in a single db/SQL transaction.
+   */
+  execute: function(action: !lambda(): any): any
+
+  /**
+   * Executes the code in the lambda in a single db/SQL transaction with the specified spec.
+   */
+  execute: function(txnSpec: !Db.Transaction.Spec, action: !lambda(): any): any
+
+  /**
+   * @return true if currently executing a transaction
+   */
+  isInTxn: inline function(): boolean
+
+  conn:            private inline function(): @java(class="c3.platform.db.jdbc.JdbcConnection") native
+  invalidatorUtil: private inline function(): @java(class="c3.platform.async.invalidator.InvalidatorUtil") native
+  action:          private inline function(): @java(class="c3.platform.action.Action") native
+}

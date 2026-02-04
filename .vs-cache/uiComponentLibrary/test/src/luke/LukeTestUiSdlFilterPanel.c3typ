@@ -1,0 +1,275 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlFilterPanel} component for testing purposes.
+ */
+type LukeTestUiSdlFilterPanel mixes LukeTestUiSdlFormBase {
+
+  parentSelector: ~ = '.content .c3-sdl-filterpanel'
+
+  /**
+   * Actual html element for the title
+   */
+  titleElement: string = 'label'
+
+  /**
+   * Filter button selector
+   */
+  filterButton: string = '.c3-card-footer button:nth-of-type(1)'
+
+  /**
+   * Selector for a fieldSet
+   */
+  primaryGroupSelector: ~ = '.c3-sdl-fieldset'
+
+  /**
+   * Selector for an item inside a fieldSet
+   */
+  secondaryGroupSelector: ~ = '.fieldset-item'
+
+  /**
+   * Selector for clearing one fieldSet
+   */
+  clearFieldSetButton: string = 'button.clear-link'
+
+  /**
+   * Clear All button selector
+   */
+  clearAllButton: string = '.c3-card-footer .c3-button-secondary'
+
+  /**
+   * Save button selector
+   */
+  saveButtonSelector: string = '.c3-card-footer .c3-button-primary'
+
+  /**
+   * Cog button selector
+   */
+  cogButtonSelector: string = '.c3-button-cog'
+
+  /**
+   * Go back button selector
+   */
+  goBackButtonSelector: string = '.c3-sdl-filterpanel .c3-button-secondary'
+
+  /**
+   * Load from List option selector
+   */
+  loadFromListOptionSelector: string = '.menu.transition.left div[role="option"]:nth-of-type(1)'
+
+  /**
+   * Save Configuration option selector
+   */
+  saveConfigurationOptionSelector: string = '.menu.transition.left div[role="option"]:nth-of-type(2)'
+
+  /**
+   * Form field selector
+   */
+  formFieldSelector: string = '.c3-form-field'
+
+  /**
+   * Saved configuration list selector
+   */
+  savedConfigurationListSelector: string = '.c3-sdl-list'
+
+  /**
+   * Saved configuration item selector
+   */
+  savedConfigurationItemSelector: string = '.c3-list-item'
+
+  /**
+   * Selector for collapsed fieldset
+   */
+  collapsedFieldSet: string = '.c3-sdl-fieldset .collapsed'
+
+  /**
+   * Selector for fieldset expanding button
+   */
+  expandFieldSetButton: string = '.c3-sdl-fieldset .collapsed button'
+
+  /**
+   * Clicks the {@link #filterButton} on the filter panel
+   * @param timeout
+   *          Timeout in seconds for the async chain
+   * @param debounceTime
+   *          The amount of time to wait before clicking the filter button
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the filter button is clicked.
+   */
+  filter: inline member function(timeout: int, debounceTime: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the clear button inside a fieldSet of the given index
+   * @param index
+   *          The index of the fieldSet
+   * @param timeout
+   *          Timeout in seconds for the async chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the clear button is clicked.
+   */
+  clearFieldSet: inline member function(index: !int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the {@link #clearAllButton} on the filter panel
+   * @param timeout
+   *          Timeout in seconds for the async chain
+   * @param debounceTime
+   *          The amount of time to wait before clicking the filter button
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the clear all button is clicked.
+   */
+  clearAll: inline member function(timeout: int, debounceTime: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the expand button inside a fieldSet of the given index
+   * @param index
+   *          The index of the fieldSet on the filter panel
+   * @param timeout
+   *          Timeout in seconds for the async chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when all the fieldsets expanding buttons are clicked.
+   */
+  toggleCollapsibleFieldSet: inline member function(index: !int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Expand all collapsed fieldsets on filter panel
+   * @param timeout
+   *          Timeout in seconds for the async chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when all the fieldsets expanding buttons are clicked.
+   */
+  expandAllFieldSets: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Count the number of collapsed fieldsets on filter panel
+   * @param timeout
+   *          Timeout in seconds for the async chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the number of collapsed fieldsets.
+   */
+  numberOfCollapsedFieldSets: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the Save button on the filter panel.
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the button is clicked.
+   */
+  clickSaveButton: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the Cog button on the filter panel.
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the button is clicked.
+   */
+  clickCogButton: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the Load from List option on the filter panel.
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the option is clicked.
+   */
+  clickLoadFromListOption: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the Save Configuration option on the filter panel.
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the option is clicked.
+   */
+  clickSaveConfigurationOption: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Sets configuration name on the filter panel.
+   * @param name
+   *          The configuration name.
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the name is set.
+   */
+  setConfigurationName: inline member function(name: string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Saves configuration on the filter panel.
+   * @param name
+   *          The configuration name.
+   * @param setToPrivate
+   *          True to set the saved search as private
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is saved.
+   */
+  saveConfiguration: inline member function(name: string, setToPrivate: boolean, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Loads configuration on the filter panel.
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  loadConfiguration: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the toggle to save the search as private search
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  toggleSaveAsPrivate: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Returns numbers of items in saved filter list
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  numberOfSavedFilters: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Get saved search list item by index
+   * @param index
+   *          The zero-base index of the item on the list
+   * @return a CSS class name.
+   */
+  getSavedSearchListItemSelector: inline member function(index: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the rename button on saved search list to rename a filter
+   * @param index
+   *          The zero-base index of the item on the list
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  clickRenameSavedSearchByIndex: inline member function(index: int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Returns the name of a saved search entry in the list
+   * @param index
+   *          The zero-base index of the item on the list
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  getSavedSearchNameByIndex: inline member function(index: int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Deletes a saved search entry in the list
+   * @param index
+   *          The zero-base index of the item on the list
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  deleteSavedSearchByIndex: inline member function(index: int, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the go back button on saved search
+   * @param timeout
+   *          Timeout in seconds for the async chain.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved when the configuration is loaded.
+   */
+  clickGoBackButton: inline member function(timeout: int): LukeAsyncQueueNode js
+}

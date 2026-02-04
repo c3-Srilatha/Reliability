@@ -1,0 +1,85 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contains functions for managing a secondary datastore.
+ */
+entity type SecondaryDsUpsert schema name 'SECDSUPSERT' {
+
+  /**
+   * Unique key assigned to the upsert operation in {@link beginUpsert).
+   */
+  @db(writeOnce=true)
+  upsertKey: !string
+
+  /**
+   * A map of stage tables for each physical table involved in the upsert operation.
+   */
+  stageTables: map<string, SecondaryDsStageTable> schema suffix 'ST'
+
+  /**
+   * @see Persistable#beginUpsertToSecondaryDs.
+   */
+  beginUpsert: function(type: !Type): !SecondaryDsUpsert
+
+  /**
+   * Stages objs for an upsert operation to the secondary datastore.  Data will be persisted to the db in
+   * {@link endUpsert}.  Objs are assumed to be complete.  No validation, defaulting or downstream asynchronous
+   * invalidation will be performed.
+   *
+   * @param objs
+   *           Obj instances to upsert
+   * @param batchNum
+   *           Batch number the request is for.
+   */
+  upsertObjs: member function(objs: !stream<Obj>, batchNum: !int)
+
+  /**
+   * Ends an upsert operation to the secondary datastore.  Data staged in {@link upsertToSecondaryDs} will be
+   * persisted to the db and the staged data will be removed.
+   */
+  endUpsert: member function()
+
+  /**
+   * Aborts an upsert operation to the secondary data store.  Any data staged in {@link upsert} will be
+   * removed.
+   */
+  abortUpsert: member function()
+
+  /**
+   * Gets the type associated with the upsert for the upsert key.
+   *
+   * @param upsertKey
+   *           Upsert key returned from {@link beginUpsertToSecondaryDs}.
+   *
+   * @return the type associated with the upsert for the upsert key.
+   */
+  upsertType: function(upsertKey: !string): !Type
+
+  /**
+   * Removes a file from the file system if it exists and removes it from the file list for the specified stage table.
+   *
+   * @param stageTableName
+   *          Name of stage table to remove the file from.
+   * @param fileUrl
+   *          File to remove.
+   */
+  removeFile: private member function(stageTableName: !string, fileUrl: !string)
+
+  /**
+   * Creates a file in the file system and adds it to the file list in the specified stage table.
+   *
+   * @param stageTableName
+   *          Name of stage table to add the file for.
+   * @param fileUrl
+   *          File to add.
+   *
+   * @return the newly created file.
+   */
+  addFile: private member function(stageTableName: !string, fileUrl: !string): !File
+}

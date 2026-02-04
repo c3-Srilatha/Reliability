@@ -1,0 +1,26 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.management.network.VpnClientConfiguration',
+      runtimeFieldMapper='JavaC3StyleFieldMapper')
+type AzureVpnClientConfiguration {
+
+  aadTenant:                    @java(runtimeClassName='java.lang.String') string
+  radiusServerAddress:          @java(runtimeClassName='java.lang.String') string
+  vpnClientIpsecPolicies:       @java(runtimeClassName='java.util.List') [AzureNetworkIpsecPolicy]
+  vpnClientProtocols:           @java(runtimeClassName='java.util.List') [string]
+  aadAudience:                  @java(runtimeClassName='java.lang.String') string
+  radiusServerSecret:           @java(runtimeClassName='java.lang.String') string
+  vpnClientRevokedCertificates: @java(runtimeClassName='java.util.List') [AzureNetworkVpnClientRevokedCertificate]
+  aadIssuer:                    @java(runtimeClassName='java.lang.String') string
+  vpnClientRootCertificates:    @java(runtimeClassName='java.util.List') [AzureNetworkVpnClientRootCertificate]
+  vpnClientAddressPool:         @java(runtimeClassName='com.microsoft.azure.management.network.AddressSpace') AzureNetworkAddressSpace
+  fromJava:                     function(javaObj: @java(class="java.lang.Object") !?native)
+                                  : AzureVpnClientConfiguration
+  toJava:                       member function(): native
+}

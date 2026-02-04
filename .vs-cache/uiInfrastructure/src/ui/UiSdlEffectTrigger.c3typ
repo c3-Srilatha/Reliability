@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Extra epic associated with @uiSdlReducer and @uiSdlEpic.
+ *
+ * Examples:
+ *
+ * Listen on "MY_TRIGGER_ACTION" dispatched on self and execute a custom epic.
+ *
+ *      {
+ *        trigger: "MY_TRIGGER_ACTION",
+ *        effectType: "UiSdlEpicMyCustomEpic"
+ *      }
+ *
+ * Listen on another component's "MY_TRIGGER_ACTION" and map to another action.
+ *
+ *      {
+ *        trigger: "MyApp.AnotherComponent.MY_TRIGGER_ACTION",
+ *        actions: [
+ *          { actionType: "ANOTHER_ACTION" }
+ *        ]
+ *      }
+ *
+ */
+@typeScript
+type UiSdlEffectTrigger mixes UiSdlEffectPayloadForwarder {
+
+  /**
+   * Trigger associated with UiSdlEffectTrigger.
+   * The trigger can be either the full action type name including the id of the reduxable.
+   * If the id is not specified, then it is assumed that the trigger is listening on the same
+   * reduxable where the trigger is defined.
+   */
+  trigger: [string] | string
+
+  /**
+   * {@link UiSdlEpic} denoting type of UiSdlEffectTrigger. Will be set only if actions field is not set.
+   * Has higher priority than actions field.
+   * `payload` and `payloadStrategy` fields that are inherited from {@link UiSdlEffectPayloadForwarder} will only be used when `effectType` is set
+   *
+   * If multiple effects point to the same {@link UiSdlEffectTrigger#trigger} from different files, their
+   * order of execution is non-deterministic.
+   */
+  effectType: string
+
+  /**
+   * Collection of {@link UiSdlEffectActionSpec}. Will be set only if effectType field is not set.
+   * Each {@link UiSdlEffectActionSpec} will be dispatched in the natural order of the collection.
+   *
+   * If multiple {@link UiSdlEffectActionSpec} point to the same {@link UiSdlEffectTrigger#trigger} from different files, their
+   * order of execution is non-deterministic.
+   */
+  actions: [UiSdlEffectActionSpec]
+
+  /**
+   * Used to document complex effectTriggers. Ignored while rendering the component.
+   */
+  comment: string
+}

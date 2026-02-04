@@ -1,0 +1,84 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util tool for the {@link Genai.Agent.Tool} interface.
+ */
+type Genai.Agent.Tool.Util mixes Genai.Agent.Tool<Genai.Agent.Tool.Config> {
+  initialize: ~ py-query_orchestrator-server-py4j
+  // Util tool for development purposes
+  run: ~ py-query_orchestrator
+
+  /**
+   * Checks for structured query if data models are in stale mode (having changes).
+   * Updates the stale interim status of the {@link Genai.Query.Result},
+   * and changes answer for error message of stale mode.
+   *
+   * @param inProgressResult
+   *           The in progress {@link Genai.Query.Result}.
+   * @param status
+   *           The tool's {@link Genai.Query.Result.InterimStatusEnum} of the stale status.
+   * @param statusParent
+   *           The parent of the stale status, this is used for grouping and nesting statuses.
+   * @return the {@link Genai.Agent.Tool.Output} if stale, return None if not stale.
+   */
+  checkQueryToolStale: function(inProgressResult: !Genai.Query.Result,
+                                status: !Genai.Query.Result.InterimStatusEnum,
+                                statusParent: !Genai.Query.Result.InterimStatusHistory): Genai.Agent.Tool.Output py-query_orchestrator-server-py4j
+
+  /**
+   * Generates the {@link Genai.StructuredQuery.Spec} for the given input query
+   * Helper function used in EvalQuery and EvalMetricsQuery tool for spec generation
+   *
+   * @param spec
+   *           The spec for generating a {@link Genai.StructuredQuery.Spec}
+   * @return
+   * Sawshark v1: the {@link Genai.Agent.Tool.Output} with the generated {@link Genai.StructuredQuery.Spec}
+   * Sawshark v2: if the question is answerable, it returns the {@link Genai.Agent.Tool.Output}
+   *              with the generated {@link Genai.StructuredQuery.Spec};
+   *              if the question is unanswerable, it returns the {@link Genai.Agent.Tool.Output} with a string, which
+   *              is Translation.getTranslationForLocale("EnterpriseSearch.ErrorMessage.UnableToAnswerStructured", "en").
+   */
+  generateSpec: private function(spec: !Genai.Agent.Tool.Util.GenerateSpec): !Genai.Agent.Tool.Util.Output py-query_orchestrator
+
+  /**
+   * Processes the {@link Genai.StructuredQuery.Spec} for the given input query. This includes
+   * executing the spec and generating the answer and visualization.
+   * Helper function used in EvalQuery and EvalMetricsQuery tool for spec execution
+   *
+   * @param spec
+   *           The spec for processing the {@link Genai.StructuredQuery.Spec}
+   * @return the {@link Genai.Agent.Tool.Output} containing the answer and visualization to the user query
+   */
+  processSpec: inline private function(spec: !Genai.Agent.Tool.Util.ProcessSpec): !Genai.Agent.Tool.Util.Output py-query_orchestrator
+
+  /**
+   * Preprocesses, validates and executes the {@link Genai.StructuredQuery.Spec} for the given input query.
+   * Calls {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor#tableFromSpec} or
+   * {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor#tableFromSpec} under the hood.
+   *
+   * @param spec
+   *           The spec for validating and executing the {@link Genai.StructuredQuery.Spec}
+   * @return the {@link Genai.Agent.Tool.Output} containing a {@link Genai.Agent.Tool.Util.Output.SpecProcessor} and logs
+   */
+  tableFromSpecSpec: private function(spec: !Genai.Agent.Tool.Util.TableFromSpecSpec): !Genai.Agent.Tool.Util.Output py-query_orchestrator
+
+  /**
+   * Helper function used to log the error in the engineLog of {@link Genai.Query.Result}
+   * @param inProgressResult
+   *           The failed {@link Genai.Query.Result} for which the engineLog has to be updated
+   * @param toolName
+   *           This is used to add a new key to the engineLog with the error stack trace
+   * @param errorMsgPrefix
+   *           Prefix added along with the error stack trace
+   * @param doNotFailOnError
+   *           If not true then {@link Genai.Query.Result#failed} will not be set to true
+   */
+  handleError: private function(inProgressResult: !Genai.Query.Result, toolName: !string, errorMsgPrefix: string, doNotFailOnError: boolean): !Genai.Query.Result py
+}

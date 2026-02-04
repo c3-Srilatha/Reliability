@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Genai.SourceFile.TextSplitter.Spec defines the langchain splitter to use for text processing.
+ * Also defines the chunk size and overlap for the splitter.
+ */
+type Genai.SourceFile.TextSplitter.Spec mixes Spec {
+
+  /**
+   * The langchain splitter to use for text processing.
+   * Only specific splitters are currently supported.
+   */
+  textSplitter: string enum("TextSplitter", "TokenTextSplitter", "CharacterTextSplitter", "SpacyTextSplitter", "NLTKTextSplitter", "MarkdownASTSplitter", "TableTextSplitter")
+
+  /**
+   * The name of the TextSplitter spec type.
+   */
+  specType: Type = Genai.SourceFile.TextSplitter.Spec
+
+  /**
+   * The chunk size for the splitter.
+   * The default set here is standard for the TokenTextSplitter splitter.
+   */
+  chunkSize: int = 500
+
+  /**
+   * The chunk overlap for the splitter.
+   * The default set here is standard for the TokenTextSplitter splitter.
+   */
+  chunkOverlap: int = 100
+
+  /**
+   * The module used for the specific splitter.
+   * This json would include name and the importPath of the splitter module.
+   * Supported modules are:
+   * 1. langchain
+   * 2. custom
+   *    (custom chunker should inherit from the TextSplitter class)
+   *
+   * Importing from langchain directly requires extending the py-chunker runtime to include langchain,
+   * as langchain was removed from the py-chunker runtime in release 5.0.
+   */
+  splitterModule: json = {
+    "name": "custom",
+    "importPath": "/genAiBase/resource/code/c3genai/langchain/text_splitters/all_text_splitters.py"
+  }
+
+}

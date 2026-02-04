@@ -1,0 +1,231 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The base type for all testers.
+ *
+ * A tester is responsible for:
+ *   - find the correct tests to be executed
+ *   - execute the tests using the corresponding test executors
+ *   - collect the test results after the test execution
+ *
+ * For a Tester to run your test in the appropriate engine(s), the path of your test should conform to the following
+ * semantics: "/<package>/test/<requirement>/.../yourTestFile.ext"
+ * In the example above, <package> is the name of your {@link Pkg} and <requirement> is the name of your
+ * {@link Action.Requirement}. Note that your test will be ran against all
+ * {@link Action.Requirement#enginesForTests} for your provided requirement.
+ */
+abstract type Tester mixes MutableObj, Configurable<Tester.Config> {
+
+  testRunner: !TestRunner
+
+  /**
+   * The group of test suites (represented by the metadata sub paths of the test suite) to be executed.
+   * E.g. ["<package>/test/path/to/the/test/file"]. This is the {@link testRunner#testSuites} filtered to only include
+   * tests which apply to the {@link engine} of this Tester.
+   */
+  testSuitePaths: cached member function(): ![string serialized Pkg.Path]
+
+  /**
+   * The current state for the tester.
+   * See {@link TesterState} for all tester states.
+   */
+  state: !string enum TesterState = INITIAL
+
+  /**
+   * The collected test results after the test execution.
+   */
+  results: [TestSuiteResult]
+
+  /**
+   * The action engine in which tests will execute.
+   */
+  engine: !Action.Engine
+
+  /**
+   * Return the string representing the most general {@link Action.Requirement} this tester can run.
+   */
+  requirement: abstract function(): string serialized Action.Requirement
+
+  /**
+   * Construct a tester for executing tests matching the specified path.
+   * @param path
+   *           The file path. It can be a {@link Pkg.Path}, or a glob pattern.
+   *           e.g. "<package>/path/to/the/test/file", or "**\/folder/subfolder"
+   *
+   * @param engine
+   *           This will be the Tester's {@link Action.Engine}. Note that the resulting Tester's {@link testSuites}
+   *           will only include test suites applicable to this engine.
+   *
+   * Note: invoke this API on the desired type of Tester instead of on the Tester type directly.
+   */
+  forPathAndEngine: function(path: !string serialized Pkg.Path,
+                             engine: !string serialized Action.Engine): !mixing Tester
+
+  /**
+   * Construct a tester for executing tests with the file path containing the specified file name.
+   * @param testName
+   *           The name of the test.
+   *           e.g. `forName("ExampleJava_Test")` is equivalent to `forPath("**\/*ExampleJava_Test*")`
+   * @param engine
+   *           This will be the Tester's {@link Action.Engine}. Note that the resulting Tester's {@link testSuites}
+   *           will only include test suites applicable to this engine.
+   *
+   * Note: invoke this API on the desired type of Tester instead of on the Tester type directly.
+   */
+  forNameAndEngine: function(testName: !string, engine: !string serialized Action.Engine): !mixing Tester
+
+  /**
+   * Construct a tester for executing all tests within a package for a given {@link Action.Engine}.
+   * @param engine
+   *           This will be the Tester's {@link engine}. Note that the resulting Tester's {@link testSuites}
+   *           will only include test suites applicable to this engine.
+   * @param deep
+   *           If true, also execute all tests from the dependency packages
+   *
+   * Note: invoke this API on the desired type of Tester instead of on the Tester type directly.
+   */
+  forEngine: function(engine: !string serialized Action.Engine, deep: boolean): !mixing Tester
+
+  /**
+   * @return: The Tester subtype for the given {@link Action.Engine}.
+   */
+  typeForActionEngine: function(engine: !Action.Engine): !Type
+
+  /**
+   * Start running a tester.
+   */
+  run: member function(spec: TesterRunSpec): !mixing Tester
+
+  /**
+   * If defined, this method will be called before #runTestSuite is invoked for each test suite.
+   */
+  beforeRunTestSuiteCode: abstract optional member function(testSuiteCode: !string,
+                                                            testSuite: string serialized Pkg.Path,
+                                                            spec: TesterRunSpec)
+
+  /**
+   * Runs the test suite located at its full {@link Pkg.Path} and updates #results with the {@link TestSuiteResult}
+   * @param testSuite
+   *           The test suite represented by its {@link Pkg.Path}.
+   * @param spec
+   *           The {@link TesterRunSpec} with attributes required to run the Test Suite.
+   */
+  runTestSuiteCode: abstract member function(testSuiteCode: !string,
+                                             testSuite: string serialized Pkg.Path,
+                                             spec: TesterRunSpec): !TestSuiteResult
+
+  /**
+   * Runs the given test suites as a batch, and return the results.
+   * If defined, and {@link TesterRunSpec#inSingleSession} is enabled, this is used instead of {@link runTestSuiteCode}.
+   */
+  runTestSuiteCodes: abstract optional member function(testSuiteCode: [string],
+                                                       testSuites: [string serialized Pkg.Path],
+                                                       spec: TesterRunSpec)
+                                                : !map<string serialized Pkg.Path, TestSuiteResult>
+
+  /**
+   * If defined, this method will be called after #runTestSuite is invoked for each test suite.
+   */
+  afterRunTestSuiteCode: abstract optional member function(testSuiteCode: !string,
+                                                           testSuite: string serialized Pkg.Path,
+                                                           spec: TesterRunSpec)
+
+  /**
+   * Returns the string contents of the test suite represented by its {@link Pkg.Path}.
+   * @param testSuite
+   *           The test suite represented by its {@link Pkg.Path}.
+   */
+  testSuiteCode: private function(testSuite: !string serialized Pkg.Path): string
+
+  // TODO: PLAT-117777 Complete the instruction on how to set in test
+  // TODO: PLAT-118343 Create TestParams type to represent all the params of the test
+  // TODO: PLAT-118340 Refactor code to Isolate TestRunner and Tester logic
+
+  /**
+   * Return a Map of test params for the test corresponding to this Pkg.Path.
+   * The test params should be set in test file in the format of:
+   *     Python: You can put @pytest.mark.testApp(mode="dev") in test to indicate the test to be run in dev mode.
+   *     There's no way to configure for specific test case yet. The turned map would be {"testApp" : {"mode" : "dev"}}
+   */
+  testParams: function(path: !string serialized Pkg.Path): map<string, map<string, any>>
+
+  /**
+   * Returns the full name of the test suite, including package and runtime, from its {@link Pkg.Path}.
+   * Used as the classname attribute of TestSuiteResult and TestCaseResult.
+   * Examples: c3.AssertPoly_Test, zoo.test.py-ml-client-ipython-test.standalone.pythonSDK.test_python_sdk
+   * @param testSuitePath
+   *           The test suite represented by its {@link Pkg.Path}.
+   * @param actionEngineName
+   *           Name of the actionEngine used to run the test, e.g. 'py-data_312-server-jep-test'. This is to get the resolved
+   *           full test name from an un-resolved testSuitePath
+   */
+  fullTestSuiteName: function(testSuitePath: !string serialized Pkg.Path, actionEngineName: string): !string
+
+  /**
+   * Updates the logger appenders before running a test or resets to defaults after running tests.
+   * @param appenders
+   *           The list of appenders to add, see {@link Logger.AppenderKind}
+   * @param appendersLevels
+   *           The corresponding log level to use for the above appenders, see {@link Logger.Level}
+   */
+  updateRootLogger: private function(appenders: ![string], appendersLevels: ![string])
+
+  /**
+   * Updates the logger appenders before running a test to ensure the test results all necessary logs
+   */
+  appendTesterLogger: private function()
+
+  /**
+   * Returns the simple class name (e.g. AssertPoly_Test, test_python_sdk) of the test suite from its {@link Pkg.Path}
+   * @param testSuitePath
+   *           The test suite represented by its {@link Pkg.Path}.
+   */
+  testSuiteClassName: private member function(testSuitePath: !string serialized Pkg.Path): !string
+
+  /**
+   * Cancel a running tester.
+   */
+  cancel: abstract member function(): !mixing Tester
+
+  /**
+   * Get the current Git branch name. This should never return null in a development environment nor in a normal
+   * CI environment, but will return null in production environments.
+   *
+   * @see Tester.Config#currentBranch
+   */
+  currentBranch: function(failIfNone: boolean): string
+
+  /**
+   * Guess the base branch for the current branch. If specified in the {@link Tester.Config config} that is used,
+   * otherwise it is guessed based on the current branch:
+   *  - _base_: same branch
+   *  - epic/…/base: _base_
+   *  - release-hotfix/…: `release`
+   *  - hotfix/…: `master`
+   *  - otherwise `develop`
+   *
+   * "Base" branches are: `develop`, `release`, `master`.
+   *
+   * @see #currentBranch
+   * @see #isBaseBranch
+   * @see Tester.Config#baseBranch
+   */
+  baseBranch: function(): !string
+
+  /**
+   * Form the base branch (falling back to `develop`) for the specified branch. This implements the guessing logic of
+   * #baseBranch.
+   */
+  guessBaseBranchFor: function(current: !string): !string
+
+  /**
+   * Whether this is one of the standard base branches: `develop`, `release`, `master`.
+   */
+  isBaseBranch: function(name: !?string): boolean
+}

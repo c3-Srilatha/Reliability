@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A clickable component that supports avatar, title and subtitle
+ */
+@typeScript
+type AvatarWithTextComponent mixes UiSdlComponent<any> {
+
+  /**
+   * The displayed title content of the button
+   */
+  titleContent: UiSdlDynamicValueSpec
+
+  /**
+   * The displayed subtitle content of the button
+   */
+  subtitleContent: [UiSdlDynamicValueSpec]
+
+  /**
+   * Props for the prepended avatar
+   */
+  prependedAvatar: json
+
+  /**
+   * Props for the prepended avatar
+   */
+  isClickable: boolean
+
+  /**
+   * Arguments for the click action
+   */
+  actionArgs: json
+
+  /**
+   * Triggered when the component is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @returns A `CLICK_ACTION` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='CLICK_ACTION')
+  clickAction: private function(id: string, args: json): !UiSdlReduxAction ts-client
+}

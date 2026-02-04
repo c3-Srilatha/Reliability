@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The content associated to a row in a {@link KvStore}.
+ */
+abstract type KvContent mixes KvRowMeta, Content {
+
+  /**
+   * The column name of the {@link KvRow} that this KvContent is associated to.
+   */
+  colName: !string
+
+  /**
+   * Create a KvContent subType instance from the provided KvRow.
+   * @param kvRow
+   *        the KvRow to create the KvContent from. Note that the kvRow does not have to exist in the KvStore, as long as the
+   *        {@link KvRowMeta meta-fields} are populated in it, and writing the to this KvContent will create the KvRow in the KvStore.
+   * @return the KvContent subType instance.
+   *
+   * @see KvFile
+   */
+  fromRow: function(kvRow: !KvRow): !KvContent
+
+  /**
+   * Returns a **KvRow** from this KvContent. Note that, this API does not generate the KvRow in the KvStore.
+   */
+  toRow: member function(): !KvRow
+
+  /**
+   * This is a convenient API to get the KvContent by parsing the provided {@link KvStore#kvContentUrl}.
+   * @param kvContentUrl
+   *        This url is used to build the corresponding KvContent. To successfully return the correct KvContent,
+   *        the url has to follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**.
+   * @param failIfInvalid
+   *        If set, the api will fail if the input url does not follow the format of **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**, otherwise, return **null**.
+   * @return KvContent instance based on the given kvContentUrl
+   */
+  fromKvContentUrl: function(kvContentUrl: !string, failIfInvalid: boolean): KvContent
+
+  /**
+   * @return true if the given url is a kvContentUrl of the format: **kv://{kvStoreName}/{tableName}/{rowId}/{columnName}**.
+   */
+  isKvContentUrl: private inline function(url: !string): boolean
+}

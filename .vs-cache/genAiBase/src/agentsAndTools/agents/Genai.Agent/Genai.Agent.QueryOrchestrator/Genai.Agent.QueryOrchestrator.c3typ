@@ -1,0 +1,182 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Handles queries that may be routed to either structured or unstructured tools.
+ */
+type Genai.Agent.QueryOrchestrator mixes Genai.Query.Handler, Genai.Agent<Genai.Agent.Config>,
+  Engine<Genai.Agent.QueryOrchestrator.Deployment, Engine.DeploySpec>, Genai.WithEngine {
+  inst: ~ js
+  onEngineThreadStart: ~ py-query_orchestrator-server-py4j
+
+  /**
+   * Returns whether the orchestrator has been initialized.
+   */
+  isInitialized: private member function(): boolean py-query_orchestrator-server-py4j
+
+  /**
+   * Reinitializes all global variables and tools if
+   *   * forceRefresh is true
+   *   * global variables are not set
+   *   * or {@link Genai.Agent.Config#name} is different than that with which the agent was initialized
+   */
+  ensureInitialized: private member function(forceRefresh: boolean) py-query_orchestrator-server-py4j
+
+  initialize: ~ py-query_orchestrator-server-py4j
+
+  /**
+   * Initialize the agent with the argument to raise an error if logit bias is used.
+   * @param forceReload
+   *           If true, all configs and setup will be re-run (instead of reusing already-loaded values)
+   * @param raiseErrorIfLogitBiasUsed
+   *           If true, an python error will be raised within guidance if logit_biases are used.
+   */
+  initializeRaiseErrorIfLogitBiasIsUsed: member function(forceReload: boolean,
+                              raiseErrorIfLogitBiasUsed: boolean) py-query_orchestrator-server-py4j
+
+
+  query: ~ py-query_orchestrator-server-py4j
+  streamQuery: ~ py-query_orchestrator-server-py4j
+  chatQuery: ~ py-query_orchestrator-server-py4j
+  streamChatQuery: ~ py-query_orchestrator-server-py4j
+
+  /**
+   * Overloads {@link Genai.Agent#run}.
+   * @param input
+   *           The input query.
+   * @param inProgressResult
+   *           The {@link Genai.Query.Result} being processed.
+   * @param streamResponse
+   *           If true, the tool should stream its response to the client
+   * @return The query result
+   */
+  run: inline member function(input: !any,
+                              inProgressResult: !Genai.Query.Result,
+                              streamResponse: string enum Genai.Streaming.Strategy
+                              ): !stream<string> | !Genai.Query.Result py-query_orchestrator
+
+  /**
+   * Internal function used to get the current list of {@link Genai.Agent.Tool} names cached.
+   */
+  toolNames: private member function(exitToolsOnly: boolean, excludeExitTools: boolean):
+                                                                          [string] py-query_orchestrator-server-py4j
+
+  /**
+   * Returns whether the orchestrator's toolkit contains a {@link Genai.Agent.Tool.UnstructuredDataQuery}
+   */
+  hasUnstructuredQueryTool: private member function(): boolean py-query_orchestrator-server-py4j
+
+  /**
+   * Internal function used to format the base prompt for the agent, including all the steps taken so far.
+   */
+  formatBasePrompt: private member function(userQuestion: !string,
+                                            toolNames: [string],
+                                            previousSteps: [Genai.Agent.Step]):
+                                                                            !string py-query_orchestrator-server-py4j
+
+  /**
+   * Internal function used to select the next {@link Genai.Agent.Tool} to use.
+   * The orchestrator can only use the tools included in `toolNames`.
+   * Generally toolNames is generated from {@link Genai.Agent.QueryOrchestrator#toolNames}.
+   * Invalid names will be filtered out based on the cached list of tool names.
+   *
+   * pickNextTool should be used for simple testing, since it generates first the next thought and then toolName.
+   * For multi-hop scenarios, it's wrapping two extra function calls: #getNextStepThought and #getNextStepActionName.
+   */
+  pickNextTool: private member function(input: !string,
+                                        inProgressResult: Genai.Query.Result,
+                                        toolNames: [string],
+                                        previousSteps: [Genai.Agent.Step]): string py-query_orchestrator-server-py4j
+
+  /**
+   * Internal function used generate a new thought for the agent.
+   * The orchestrator can only use the tools included in `toolNames`.
+   * Generally toolNames is generated from {@link Genai.Agent.QueryOrchestrator#toolNames}.
+   * Invalid names will be filtered out based on the cached list of tool names.
+   */
+  getNextStepThought: private member function(input: !string,
+                                        inProgressResult: Genai.Query.Result,
+                                        toolNames: [string],
+                                        previousSteps: [Genai.Agent.Step]): string py-query_orchestrator-server-py4j
+
+  /**
+   * NOTE: REQUIRES A THOUGHT TO BE GENERATED INSIDE previousSteps. Not suited for simple testing.
+   *
+   * Internal function used to select the next {@link Genai.Agent.Tool} to use.
+   * The orchestrator can only use the tools included in `toolNames`.
+   * Generally toolNames is generated from {@link Genai.Agent.QueryOrchestrator#toolNames}.
+   * Invalid names will be filtered out based on the cached list of tool names.
+   */
+  getNextStepActionName: private member function(input: !string,
+                                        inProgressResult: Genai.Query.Result,
+                                        toolNames: [string],
+                                        previousSteps: [Genai.Agent.Step]): string py-query_orchestrator-server-py4j
+
+  /**
+   * NOTE: REQUIRES A THOUGHT AND ACTION TO BE GENERATED INSIDE previousSteps. Not suited for simple testing.
+   *
+   * Internal function used to generate the next action input for the agent.
+   * The orchestrator can only use the tools included in `toolNames`.
+   * Generally toolNames is generated from {@link Genai.Agent.QueryOrchestrator#toolNames}.
+   * Invalid names will be filtered out based on the cached list of tool names.
+   */
+  getNextStepActionInput: private member function(input: !string,
+                                        inProgressResult: Genai.Query.Result,
+                                        toolNames: [string],
+                                        previousSteps: [Genai.Agent.Step]
+                                        ): string py-query_orchestrator-server-py4j
+
+  /**
+   * Uses Log.Profile pyProfile to profile the execution of calling `run` with the given input.
+   * The returned
+   * value is the same as that of `pyProfile`, namely a map/dict with keys:
+   * 'duration', 'lambda_out', 'current_mem', 'actionId', 'html', 'peak_mem', 'text'.
+   *
+   * The `text` field/value of the output map is an execution tree with timing.
+   *
+   *
+   * NOTE: This has to be a function on this type because if called via a lambda/Log.Profile directly, it will not
+   * execute in the same process as the initialized orchestrator.
+   */
+  runWithTiming: private member function(input: !any,
+                                        inProgressResult: !Genai.Query.Result): any py-query_orchestrator-server-py4j
+
+
+  /**
+   * Returns the QueryOrchestrator corresponding to the {@link Genai.Agent.Config}'s key for the application.
+   */
+  forConfigKey: function(configKey: !string): !mixing Genai.Agent.QueryOrchestrator js
+
+  /**
+   * Returns true if the text associated with an empty retriever error is in the traceback message.
+   * Otherwise returns false.
+   * @param error
+   *    the error to check
+   */
+  isEmptyRetrieverError: private inline function(error: native): boolean py-query_orchestrator-server-py4j
+
+
+  /**
+   * Returns the active configuration for the orchestrator. If using {@link Genai.Project}s, it will return the
+   * `queryOrchestratorConfigName` of the active project for the user, if any. Otherwise, it will return the default config defined in
+   * {@link Genai.Agent.QueryOrchestrator.DefaultConfig}.
+   *
+   * @return The active configuration for the orchestrator.
+   */
+  getActiveConfigName: function(): !string js-rhino
+
+
+  /**
+   * Loads an agent into the orchestrator engine without reinitializing the rest of the agents. If the orchestrator is not initialized
+   * it will initialize it.
+   * @param agent The agent to load into the orchestrator engine
+   * @param forceReload If true, the agent's configs and setup will be re-run (instead of reusing already-loaded values)
+   */
+  loadAgent: private member function(agent: Genai.Agent.Persistable, forceReload: boolean) py-query_orchestrator-server-py4j
+}

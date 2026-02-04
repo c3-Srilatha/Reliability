@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for merging multiple strings that represent the "same" message using Jaccard similarity.
+ *
+ * By default, the first message of multiple similar messages is returned, but the dissimilar parts may be replaced
+ * with a string (or elided) or regular expressions may be returned. In the latter case, there will be a capturing
+ * group around each dissimilar subsequence to allow higher-level processing of these or similar inputs.
+ *
+ * The default behavior is to replace varying sequences by a single asterisk (`*`).
+ *
+ * @see Value#mergeSimilar
+ * @see Arry#mergeSimilar
+ */
+type MergeSimilarSpec mixes Spec, Obj {
+
+  /**
+   * Jaro–Winkler similarity is the inverse string metric measuring an edit distance between two sequences.
+   * Making this value higher (closer to 1), increases the strictness of the match and making it lower (closer to 0)
+   * results in more merging (fewer result). The best value to use depends on the inputs, but the default value of
+   * means that roughly ¾ of the text must match.
+   *
+   * @see https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance
+   */
+  similarityThreshold: !double = 0.75
+
+  /**
+   * Minimum longest common subsequence length to be considered for merging.
+   */
+  lcsThreshold: !int = 1
+
+  /**
+   * If the #merge value is `replace`, this is the value used to replace the varying parts of the string.
+   * The default value is a single asterisk `*` (U+002A), but any value may be specified. If the value is null,
+   * the varying part is elided.
+   */
+  replaceWith: string = '*'
+
+  /**
+   * If true then store the locations of all elements in each {@link MergeSimilarCluster}. Enabling this feature
+   * increases memory usage to O(N) where N is the size of the input collection.
+   */
+  storeIndexes: !boolean
+
+  /**
+   * Validate inputs to ensure they are in acceptable ranges:
+   *  - Similarity threshold must be within 0 and 1.
+   */
+  beforeMake: ~
+}

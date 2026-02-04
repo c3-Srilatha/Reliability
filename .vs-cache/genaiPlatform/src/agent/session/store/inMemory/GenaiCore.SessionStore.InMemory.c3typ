@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An in-memory session store. This session store is **NOT** distributed or safe to use on its own
+ * for use cases where there are multiple instances of the same session client. It is designed for development
+ * and for use in combination with a distributed session store like {@link GenaiCore.SessionStore.Kv}.
+ */
+private type GenaiCore.SessionStore.InMemory mixes GenaiCore.SessionStore, GenaiCore.SessionStore.InMemory.CacheParams {
+
+  /**
+   * The id of the store. This is necessary to differentiate between multiple instances.
+   *
+   * **NOTE** It is the responsibility of the user to ensure that the id is unique within a given Python process/thread.
+   */
+  id: !string
+
+  /**
+   * @inheritdoc
+   *
+   * overridden to enforce that #id is populated
+   */
+  beforeMake: ~ py
+
+  /**
+   * @inheritdoc
+   *
+   * Because this session store is in-memory, the version returned is always 0.
+   * When used in combination with a distributed session store, the persisted session's version should
+   * be included with the state stored in the value stored by `updateState`.
+   *
+   * e.g.
+   * ```python
+   * external_version = external_store.updateState(sessionId, state)
+   * in_memory_store.updateState(sessionId, (external_version, state))
+   * ```
+   */
+  doUpdateState: ~ py
+
+  initState: ~ py
+  doGetState: ~ py
+  deleteStateBatch: ~ py
+  sessionForId: ~ py
+
+  /**
+   * @inheritdoc
+   *
+   * NOTE: because this session store is in-memory, all of the sessions are always returned, regardless
+   * of `offset` and `limit` options provided in the spec.
+   */
+  sessions: ~ py
+}

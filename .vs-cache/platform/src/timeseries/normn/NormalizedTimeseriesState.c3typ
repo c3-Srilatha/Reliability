@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Corresponding to every NormalizedTimeseries object there is a NormalizedTimeseriesState object that gets created.
+ * This object gives us information about whether the given timeseries is valid and consumable.
+ * Normalization engine relies on this type to figure out if it has to re-normalize the timeseries
+ * One object per header-field combination exists for this type
+ */
+@db(datastore="kv")
+entity type NormalizedTimeseriesState schema name 'timeseries_NormalizedTimeseriesState' {
+
+  /**
+   * Any errors occurring during the normalization are stored here. When this timeseries is read, if there exists
+   * an error then the error will be thrown to the user
+   */
+  error: string
+
+  /**
+   * Schema version decides whether the structure of the timeseries are compatible with each other.
+   * If the normalization engine expects a different version number, it forces re-normalization
+   */
+  schemaVersion: int32
+
+  /**
+   * Stores the `treatment` used to normalize this timeseries. This information is required during
+   * aggregation / disaggregation when the timeseries is being read
+   */
+  treatment: string
+
+  /**
+   * Stores the unit associated with this timeseries
+   */
+  unitId: string
+
+  /**
+   * Id : typeId(rawDataPointType).parentId.pathId(tsField)
+   */
+  id: ~
+
+  /**
+   * buckets for the existing normalized timeseries
+   */
+  buckets: [NormalizedTimeseriesBucket]
+
+  /**
+   * Last updated time
+   */
+  lastUpdated: datetime
+
+  /**
+   * Config state when this row was written
+   */
+  partitionStrategy: NormalizationPartitionStrategy
+}

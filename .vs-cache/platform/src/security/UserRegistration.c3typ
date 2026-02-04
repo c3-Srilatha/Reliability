@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is a User Administration C3 type used to allow a user to execute sign-up using a token which can be embedded
+ * in a link in an invitation email.
+ *
+ * For example, this is how it is used in IDS:
+ *
+ * Admin:
+ * 1. Invokes {@link UserRegistration.start} to obtain a registration token
+ * 2. Constructs invitation email which includes a link that points new user to the registration page.
+ *    The link contains the token string as part of the URL.
+ * New user:
+ * 1. Clicks the invitation link
+ * 2. User gets in to a 'public' page that will execute execute a {@link UserRegistration.validateToken}
+ *    action with the token. This call return the corresponding UserRegistration object or null.
+ * 3. If a UserRegistration object is returned (valid token) then the page will invoke the {@link UserRegistration.complete}
+ *    which will:
+ *    - create the user
+ *    - set password
+ *    - add user to the registered group(s)
+ */
+@db(index+=['email', 'token'])
+entity type UserRegistration mixes Configurable<UserRegistrationConfig>, UserFields schema name 'ADMIN_USR_REG' {
+
+  /**
+   * Registration Token.
+   */
+  token: string
+
+  /**
+   * Token expiration date.
+   */
+  expiration: datetime
+
+  /**
+   * Start the user registration.
+   *
+   * @param user
+   *           email, given name, family name.
+   * @param groups
+   *           {@link UserGroup UserGroups} the user will be added to when registration completes.
+   * @param validMinutes
+   *           how long will this registration token be valid in minutes.
+   * @param actionType
+   *           "NEW_USER" for registering new user; "FORGOT_PASSWORD" for existing user forgot password.
+   * @param optionalAppParams
+   *           Used to pass any additional information to {@link AppUserRegistration#startNewUserRegistration} or {@link AppUserRegistration#startPasswordReset}
+   * @return the registration token.
+   */
+  start: function(user: !UserFields,
+                  actionType: string enum UserRegistrationActionType = NEW_USER,
+                  optionalAppParams: UserRegistrationOptionalParams): !string
+
+  /**
+   * Validate the registration token and return the corresponding UserRegistration object or null.
+   *
+   * @param token
+   *           token to validate
+   * @return the corresponding UserRegistration object or null
+   */
+  validateToken: function(token: !string): UserFields
+
+  /**
+   * Create user using registration info.
+   * If the user already exists in the Okta spoke it will keep the existing credentials
+   * and ignore the credentials passed in this function.
+   *
+   * @param token
+   *           valid registration token.
+   * @param user
+   *           email, given name, family name, note that the email address must be the same as the one used to start registration.
+   * @param credentials
+   *           Okta users will be created with the given credentials (password and or security question/answer).
+   *           The new user will be activated immediately.
+   * @param actionType
+   *           "NEW_USER" for registering new user; "FORGOT_PASSWORD" for existing user forgot password.
+   * @param optionalAppParams
+   *           Used to pass any additional information to {@link AppUserRegistration#completeNewUserRegistration}
+   */
+  complete: function(token: !string,
+                     user: !UserFields,
+                     credentials: !UserCredentials,
+                     actionType: string enum UserRegistrationActionType = NEW_USER,
+                     optionalAppParams: UserRegistrationOptionalParams)
+
+  /**
+   * Revokes a pending user registration for the given email.
+   *
+   * @param email
+   *           the email address of the user.
+   */
+  @action(group+='user-admin')
+  revoke: function(email: !string)
+}

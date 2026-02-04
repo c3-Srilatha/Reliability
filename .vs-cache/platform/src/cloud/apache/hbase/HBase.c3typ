@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Lowest level type to interact with hbase database
+ */
+type HBase mixes Configurable<HBaseConnectionConfig>, Identifiable {
+
+  /**
+   * List hbase tables
+   * @return the list of hbase tables
+   */
+  @action(group+='read')
+  listTables: member function(): [string]
+
+  /**
+   * Create a new hbase db table.
+   * @param table
+   *          Name of the table to be created
+   * @param columnFamilyNames
+   *          Indicates names of column families that need to be created
+   * @return if the table was created
+   */
+  @action(group+='write')
+  createTable: member function(table: !string, columnFamilyNames: set<string>): !boolean
+
+  /**
+   * Delete a particular hbase table
+   * @param table
+   *          Delete the given table
+   * @param confirm
+   *          Confirm the delete (added to make sure user is sure of performing this operation)
+   */
+  @action(group+='delete')
+  deleteTable: member function(table: !string, confirm: !boolean)
+
+  /**
+   * Query data from a hbase table
+   * @param table
+   *          Name of the table to query the data from
+   * @param id
+   *          Row key for which data is desired
+   * @param columnFamilies
+   *          List of columns families to be included in the result
+   * @return the get result in the format <columnFamily, <column, value>>
+   */
+  @action(group+='read')
+  get: member function(table: !string,
+                       id: !string,
+                       columnFamilies: !?[HBaseColumnFamily]): map<string, map<string, any>>
+
+  /**
+   * Scan hbase table
+   * @param table
+   *            Name of the table
+   * @param spec
+   *           Spec to define properties of scan
+   * @return scan result
+   */
+  @action(group+='read')
+  scan: member function(table: !string, spec: HBaseScanSpec): [HBaseRow]
+
+  /**
+   * Insert 1 item in the hbase table
+   * @param table
+   *          Name of the table to insert data in
+   * @param id
+   *          Row key at which item needs to be inserted
+   * @param data
+   *          Actual data for this row key
+   */
+  @action(group+='write')
+  put: member function(table: !string, id: !string, data: !?[HBaseColumnFamily])
+
+  /**
+   * Insert a batch in the hbase table
+   * @param table
+   *          Name of the table to insert data in
+   * @param data
+   *          Actual data for this batch
+   */
+  @action(group+='write')
+  putBatch: member function(table: !string, data: ![HBaseRow])
+
+  /**
+   * Delete 1 item / column family / column from the hbase table
+   * @param table
+   *          Name of the table to delete the item on
+   * @param id
+   *          Row Key at which item needs to be deleted
+   * @param cols
+   *          ColumnFamilies indicating if a particular column family / column needs to be deleted
+   * @return whether the item was deleted or not
+   */
+  @action(group+='delete')
+  delete: member function(table: !string, id: !string, cols: [HBaseColumnFamily]): !boolean
+
+  /**
+   * Connect to a HBase cluster, If a connection exists in Cache then get it from Cache.
+   * @return the HBase instance
+   */
+  @action(group+='read')
+  connect: member function(): !HBase
+
+  /**
+   * Close the currently held HBase connection
+   */
+  @action(group+='read')
+  close: member function()
+
+  /**
+   * @return true/false that indicates if current HBase connection is valid or not.
+   */
+  @action(group+='read')
+  isConnected: member function(): !boolean
+}

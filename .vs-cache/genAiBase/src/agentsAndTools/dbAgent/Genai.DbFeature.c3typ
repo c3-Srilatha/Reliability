@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A data feature (metrics, ML features, etc.) with its embedding defined in pgvector.
+ */
+@db(index=[{fields:[{name: emb, opClass: COSINE}], neighborsCount: 16, efConstruction: 40}])
+entity type Genai.DbFeature schema name "DFE" {
+  /**
+   * The name of the feature.
+   */
+  name: !string
+
+  /**
+   * The description of the feature.
+   */
+  description: string
+
+  /**
+   * An embedding of the feature representation.
+   */
+  @vector(dimension=1024)
+  emb: string
+
+}

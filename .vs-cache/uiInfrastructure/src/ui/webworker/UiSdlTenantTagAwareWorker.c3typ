@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Webworker holding functionality for actions targeted at a tenant tag.
+ */
+@typeScript
+abstract type UiSdlTenantTagAwareWorker mixes UiSdlWebWorker {
+
+  /**
+   * Switch type system domain based on tunnel configuration. It will automatically load types from the target
+   * domain and uses cached types if possible.
+   *
+   * @param tunnelConfiguration
+   *            The tunnel configuration
+   * @param forceReloadTypes
+   *            Whether to force reload types from server
+   * @param timeout
+   *            The timeout for the webworker request
+   * @return a promise to be resolved when the domain is switched
+   */
+  switchDomain: member function(tunnelConfiguration: map<string, any>,
+                                forceReloadTypes: boolean,
+                                timeout: int): Promise<any> ts-client
+}

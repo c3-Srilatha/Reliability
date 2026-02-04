@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * It represents the configuration of each step that compounds a UI page.
+ */
+type DataValidationUiStepSettings {
+
+  /**
+   * Id of {@link DataValidationRule rule}/{@link DataValidationRuleset ruleset} to use as source of output.
+   * If this sourceId is not found with a ruleset status/validation status category in the validation results,
+   * this step will not be shown.
+   */
+  sourceId: string
+
+  /**
+   * Title to show on this step.
+   */
+  title: string
+
+  /**
+   * Subtitle to show on this step.
+   */
+  subtitle: string
+
+  /**
+   * List of {@link DataValidationUiStepSettings substeps} of this step. Substeps cannot have substeps.
+   */
+  subStepSettings: [DataValidationUiStepSettings]
+
+  /**
+   * JSON works as map<string, string | UiSdlDynamicValueSpec>.
+   * Keyed by {@link DataValidationResult ruleResult}.output or {@link DataValidationRuleset ruleset} status category.
+   * Value is the message string or dynamic value to be shown.
+   */
+  bannerMessageMap: json
+
+  /**
+   * Keyed by {@link DataValidationResult ruleResult}.output or {@link DataValidationRuleset ruleset} status category. Value is an array of the ids of the custom components to show.
+   */
+  customComponentsMap: map<string, [string]>
+
+}

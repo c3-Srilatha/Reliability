@@ -1,0 +1,109 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Holds training results of a single {@link MlModel}, along with the
+ * {@link MlModel.Train.Strategy} used for training.
+ */
+type MlModel.Train.Result extends MlWorkflowCoordinatableResult type key 'MTR' {
+
+  /**
+   * inputs used for this training result.
+   */
+  trainInput: !MlModel.Train.JobRunEngine.Input
+
+  /**
+   * Trained {@link MlModel}. If training has failed, this field is null.
+   */
+  trainedModel: MlModel
+
+  /**
+   * Training scores. Key is scoring metric name, value is scoring metric value. If scoring has failed, this field is null.
+   */
+  trainScores: map<string, double>
+
+  startWorkflow: ~ py
+
+  /**
+   * Call this upon completion of the {@link #operationRun}. This will update the {@link #trainedModel}
+   * and {@link trainScores} fields on this instance.
+   *
+   * @returns the upserted instance of {@link MlModel.Train.Result}.
+   */
+  upsertTrainResult: private member function(): !MlModel.Train.Result py
+
+  /**
+   * Helper function to parse input in the form of {@link MlModel.Train.JobRunEngine.Input} and feed to
+   * {@link MlModel#train}.
+   *
+   * @param jobRunEngineInput
+   *   an instance of {@link MlModel.Train.JobRunEngine.Input} holding inputs required for execution of {@link MlModel#train}.
+   * @param spec
+   *   an instance of {@link MlModel.Train.JobSpec} holding inputs required for execution of {@link MlModel#train}.
+   * @return handler to async result of {@link MlModel#train}.
+   */
+  doTrainAndScore: private function(jobRunEngineInput: !MlModel.Train.JobRunEngine.Input,
+                                    spec: MlModel.Train.JobSpec): !MlModel.OperationRun py
+
+  /**
+   * {@link MlModel.Train.Group} used for this training.
+   */
+  @deprecated(details="Use trainInput field instead")
+  trainGroup: MlModel.Train.Group
+
+  /**
+   * If the {@link #trainGroup} involves {@link MlModel.Train.Strategy#groupBy}, then this field
+   * shall be populated with the specific groupBy value that was used to train this result.
+   */
+  @deprecated(details="Use trainInput field instead")
+  groupByValue: any
+
+  /**
+   * {@link MlModel.Train.JobResult} that this train result belongs to.
+   */
+  @deprecated(details="No longer hold relevant information")
+  trainJobResult: MlModel.Train.JobResult
+
+  /**
+   * {@link MlModel.Train.JobRun} that produced this result.
+   */
+  @deprecated(details="Use parentCoordinator field instead")
+  trainJobRun: MlModel.Train.JobRun stored calc trainJobResult.parentTrainJobRun
+
+  /**
+   * {@link MlModel.Train.Job} that this result belongs to.
+   */
+  @deprecated(details="Use parentCoordinator field instead")
+  trainJob: MlModel.Train.Job stored calc trainJobResult.parentTrainJob
+
+  /**
+   * Workflow status of the training {@link MlOperationRun} that produced this result.
+   */
+  @deprecated(details="Use run field instead")
+  trainStatus: Workflow.Status
+
+  /**
+   * Workflow status of the scoring {@link MlOperationRun} that produced this result.
+   */
+  @deprecated(details="Use run field instead")
+  scoreStatus: Workflow.Status
+
+  /**
+   * Mapping of internal {@link MlOperationRun}s that produced this result.
+   * keys are {@link MlDataOpName#TRAIN}, {@link MlDataOpName#SCORE}.
+   * Values are respective {@link MlOperationRun}s.
+   */
+  @deprecated(details="Use run field instead")
+  operationRuns: private map<string, MlOperationRun>
+
+  /**
+   * reference to the {@link MlOperationRun} that executed the actions to obtain this result.
+   */
+  @deprecated(details="No longer hold relevant information, use run field instead")
+  operationRun: private MlOperationRun
+}

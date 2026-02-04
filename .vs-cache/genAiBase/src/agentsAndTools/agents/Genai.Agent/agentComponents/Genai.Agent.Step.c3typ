@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Steps in a {@link Genai.Agent#run} sequence.
+ * Follows the ReAct (Thought, Action Name, Action Input, Observation) framework.
+ * Also used by {@link Genai.Agent.Tool.Example}.
+ */
+type Genai.Agent.Step {
+  /**
+   * The thought of the ReAct step, e.g. "I need to find the X-84's current riskScore"
+   */
+  thought: string
+
+  /**
+   * The tool name of the ReAct step, e.g. "EvaluateStructedDataQuery".
+   * If this step is stored on a {@link Genai.Agent.Tool.Example#finalAnswerResult} or
+   * {@link Genai.Agent.Tool.Example#idkResult}, the action name will be replaced with the idk/finalAnswer tool name
+   * used by the agent.
+   */
+  actionName: string
+
+  /**
+   * The input to the tool of the ReAct step, e.g. "X-84's current riskScore"
+   */
+  actionInput: !string
+
+  /**
+   * The optional obervation of the ReAct step, e.g. "The risk score of the X-84 is 0.5".
+   * Not applicable for exit tools (final answers or "I am unable to answer your question")
+   */
+  observation: string
+
+  /**
+   * If the step used a structured query, this is the structured query spec used.
+   */
+  structuredQuerySpec: Genai.StructuredQuery.Spec
+
+  /**
+   * The error message that this step produced, if any.
+   */
+  errorMessage: string
+}

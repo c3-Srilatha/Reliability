@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec used to provide arguments to APIs that materialize {@link Feature}'s or {@link Feature.Set}'s
+ */
+type Feature.MaterializationSpec mixes TimeRange, Spec {
+
+  /**
+   * filter of the subjects to be used for materialization. If filter is missing, the job will materialize for all the subjects.
+   * note that, if the filtered subjects do not exist in the Db, the materialization job will not fail but no entries will be picked up.
+   */
+  filter: string serialized Filter
+
+  /**
+   * If `sync` is set to **true**, materialization will wait for the job to complete and all subjects will be materialized in one batch, i.e {@link Feature.Store.MaterializationJob#numBatches} = 1
+   * If `sync` is set to **false**, materialization will create the job and start asynchronously. By default, a batchSize of 1 is used.
+   */
+  sync: boolean
+}

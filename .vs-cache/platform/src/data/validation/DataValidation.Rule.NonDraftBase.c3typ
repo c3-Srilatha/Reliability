@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type which has all traits of a non Draft rule.
+ * Along with being {@link SeedData}, it also manages the creation / update / deletion of the associated cron job. It is assumed that it
+ * therefore, leverage the afterCallback methods to manage the lifecycle of the associated cron job.
+ *
+ * PLEASE NOTE that this should be mixed to the "leaf" entity type or if not, then all the **after** methods should be
+ * overridden again to simply get the implementation from this method.
+ */
+@restful(endpoint='DataValidation.Rule.NonDraftBase')
+abstract entity type DataValidation.Rule.NonDraftBase mixes DataValidation.Rule.NonDraftFields, SeedData {
+
+  /**
+   * If true, any {@link #cronJob} will be disabled.
+   */
+  disabled: boolean
+
+  /**
+   * Reason for disabling the rule.
+   */
+  disabledReason: string
+
+  /**
+   * User that disabled the rule. Automatically inferred when calling {@link #disable}
+   */
+  disabledBy: string serialized User
+
+  /**
+   * When rule was disabled. Automatically inferred when calling {@link #disable}
+   */
+  disabledAt: DateTime
+
+  /**
+   * Manage the associated {@link CronJob} if it needs to exist. Please note that any subtype of this needs to override the **after** methods.
+   */
+  @dependency(include="name, schedule, type, disabled")
+  afterCreate: ~
+
+  /**
+   * Manage the associated {@link CronJob} if it needs to exist. Please note that any subtype of this needs to override the **after** methods.
+   */
+  @dependency(include="schedule, disabled")
+  afterUpdate: ~
+
+  /**
+   * Manage the associated {@link CronJob} if it needs to exist. Please note that any subtype of this needs to override the **after** methods.
+   */
+  afterRemove: ~
+
+  /**
+   * Publishes this rule and its corresponding {@link CronJob} if {@link #schedule} is present.
+   */
+  publish: ~
+
+  /**
+   * Returns a .zip {@link Content} containing this rule and its corresponding schedule.
+   */
+  publishAsZip: private member function(pkg: string): Content
+
+  /**
+   * Returns an array of {@link Pkg.Paths} of the files in {@link #publishAsZip}. The paths returned will follow Pkg
+   * encoding thus special characters may not match the internal zip files.
+   */
+  publishPkgPaths: member function(pkg: string): [Pkg.Path]
+
+  /**
+   * REST endpoint that dispatches to {@link #publishAsZip}.
+   */
+  @restful(subPath='download/:ruleId/:pkg')
+  downloadAsZip: function(ruleId: !string, pkg: string): Content
+
+  /**
+   * Disables the current rule's {@link #cronJob} if it exists.
+   */
+  disable: member function(reason: !string)
+
+  /**
+   * Re-enables the current rule's {@link #cronJob} if it exists.
+   */
+  enable: member function(schedule: CronSchedule)
+
+  /**
+   * Ensures the {@link CronJob} for the current rule. Please call this as part of the **after* methods
+   * Implementation should look like:
+   * For **afterCreate** and **afterUpdate**:
+   * ```java
+   * return subtype().afterCallbackLogic(objs, (rule) -> ensureSchedule(rule, false));
+   * ```
+   * and **afterRemove**
+   * ```java
+   * return subtype().afterCallbackLogic(objs, (rule) -> ensureSchedule(rule, true));
+   * ```
+   */
+  ensureSchedule: private function(rule: !mixing DataValidation.Rule.NonDraftBase,
+                                   isRemove: boolean): !mixing DataValidation.Rule.NonDraftBase
+
+  /**
+   * Returns the corresponding {@link CronJob} following this rule's {@link #schedule}.
+   */
+  cronJob: member function(): CronJob
+}

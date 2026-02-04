@@ -1,0 +1,132 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * IMPORTANT
+ *
+ * Any changes to this file or the JavaScript file must be accompanied by a c3server commit in `PrivilegedAction.java`
+ * to update the fingerprint and the security team must be added as reviewers for the PR. For this reason, try to
+ * avoid any updates to this type and keep as much application logic as possible in other types. That being said, in
+ * order for PrivilegedAction to work correctly, the API called by the user must be set to `authz='always'` and the
+ * user must have explicit permissions, so also create as much abstraction as possible so a user cannot do anything
+ * malicious with the API.
+ *
+ * If changes are required, the fingerprint can be retrieved from console with:
+ *
+ * ```js
+ * Pkg.Store.fingerprintEncodedContent(C3.pkg().content(C3.pkg().typeSourceCodePaths(ExMachinaBasePrivilegedAction)[0]).readEncoded());
+ * ```
+ */
+type ExMachinaBasePrivilegedAction mixes Value {
+
+  /**
+   * Sets non-secret value configuration for the provided Config object
+   * @param override
+   *          {@link ConfigOverride} for the non-secret fields
+   */
+  @action(authz='always')
+  setCredentialConfig: function(config: !ExMachinaConnectorCredentialConfig,
+                                override: string enum ConfigOverride) js-server
+
+  /**
+   * Sets non-secret configuration field value at provided path in Config object
+   * @param config
+   *          Config instance to update
+   *        path
+   *           Path of field to update
+   *        value
+   *           Value to insert at provided path
+   *        override
+   *            {@link ConfigOverride} for the field update
+   */
+  @action(authz='always')
+  setCredentialConfigValue: function(config: !ExMachinaConnectorCredentialConfig,
+                                     path: !string,
+                                     value: !?any,
+                                     override: string enum ConfigOverride) js-server
+
+  /**
+   * Sets secret value configurations for the provided Config object
+   * @param override
+   *          {@link ConfigOverride} for the secret fields
+   */
+  @action(authz='always')
+  setCredentialSecret: function(config: !ExMachinaConnectorCredentialConfig,
+                                override: string enum ConfigOverride) js-server
+
+  /**
+   * Sets secret configuration field value at provided path in Config object
+   * @param config
+   *          Config instance to update
+   *        path
+   *           Path of field to update
+   *        value
+   *           Value to insert at provided path
+   *        override
+   *            {@link ConfigOverride} for the field update
+   */
+  @action(authz='always')
+  setCredentialSecretValue: function(config: !ExMachinaConnectorCredentialConfig,
+                                     path: !string,
+                                     value: !?any,
+                                     override: string enum ConfigOverride) js-server
+
+  /**
+   * Gets cached instance of Config
+   * @param config
+   *          Config instance to retrieve secrets for
+   * @return the {@link Config} instance
+   */
+  @action(authz='always')
+  getCredentialConfig: function(config: !ExMachinaConnectorCredentialConfig): Config js-server
+
+  /**
+   * Gets cached instance of Config containing only secret values
+   * @param config
+   *          Config instance to retrieve secrets for
+   * @return the {@link Config} instance
+   */
+  @action(authz='always')
+  getCredentialSecret: function(config: !ExMachinaConnectorCredentialConfig): Config js-server
+
+  /**
+   * Gets the cached secret value at the provided field path
+   * @param config
+   *          Config instance to retrieve secrets for
+   *        path
+   *           Path of field to update
+   *        failIfMissing
+   *           Determines whether function returns null or errors if missing
+   * @return the secret value
+   */
+  @action(authz='always')
+  credentialSecretValue: function(config: !ExMachinaConnectorCredentialConfig,
+                                  path: !string,
+                                  failIfMissing: boolean): any js-server
+
+  /**
+   * Clears the configuration including secrets for app override level only
+   */
+  @action(authz='always')
+  clearConfigAndSecretOverride: function(config: !ExMachinaConnectorCredentialConfig) js-server
+
+  /**
+   * Invoke {@link ExMachinaInstance#getConfig} to load the instance config
+   */
+  @action(authz='always')
+  getExMachinaInstanceConfig: function(): !ExMachinaInstance.Config js-server
+
+  /**
+   * Stop the given ExMachinaSession
+   *
+   * @param session
+   *          The session to stop. We perform server-side validation to ensure that the user can stop the session
+   */
+  @action(authz='always')
+  stopSession: function(session: !ExMachinaSession): !ExMachinaSession js-server
+}

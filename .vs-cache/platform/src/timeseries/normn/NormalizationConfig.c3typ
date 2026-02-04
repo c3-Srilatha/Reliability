@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Various normalization configurations to affect the runtime
+ */
+type NormalizationConfig mixes Config, Singleton {
+
+  /**
+   * If set, enables incremental write of normalized data. Default for for high freq data
+   */
+  incrementalWriteEnabled: boolean
+
+  /**
+   * If set, disables incremental read for high frequency normalized data
+   */
+  incrementalReadDisabled: boolean
+
+  /**
+   * Maximum number of attempts to make to acquire lock before giving up
+   */
+  maxLockAttempts: int
+
+  /**
+   * Maximum number of attempts to make to normalize time series when reading normalized data
+   * (and if the series is not previously normalized). Typically used in On Demand mode
+   * In on demand mode, an attempt will be made to normalize the series once unless this property is set and then that state will be returned
+   * This is important since for continuous streaming data we can be in a mode where the series is always invalidated
+   * causing a lot of compute to be wasted.
+   */
+  maxNormalizationAttemptsOnRead: int
+
+  /**
+   * Probability with which updates on invalidation ranges should be compacted during timeseries data upsert / remove
+   * This will take care of merging the the various columns into a single column at the time.
+   * double values in between 0 and 100 are permitted
+   */
+  compactInvRangesProbability: double = 0.1
+
+  /**
+   * Max limit on the number of normalized points (4 * 24 * 365 * 20) = 700800 (20 years of 15 minute interval data)
+   */
+  maxNormalizedPoints: int = 700800
+
+  /**
+   * Max number of months to consider for doing incremental normalization, if invalidation period is larger than this
+   * threshold then trigger full normalization
+   */
+  maxIncrementalNormMonths: int32 = 12
+
+  /**
+   * Mode using which data will be normalized
+   */
+  mode: string enum NormalizationMode
+
+  /**
+   * Parallelize reads for normalization
+   */
+  @beta
+  parallelizeNormalizedReads: boolean
+
+  /**
+   * Shard Nts table per the given spec
+   */
+  ntsShardSpec: NormalizedTimeseriesShardSpec
+
+  /**
+   * Per timeseries datapoint type configuration for determining how normalized data should be partitioned in hot/cold storage
+   * Format: <[Timeseries/Timed]DataPointType, NormalizationPartitionStrategy>
+   * If key is ALL, then NormalizationPartitionStrategy will be applied to all types
+   */
+  partitionStrategy: map<string, NormalizationPartitionStrategy>
+}

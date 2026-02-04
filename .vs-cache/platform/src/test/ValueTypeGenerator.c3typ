@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test helper to generate combinations of value types. Note that these generate value types as parsed and created
+ * in the specified package (not necessarily loaded and installed).
+ */
+type ValueTypeGenerator {
+
+  /**
+   * Produce a stream of data value type declarations. For compound value types such as collections, various inner
+   * value types are generated, based on the specified maximum depth. A depth of 1 means no internal variants, just the
+   * simplest forms of the value types. Otherwise, all possible inner data types are used, resulting in an large
+   * increase in the number of results.
+   *
+   * @param maxDepth the depth of inner value types produced for compound value types
+   * @param modifiers if true, generate the modifier combinations as well (see #modifiers)
+   */
+  dataTypes: function(maxDepth: !int = 1, modifiers: boolean): stream<ValueType>
+
+  /**
+   * Produce a stream of unique primitive types. Note that all variants of the primitive types will be produced,
+   * so `utc datetime` and `date` will also appear along with `datetime`.
+   *
+   * @param modifiers if true, generate the modifier combinations as well (see #modifiers)
+   */
+  allPrimitives: function(modifiers: boolean): stream<PrimitiveType>
+
+  /**
+   * Produce a stream of unique primitive types. Note that only the base variant of each primitive type will be
+   * produced, so `utc datetime` and `date` will _not_ appear, only `datetime`. Also, the numeric variants such as
+   * `float` and `int16` will be omitted.
+   *
+   * @param modifiers if true, generate the modifier combinations as well (see #modifiers)
+   */
+  basePrimitives: function(modifiers: boolean): stream<PrimitiveType>
+
+  /**
+   * Produce a stream of unique reference types, to regular types in the current package.
+   */
+  references: function(limit: !int = 100): stream<ReferenceType>
+
+  /**
+   * Produce a stream of value types that add unspecified modifiers to the specified values. Modifiers are
+   * required (`!`) and allows empty (`?`). For example, if the input is `[int], !string`, the output will be:
+   * ```
+   * [int], ![int], ?[int], !?[int], !string, !?string
+   * ```
+   *
+   * Note that the stream is _not_ made unique, so if the same value appears more than once in the input, combinations
+   * of it will appear more than once in the output.
+   */
+  modifiers: function<T: ValueType>(in: stream<T>): stream<T>
+}

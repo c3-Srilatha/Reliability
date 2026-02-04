@@ -1,0 +1,95 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type CloudMessageSourceCollection mixes SourceCollection<CloudMessageSourceCollection.Config>, CloudMessageDispatcher, CloudMessageDispatcherConfigFields {
+
+  /**
+   * Registers a {@link CloudMessageSourceCollection} to receive messages from a {@link CloudMessageBroker}.
+   */
+  register: member function()
+
+  /**
+   * Un-registers a {@link CloudMessageSourceCollection} to receive messages from a {@link CloudMessageBroker}.
+   */
+  unregister: member function()
+
+  /**
+   * Checks whether a {@link CloudMessageSourceCollection} is registered to receive messages from a {@link CloudMessageBroker}.
+   *
+   * @return whether the subtype (non-identifiable) or id (identifiable) is registered to receive messages.
+   */
+  registered: member function(): !boolean
+
+  /**
+   * Find the CloudMessageSourceCollections with the cloudMessageBrokerName
+   * @param cloudMessageBrokerName
+   *               Name of the cloud message broker
+   * @return CloudMessageSourceCollection configured to the cloud message broker
+   */
+  forCloudMessageBrokerName: function(cloudMessageBrokerName: !string): stream<CloudMessageSourceCollection>
+
+  /**
+   * Find the CloudMessageSourceCollections configured for the given {@link CloudMessageBroker} registered to receive messages.
+   * @param cloudMessageBroker
+   *               Name of cloud message broker
+   * @param cloudConsumer
+   *               Name of consumer or group, if given, will be filtered, otherwise DEFAULT group is used.
+   * @return list of CloudMessageSourceCollections configured for the cloud message broker.
+   */
+  registeredForCloudMessageBrokerName: function(cloudMessageBrokerName: !string,
+                                                cloudConsumer: string): [CloudMessageSourceCollection]
+
+  /**
+   * Returns the broker type set in the CloudMessageSourceCollection.Config for this
+   * source collection else returns the broker type set on this CloudMessageSourceCollection.
+   */
+  _brokerType: inline member function(): !Type
+
+  /**
+   * Returns the broker name set in the CloudMessageSourceCollection.Config for this
+   * source collection else returns the broker name set on this CloudMessageSourceCollection.
+   */
+  _brokerName: inline member function(): !string
+
+  /**
+   * Returns the cloud consumer of the cloud message broker if set in the CloudMessageSourceCollection.Config for this
+   * source collection else returns the cloud consumer set on this CloudMessageSourceCollection.
+   */
+  _cloudConsumer: inline member function(): !string
+
+  /**
+   * Sets the credentials (app level) for the specified CloudMessageSourceCollection. This will override any
+   * credentials that are set at the SourceSystem level.
+   *
+   * @param credentials
+   *        Credentials to set
+   */
+  setCredentials: member function(credentials: !CloudCredentials)
+
+  /**
+   * Removes the credentials (e.g. app level config) for the specified CloudMessageSourceCollection.
+   */
+  removeCredentials: member function()
+
+  /**
+   * Check the source collection for connectivity.
+   *
+   * @return the results of checking the source collection for connectivity.
+   */
+  ping: member function(): !PingResult
+
+  sourceIdentifier:          ~
+  sourceSystemDataStoreKind: ~
+  startOnArrivalMode:        ~
+  stopOnArrivalMode:         ~
+  inferSourceType2:          ~
+  readTuples:                ~
+  readObjs:                  ~
+  validateSourceData:        ~
+  stage:                     ~
+}

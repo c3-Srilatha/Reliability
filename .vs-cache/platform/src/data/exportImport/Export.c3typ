@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+entity type Export extends BatchJob<Export, BatchExportOptions, ExportImportChunk> mixes ExportImportCommon type key 'EXPT' {
+
+  /**
+   * List of target files for this export. When file list is greater than JdbcConnection#maxArraySize, the file
+   * list may not be populated. Use files() to return a stream instead.
+   */
+  fileList: FileList schema suffix 'FL'
+
+  /**
+   * Kicks off Import Batch job with the files in the export job
+   */
+  startImport: member function(spec: BatchImportSpec): Import
+
+  /**
+   * Kicks off Export Batch job
+   * The targetAction in BatchExportSpec should return a Obj or an Arry of Obj, else it errors
+   */
+  startExport: function(spec: !BatchExportSpec): Export
+
+  /**
+   * Same as {@link #startExport}, except with additional {@link BatchExportOptions} specification.
+   */
+  startExportWithOptions: function(options: !BatchExportOptions): Export
+
+  /**
+   * File paths that the Export job is supposed to generate.
+   */
+  expectedFilePaths: member function(): [string]
+
+  /**
+   * Stream of Files that the Export job has generated.
+   * To get detailed metadata information, set the readObjMetadata to true. See FileSystem.listFiles for more details.
+   */
+  files: member function(readObjMetadata: boolean): stream<File>
+
+  /**
+   * Stream of REST endpoints of the files that the Export job has generated.
+   * Protocol takes in http or https. It defaults to https.
+   */
+  fileEndpoints: member function(hostName: !string, protocol: string, port: int): stream<string>
+
+  /**
+   * Returns the BatchExportSpec which was used to start the Export
+   */
+  spec: member function(): BatchExportSpec
+
+  /**
+   * Returns the URL where all the files generated from the Export job are or will be stored
+   */
+  @deprecated(finalVersion='8.0', details='Please use {@link #files}.')
+  filePath: member function(): string
+
+  /**
+   * Returns true if the job has a non-empty {@link fileList}
+   */
+  hasFileList: inline member function(): boolean
+
+  /**
+   * Internal implementation detail: exposed for testing purposes
+   * This method is called on the spec passed to export in order to perform actions such as:
+   * - compute batch size based on estimated object result size
+   * - create a {@link #targetAction} from a {@link #targetType}
+   */
+  updateSpec: private function(spec: !BatchExportSpec): !BatchExportSpec
+
+  doStart:      ~
+  processBatch: ~
+}

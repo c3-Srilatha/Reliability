@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * To keep track of state of App rootpkg deployment..
+ */
+entity type App.State mixes Singleton {
+
+  /**
+   * last deployed rootpkg fingerprint.
+   */
+  pkgFingerprint: int
+
+  /**
+   * package fingerprint the last time the schema was fully validated
+   */
+  valSchemaFingerprint: !int
+
+  /**
+   * package fingerprint the last time the schema upgrade migrations were successfully applied
+   */
+  upgSchemaFingerprint: !int
+
+  /**
+   * true indicates that all seed data has been upserted for an App
+   */
+  seeded: boolean
+
+  /**
+   * known issues with various seed data within the App.
+   */
+  seedDataIssues: [SeedData.Issue]
+}

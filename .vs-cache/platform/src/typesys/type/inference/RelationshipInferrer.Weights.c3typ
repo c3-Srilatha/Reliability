@@ -1,0 +1,48 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * See FKInference.ipynb for training data / logistic regression fit.
+ */
+type RelationshipInferrer.Weights {
+
+  /**
+   * Similarity between column names.
+   */
+  w1: const double = 0.80889244
+
+  /**
+   * Similarity between fk column name and pk table name.
+   */
+  w2: const double = 1.08344806
+
+  /**
+   * The ratio of cardinality between fk and pk.
+   */
+  w3: const double = 0.75302812
+
+  /**
+   * The offset value in logistic regression.
+   */
+  b: const double = -1.02982885
+
+  /**
+   * The minimum value the scoring function must be to classify a Fk-Pk relationship.
+   */
+  threshold: const double = 0.5
+
+  /**
+   * Evaluates the logistic regression equation with the provided features.
+   */
+  score: function(s1: double, s2: double, s3: double): double
+
+  /**
+   * Returns score >= threshold.
+   */
+  classify: function(s1: double, s2: double, s3: double): boolean
+}

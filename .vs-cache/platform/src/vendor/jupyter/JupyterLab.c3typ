@@ -1,0 +1,176 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type represents C3 managed [JupyterLab](https://jupyterlab.readthedocs.io/en/stable/).
+ * This type can manage sessions, install / remove [Jupyter kernels](https://docs.jupyter.org/en/latest/projects/kernels.html), etc.
+ */
+@cloud(cloudFunc='jupyterlab')
+private type JupyterLab mixes DefaultInstance {
+
+  /**
+   * The {@link JupyterHub} that this {@link JupyterLab} belongs to.
+   */
+  jupyterHub: !JupyterHub
+
+  /**
+   * The ID of this {@link JupyterLab} that was provided by the {@JupyterHub}
+   */
+  labName: !string
+
+  /**
+   * The ID of the user that started the {@JupyterLab}
+   */
+  userId: !string
+
+  /**
+   * Ensures that C3 managed {@link JupyterLab} service is running.
+   *
+   * Will fail if no {@link JupyterHub} service is started in advance.
+   *
+   * If no {@link WaitSpec} is provided in {@link WaitableSpec}, following  will be used
+   * ```js
+   * WaitSpec.builder().initialSleepMillis(120 * 1000L) // 2 minutes
+   *                   .maxSleepMillis(60 * 1000L) // 1 minute
+   *                   .maxTotalMillis(360 * 1000L) // 6 minutes
+   *                   .maxRetries(4)
+   *                   .exponent(1)
+   *                   .build())
+   * ```
+   */
+  ensureService: function(waitForReady: boolean, spec: WaitableSpec): !JupyterLab
+
+  /**
+   * Stop C3 managed {@link JupyterLab} service. All persisted data preserved.
+   *
+   * This may take a while if {@link JupyterLab} is pending spawn: pod will terminate only after %start_timeout% which is 5 minutes by default.
+   *
+   * @param spec
+   *        The {@link JupyterLab.StopSpec} which determines how exactly the {@link JupyterLab} should be terminated.
+   * @param reason
+   *        The reason behind stopping {@link JupyterLab}
+   */
+  stop: member function(spec: JupyterLab.StopSpec, reason: string = "LAB STOP")
+
+  /**
+   * Terminate C3 managed {@link JupyterLab} service and remove all persisted stored on instance of {@link JupyterLab}.
+   *
+   * This may take a while if {@link JupyterLab} is pending spawn: pod will terminate only after %start_timeout% which is 5 minutes by default.
+   *
+   * @param spec
+   *        The {@link JupyterLab.StopSpec} which determines how exactly the {@link JupyterLab} should be terminated.
+   */
+  terminate: member function(confirm: boolean, spec: JupyterLab.StopSpec)
+
+  /**
+   * Creates {@link JupyterLab.Api api} interface that represents [JupyterLab REST API](https://jupyter-server.readthedocs.io/en/latest/developers/rest-api.html).
+   * {@link JupyterLab.Api} is based on {@link JupyterHub} and its {@link JupyterHub.Api api}.
+   */
+  api: private member function(): !JupyterLab.Api
+
+  /**
+   * Install a JupyterLab [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) based on name of seeded {@link ImplLanguage.Runtime runtime}.
+   *
+   * This is a C3 implemented api endpoint.
+   *
+   * @param runtime
+   *          The runtime to install as a kernel in JupyterLab. It can be either ipython-resolved or declared.
+   *          Later will be resolved to ipython internally. If runtime is not resolvable to ipython an error will be thrown.
+   */
+  installKernel: member function(runtime: !string serialized ImplLanguage.Runtime)
+
+  /**
+   * Remove [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) from JupyterLab container
+   *
+   * @param runtime
+   *          The runtime to remove kernel from JupyterLab.
+   */
+  removeKernel: member function(runtime: !string serialized ImplLanguage.Runtime)
+
+  /**
+   * Checks if [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) is installed
+   *
+   * @param runtime
+   *          The name of the kernel that we want to check for
+   */
+  hasKernelInstalled: member function(runtime: !string serialized ImplLanguage.Runtime): boolean
+
+  /**
+   * Starts new {@link JupyterLab.Session}.
+   *
+   * @param kernelName
+   *          Name of [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) to start session for.
+   * @param path
+   *          Path where to start this session relative to worktree root directory of jupyter.
+   *          If empty, worktree root directory would be used.
+   * @param name
+   *          User-friendly identifier of this session that may be found on Jupyter UI.
+   *          If empty, random UUID will be used.
+   * @return New session
+   */
+  startSession: member function(kernelName: !string, name: string, path: string): !JupyterLab.Session
+
+  /**
+   * Await for Service to be ready to serve requests.
+   * Throws an error if Service does not become ready in time.
+   *
+   * @param spec
+   *         Customization for wait logic.
+   */
+  waitForReady: member function(spec: WaitSpec = {maxSleepMillis: 500})
+
+  /**
+   * Succeeds if {@link JupyterLab} service is running and ready to serve requests.
+   *
+   * Check is based on [api/status](https://jupyter-server.readthedocs.io/en/latest/developers/rest-api.html#get--api-status) API.
+   * This check is not retried and will timeout (`false` returned) if no response is received from the server within 5 seconds.
+   */
+  isRunning: member function(): boolean
+
+  /**
+   * Returns the current status of the JupyterLab service for current user. If the status is not `running`, the reason for the status is also returned.
+   */
+  statusWithReason: private member function(): !JupyterLab.Status
+
+  /**
+   * Syncs {@link JupyterNotebook} dependencies for the given notebook path.
+   */
+  syncNotebookDependencies: member function(notebookPath: !string): boolean
+
+  /**
+   * Expand the PVC storage capacity for (@link JupyterLab).
+   *
+   * @param newStorageCapacity
+   *         new size for the (@link K8sPersistentVolumeClaim), must be larger than the current size.
+   * @param waitForReady
+   *         if method should wait for PVC resizing to complete.
+   * If no {@link WaitSpec} is provided in {@link WaitableSpec}, following  will be used
+   * ```js
+   * WaitSpec.builder().initialSleepMillis(10 * 1000L) // 2 seconds
+   *                   .maxSleepMillis(60 * 1000L) // 1 minute
+   *                   .maxTotalMillis(600 * 1000L) // 10 minutes
+   *                   .build())
+   * ```
+   */
+  expandStorageCapacity: member function(newStorageCapacity: !string,
+                                         waitForReady: boolean,
+                                         spec: WaitableSpec = {waitSpec: {maxSleepMillis: 5000}})
+
+  /**
+   * Await for PVC resizing to complete.
+   * Throws an error PVC resizing does not finish ready in time.
+   * @param spec
+   *         Customization for wait logic.
+   */
+  waitForResizing: member function(spec: WaitSpec = {maxSleepMillis: 500})
+
+  /**
+   * Indicates whether if PVC resizing is in progress.
+   */
+  isResizing: private member function(): boolean
+}

@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Jarvis.GeneratePkgZipSpec {
+
+  /**
+   * The package to generate the zip for.
+   */
+  pkgName: !string
+
+  /**
+   * The full semantic version of the package
+   */
+  pkgVersion: !string serialized SemanticVersion
+
+  /**
+   * The zip location to generate the package.
+   * This can either be a zip path or a directory path.
+   */
+  zipLocation: !string
+
+  /**
+   * Generate zip for root source content only.
+   */
+  rootSourceContentOnly: boolean = false
+
+  /**
+   * Should do validation.
+   */
+  doValidation: boolean = false
+
+  /**
+   * Should generate coverage artifact
+   */
+  shouldInstrument: boolean = false
+
+  /**
+   * The spec for bundling in dev mode
+   */
+  devBundling: Jarvis.GeneratePkgZipSpec.Bundling
+
+  /**
+   * The spec for bundling in prod mode
+   */
+  prodBundling: Jarvis.GeneratePkgZipSpec.Bundling
+
+  /**
+   * Should generate the doc index
+   */
+  buildDocIndex: boolean = false
+
+  /**
+   * The {@link ArtifactHub.Artifact#resolvedDependencies} of the artifact that is being written.
+   * This is used to update the versions of the {@link Pkg}s in the {@link Pkg.Store.Db} with the version of the build.
+   */
+  resolvedDependencies: !map<string, string>
+
+}

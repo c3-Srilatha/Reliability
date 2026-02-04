@@ -1,0 +1,136 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Remix of ReliabilityTimezoneUtils to add functionality for TS client.
+ */
+@typeScript
+remix type ReliabilityTimezoneUtils {
+
+  /**
+   * Recursively converts all ISO datetime strings with timezone info in the input object
+   * to the specified target timezone, returning a new object.
+   *
+   * Datetimes without timezone info are left unchanged.
+   *
+   * @param obj
+   *           Native Json object.
+   * @param targetTimezone
+   *           The timezone to convert datetime to.
+   * @param replacementTimezone
+   *           Indicates whether to replace the input offset with the replacementTimezone offset or not.
+   * @returns A new version of the object with converted datetime strings.
+   */
+  convertTimestampsToZone: ~
+
+  /**
+   * @returns A list of valid time zone names, labels & offsets for a given locale.
+   * Eg: {
+   *      timeZone: 'Asia/Singapore',
+   *      timeZoneLabel: 'Singapore Standard Time',
+   *      offset: 'UTC+08:00',
+   *    },
+   *    {
+   *      timeZone: 'Asia/Tokyo',
+   *      timeZoneLabel: 'Japan Standard Time',
+   *      offset: 'UTC+09:00',
+   *    },
+   *    {
+   *      timeZone: 'Asia/Kolkata',
+   *      timeZoneLabel: 'India Standard Time',
+   *      offset: 'UTC+05:30',
+   *    }
+   */
+  getTimeZones: inline function(locale: !string): [json] ts-client
+
+  /**
+   * @returns user current time zone and label based on locale.
+   * For `en-US` locale, it returns:
+   * {
+   *   "uiTimezone": "Asia/Singapore",
+   *   "uiTimezoneLabel": "Singapore Standard Time"
+   * }
+   *
+   * For `es` locale, it returns:
+   * {
+   *   "uiTimezone": "Asia/Singapore",
+   *   "uiTimezoneLabel": "Hora estándar de Singapur"
+   * }
+   */
+  getCurrentTimeZone: inline function(locale: !string): json ts-client
+
+  /**
+   * Returns the offset of the given timezone.
+   * @param timezone
+   *           The timezone whose offset value is to be fetched.
+   * @returns Offset for the @param timezone.
+   * Eg: "UTC-07:00" for "America/Los_Angeles"
+   */
+  getTimeZoneUTCOffset: function(timezone: !string): !string ts-client
+
+  /**
+   * Converts an array of time range objects with ISO string `start` and `end` properties
+   * into an array of objects with `start` and `end` as Date instances.
+   *
+   * The function replaces any timezone offset in the ISO string (e.g., "+00:00" or "-07:00")
+   * with 'Z' (Zulu time) before constructing the Date object. This ensures that the resulting
+   * Date objects are interpreted as UTC, which matches the display requirements of form data grids
+   * configured with `"noTimeZoneConversion": true"`.
+   *
+   * Note: This function does not shift the actual time value, it only
+   * changes the offset in the ISO string representation.
+   *
+   * @param arr - Array of objects, each with `start` and `end` ISO string properties.
+   * @returns Array of objects with `start` and `end` as Date instances.
+   */
+  normalizeTimeRanges: function(arr: [string]): [json] ts-client
+
+  /**
+   * Returns the timezone label of the given timezone and locale.
+   * @param timezone
+   *           The timezone whose label needs to be fetched.
+   * @returns label for the `timezone`.
+   * Eg: "Singapore Standard Time" for "Asia/Singapore" in en locale
+   *     "Hora estándar de Singapur" for "Asia/Singapore" in es locale
+   */
+  getTimeZoneLabel: function(timezone: !string, locale: !string): !string ts-client
+
+  /**
+   * Converts all ISO datetime strings in the input string to the target timezone using {@link ReliabilityTimezoneUtils#convertTimestampsToZone}.
+   * Examples:
+   * - Input:
+   *    - inputString: "status = 'open' AND dateTime('2025-05-29T10:30:00') AND dateTime('2020-05-29T10:30:00-02:00')",
+   *    - targetTimezone: "America/New_York"
+   * - Output: "status = 'open' AND dateTime('2025-05-29T06:30:00-04:00') AND dateTime('2020-05-29T08:30:00-04:00')"
+   *
+   * @param inputString
+   *           Input string containing stringified datetime objects.
+   * @param targetTimezone
+   *           The timezone to convert datetime to.
+   * @param replacementTimezone
+   *           Indicates whether to replace the input offset with the replacementTimezone offset or not.
+   * @returns A new version of the string with converted datetime strings.
+   */
+  convertFilterStringTimestampsToZone: function(inputString: !string, targetTimezone: !string, replacementTimezone: string): !string ts-client
+
+  /**
+   * Replaces the timestamps in the input array with the offset of the current timezone.
+   *
+   * Examples:
+   * - Input: ["2023-10-01T12:00:00-06:00", "2023-10-02T15:30:00-06:00"], Offset: "UTC-07:00"
+   * - Output: ["2023-10-01T12:00:00-07:00", "2023-10-02T15:30:00-07:00"]
+   *
+   * @param state
+   *           The current state of the application.
+   * @param timestamps
+   *           An array of ISO datetime strings with timezone info.
+   * @returns An array of ISO datetime strings with the current timezone offset applied.
+   */
+  replaceTimestampsOffset: function(state: UiSdlReduxState, timestamps: [string]): [string] ts-client
+}

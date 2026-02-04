@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * React Hook for Redux Epic Action Listeners
+ */
+@typeScript
+type UiSdlUseEpic {
+  /**
+   * A React hook that enables components to listen for specific Redux actions through the epic middleware system.
+   *
+   * This hook provides a declarative way to register action listeners within React components, with automatic
+   * lifecycle management and dependency tracking. The hook ensures that listeners are properly registered when
+   * components mount and automatically cleaned up when components unmount or dependencies change.
+   *
+   * Key Features:
+   * - Automatic registration and cleanup of epic listeners
+   * - Dependency tracking for callback updates
+   * - Optional action filtering for fine-grained control
+   * - Optimized to prevent duplicate registrations on re-renders
+   * - Seamless integration with C3's Redux epic middleware
+   *
+   * @param actionName - The Redux action type to listen for (e.g., 'FETCH_DATA', 'USER_LOGIN')
+   * @param callback - Function invoked when the action is dispatched. Receives the action and current state.
+   * @param deps - Dependency array similar to useEffect. When dependencies change, the callback is updated.
+   * @param actionFilterLambda - Optional filter function for additional action matching criteria.
+   *                            Only actions that pass this filter will trigger the callback.
+   *
+   * @example
+   * ```typescript
+   * // Basic usage - listen for a specific action
+   * useEpic('FETCH_USER_DATA', (action, state) => {
+   *   console.log('User data fetch initiated:', action.payload);
+   * }, []);
+   *
+   * // With dependencies - callback updates when userId changes
+   * useEpic('UPDATE_USER', (action, state) => {
+   *   if (action.payload.userId === userId) {
+   *     setUserData(action.payload.data);
+   *   }
+   * }, [userId]);
+   *
+   * // With action filter - only handle specific action variants
+   * useEpic('API_RESPONSE', (action, state) => {
+   *   handleApiResponse(action.payload);
+   * }, [], (action) => action.payload.endpoint === 'users');
+   * ```
+   */
+  useEpic: function(
+    actionName: string,
+    callback: lambda(action: any, state: any),
+    deps: [any],
+    actionFilterLambda: lambda(action: any): boolean
+  ) ts-client
+}

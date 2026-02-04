@@ -1,0 +1,34 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for {@link Git#clone} operation.
+ */
+type Git.CloneSpec mixes Spec {
+
+  /**
+   * Depth of the clone. The default is 1.
+   */
+  depth: int32 = 1
+
+  /**
+   * If true will delete any existing config & local dir and re-clone the repository.
+   */
+  force: boolean
+
+  /**
+   * Extra options for `git clone` command
+   */
+  extra: [string]
+
+  /**
+   * The auth token; e.g. personal access token scope at X-OAuth-Scopes
+   */
+  @value(secret=true)
+  auth: string
+}

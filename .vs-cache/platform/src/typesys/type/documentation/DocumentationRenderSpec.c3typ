@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generic argument to documentation rendering functions.
+ * @see DocumentationRenderer
+ */
+type DocumentationRenderSpec mixes DocumentationParserSpec {
+
+  /**
+   * The MIME type of output to render. Supported MIME types are:
+   *  - text/html
+   *  - text/markdown
+   *  - text/plain
+   */
+  contentType: string = 'text/html'
+
+  /**
+   * Exclude documentation errors and warnings.
+   */
+  noWarnings: boolean
+
+  /**
+   * Resolve references in documentation not on the same page. These generally occur due to `@link` in `.c3typ` files
+   * or Markdown style links in `.c3doc` files. If unspecified, normal web links render naturally and other links are
+   * removed.
+   *
+   * Note that the link _syntax_ is associated with the MIME type, but the _target_ of the link is dependent on the
+   * context for which rendering is being one. The link builder is used to produce the context-specific link target.
+   *
+   * @see DocumentationReference
+   */
+  linkBuilder: DocumentationLinkBuilder
+
+  /**
+   * Suppress on-page links (`#`) for references to content generated on this page. This will send _all_ links through
+   * the #linkBuilder for processing.
+   */
+  noHashLinks: boolean
+
+  /**
+   * Only applicable to DocumentationKind.TOPIC. Include a heading tag using the title field from the MultiMarkdown metadata.
+   */
+  synthesizeTitle: boolean
+
+  /**
+   * If true, include Cascading Style Sheets (CSS) that complete the presentation and support features such as syntax
+   * coloring. Note that this provides the style used for the documentation micro-site, which may not be appropriate
+   * for all presentations.
+   *
+   * The emitted styles are surrounded by `<!-- start css -->` and `<!-- end css -->` comments to allow them to be
+   * identified. The documentation content is surrounded by `<!-- start content -->` and `<!-- end content -->` comments
+   * plus a `<div class="content">` tag.
+   *
+   * This only has an effect when rendering in HTML, and some features require #includeJs also.
+   */
+  includeCss: boolean
+
+  /**
+   * If {@link #includeCSS CSS is included}, whether light or dark mode will be used, or "auto" which will adapt to
+   * the system setting.
+   */
+  cssMode: string enum('auto', 'light', 'dark') = 'auto'
+
+  /**
+   * If true, JavaScript that completes the implementation of some features such as syntax coloring, math, and Mermaid
+   * diagrams will be included.
+   *
+   * The emitted scripts are surrounded by `<!-- start js -->` and `<!-- end js -->` comments to allow them to be
+   * identified. The documentation content is surrounded by `<!-- start content -->` and `<!-- end content -->` comments
+   * plus a `<div class="content">` tag.
+   *
+   * This only has an effect when rendering in HTML, and some features need styling (such as by #includeCss) also.
+   */
+  includeJs: boolean
+
+  /**
+   * If true, generate a complete stand-alone document. For example, HTML rendering will produce appropriate `html`,
+   * `head` and `body` tags.
+   */
+  standAlone: boolean
+
+  headerOnly: ~
+}

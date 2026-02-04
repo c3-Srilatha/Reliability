@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility type for adding a {@link dataTransforms} field to the mixing type.
+ */
+@typeScript
+type WithDataTransforms {
+
+  /**
+   * List of data transform types, which will be applied after the data is
+   * received but before saving it in the state.
+   *
+   * Constraint: These types must extend {@link UiSdlDataTransform}.
+   */
+  dataTransforms: [string serialized Type]
+
+  /**
+   * Applies the transforms to the input data in the order in which they are specified.
+   * @param dataTransforms
+   *            The {@link UiSdlDataTransform} to apply
+   * @param inputData
+   *            The data to apply the transforms to
+   * @param context
+   *            the context of the transformation
+   * @returns the output of applying all the transforms
+   */
+  applyDataTransforms: function(dataTransforms: [string serialized Type], inputData: any, context: UiSdlDataTransform): any ts-client
+
+  /**
+   * Applies {@link UiSdlDataTransform#transformArgs} to the action arguments.
+   *
+   * @param actionArgs
+   *            The action arguments object to be sent to backend
+   * @param actionArgsTransforms
+   *            The {@link UiSdlDataTransform#transformArgs} to apply
+   * @param componentId
+   *            Component id
+   * @param state
+   *            Redux state.
+   * @param context
+   *            the context of the transformation
+   * @returns the transformed action arguments
+   */
+  applyTransformArgs: function(actionArgs: map<string, any>, actionArgsTransforms: [string serialized Type], componentId: string, state: !UiSdlReduxState, context: UiSdlDataTransform.Context): map<string, any> ts-client
+}

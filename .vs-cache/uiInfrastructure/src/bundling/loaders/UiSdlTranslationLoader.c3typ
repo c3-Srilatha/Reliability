@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Produces source files for {@link Translation} data.
+ */
+private type UiSdlTranslationLoader mixes UiSdlFileLoader {
+
+  /**
+   * Generates translation source files for all {@link Locale}s. One `.json` file will be returned
+   * for each locale. See {@link produce} for details regarding the file contents.
+   *
+   * The name of each file is `<language-tag>.json`, where `<language-tag>` corresponds to the
+   * {@link Locale#languageTag}.
+   *
+   * @return a map of source file path to source file content.
+   */
+  produceAll: ~ js-server
+
+  /**
+   * Generates a translation source file for a single {@link Locale}s. The content of the file
+   * is a JSON object whose keys are {@link Translation#key} and whose values are the corresponding
+   * {@link Translation#value}.
+   *
+   * @return a stringified JSON object.
+   */
+  produce: private function(locale: !Locale): @db(clob=true) string js-server
+
+  /**
+   * Generates translation source files for a list of locale ids.
+   */
+  produceBatch: function(localeIds: ![string]): UiSdlCodeGenBatchResult js-server
+}

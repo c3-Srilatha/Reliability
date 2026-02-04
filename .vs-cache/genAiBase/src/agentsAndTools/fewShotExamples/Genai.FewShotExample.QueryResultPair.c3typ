@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Persists few-shot examples for a {@link Genai.Query.Result} pair. These are used for generating suggestions for follow-up queries
+ */
+entity type Genai.FewShotExample.QueryResultPair extends Genai.FewShotExample type key "QRP" {
+
+  /**
+   * The query result associated with the example.
+   */
+  result: !Genai.Query.Result
+
+  /**
+   * The result from the follow-up query to the #result.
+   */
+  followUpResult: !Genai.Query.Result
+
+  /**
+   * Convenience function to add a few shot example given a pair of {@link Genai.Query.Result}s, and the project to which the examples belong.
+   */
+  addFewShot: function(result: !Genai.Query.Result, followUpResult: !Genai.Query.Result, project: Genai.Project): !Genai.FewShotExample.QueryResultPair js-rhino
+
+
+  parseForTemplate: ~ py-query_orchestrator
+}

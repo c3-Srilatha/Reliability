@@ -1,0 +1,98 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A set is a vector of a single value type, which cannot contain duplicates;
+ * attempts to add duplicate values are ignored. Null values are not allowed.
+ * Otherwise, the semantics of set are the same as {@link ArrayType array}.
+ *
+ * Sets are declared in DSL using `set<E>` notation:
+ *
+ * ```
+ * // zero or more primitive integers
+ * counts: set<int>
+ *
+ * // Cat objects or any type that mixes Cat
+ * herd: set<Cat>
+ * ```
+ *
+ * Instances can be created programatically using these convenience methods:
+ *  - #of
+ *  - #ofAny
+ *  - #ofBinary
+ *  - #ofBool
+ *  - #ofByte
+ *  - #ofDateTime
+ *  - #ofDecimal
+ *  - #ofDbl
+ *  - #ofFloat
+ *  - #ofInt
+ *  - #ofInt16
+ *  - #ofInt32
+ *  - #ofJson
+ *  - #ofNative
+ *  - #ofStr
+ *
+ * @see Set
+ */
+type SetType mixes CollectionType {
+
+  /**
+   * @return set built by provided lambda
+   */
+  buildSet: member function<E>(builder: !lambda(b: !SetBuilder<E>)): set<E> java | js | py
+
+  /**
+   * @return builder of set of this type.
+   */
+  makeBuilder: member function<E>(initial: set<E>): !SetBuilder<E> java | js | py
+
+  /**
+   * @return builder of set of this type with the provided initial size allocation
+   */
+  makeBuilder: member function<E>(size: !int): !SetBuilder<E> java | js | py
+
+  /**
+   * @return instance of set of this type from provided elements.
+   */
+  makeSet: member function<E>(elements: E ...): set<E> java | js | py
+
+  /**
+   * @return instance of empty set of this type.
+   */
+  emptySet: member function<E>(): set<E> java | js | py
+
+  /**
+   * @return {@link #emptySet}
+   */
+  emptyCollection: ~ java | js | py
+
+  isAnyCollection:      ~ java | js | py
+  isSet:                ~ java | js | py
+  of:                   ~ java | js | py
+  ofAny:                ~ java | js | py
+  ofBinary:             ~ java | js | py
+  ofBool:               ~ java | js | py
+  ofByte:               ~ java | js | py
+  ofDateTime:           ~ java | js | py
+  ofDecimal:            ~ java | js | py
+  ofDbl:                ~ java | js | py
+  ofFloat:              ~ java | js | py
+  ofInt:                ~ java | js | py
+  ofInt16:              ~ java | js | py
+  ofInt32:              ~ java | js | py
+  ofJson:               ~ java | js | py
+  ofNative:             ~ java | js | py
+  ofStr:                ~ java | js | py
+  instanceType:         ~
+  cacheKey:             ~
+  convertToJavaRuntime: ~
+  convertValue:         ~
+  hasDefaultEmptyValue: ~
+  defaultEmptyValue:    ~ java | js | py
+}

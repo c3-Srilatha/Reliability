@@ -1,0 +1,260 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a general class of assets which share similar characteristics and can be modeled in largely the same way.
+ *
+ * Can be associated with a common set of {@link ExpectedSensor}s and {@link FailureMode}s which would be associated
+ * with all {@link ReliabilityAsset}s which use this class.
+ *
+ * For example, a class of assets might be "Pump" and the expected sensors might be "Flow Rate", "Pressure", etc.
+ * Or a class of assets might be "Furnace" and the expected sensors might be "Temperature", "Pressure", etc.
+ *
+ */
+extendable entity type AssetClass mixes FeatureEvaluatable, ExemptFromFacilityFilter schema name 'ASSTTMP' {
+
+  /**
+   * The name of the asset class.
+   */
+  name: !~
+
+  /**
+   * **DISPLAY USE ONLY**
+   *
+   * The translated display string of the {@link AssetClass#name}.
+   */
+  translatedName: string translate by name
+
+  /**
+   * The relations to parents for this class.
+   */
+  parentAssetClassRelations: [AssetClassParentChildRelation](child)
+
+  /**
+   * The relations to children for this class.
+   */
+  childAssetClassRelations: [AssetClassParentChildRelation](parent)
+
+  /**
+   * Number of children this {@link AssetClass} has.
+   */
+  countChildren: int calc count(childAssetClassRelations)
+
+  /**
+   * Indicates whether this asset class has children.
+   */
+  hasChildren: boolean calc count(childAssetClassRelations) > 0
+
+  /**
+   * All {@link ReliabilityAsset}s of this asset class.
+   */
+  assets: [ReliabilityAsset](assetClass)
+
+  /**
+   * Number of {@link ReliabilityAsset}s of this asset class.
+   */
+  countAssets: int calc count(assets)
+
+  /**
+   * The {@link FailureModeLibrary} associated with this asset class.
+   */
+  failureModeLibrary: FailureModeLibrary
+
+  /**
+   * The {@link FailureMode}s associated with this asset class.
+   */
+  failureModes: [FailureMode](failureModeLibrary, failureModeLibrary)
+
+  /**
+   * Number of {@link FailureMode}s associated with this asset class.
+   */
+  countFailureModes: int calc count(failureModes)
+
+  /**
+   * The {@link ExpectedSensor}s associated with this asset class.
+   * This should be set to be a superset of all the {@link ExpectedSensor}s present on a
+   * {@link FailureModeLineItem} associated with the {@link #failureModeLibrary} of this asset class.
+   */
+  expectedSensors: [ExpectedSensor] schema name 'EXP_SNSRS'
+
+  /**
+   * Number of {@link ExpectedSensor}s associated with this asset class.
+   */
+  expectedSensorCount: int calc count(expectedSensors)
+
+  /**
+   * Metric names or expressions that specify key performance indicators for any asset using this
+   * asset class.
+   */
+  kpis: [string] schema name 'KPIS'
+
+  /**
+   * Creates sensor relations for all child assets and their associated sensors under the given parent asset.
+   * This function establishes the necessary sensor-to-asset relationships for the entire asset hierarchy
+   * rooted at the specified parent asset.
+   *
+   * @param parentAsset The ReliabilityAsset that serves as the root of the asset hierarchy
+   * @return Array of strings containing the IDs of created sensor relations
+   */
+  createSensorRelationsForAllChildAssetsAndSensors: function(parentAsset: ReliabilityAsset): [string] js-rhino
+
+  /**
+   * Creates diagram configuration objects for positioning components on the process flow diagram.
+   * Generates ProcessDiagramConfig entries that define the layout and positioning of child assets
+   * within the diagram visualization for the specified parent asset.
+   *
+   * @param parentAsset The ReliabilityAsset for which to create diagram configurations
+   */
+  createDiagramConfigs: function(parentAsset: ReliabilityAsset) js-rhino
+
+  /**
+   * Fetches all class metrics that are relevant for diagram rendering, optionally including KPIs.
+   * Retrieves metric names and expressions that can be used to populate diagram tooltips and
+   * visualizations with performance data.
+   *
+   * @param includeKpis Whether to include KPI metrics in the fetch result
+   * @return Array of strings containing metric names and expressions for diagram display
+   */
+  fetchAllClassMetricsForDiagram: function(includeKpis: boolean): [string] js-rhino
+
+  /**
+   * The {@link ReliabilityAsset3dmodel} that is linked to this asset class.
+   * This is used to link the asset class to a 3D model or image that represents the asset class.
+   */
+  linked3DModel: ReliabilityAsset3dmodel
+
+  /**
+   * Status of the assetClass based on the presence of a linked 3D model.
+   * Returns 'Linked' if the 3D model is associated; otherwise, returns '-'.
+   */
+  status: string calc exists(linked3DModel) ? 'Linked' : '-'
+
+  /**
+   * Fetches KPI {@link CompoundMetric}s for all existing {@link AssetClass}es.
+   *
+   * @param includeKpis
+   *        Whether to include KPI metrics in the results.
+   * @return List of metric names.
+   */
+  fetchAllClassMetrics: function(includeKpis: boolean): [string] js-rhino
+
+  /**
+   * Fetches KPI {@link CompoundMetric}s for all given {@link AssetClass}es.
+   *    @param assetClasses The {@link AssetClass}es to fetch the metric names for
+   *    @param includeKpis Whether or not to include {@link AssetClass#kpis} field in fetch result
+   *    @return names of retrieved metrics.
+   */
+  fetchClassMetrics: function(assetClasses: [AssetClass], includeKpis: boolean): [string] js-rhino
+
+  /**
+   * Creates a copy of this {@link AssetClass} with the given name.
+   * Copies all fields included with a `this` includeString and copies
+   * the parent and child relations. Also makes a copy of the {@link #failureModeLibrary}
+   * for the new AssetClass.
+   *
+   * @param newName
+   *        The name of the new {@link AssetClass}.
+   * @return The new {@link AssetClass}.
+   */
+  @action(group='asset-onboarding-write')
+  createCopy: member function(newName: string): AssetClass js-rhino
+
+  /**
+   * Defines the hierarchy that assets using this `AssetClass` should be the root of.
+   */
+  hierarchyTemplate: AssetHierarchyTemplate
+
+  /**
+   * If this asset class was created from a AssetClassDefinition file, this field contains
+   * the particular version of the definition that was used to create this asset class.
+   *
+   * If this asset class has id that starts with {@link ReliabilityAssetClassDefinitionParser#getParentClassIdPrefix}
+   * and this field is null this means that a run of {@link ReliabilityAssetClassDefinitionParser} failed to create
+   * this asset class.
+   */
+  definitionVersion: ReliabilityAssetClassDefinitionVersion
+
+  /**
+   * Creates the missing asset hierarchy based on hierarchyTemplate and assigns the root asset's assetClass.
+   * In addition to creating the hierarchy of the {@link AssetClass} this function is run on,
+   * it will also instantiate the hierarchies of children with an {@link AssetClass} that has `hierarchyTemplate` set.
+   * This {@link AssetClass} is set by `hierarchyTemplate.assetHierarchyTemplateAssetIdToFieldValues`.
+   *
+   * @param filter
+   *        Filter to specify which assets to target.
+   * @return List of IDs of all created {@link ReliabilityAsset}s (including the recursively created ones).
+   */
+  @beta
+  addMissingAssetsFromHierarchyTemplate: member function(filter: Filter): [ReliabilityAsset] js-rhino
+
+  /**
+   * Updates all hierarchies with root that has this assetHierarchyClass based on the current field values of AssetHierarchyClass
+   * filter allows users to specify an additional filter other than assetHierarchyClass of assets to target.
+   *
+   * @param rootAssetName
+   *        The name of the root asset to create the hierarchy for.
+   * @return List of created ReliabilityAssets.
+   */
+  @beta
+  createInstanceWithHierarchy: member function(rootAssetName: string): [ReliabilityAsset] js-rhino
+
+  /**
+   * Returns true if all assets with this class has matching hierarchy to `hierarchyTemplate`.
+   * All items specified by the `hierarchyTemplate` must be present, but there can be additional items in the existing hierarchies.
+   *
+   * @param filter
+   *        Filter to specify which assets to validate.
+   * @return True if all assets have matching hierarchy, false otherwise.
+   */
+  @beta
+  validateHierarchyForInstances: inline member function(filter: Filter): boolean js-rhino
+
+  /**
+   * Helper function to generate a graph of all asset relationships based on the asset children hierarchal relationships.
+   *
+   * @param asset
+   *        The asset to generate the hierarchy graph for.
+   * @return JSON representation of the asset hierarchy graph.
+   */
+  @beta
+  generateAssetHierarchyGraphFromRelationships: inline private function(asset: ReliabilityAsset): json js-rhino
+
+  /**
+   * Helper function to generate a graph of all asset relationships based on the asset children hierarchal relationships.
+   *
+   * @param rootAssetClass
+   *        The root asset class to generate the hierarchy graph for.
+   * @return JSON representation of the asset hierarchy graph.
+   */
+  @beta
+  generateAssetHierarchyGraphFromAssetClass: inline private function(rootAssetClass: AssetClass): json js-rhino
+
+  /**
+   * Helper function that takes an id of an expected sensor to update the field expectedSensors in the {@link AssetClass}.
+   *    @param expectedSensor The {@link ExpectedSensor} to add
+   */
+  @action(group='asset-onboarding-write')
+  addExpectedSensor: member function(expectedSensor: ExpectedSensor) js-rhino
+
+  /**
+   * Links a 3D model to the asset.
+   * @param modelId
+   *    The {@link ReliabilityAsset3dmodel} to link to the asset.
+   * @returns {@link ReliabilityAsset}
+   */
+  link3DModel: member function(
+    modelId: !ReliabilityAsset3dmodel
+  ): ReliabilityAsset js-rhino
+
+  /**
+   * Unlinks a 3D model from the asset.
+   * @returns {@link ReliabilityAsset}
+   */
+  unlink3DModel: member function(): ReliabilityAsset js-rhino
+}

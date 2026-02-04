@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link NodeDiagram} layouting
+ */
+@typeScript
+abstract type NodeDiagramLayout {
+
+  /**
+   * The {@link NodeDiagram} will be automatically laid out on "INITIAL_RENDER" and after every request to {@link NodeDiagram#diagramUpdateAction}
+   * with {@link NodeDiagramUpdateType.SET_DIAGRAM}.
+   */
+  autoLayout: boolean = true
+
+  /**
+   * Whether the layout should allow hidden nodes to participate in layout calculations.
+   * If true, hidden nodes will be positioned by the layout algorithm and considered ready for layout.
+   * If false, hidden nodes will be excluded from layout calculations and ready checks.
+   */
+  ignoreHiddenNodes: boolean = false
+
+  /**
+   * Whether to enable local layout functionality. When true, only the connected component containing changed nodes
+   * will be re-laid out instead of the entire diagram. This is more efficient for large diagrams.
+   */
+  localLayout: boolean = false
+
+  /**
+   * Executes a full re-layout of the nodes and edges and sets the `position` property on returned {@link NodeDataNode}.
+   */
+  execute: abstract function(layoutInstance: NodeDiagramLayout,
+                             context: { nodes: [NodeDiagramNode], edges: [NodeDiagramEdge] })
+                      : Promise<{ nodes: [NodeDiagramNode], edges: [NodeDiagramEdge] }> ts-client
+
+  /**
+   * Executes a localized layout around specific nodes that have changed.
+   * This is more efficient than a full layout as it only re-layouts the affected area.
+   * The returned nodes should only include those that need position updates.
+   *
+   * @param layoutInstance - The layout instance, defining how the layout should be executed.
+   * @param context - The context of the layout, including the nodes and edges providing information on current graph structure.
+   * @param changedNodeIds - The IDs of the nodes that have changed since the last layout.
+   * @returns A promise that resolves to an object containing the updated nodes and edges.
+   */
+  executeLocalLayout: function(layoutInstance: NodeDiagramLayout,
+                               context: { nodes: [NodeDiagramNode], edges: [NodeDiagramEdge] },
+                               changedNodeIds: [string])
+                        : Promise<{ nodes: [NodeDiagramNode], edges: [NodeDiagramEdge] }> ts-client
+
+  /**
+   * Returns the position of the source and target handles for the layout instance.
+   * This will be called when initializing the nodes. Note that there are performance implications if the `sourcePosition` and `targetPosition`
+   * change for a given node during its lifetime.
+   */
+  initialNodeHandlePositions: function(layoutInstance: NodeDiagramLayout)
+                                : { sourcePosition: NodeDiagramNodeHandlePosition, targetPosition: NodeDiagramNodeHandlePosition } ts-client
+
+  /**
+   * Provides initial positions for nodes before they are measured and laid out.
+   * This helps avoid the jarring effect of nodes appearing at (0,0) and then moving to their final positions.
+   * The returned positions should be approximate and will be refined after nodes are measured and the full layout is calculated.
+   */
+  getInitialNodePositions: function(layoutInstance: NodeDiagramLayout,
+                                    nodes: [NodeDiagramNode],
+                                    edges: [NodeDiagramEdge]): map<string, { x: number, y: number }> ts-client
+}

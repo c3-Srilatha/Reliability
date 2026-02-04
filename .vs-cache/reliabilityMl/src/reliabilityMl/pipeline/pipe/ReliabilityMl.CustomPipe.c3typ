@@ -1,0 +1,228 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * All ML algorithms in C3 AI Reliability MUST be represented as instances of {@link ReliabilityMl.CustomPipe}.
+ * As an extension of {@link MlDynamicPipe}, this Type provides the flexibility to define the ML algorithms as
+ * python classes in `.py` files rather than defining them as `.c3typ` files.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+extendable entity type ReliabilityMl.CustomPipe<DX, DY, DO> extends MlDynamicPipe<DX, DY, DO> mixes ReliabilityMl.PipeBase type key 'REL_CSTM' {
+
+  /**
+   * The name of the python class that contains the implementation of the ML algorithm.
+   */
+  className: private !string
+
+  /**
+   * The `childClassName` property holds the name of the child class associated with the current entity.
+   */
+  childClassName: private string
+
+  /**
+   * If the python class, {@link className}, inherits from or uses other classes, then the
+   * names of these classes must be defined here. Important note: these "parent" classes
+   * must be defined as instances of {@link ReliabilityMl.CustomPipeFactory}, first.
+   */
+  inheritsFrom: private [string]
+
+  /**
+   * The keyword arguments required for instantiating an object of class, {@link className}.
+   */
+  classKwargs: private [ReliabilityMl.CustomPipeKwarg]
+
+  /**
+   * The {@link MlConvertSpec} used to instantiate an object of type {@link ReliabilityMl.CustomPipe}.
+   * Specifies the conversion details for the data that will be processed by the custom ML pipeline.
+   */
+  convertSpec: private MlConvertSpec
+
+  /**
+   * A flag indicating whether the model is interpretable or not.
+   * If true, the model's decision-making process can be explained and understood by humans.
+   * If false, the model operates as a "black-box" and its decisions may not be easily interpretable.
+   */
+  is_interpretable: private boolean
+
+  /**
+   * Contains the values of "trainable" hyperparameters.
+   * This field will be populated after the training of the pipe and includes parameters that can be adjusted
+   * during training to optimize the model's performance.
+   */
+  trainedHyperparamValues: private map<string, any>
+
+  /**
+   * A Python function that converts a type string to a list of port names.
+   * This helps in mapping the input/output types of the model based on a string identifier.
+   *
+   * @param typeStr - A string representing the type of the data.
+   * @returns A list of port names associated with the specified type.
+   */
+  portNamesFromTypeStr: private function(
+    typeStr: !string
+  ): [string] py
+
+  /**
+   * A Python function that converts a list of port names to a type string.
+   * This allows for reversing the mapping of input/output types to their string representation.
+   *
+   * @param portNames - A list of port names to be converted into a type string.
+   * @returns A string representing the type associated with the provided ports.
+   */
+  typeStrFromPortNames: private function(
+    portNames: ![string]
+  ): !string py
+
+  /**
+   * A helper function to instantiate an object of type {@link ReliabilityMl.CustomPipe} from a
+   * factory/template implementation in {@link ReliabilityMl.CustomPipeFactory}.
+   * @param factory
+   *        Refers to the {@link ReliabilityMl.CustomPipeFactory#id} which contains the template implementation.
+   * @returns {@link ReliabilityMl.CustomPipe} object that can be used for training and processing.
+   */
+  fromFactory: function(
+    factory: !string
+  ): !mixing ReliabilityMl.CustomPipe py
+
+  /**
+   * If defining an instance of {@link ReliabilityMl.CustomPipe} from a Python file containing the
+   * algorithm implementation as a class, then use this function.
+   *
+   * @param file
+   *        The {@link File} object whose contents contain the Python class implementation.
+   * @param className
+   *        The name of the Python class which contains the implementation of the algorithm.
+   * @param actionRequirement
+   *        The {@link Action.Requirement} that is needed to execute the algorithm.
+   * @param classKwargs
+   *        The keyword arguments required to initialize an object of the Python class.
+   * @param inheritsFrom
+   *        If the Python class either extends or uses one or more already existing factory/template implementations from {@link ReliabilityMl.CustomPipeFactory}, then define these class names.
+   * @param spec
+   *        The {@link MlConvertSpec} used to instantiate an object of type {@link ReliabilityMl.CustomPipe}.
+   * @returns An object of type {@link ReliabilityMl.CustomPipe} that can be trained and processed.
+   */
+  fromClassImpl: function(
+    file: !File,
+    className: !string,
+    actionRequirement: !string serialized Action.Requirement,
+    classKwargs: [ReliabilityMl.CustomPipeKwarg],
+    inheritsFrom: [string],
+    spec: MlConvertSpec,
+    childClassName: string
+  ): !mixing ReliabilityMl.CustomPipe py
+
+  /**
+   * A function to remake an existing custom pipe for new input/output types.
+   * This function can be used to adjust the model pipeline to work with different I/O configurations.
+   *
+   * @param pipe
+   *        The existing custom pipe object to be remade.
+   * @param xNames
+   *        A list of names for the new input ports.
+   * @param yNames
+   *        A list of names for the new output ports.
+   * @param outNames
+   *        A list of names for the model's output.
+   * @param force
+   *        If set to true, forces the remaking of the pipe even if the changes seem minor.
+   * @returns A new custom pipe with updated I/O configurations.
+   */
+  remakeForIoTypes: function(
+    pipe: !mixing ReliabilityMl.CustomPipe,
+    xNames: [string],
+    yNames: [string],
+    outNames: [string],
+    force: boolean
+  ): !mixing ReliabilityMl.CustomPipe py
+
+  /**
+   * A function to retrieve and work with the hyperparameters of the model.
+   * This function can return the current set of hyperparameters for the pipeline.
+   */
+  hyperparams: ~ py
+
+  /**
+   * Returns the merged map of {@link hyperparams} and {@link trainedHyperparamValues}.
+   * This allows combining the initial hyperparameters with those that have been trained.
+   * @returns A merged map of all hyperparameters used by the model, including both initial and trained values.
+   */
+  updatedHyperparams: private member function(): map<string, any> py
+
+  /**
+   * Returns a new instance of the custom pipe with updated hyperparameters.
+   * This function can be used to adjust the hyperparameters for further processing or training.
+   *
+   * @returns A new instance of the custom pipe with the updated hyperparameters.
+   */
+  withHyperparams: ~ py
+
+  /**
+   * Creates a "copy" of the pipe with new hyperparameter values, similar to
+   * {@link withHyperparams}. In the case of {@link withHyperparams}, the new
+   * pipe is untrained. In the case of `replicate`, only hyperparameters that are
+   * relevant for only-inference, i.e., {@link ReliabilityMl.CustomPipeKwarg#isForInferenceOnly}, may be changed.
+   * Because these parameters only influence inference time performance of the
+   * pipe, the new pipe will continue to remain `trained` if the original pipe
+   * is also trained. There will be no need to retrain the pipe returned by
+   * this function.
+   *
+   * @param newHps
+   *        A map of new hyperparameter values to apply to the replicated pipe.
+   * @returns A new instance of the custom pipe with the new hyperparameters.
+   */
+  replicate: member function(
+    newHps: map<string, any>
+  ): !ReliabilityMl.CustomPipe py
+
+  /**
+   * Initiates the training process for the custom ML pipeline.
+   * This function triggers the training routine based on the current hyperparameters and dataset.
+   */
+  doTrain: ~ py
+
+  /**
+   * A function that runs after the training process completes.
+   * This function is used to handle post-training tasks such as saving models or performing additional optimizations.
+   */
+  afterTrain: ~ py
+
+  /**
+   * Prepares the pipeline for use with a dataset.
+   * This function may involve preprocessing, feature extraction, or other steps to prepare the data for training or inference.
+   */
+  resolveForDatasetPreparationRun: ~ py
+
+  /**
+   * Lists the available Python class names for predefined ML algorithms.
+   * This function can be used to explore the algorithms that are already implemented in the system.
+   * @returns A list of Python class names for available ML algorithms.
+   */
+  listImplementations: function(): [string] py
+
+  /**
+   * This function is used to refit the {@link ReliabilityMl.CustomPipe} for a specific {@link ReliabilityAsset}.
+   * It creates a new version of the custom pipe that is adapted for the provided asset, ensuring that the pipe's
+   * functionality and configuration are tailored to the asset's data and requirements.
+   *
+   * @param assetId
+   *        The ID of the {@link ReliabilityAsset} for which the custom pipe is being refitted.
+   *
+   * @returns A new instance of {@link ReliabilityMl.CustomPipe} that is refitted for the specified asset.
+   */
+  refitForAsset: private member function(
+    assetId: !string
+  ): !ReliabilityMl.CustomPipe py
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

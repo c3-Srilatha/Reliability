@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents the status of the Sources
+ */
+entity type SourceStatus extends DataIntegStatus type key 'SOURCE' {
+
+  /**
+   * {@see SourceChunkStatus} entries for the {@link Sources}
+   */
+  chunks: [SourceChunkStatus](parentStatus)
+
+  /**
+   * The {@link SourceCollection} id for the sources of this status.
+   */
+  sourceCollectionName: !string
+
+  /**
+   * count of the chunks for the Sources
+   */
+  chunkCount: int
+
+  /**
+   * construct a SourceStatus object from a sources object with the given state and stats initialized to zero
+   */
+  fromSources: function(sources: !Sources, state: string): !SourceStatus
+
+  /**
+   * initializes the state, stats, errors, and firstError fields
+   */
+  initialize: member function(state: string): SourceStatus
+
+  /**
+   * updates errors array and the counts to values from the sourceStatus object
+   */
+  withErrorsAndCount: private member function(sourceStatus: !SourceStatus): SourceStatus
+
+  /**
+   * return the {@link Sources} of this status
+   */
+  sources: private member function(): !Sources
+
+  /**
+   * returns the {@link SourceCollection} of the {@link Sources} of this status.
+   */
+  sourceCollection: private member function(): !SourceCollection
+}

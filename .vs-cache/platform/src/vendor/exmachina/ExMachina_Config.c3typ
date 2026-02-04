@@ -1,0 +1,425 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// TODO: PLAT-45616 Use . instead of _ issue with codegen
+@config(minOverride=APP)
+type ExMachina_Config mixes CloudServiceConfig {
+
+  id:      ~
+  forId:   ~
+  version: ~ = "0.1.14"
+
+  /**
+   * Number of minutes after which the service will be shutdown automatically if idle
+   */
+  idleTimeoutMinutes: int = 30
+
+  /**
+   * If set to true, Istio is enabled in this cluster.
+   */
+  @ser(path="c3.security.istio.enabled")
+  istioEnabled: boolean = false
+
+  /**
+   * List of {@link User.id}s for users who have access to the corresponding {@link ExMachina} service. By default, this
+   * list is populated with the id of the user who created the service. This value can be dynamically updated when the
+   * service is already running to grant/revoke access mid-session.
+   */
+  authorizedUsers: [string]
+
+  /**
+   * The service account token used by the spark driver to create executor pods
+   */
+  @config(secret=true)
+  @ser(path="exmacServiceAccountToken")
+  exmacServiceAccountToken: string
+
+  /**
+   * Namespace passed to spark.kubernetes.namespace
+   * @see https://spark.apache.org/docs/latest/running-on-kubernetes.html#spark-properties
+   */
+  @ser(path="k8sNamespaceName")
+  k8sNamespaceName: string
+
+  /**
+   * The unique identifier for resources created for a deployment of {@link ExMachina}
+   */
+  @ser(path="exmacResourceNamePrefix")
+  exmacResourceNamePrefix: string
+
+  /**
+   * The id of the ExMachina service. Used by the Spark server to authenticate with c3server
+   */
+  @ser(path="exmacCloudServiceId")
+  exmacCloudServiceId: string
+
+  /**
+   * ExMachina service endpoint. Useful during testing, e.g. on local development setups where c3server resides on the
+   * host machine while the service resides in K8s.
+   */
+  @ser(path="exmacServiceEndpoints")
+  exmacServiceEndpoints: [string]
+
+  /**
+   * Image Repository to use for ExMachina
+   */
+  exmacDriverImageRepository: string = "exmachina/c3-vad-kube"
+
+  /**
+   * Image Tag to use for ExMachina
+   */
+  exmacDriverImageTag: string = "8.9.0.10005"
+
+  /**
+   * Image used for main driver pod concatenation of {@link ExMachina_Config#logicalImageRegistry} ,
+   * {@link ExMachina_Config#exmacDriverImageRepository} and {@link ExMachina_Config#exmacDriverImageTag}
+   * NOTE: exmacDriverImage will be set by concatenating registry, repository and tag. Setting this field directly will have no effect.
+   */
+  @ser(path="exmacDriverImage")
+  exmacDriverImage: string
+
+  /**
+   * Behavior for when to pull image
+   * Passed to spark.kubernetes.container.image.pullPolicy
+   * @see https://spark.apache.org/docs/latest/running-on-kubernetes.html#spark-properties
+   */
+  @ser(path="exmacImagePullPolicy")
+  exmacImagePullPolicy: string = "Always"
+
+  /**
+   * spark.kubernetes.container.image.pullSecrets
+   * @see https://spark.apache.org/docs/latest/running-on-kubernetes.html#spark-properties
+   */
+  @ser(path="exmacImagePullSecretName")
+  exmacImagePullSecretName: string
+
+  /**
+   * If set to true, use OAuth for outgoing requests from ExMachina service to c3server.
+   * If false / undefined, the incoming c3auth token will be used.
+   * ExMachina must execute some actions on behalf of the user, so ACL lets correct subset of records through in fetch(),
+   * so we are not going to use OAuth (service) tokens. Instead we use the user (incoming) token when talking to c3server.
+   */
+  @ser(path="exmacVadOAuth")
+  exmacVadOAuth: boolean = false
+
+  /**
+   * If set to true, skip authentication using c3 context.
+   * Used for debugging and internal development.
+   */
+  @ser(path="exmacVadFixedAuth")
+  exmacVadFixedAuth: boolean = false
+
+  /**
+   * K8S master endpoint, usually the default is correct, but if it needs to be overridden
+   * the current cluster value can be inferred via `kubectl cluster-info`
+   */
+  @ser(path="exmacK8sMasterEndpoint")
+  exmacK8sMasterEndpoint: string = "kubernetes.default.svc:443"
+
+  /**
+   * spark.executor.instances
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacExecutorInstances")
+  exmacExecutorInstances: string = "1"
+
+  /**
+   * spark.executor.cores
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacExecutorCores")
+  exmacExecutorCores: string = "8"
+
+  /**
+   * spark.executor.memory
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacExecutorMemory")
+  exmacExecutorMemory: string = "32000M"
+
+  /**
+   * spark.executor.memoryOverhead
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacExecutorMemoryOverhead")
+  exmacExecutorMemoryOverhead: string = "2G"
+
+  /**
+   * spark.driver.cores
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacDriverCores")
+  exmacDriverCores: string = "8"
+
+  /**
+   * spark.driver.memory
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacDriverMemory")
+  exmacDriverMemory: string = "32000M"
+
+  /**
+   * spark.driver.memoryOverhead
+   * @see https://spark.apache.org/docs/latest/configuration.html#application-properties
+   */
+  @ser(path="exmacDriverMemoryOverhead")
+  exmacDriverMemoryOverhead: string = "2G"
+
+  /**
+   * Main application container port
+   */
+  @ser(path="exmacAppPort")
+  exmacAppPort: string = "10011"
+
+  /**
+   * spark.driver.port
+   * @see https://spark.apache.org/docs/latest/configuration.html#networking
+   */
+  @ser(path="exmacDriverPort")
+  exmacDriverPort: string = "7077"
+
+  /**
+   * spark.driver.blockManager.port
+   * @see https://spark.apache.org/docs/latest/configuration.html#networking
+   */
+  @ser(path="exmacBlockManagerPort")
+  exmacBlockManagerPort: string = "10000"
+
+  /**
+   * spark.dynamicAllocation.enabled
+   * Enable Spark dynamic resource allocation. Note that the 'minExecutors', 'maxExecutors', 'executorTimeoutSeconds', 'executorAllocationRatio'
+   * attributes will not have an effect unless this is enabled.
+   */
+  @ser(path="exmacDynamicResourceAllocation")
+  exmacDynamicResourceAllocation: boolean = false
+
+  /**
+   * spark.dynamicAllocation.minExecutors
+   * The minimum number of executors that will be active at any time. Note that this will override 'exmacExecutorInstances'.
+   */
+  @ser(path="exmacMinExecutors")
+  exmacMinExecutors: string = "0"
+
+  /**
+   * spark.dynamicAllocation.maxExecutors
+   * The maximum number of executors that can be active at any time. Note that this will override 'exmacExecutorInstances'.
+   */
+  @ser(path="exmacMaxExecutors")
+  exmacMaxExecutors: string = "10"
+
+  /**
+   * spark.dynamicAllocation.executorIdleTimeout | spark.dynamicAllocation.cachedExecutorIdleTimeout
+   * How long, in seconds, an executor can be idle before shutting down.
+   */
+  @ser(path="exmacExecutorTimeoutSeconds")
+  exmacExecutorTimeoutSeconds: string = "60"
+
+  /**
+   * spark.dynamicAllocation.executorAllocationRatio
+   * This many tasks will be assigned to each executor at a time. If there is tasks remaining, more executors will be provisioned.
+   */
+  @ser(path="exmacExecutorAllocationRatio")
+  exmacExecutorAllocationRatio: string = "1"
+
+  /**
+   * comma separated string representation of additional spark config.
+   * e.g. "spark.app.name=test,spark.driver.maxResultSize=2g"
+   */
+  @ser(path="additionalConfig")
+  additionalConfig: string = ""
+
+  /**
+   * Serialize the given map and set it as the additional config
+   */
+  setAdditionalConfig: private member function(conf: map<string, any>)
+
+  /**
+   * Deserialize the additional config and return it as a map
+   */
+  getAdditionalConfig: private member function(): map<string, any>
+
+  /**
+   * Port to access Spark UI
+   */
+  @ser(path="exmacSparkUiPort")
+  exmacSparkUiPort: string = "10013"
+
+  /**
+   * Port for exporting JMX Beans
+   */
+  @ser(path="exmacMetricsPort")
+  exmacMetricsPort: string = "9091"
+
+  /**
+   * Whether to start H2O Sparkling Water
+   * ExMachina will start by default
+   */
+  @ser(path="exmacStartH2O")
+  exmacStartH2O: boolean = true
+
+  /**
+   * Port 1 for H2O Sparkling Water
+   */
+  @ser(path="exmacH2O1Port")
+  exmacH2O1Port: string = "54321"
+
+  /**
+   * Port 2 for H2O Sparkling Water
+   */
+  @ser(path="exmacH2O2Port")
+  exmacH2O2Port: string = "54322"
+
+  /**
+   * spark.sql.shuffle.partitions
+   */
+  @ser(path="exmacShufflePartitions")
+  exmacShufflePartitions: string = "200"
+
+  /**
+   * spark.vad.c3.maxOutputPartitions
+   */
+  @ser(path="exmacVadMaxOutputPartitions")
+  exmacVadMaxOutputPartitions: string = "1000"
+
+  /**
+   * spark.vad.c3.exmacVadDefaultLimit
+   * Controls the default limit when accessing C3 Types. c3vad/vad/src/c3/vad/commons/Config.scala specifies
+   * a value to use when this parameter is not passed.
+   */
+  @ser(path="exmacVadDefaultLimit")
+  exmacVadDefaultLimit: string
+
+  /**
+   * spark.sql.planner.externalSort
+   */
+  @ser(path="exmacSqlPlannerExternalSort")
+  exmacSqlPlannerExternalSort: boolean = true
+
+  /**
+   * spark.vad.startHiveServer
+   */
+  @ser(path="exmacStartHiveServer")
+  exmacStartHiveServer: boolean = false
+
+  /**
+   * spark.sql.hive.thriftServer.singleSession
+   */
+  @ser(path="exmacThriftServerSingleSession")
+  exmacThriftServerSingleSession: boolean = true
+
+  /**
+   * Name of cert-file secret
+   */
+  @ser(path="exmacCertSecretTrustStoreName")
+  exmacCertSecretTrustStoreName: string
+
+  /**
+   * Mount for cert-file secret
+   */
+  @ser(path="exmacCertSecretMountDir")
+  exmacCertSecretMountDir: string = "/opt/c3/ssl/certs"
+
+  /**
+   * Note that because of how extraJavaOptions is passed, this password will be shown in plaintext in the Spark details
+   */
+  @ser(path="exmacCertSecretTrustStorePassword")
+  exmacCertSecretTrustStorePassword: string
+
+  /**
+   * spark.vad.fileStore
+   */
+  @ser(path="exmacVadFileStore")
+  exmacVadFileStore: string = "local"
+
+  /**
+   * If K8s readOnlyRootFilesystem will be true, set this to true to start the Spark pods accordingly
+   */
+  @ser(path="readOnlyRootFilesystem")
+  readOnlyRootFilesystem: boolean = false
+
+  /**
+   * Additional path to add to the Java classpath (for logging configuration, etc.)
+   */
+  @ser(path="exmacVadClassPath")
+  exmacVadClassPath: string = "/opt/c3"
+
+  /**
+   * The VAD jar to start with the Spark service
+   */
+  @ser(path="exmacVadJarPath")
+  exmacVadJarPath: string = "/opt/c3/lib/c3-vad.jar"
+
+  /**
+   * Extra Java options. Useful for tuning and for debugging. e.g. "-XX:+UnlockDiagnosticVMOptions"
+   */
+  @ser(path="exmacExtraJavaOptions")
+  exmacExtraJavaOptions: string = "-XX:+UseG1GC -XX:+PrintFlagsFinal -XX:+UseContainerSupport"
+
+  /**
+   * Full {@link AppUrl} for C3 application server
+   */
+  @ser(path="c3.serverEndpoint")
+  c3ServerEndpoint: string
+
+  /**
+   * Spark Connect port
+   */
+  @ser(path="exmacSparkConnectPort")
+  exmacSparkConnectPort: int32 = 10020
+
+  /**
+   * The K8sPodSecurityContext.runAsUser to provide to the K8s deployment
+   */
+  @ser(path="securityContext.uid")
+  runAsUser: string = "4444"
+
+  /**
+   * The K8sPodSecurityContext.runAsGroup to provide to the K8s deployment
+   */
+  @ser(path="securityContext.gid")
+  runAsGroup: string = "4444"
+
+  /**
+   * The K8sPodSecurityContext.fsGroup to provide to the K8s deployment
+   */
+  @ser(path="securityContext.fsg")
+  fsGroup: string = "4444"
+
+  /**
+   * CloudService tags that would be set on singleuser server and it's resources.
+   *
+   * This field automatically populated by {@link ExMachina.ensureConfig}.
+   */
+  @ser(path="executorPodLabels")
+  executorPodLabels: private map<string, string>
+
+  /**
+   * Whether to enable metrics for spark from exmachina Service. Enabled by default
+   */
+  @ser(path="spark.metrics.enabled")
+  sparkMetricsEnabled: boolean
+
+  /**
+   * Time interval for collecting spark metrics. Default interval is 60s
+   */
+  @ser(path="spark.metrics.interval")
+  sparkMetricsInterval: string
+
+  /**
+   * ClientId from registered OAuthApplication
+   * @see ExMachina#authenticate
+   */
+  oauthClientId: string
+
+  /**
+   * ClientSecret from registered OAuthApplication
+   * @see ExMachina#authenticate
+   */
+  @config(secret=true)
+  oauthClientSecret: string
+}

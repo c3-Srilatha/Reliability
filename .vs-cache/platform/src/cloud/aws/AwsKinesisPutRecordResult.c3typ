@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result type returned for {@link AwsKinesisStream#putRecord} or {@link AwsKinesisStream#putRecords}
+ */
+type AwsKinesisPutRecordResult {
+
+  /**
+   * The shard ID for an individual record result.
+   */
+  shardId: string
+
+  /**
+   * The sequence number for an individual record result.
+   */
+  sequenceNumber: string
+
+  /**
+   * Type of encryption applied to the data
+   */
+  encryptionType: string
+
+  /**
+   * An unsuccessfully-processed record includes ErrorCode and ErrorMessage values. ErrorCode reflects the type of error
+   * and can be one of the following values: ProvisionedThroughputExceededException or InternalFailure.
+   * Note: Only valid for {@link AwsKinesisStream#putRecords}. {@link AwsKinesisStream#putRecord} throws the exception directly
+   */
+  errorCode: string
+
+  /**
+   * An unsuccessfully-processed record includes ErrorCode and ErrorMessage values. ErrorMessage provides more detailed information about
+   * the ProvisionedThroughputExceededException exception including the account ID, stream name, and shard ID of the record that was throttled.
+   * Note: Only valid for {@link AwsKinesisStream#putRecords}. {@link AwsKinesisStream#putRecord} throws the exception directly
+   */
+  errorMessage: string
+}

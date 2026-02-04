@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * When a Timeseries is created, different category of data can be requested
+ * e.g.
+ * 1. actual normalized values for the {@link aggFunc} provided
+ * 2. Earliest/Latest value or date time of the underlying series generated
+ * 3. what intervals are estimated
+ * In order to retrieve non standard (simple aggregated provided via #aggFunc), use this field
+ *
+ * Data info:
+ *                  isTimeRangeAvailable  | canResultHaveGaps
+ *
+ *
+ *     COUNT            YES                      NO
+ *
+ *     ESTIMATES        YES                      YES
+ *
+ *     NORMALIZED       YES                      YES
+ *
+ *     MISSING          YES                      NO
+ */
+enum type TimeseriesRequestedData {
+
+  /**
+   * Returns data as normalized by the specified {@link AggOp} during the Timeseries generation
+   */
+  NORMALIZED
+
+  /**
+   * Returns a boolean Timeseries converted double values determining whether the given interval is estimated or not
+   */
+  ESTIMATES
+
+  /**
+   * Returns count of raw data points in every interval for the returned Timeseries
+   */
+  COUNT
+
+  /**
+   * Returns a boolean Timeseries converted double values determining whether the given interval is missing or not
+   */
+  MISSING
+
+  /**
+   * Returns an identity Timeseries with the value of the earliest available datetime
+   */
+  EARLIEST
+
+  /**
+   * Returns an identity Timeseries with the value of the latest available datetime
+   */
+  LATEST
+
+  /**
+   * Returns an identity Timeseries with the value of the earliest available value
+   */
+  EARLIEST_VALUE
+
+  /**
+   * Returns an identity Timeseries with the value of the latest available value
+   */
+  LATEST_VALUE
+}

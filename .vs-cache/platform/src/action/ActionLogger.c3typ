@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Responsible for logging common metadata about the execution of every non-inline C3 action.
+ * Sensitive information should not be logged.
+ *
+ * @see Log.Profile
+ * @see Log.Entry
+ * @see Log.Entry.Action
+ */
+type ActionLogger mixes Configurable<ActionLogger.Config> {
+
+  /**
+   * Logs summary of an executed action
+   */
+  log: inline function(action: !Action)
+
+  /**
+   * Action execution summary
+   */
+  logMsg: inline function(action: !Action): !string
+
+  /**
+   * Log entry built for an action. Helper function for {@link #logMsg}.
+   */
+  logEntry: inline function(action: !Action): !Log.Entry.Action
+}

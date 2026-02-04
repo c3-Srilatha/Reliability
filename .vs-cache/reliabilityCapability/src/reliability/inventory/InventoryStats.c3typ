@@ -1,0 +1,115 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type housing important statistics and metrics related to a {@link InventorySeries}'s part such as
+ * Days of Inventory On Hand, Average Lead Time and many more.
+ */
+type InventoryStats {
+
+  /**
+   * Represents average daily usage of a part calculated as units consumed in a day.
+   * Expressed in units/day.
+   *
+   * For example, Let’s say a 1000 valves were used in the last 100 days, average daily usage of valves would then be 10 (1000/100) units/day.
+   */
+  avgDailyUsage: double
+
+  /**
+   * The latest available total stock of a given part.
+   * Obtained from {@link InventoryMeasurement#quantity}.
+   */
+  currentStock: int
+
+  /**
+   * Average lead time for a given part and supplier.
+   * Typically represents number of days it would take for a part to be delivered from the day a {@link PurchaseOrder} was placed for it.
+   * Expressed in days.
+   * Note: This field is meant to be used for user provided average lead time and is not intended to be changed.
+   */
+  avgLeadTime: double
+
+  /**
+   * Calculates the average total time it takes from the moment a part is ordered from a supplier to the time it is
+   * delivered and ready for use. This is unique to a part and it's supplier.
+   * Same part supplied from different suppliers can have different average delivery times.
+   * Expressed in days.
+   * **Note**: If the user doesn't provide their own {#avgLeadTime},  only then this field is computed.
+   *
+   * For example, Let’s say {@link PurchaseOrder} for valves supplied from ACME
+   * typically takes 3 days to be delivered, then average delivery time for valves from ACME is said to be 3 days.
+   */
+  calculatedAvgLeadTime: double
+
+  /**
+   * Reorder level (or minimum inventory level) is the lowest quantity of a particular part or material that a company maintains in inventory to ensure it doesn't run out of stock.
+   * It serves as a buffer to prevent shortages during fluctuations in demand or delays in the supply chain.
+   */
+  reorderLevel: int
+
+  /**
+   * Reorder Quantity (or maximum inventory level) refers to the highest quantity of a particular part or material
+   * that can be stored in inventory at any given time.
+   *
+   * Ideally, it should be the amount that can be stored without exceeding warehouse capacity or incurring unnecessary holding costs.
+   */
+  reorderQty: int
+
+  /**
+   * Days of Inventory on Hand (DOH) is a key inventory management metric that measures how many days a part's stock would last, assuming no new stock is replenished.
+   * It gives insight into how efficiently a company is managing its inventory and how long its stock can support demand.
+   *
+   * For example, Let’s say currently there are 50 valves in stock and average daily usage of them is 10, that's effectively 5 days of valves on hand.
+   */
+  daysOnHand: int
+
+  /**
+   * DOH over lead time is a ratio representing a part's Days of Inventory on Hand (DOH) relative to the lead time for replenishing inventory.
+   * It helps ensure that inventory levels are adequate to cover demand while waiting for new stock to arrive, preventing stockouts during the lead time.
+   *
+   * For example, if we have 5 days of valves on hand and it takes 5 days for re-ordering valves, we have the ratio of 1.
+   */
+  dohOverLeadTimeRatio: double stored calc round(daysOnHand/calculatedAvgLeadTime, 1)
+
+  /**
+   * Calculates {#avgDailyUsage} and {#daysOnHand}.
+   *
+   * The formula used to calculate the stats are as follows:
+   * - `avgDailyUsage`: (Total quantity of a Part used by {@link WorkOrderStatusEnum} {@link WorkOrder}s in provided time window) / (No of days in provided time window).
+   * - `daysOnHand`: (Total quantity of a Part available currently) / (avgDailyUsage). (as calculated above).
+   * - `calculatedAvgLeadTime`: (Summation of (Lead Time * Quantities received) across all receipts) / (Total quantities received across all receipts).
+   *                  where, Lead Time is the difference between {@link PurchaseOrderLineReceipt#deliveredDate} and parent {@link PurchaseOrder#purchaseDate}
+   * **NOTE:** It's important to note that it defaults to user provided {#avgLeadTime}. Calculation is done as per above formula only in the cases user provided {#avgLeadTime} is missing.
+  *             However, when {#avgLeadTime} is 0, the calculation is performed as well.
+   *
+   * For example, Consider we have a total of 1000 valves used in the past 100 days and current available of inventory of valves in 2000.
+   * Also, let's say we had a {@link PurchaseOrderLine} of valves delivered over 4 {@link PurchaseOrderLineReceipt} in the past.
+   *
+   * Example: Also, let's say we had a {@link PurchaseOrderLine} with purchase date 2024-10-01 delivered over 4 {@link PurchaseOrderLineReceipt} as shown below
+   *
+   * | POLRs | Delivered Date | Lead Time | Delivered Quantity |
+   * |-------|----------------|-----------|---------------------|
+   * | 1     | 2024-10-06     | 5 days    | 25                  |
+   * | 2     | 2024-10-11     | 10 days   | 25                  |
+   * | 3     | 2024-10-16     | 15 days   | 25                  |
+   * | 4     | 2024-10-21     | 20 days   | 25                  |
+   *
+   * - `avgDailyUsage` is calculated as 1000 / 100 = 10 valves per day.
+   * - `daysOnHand` is calculated as 2000 / 10 = 200 days on hand.
+   * - `calculatedAvgLeadTime` is calculated as ((5 * 25) + (10 *25) + (15 * 25) + (20 * 25)) / (25 + 25 + 25 + 25) => 12.5
+   *
+   * @param seriesObj
+   *          The {@link InventorySeries} instance, for which the stats have to be calculated.
+   * @param lookBackTimeRange
+   *          The {@link TimeRange} which will be used in calculation fo the stats.
+   *
+   * @returns instance of {@link InventorySeries} object with {#avgDailyUsage}, {#daysOnHand}, and {#calculatedAvgLeadTime} populated.
+   */
+  calculateInventoryStats: function(seriesObj: !InventorySeries, lookBackTimeRange: TimeRange): !InventorySeries js-rhino
+}

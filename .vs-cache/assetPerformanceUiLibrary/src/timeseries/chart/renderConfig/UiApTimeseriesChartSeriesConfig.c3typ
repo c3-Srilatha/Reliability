@@ -1,0 +1,99 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a legend item for a particular plot of a {@link UiApTimeseriesChart}.
+ * Maps data to a plot, and allows configuration of how the data should be displayed.
+ */
+type UiApTimeseriesChartSeriesConfig {
+
+  /**
+   * The column name of the {@link UiApTimeseriesChartTsDataset#data} or
+   * key of {@link UiApTimeseriesChartDataConfig#eventDatasets} that should be used
+   * to get the data for this series.
+   */
+  dataId: !string
+
+  /**
+   * The id of the {@link UiApTimeseriesChartSeriesConfig} that should be used to plot the data.
+   */
+  plotId: !string
+
+  /**
+   * The id of the {@link UiApTimeseriesChartYAxisConfig} that the data should be plotted on.
+   * This needs to be a yAxis on the corresponding {@link #plotId} plot. Allows series with different units
+   * to be plotted on the same y axis, and the labeling of a y axis.
+   *
+   * If unset, the yAxis will be determined by the unit of the data.
+   */
+  yAxisId: string
+
+  /**
+   * The label to be displayed in the legend for this series.
+   * If unset, the label will be derived from the data corresponding to {@link #dataId}.
+   */
+  label: string
+
+  /**
+   * The color to be used for this series in the chart.
+   */
+  color: string
+
+  /**
+   * Determines how the data is rendered.
+   *
+   * `stateLine` plots a line at y=0 that changes color based on a timeseries where each data point represents a state.
+   * It must utilize the {@link #visualizationTypeOptions} to define the states and their colors.
+   */
+  visualizationType: string enum('line', 'area', 'bar', 'event', 'stateLine')
+
+  /**
+   * Additional options for the visualization type. The structure and required properties depend on the {@link #visualizationType}.
+   *
+   * For 'stateLine' visualization type:
+   * - Used to render horizontal state bands across time periods based on data values
+   * - Requires both 'states' and 'stateValueMap' properties
+   *
+   * stateLine configuration:
+   * ```
+   * {
+   *   "states": {
+   *     "mergedAlerts": {
+   *       "color": "rgba(155, 79, 255, 0.5)",
+   *       "label": "Reliability.MergedAlerts"
+   *     },
+   *     "ignoredAlerts": {
+   *       "color": "rgba(103, 112, 137, 0.5)",
+   *       "label": "Reliability.IgnoredAlerts"
+   *     }
+   *   },
+   *   "stateValueMap": {
+   *     "-1": "mergedAlerts",
+   *     "1": "mergedAlerts",
+   *     "-2": "ignoredAlerts"
+   *   }
+   * }
+   * ```
+   *
+   * Properties for 'stateLine':
+   * - states: Object defining visual appearance for each state
+   *   - [stateName].color: CSS color string for the state band
+   *   - [stateName].label: Display label (supports localization keys)
+   * - stateValueMap: Maps data values to state names
+   *   - Keys are data values (as strings)
+   *   - Values are state names that must exist in the 'states' object
+   *
+   */
+  visualizationTypeOptions: json
+
+  /**
+   * Additional options that are directly passed into the eCharts series that is rendered.
+   */
+  additionalEChartsOptions: json
+}

@@ -1,0 +1,198 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration options for {@link App.NodePool}. These options will by default be configured at an {@link App}
+ * override level to keep isolation between Apps. Cluster admins can create pre-seeded node pools that can be shared
+ * across Apps as a means to keep reasonable defaults.
+ */
+@config(doNotDefaultIfMissing=true)
+@beta
+type App.NodePool.Config mixes Config, Named, App.NodePool.Config.AdminFields, App.NodePool.Config.K8sFields {
+
+  /**
+   * Refers to {@link HardwareProfile} object for nodes of this {@link App.NodePool}.
+   */
+  hardwareProfile: HardwareProfile
+
+  /**
+   * Refers to the target node count for this {@link App.NodePool}.
+   */
+  targetNodeCount: int32 = 0
+
+  /**
+   * Refers to the minimum node count for this {@link App.NodePool}. Note that the target node count cannot be below
+   * this configured value for safety measures. This value must be reconfigured first for the target node count to go
+   * lower.
+   */
+  minNodeCount: int32 = 0
+
+  /**
+   * Refers to the maximum node count for this {@link App.NodePool}. Note that the target node count cannot be above
+   * this configured value for safety measures. This value must be reconfigured first for the target node count to go
+   * higher.
+   */
+  maxNodeCount: int32 = 1
+
+  /**
+   * Refers to {@link App.NodePool.Membership} for this {@link App.NodePool}.
+   */
+  membership: Type<<App.NodePool.Membership>>
+
+  /**
+   * Refers to all {@link Server.Role}s for this {@link App.NodePool}.
+   */
+  roles: ![string enum Server.Role]
+
+  /**
+   * Refers to {@link App.NodePool.AutoscaleSpec} to be used for this {@link App.NodePool}.
+   */
+  autoScale: App.NodePool.AutoScaleSpec
+
+  /**
+   * Refers to {@link App.NodePool.JvmSpec} to be used for this {@link App.NodePool}.
+   */
+  jvm: App.NodePool.JvmSpec = {}
+
+  /**
+   * Refers to {@link App.NodePool.Config.SharedStorage} to enable shared storage for a node pool
+   */
+  sharedStorage: App.NodePool.Config.SharedStorage
+
+  /**
+   * A map of {@link App.NodePool.Config.Volumes} and size ( eg. 2Gi ) to configure volume
+   * size for a {@link App.NodePool}.
+   */
+  volumeSizeMapping: map<!string enum App.NodePool.Config.Volumes, string>
+
+  /**
+   * The config that defines the thresholds for queue rule-based resource governance based on
+   * a node's {@link App.NodePool.Config}. Whenever this field is updated, users need to restart their nodepool's nodes
+   * for these new settings to effect.
+   */
+  // TODO: PLAT-74194 Controller for managing configs that are immutable in the lifetime of a java process
+  // once the above ticket is done, users shouldn't be required to restart their nodes on updates to this field.
+  queues: QueuesResourceGovernorConfig = {}
+
+  /**
+   * Refers to whether this NodePool is stopped or not.
+   */
+  stopped: !boolean
+
+  /**
+   * Refers to {@link App.NodePool.PyInterpreterPoolSpec} to configure pool of persisted
+   * python interpreters for this {@link App.NodePool}.
+   */
+  pyInterpreterPool: App.NodePool.PyInterpreterPoolSpec
+
+  forName:        ~
+  setConfig:      ~
+  forConfigKey:   ~
+  getConfig:      ~
+  configValue:    ~
+  setConfigValue: ~
+  validate:       private inline member function(): !mixing App.NodePool.Config
+  validate:       private inline member function(validatePartial: ?boolean,
+                                                 validateLimits: ?boolean): !mixing App.NodePool.Config
+
+  /**
+   * This is the primary API that can be used to set wildcard nodepool configs and clusteradmin-only fields.
+   */
+  @action(authz='always', group='cluster-admin')
+  setConfigOrSecretValue: ~
+
+  setConfigValueTemplate:           ~
+  setConfigOrSecretValueTemplate:   ~
+  clearConfigAndSecretOverride:     ~
+  clearConfigAndSecretAllOverrides: ~
+  listConfigKeys:                   function(all: !?boolean): stream<string>
+  forNameInApp:                     private function(nodePoolName: string, targetAppId: string): App.NodePool.Config
+
+  /**
+   * Performs validation on all fields on an {@link App.NodePool.Config} instance
+   * @return a map of field names to an array of error strings
+   * @example
+   * ```js
+   *     {
+   *         "App.NodePool.Config#minNodeCount": [
+   *            "NodePools of type singlenode cannot have more than 1 node",
+   *            "Node pool: singlenode requires a valid node count boundary. Current configuration is target count: -1, min count: 10, max count: 1."
+   *         ],
+   *         "App.NodePool.Config#maxNodeCount": [
+   *            "NodePools of type singlenode cannot have more than 1 node",
+   *            "Node pool: singlenode requires a valid node count boundary. Current configuration is target count: -1, min count: 10, max count: 1."
+   *         ],
+   *         "App.NodePool.Config#targetNodeCount": [
+   *            "NodePools of type singlenode cannot have more than 1 node",
+   *            "Node pool: singlenode requires a valid node count boundary. Current configuration is target count: -1, min count: 10, max count: 1."
+   *         ],
+   *     }
+   * ```
+   */
+  isValid: inline member function(validatePartial: boolean,
+                                  validateLimits: boolean,
+                                  forServerVersion: string,
+                                  forAppId: AppId): map<string, [string]>
+
+  /**
+   * Private function to enhance testability and debuggability of the config merging logic,
+   * intended for usage in both Junit tests and UI if observability is required.
+   * @param nodepoolName
+   *        The name of the nodepool
+   * @param knownKeys
+   *        The set of config keys that are inferred to exist by the Config Framework in the current context
+   * @returns The set of config keys that are candidates for the config merging logic
+   */
+  candidateConfigKeys: private function(nodepoolName: string, knownKeys: set<string>): [string]
+
+  /**
+   * Private function to evict a given App.NodePool.Config "key" and its "###combined###key" from cache
+   */
+  evictNodepoolConfigKeys: private function(key: string)
+
+  /*
+   * Used to fetch the {@link App.NodePool.Config} for a given nodepool name and a given target app.
+   * This API can tolerate non-existent/invalid appIds, and will return appropriate config
+   * If Env does not exist for the targetAppId, then seed config, "ROOT" and "CLUSTER" overrides will be merged
+   * If App does not exist for the targetAppId, then seed config, "ROOT", "CLUSTER" and "ENV" overrides will be merged
+   */
+  @action(group='cluster-admin')
+  forNameInApp: private function(nodePoolName: !string, targetAppId: string): App.NodePool.Config
+
+  clusterAdminFields: private cached inline function(): [string]
+
+  /**
+   * Private function to enhance testability and debuggability of the config merging logic
+   * @returns The the config with all the cluster admin fields set to null
+   */
+  removeClusterAdminFields: private inline member function(): App.NodePool.Config
+
+  /**
+   * Function to set cluster admin limits for any nodepool config key at cluster level.
+   * WARNING: this may disrupt existing nodepools and their configs.
+   * @param configKey
+   *        The configKey, which may be nodepool name, or wildcard configKeys.
+   * @param path
+   *        The field for which the value is being set
+   * @param limits
+   *        The limit to be set for the field
+   */
+  @action(group='cluster-admin')
+  setRangeLimitForField: function(configKey: string, path: string, minLimit: double | int, maxLimit: double | int)
+
+  /**
+   * Sanitizes this App.NodePool.Config to be within its cluster admin limits.
+   *
+   * Example: If App.NodePool.Config#targetNodeCount = 15 and App.NodePool.Config#nodeCountAllowedRange= <1, 10>,
+   * then the result of this action would return a sanitized config with App.NodePool.Config#targetNodeCount = 10.
+   *
+   * {@see App.NodePool.Config#setRangeLimitForField}
+   */
+  @action(group='cluster-admin')
+  sanitizeForLimits: inline member function(forAppId: AppId): !mixing App.NodePool.Config
+}

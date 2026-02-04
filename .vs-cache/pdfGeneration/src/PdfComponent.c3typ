@@ -1,0 +1,25 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base PDF Component which represents a presentational unit that can be added to a PDF document.
+ */
+type PdfComponent<PCDS: PdfComponentDataSpec> {
+
+  /**
+   * The {@link PdfComponentDataSpec} which specifies the data to be displayed in the {@link PdfComponent}.
+   */
+  dataSpec: !PCDS
+
+  /**
+   * Function which consumes a PDF (an FPDF Python object) and has logic to add a presentational component to that PDF.
+   */
+  renderComponent: abstract inline member function(pdf: !native) py-pdf_generation
+
+}

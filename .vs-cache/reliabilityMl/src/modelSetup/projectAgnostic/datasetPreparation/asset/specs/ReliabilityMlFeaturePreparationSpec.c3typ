@@ -1,0 +1,111 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used to define how to create {@link Feature}s for {@link MlModel} training and deployment for the
+ * any {@link MlProject}s. See {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets}.
+ * Both the creation of the {@link Feature}s and the preprocessing of those {@link Feature}s can be dictated
+ * by the various fields on this Type.
+ */
+@beta
+type ReliabilityMlFeaturePreparationSpec {
+
+  /**
+   * The default approach to training {@link MlModel}s beloning to {@link MlProject}  is by using
+   * {@link Feature}s that simply extract the {@link Sensor} time series data. Set this
+   * field to `true` (default) to use these {@link Feature}s. However, if the user wishes to
+   * define their own {@link Feature}s, set this field to `false` and provide your own
+   * {@link Feature}s in the {@link overrideFeatures} field.
+   */
+  createDefaultFeatures: ?boolean = true
+
+  /**
+   * If {@link createDefaultFeatures} is set to `true`, then how to create the default
+   * {@link Feature}s based on {@link Sensor} time series data can be controlled by
+   * this field. Refer to {@link ReliabilityMlFeatureCreationMethod} for more information.
+   * In the most common case, it is suggested to use the default value `BEST`.
+   */
+  featureCreationMethod: string enum ReliabilityMlFeatureCreationMethod = BEST
+
+  /**
+   * The {@link Sensor#id} as a string.
+   *
+   * Upon the creation of {@link Feature}s based on {@link createDefaultFeatures}, there will
+   * be a {@link Feature} preprocessing step that occurs in
+   * {@link ReliabilityMlDatasetPreparationHelper#prepareCleanedFeatureSet}. As part of the
+   * preprocessing step, some {@link Feature}s may be removed from the {@link Feature.Set}
+   * because they have more noise than signal. However, if the user has qualitative information
+   * about some {@link Sensor}s, which is relevant to modeling the {@link ReliabilityAsset},
+   * then they can force the {@link Feature} preprocessing step to compulsorily keep these
+   * {@link Sensor}s in the {@link Feature.Set}. For all {@link Sensor}s to compulsorily keep
+   * in the final {@link Feature.Set}, provide their `id`s.
+   */
+  includeSensors: [string] schema suffix 'IS'
+
+  /**
+   * The {@link Sensor#id} as a string.
+   *
+   * If {@link createDefaultFeatures} is set to `true`, {@link Feature}s will be created for all
+   * the {@link Sensor}s associated with the {@link ReliabilityAsset}. However, if there are
+   * some {@link Sensor}s which provide no qualitative information for the modeling of the
+   * {@link ReliabilityAsset}, then the user can stop the creation of {@link Feature}s for these
+   * {@link Sensor}s by providing their id's in this field.  This will have no impact on the
+   * {@link #additionalRasrs} that are included.
+   */
+  excludeSensors: [string] schema suffix 'ES'
+
+  /**
+   * If {@link createDefaultFeatures} is set to `false`, then the user MUST provide
+   * {@link Feature}s that they have defined AND upserted. Once these {@link Feature}s have been
+   * defined and upserted, provide the list of those {@link Feature}s in this field. Note that
+   * for all the {@link Feature}s provided here, the `name` field should be present in the object.
+   */
+  overrideFeatures: [Feature] schema suffix 'OF'
+
+  /**
+   * A string representation of {@link Feature#name}s. See {@link Feature.Set#features}.
+   *
+   * Upon the creation an initial {@link Feature.Set}, there will be a {@link Feature} preprocessing
+   * step that occurs in  {@link ReliabilityMlDatasetPreparationHelper#prepareCleanedFeatureSet}.
+   * As part of the preprocessing step, some {@link Feature}s may be removed from the {@link Feature.Set}
+   * because they have more noise than signal. However, if the user has qualitative information
+   * about some {@link Feature}s, which is relevant to modeling the {@link ReliabilityAsset},
+   * then they can force the {@link Feature} preprocessing step to compulsorily keep these
+   * {@link Feature}s in the {@link Feature.Set}. For all {@link Feature}s to compulsorily keep
+   * in the final {@link Feature.Set}, provide their `name`s.
+   */
+  includeFeatures: [string] schema suffix 'IF'
+
+  /**
+   * Preprocessing and "cleaning" the initial {@link Feature.Set} that will be created involves the
+   * removal of all {@link Feature}s that are flatlining beyond a certain percentage of the time.
+   * If the threshold for flatlining is 20, then all {@link Feature}s that flatline >= 20% of the time
+   * will be removed from the {@link Feature.Set}.
+   */
+  flatliningThreshold: double = 20
+
+  /**
+   * Flatlining of a {@link Feature} is said to occur if the standard deviation of the {@link Feature}
+   * in some window of time is zero. The default window size is assumed to be 6 hours to match the default window
+   * size used to calculate {@link SensorDataSummary} entities for UI previews.
+
+   * With a default {@link ReliabilityMlDatasetPreparationSpec#interval} of `QUARTER_HOUR`, this translates to 24
+   * time steps. Define the number of time steps based on the {@link Interval} used for preparing the
+   * {@link Feature.Set}.
+   */
+  flatliningTimeSteps: int = 24
+
+  /**
+   * The {@link ReliabilityAssetSensorRelation}s that are not directly associated with the
+   * {@link ReliabilityAsset} but provide valuable information for the modeling of the
+   * {@link ReliabilityAsset} can be included in the {@link Feature.Set}. Provide the
+   * {@link ReliabilityAssetSensorRelation}s as an array in this field.
+   */
+  additionalRasrs: [ReliabilityAssetSensorRelation] schema suffix 'AR'
+}

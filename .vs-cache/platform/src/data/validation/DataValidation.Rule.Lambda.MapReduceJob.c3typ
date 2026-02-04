@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type powering the MapReduce execution model of LAMBDA rule.
+ */
+private entity type DataValidation.Rule.Lambda.MapReduceJob extends MapReduce<Obj, void, void, void> type key 'DVMR' {
+
+  /**
+   * Rule running as part of the current job.
+   */
+  @db(persistAllFields=true)
+  rule: !DataValidation.Rule.WithLambda
+
+  /**
+   * {@link DataValidation.Run Run} for the rule which will be used by the job for posting details, debug or errors.
+   */
+  ruleRun: !DataValidation.Run
+
+  /**
+   * {@inheritDoc}
+   *
+   * Please note that {@link DataValidation.Rule#map} of the rule will be executed as part of this run.
+   */
+  map: ~
+
+  /**
+   * If there are no map tasks, then reduce will not be invoked. Therefore, **completed** is chosen to execute the finalization.
+   * Please note that any error encountered during execution in **completed** will not cause {@link DataValidation.Run#waitForCompletion} to fail.However, an {@link DataValidation.Run.Error} will still be generated.
+   */
+  completed: ~
+
+  /**
+   * Override the scanTargetType to handle that error that occurs in it
+   */
+  scanTargetType: ~
+}

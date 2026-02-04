@@ -1,0 +1,40 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Arguments for the method {@link ReliabilityAsset#generateSensorDataReport}
+ */
+type SensorReportSpec {
+
+  /**
+   * Start {@link DateTime} selected to calculate the sensor data report.
+   */
+  start: !datetime
+
+  /**
+   * End {@link DateTime} selected to calculate the sensor data report.
+   */
+  end: !datetime
+
+  /**
+   * Interval to generate the {@link SensorDataReport}.
+   */
+  interval: string enum Interval = Interval.QUARTER_HOUR
+
+  /**
+   * If true, ignores existing {@link SensorDataReport}s and generates new reports.
+   * If false, existing {@link SensorDataReport}s are considered during report generation.
+   */
+  forceRefresh: boolean
+
+  /**
+   * Array of {@link ReliabilityAssetSensorRelation} ID's
+   */
+  additionalRasrIds: [string]
+}

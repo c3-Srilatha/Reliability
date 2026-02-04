@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Random timeseries data specification used in {@link GenerateDataSpec#randomData} by {@link Persistable#generateData}.
+ */
+type RandomTimeseriesDataSpec mixes Spec {
+
+  /**
+   * Number of time series headers to generate.
+   */
+  objCount: int = 1
+
+  /**
+   * Parent id. Either this or parentRange must be specified.
+   */
+  parent: string
+
+  /**
+   * Parent range. Either this or parentId must be specified.
+   */
+  parentRange: int
+
+  /**
+   * Start timestamp of the timeseries.
+   */
+  start: !datetime
+
+  /**
+   * Grain of the timeseries.
+   */
+  grain: !string enum Interval = HOUR
+
+  /**
+   * Number of timeseries data points to generate.
+   */
+  pointCount: int = 100
+
+  /**
+   * Percentage of not required timeseries fields that data will be generated for.
+   */
+  optionalFieldsPercent: int = 0
+
+  /**
+   * Random timeseries data generation spec.
+   */
+  timeseriesData: TimeseriesDataSpec
+
+  /**
+   * Overrides for individual timeseries fields.
+   */
+  timeseriesFields: map<string, TimeseriesDataSpec>
+}

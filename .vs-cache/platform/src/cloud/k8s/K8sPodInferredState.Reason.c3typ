@@ -1,0 +1,106 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specific reason for the inferred pod state.
+ * Each reason belongs to a parent Kind (see K8sPodInferredState.Kind).
+ */
+@beta
+enum type K8sPodInferredState.Reason {
+
+  // ===== PENDING kind reasons =====
+  // Pod in Pending phase, due to undeterminable reason
+  PENDING
+
+  // Pod waiting to be assigned to a node
+  SCHEDULING
+
+  // ===== STARTING kind reasons =====
+  // Network/sandbox being set up
+  CONFIGURING_NETWORK
+
+  // Volumes being mounted
+  MOUNTING_VOLUMES
+
+  // Could not determine exact starting condition
+  STARTING
+
+  // ===== PULLING_IMAGE kind reasons =====
+  // Actively pulling container image
+  PULLING_IMAGE
+
+  // ===== IMAGE_ERROR kind reasons =====
+  // Generic image issue
+  IMAGE_PROBLEM
+
+  // Image doesn't exist
+  IMAGE_NOT_FOUND
+
+  // Registry authentication failed
+  IMAGE_AUTH_FAILURE
+
+  // No permission to pull image
+  IMAGE_ACCESS_DENIED
+
+  // Can't reach registry
+  IMAGE_REGISTRY_UNREACHABLE
+
+  // Registry rate limit hit
+  IMAGE_RATE_LIMITED
+
+  // ===== RUNNING kind reasons =====
+  // Pod running normally, all containers ready
+  READY
+
+  // Pod running but not accepting traffic
+  NOT_READY
+
+  // Container waiting for unknown reason
+  CONTAINER_WAITING
+
+  // ===== ERROR kind reasons =====
+  // Container repeatedly crashing and restarting
+  CRASH_LOOP
+
+  // Container killed due to OOM
+  OUT_OF_MEMORY
+
+  // Container exited with error
+  CONTAINER_ERROR
+
+  // Container terminated unexpectedly
+  CONTAINER_TERMINATED
+
+  // Pod in Failed phase, due to undeterminable reason
+  FAILED
+
+  // ===== TERMINATING kind reasons =====
+  // Being deleted by taint manager
+  BEING_DELETED_TAINT
+
+  // Being evicted via eviction API
+  BEING_EVICTED
+
+  // Generic disruption in progress
+  DISRUPTION
+
+  // Pod being gracefully terminated
+  TERMINATING
+
+  // ===== EVICTED kind reasons =====
+  // Pod was evicted (final state)
+  EVICTED
+
+  // ===== COMPLETED kind reasons =====
+  // Pod finished successfully (e.g., Job pods)
+  COMPLETED
+
+  // ===== UNKNOWN kind reasons =====
+  // Cannot determine pod state
+  UNKNOWN
+}

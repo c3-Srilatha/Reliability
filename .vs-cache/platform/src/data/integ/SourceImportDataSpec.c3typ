@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the input data used to import the given canonical
+ */
+type SourceImportDataSpec mixes Spec {
+
+  /**
+   * The content to import, content can be in xml, json (or) csv
+   */
+  content: ContentRef
+
+  /**
+   * the sources to transform and persist
+   */
+  data: Sources
+
+  /**
+   * The abstract content
+   */
+  fileOperSpec: FileObjsOperSpec
+
+  /**
+   * If meta is specified, it is used to override the meta values in the target types being imported
+   */
+  meta: Meta
+
+  /**
+   * chunk id passed to create partition key for FileData target type
+   */
+  chunkId: private string
+
+  /**
+   * if set to true then target objs will include {@link Sources#sourcesMeta}
+   */
+  includeMeta: boolean
+}

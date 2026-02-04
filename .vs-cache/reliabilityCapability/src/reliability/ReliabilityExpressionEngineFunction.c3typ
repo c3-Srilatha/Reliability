@@ -1,0 +1,253 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+remix type ReliabilityExpressionEngineFunction {
+
+  /**
+   * Used in {@link ReliabilityAssetCase#topContributors} to get the top contributing feature names
+   */
+  getTopFeatureContributors: function(alert: [ReliabilityAssetAlert], count: int = 3): !string js-rhino
+
+  /**
+   * Used to fetch the asset class that corresponds to the {@link ReliabilityAsset#depth}'.
+   * This method uses the {@link ReliabilityUIConfig#assetLevels} list to map from
+   * depth to asset concept.
+   *
+   * @param depth
+   *      depth of the {@link ReliabilityAsset}
+   * @return the corresponding defined asset level for the depth; L{depth} is no concept is defined.
+   */
+  getAssetLevel: function(depth: !int): string js-rhino
+
+  /**
+   * Gets the latest average risk score associated a {@link ReliabilityAsset} and its children.
+   */
+  @deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  getLatestAvgRiskScoreValue: function(assetIds: ![string]): float js-rhino
+
+  /**
+   * Gets the latest minimum risk score associated a {@link ReliabilityAsset} and its children.
+   */
+  @deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  getLatestMinRiskScoreValue: function(assetIds: ![string]): float js-rhino
+
+  /**
+   * Gets the latest maximum risk score associated a {@link ReliabilityAsset} and its children.
+   */
+  @deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  getLatestMaxRiskScoreValue: function(assetIds: ![string]): float js-rhino
+
+  /**
+   * Gets the latest risk score of a {@link ReliabilityAsset}.
+   */
+  @deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  getLatestRiskScore: function(assetId: !string): ReliabilityRiskScoreMlPrediction js-rhino
+
+  /**
+   * Get the latest risk score value associated with the {@link ReliabilityAsset}.
+   */
+  getLatestRiskScoreValue: function(assetId: !string): double js-rhino
+
+  /**
+   * Get the latest risk score id associated with the {@link ReliabilityAsset}.
+   */
+  @deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+  getLatestRiskScoreId: function(assetId: !string): string js-rhino
+
+  /**
+   * Gets the latest average model output for agnostic {@link ReliabilityMl.Project} associated with the {@link ReliabilityAsset} and its children.
+   *
+   * @param assetIds
+   *        Array of asset IDs for which to calculate the average model output values across all associated projects
+   * @return JSON object containing project IDs as keys and their corresponding average model output values
+   */
+  getLatestAvgModelOutputValue: function(assetIds: ![string]): json js-rhino
+
+  /**
+   * Gets the latest minimum model output for agnostic {@link ReliabilityMl.Project} associated with the {@link ReliabilityAsset} and its children.
+   *
+   * @param assetIds
+   *        Array of asset IDs for which to find the minimum model output values across all associated projects
+   * @return JSON object containing project IDs as keys and their corresponding minimum model output values
+   */
+  getLatestMinModelOutputValue: function(assetIds: ![string]): json js-rhino
+
+  /**
+   * Gets the latest maximum model output for agnostic {@link ReliabilityMl.Project} associated with the {@link ReliabilityAsset} and its children.
+   *
+   * @param assetIds
+   *        Array of asset IDs for which to find the maximum model output values across all associated projects
+   * @return JSON object containing project IDs as keys and their corresponding maximum model output values
+   */
+  getLatestMaxModelOutputValue: function(assetIds: ![string]): json js-rhino
+
+  /**
+   * Gets the latest model output for agnostic {@link ReliabilityMl.Project} associated with the {@link ReliabilityAsset}.
+   *
+   * @param assetId
+   *        The ID of the asset for which to retrieve the latest model output predictions
+   * @return Map containing project IDs as keys and their corresponding latest {@link ReliabilityMl.Prediction} objects as values
+   */
+  getLatestModelOutput: function(assetId: !string): map<string, ReliabilityMl.Prediction> js-rhino
+
+  /**
+   * Get the latest model output value for agnostic {@link ReliabilityMl.Project} associated with the {@link ReliabilityAsset}.
+   *
+   * @param assetId
+   *        The ID of the asset for which to retrieve and upsert the latest model output values
+   * @return Array of JSON objects representing the upserted latest model output entities for each associated project
+   */
+  getLatestModelOutputValue: function(assetId: !string): [json] js-rhino
+
+  /**
+   * Format the datetime according to the specified string. See {@link DateTime#toString} method.
+   */
+  formatDateTime: function(date: !datetime, format: !string): string js-rhino
+
+  /**
+   * Returns the first day of the month as a Timeseries.
+   *
+   * This function is used to get the first day of the month as a Timeseries to use as an ExpressionEngineFunction.
+   * The function was originally designed to return a datetime, however, MetricFunctionLibrary only supports Timeseries
+   * return types.
+   *
+   * Example: `firstDayOfMonth(['2019-09-02', '2019-09-03', '2019-10-10']) ==> ['2019-09-01', '2019-09-01', '2019-10-01']`
+   *
+   * @param timeseries
+   *        timeseries input
+   * @return a timeseries containing the first day of the month.
+   */
+  firstDayOfMonth: function(timeseries: !Timeseries): Timeseries js-rhino
+
+  /**
+   * Used in metric expressions on {@link ReliabilityAsset} to filter on a specific {@link ReliabilityAssetRegime}.
+   */
+  evalMetricOnRegimeType: function(metricName: !string,
+                                   regimeType: !string,
+                                   context: !MetricContext): Timeseries js-rhino
+
+  /**
+   * Used in metric expressions on {@link ReliabilityAsset} to filter on the latest {@link FlaggedEventType} for {@link ReliabilityAssetRegime} at a given date.
+   */
+  evalMetricOnLatestRegimeTypeDates: function(context: !MetricContext): Timeseries js-rhino
+
+  /**
+   * Used in metric expressions on {@link ReliabilityAsset} to filter on the latest {@link ReliabilityAssetRegime} at a given date.
+   */
+  evalMetricOnLatestRegimeDates: function(context: !MetricContext): Timeseries js-rhino
+
+  /**
+   * Returns whether or not the passed in {@link ProtectionLoop} is currently at the specified {@link ProtectionLoopRiskStatus riskLevel}
+   * and does not already have an open alert at that risk level.
+   */
+  // TODO: REL-4351
+  // protectionLoopRiskEvaluation: function(loopId: !string,
+  //                                        riskLevel: !string enum ProtectionLoopRiskStatus): boolean js-rhino
+
+  /**
+   * Gets the first x objs from the specified array
+   *
+   * @param objs the array to get from.
+   * @param numObjs the number of objs to get from the array.
+   * @return the first x objs from the specified array
+   */
+  getFirstObjs: function(objs: !?[string], numObjs: !int): [any] js-rhino
+
+
+  /**
+   * Gets the upper bound value for a given classification label
+   *
+   * @param value label of the classification
+   *
+   * @param configField the name of the field on the config type. Only supports fields which are array of {@link ThresholdConfig}.
+   *
+   * @return the value from the config for the given label.
+   */
+  getLabelForValue: function(value: double, configField: !string): string js-rhino
+
+  /**
+   * **NOTE:** In most circumstances, you should use #window. This function is only necessary to avoid
+   *           a known issue with evaluating expression engine functions within a `window` expression.
+   *
+   * This function is identical to #window, but instead of directly evaluating `expression` within
+   * the specified window, it creates a temporary {@link SimpleMetric} from `expression` and evaluates
+   * that metric over the specified window.
+   *
+   * @param aggFunc
+   *        See [#window#aggFunc](#window).
+   * @param expression
+   *        The expression to be evaluated over the specified window. This expression must return
+   *        a single {@link Timeseries}.
+   * @param inputOffset
+   *        See [#window#inputOffset](#window).
+   * @param inputSpan
+   *        See [#window#inputSpan](#window).
+   * @param inputStep
+   *        See [#window#inputStep](#window).
+   * @param context
+   *        A context object containing the source {@link Obj} and {@link TimeInfo} for evaluation.
+   *        The context is automatically populated by the metric engine and can be referenced through
+   *        the `$metric` object in an expression.
+   */
+  // TODO: REL-13161 Remove this function once PLAT-94786 is resolved.
+  windowAsMetadata: function(
+    aggFunc: !string enum('SUM', 'AVG', 'MIN', 'MAX', 'OR', 'AND', 'MEDIAN', 'STDDEV', 'VARIANCE'),
+    expression: !string serialized Expr,
+    inputOffset: !int,
+    inputSpan: !int,
+    inputStep: !int,
+    context: !MetricContext
+  ): !Timeseries js-rhino
+
+  /**
+   * Get the champion {@link MlModel} of a {@link MlProject} for a specific {@link ReliabilityAsset}
+   *
+   * @param assetId
+   *        the asset for which to get the champion {@link MlModel}
+   *
+   * @param projectId
+   *        the project with the champion {@link MlModel}
+   *
+   * @return the champion {@link MlModel}.
+   */
+  liveModel: function(assetId: string serialized ReliabilityAsset, projectId: string serialized MlProject): ReliabilityMlModel js-rhino
+
+  /**
+   * Gets the translation for the given key and postfix. The postfix has `JSON.stringify` applied to it, and then is
+   * concatenated to the key **without** a period between. The resulting string is then used as the translation key.
+   * Does not support translation without a postfix, as passing null will result in `${key}null` being used as the
+   * translation key.
+   *
+   * Has two advantages over `translate by`:
+   *  - Allows translation based on any field (including booleans)
+   *  - Allows for translation separate from the type the field comes from. This is useful for translation fields
+   *    that are shared by multiple types.
+   *
+   * The postfix is of type `json` since `any` isn't supported in expression engine functions.
+   */
+  getTranslationWithPostfix: function(key: string, postfix: json): string js-rhino
+
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

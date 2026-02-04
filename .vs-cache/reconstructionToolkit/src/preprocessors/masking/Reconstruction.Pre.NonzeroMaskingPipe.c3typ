@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a process-only {@link MlAtomicPipe} that applies a `mask` to `features` {@link Data}. The mask
+ * input can have multiple columns, and this pipe will remove data points in `features` where the sum of the
+ * corresponding row in the mask is zero.
+ */
+@beta
+type Reconstruction.Pre.NonzeroMaskingPipe extends MlAtomicPipe<{features: Data, mask: Data}, void, {maskedFeatures: Data}> mixes Reconstruction.Pre.Preprocessor type key 'SMP' {
+
+  /**
+   * This method constructs a new {@link MlPipeline} that connects this masking pipe to a central {@link MlPipe} that
+   * accepts `features` as inputs. There are two additional conveniences of this method:
+   * 1. This method constructs a pre-processing pipeline that concatenates multiple masks, if specified via `kwargs`,
+   * using {@link Reconstruction.ConcatenationPipe} and composes the concatenated masks with the masking pipe and the
+   * specified `pipe`.
+   * 2. If there are two different masks for training and inference (by specifying `inferenceMaskNames`), this
+   * method will orchestrate the new pipeline to apply a set of mask(s) only for training the central `pipe` and
+   * apply another set of mask(s) to process, score, and interpret the central `pipe`.
+   *
+   * This method accepts the following keyword arguments (see more on {@link Reconstruction.Pre.Preprocessor#precede}):
+   * - `trainingMaskNames`: A list of `mask` names whose associated {@link Data} will be concatenated, applied to the
+   *   `features` input, and used as training input to the central `pipe`. If `inferenceMaskNames` is not specified,
+   *   the training masked `features` will also be used to process, score, and interpret the central `pipe`.
+   * - `inferenceMaskNames`:  A list of `mask` names whose associated {@link Data} will be concatenated, applied to the
+   *   `features` input, and used to perform inference on the central `pipe`. The inference masked features will also
+   *   be used to score and interpret the central `pipe`.
+   * - `setFeatureIndices`: A boolean to add {@link Reconstruction.SetIndexPipe} to each input before feeding it to
+   *                        the {@link Reconstruction.ConcatenationPipe}.
+   *
+   * It is recommended to use this method with a {@link Reconstruction.Algorithm.Pipe} or
+   * {@link Reconstruction.Algorithm.Pipeline}. For example,
+   * ```py
+   * # Create a new Reconstruction.Algorithm
+   * autoencoder = c3.Reconstruction.Algorithm.TransformerAutoencoder(name="trans_ae").withDefaults()
+   *
+   * # Create a new masking pipe
+   * masking_pipe = c3.Reconstruction.Pre.NonzeroMaskingPipe(name="masking")
+   *
+   * # To directly connect the masking pipe to the autoencoder and create a new pipeline that takes in `features` and
+   * # `mask`, invoke `precede()` without any arguments
+   * masking_pipe.precede(autoencoder)
+   *
+   * # If there is a list of masks that need to be concatenated before being applied to the `features`, specify
+   * # `trainingMaskNames`
+   * masking_pipe.precede(autoencoder, {"trainingMaskNames": ["AssetEvent_mask", "PreEvent_mask"]})
+   *
+   * # If there are a list of masks for training and a separate list for inference, specify both `trainingMaskNames`
+   * # and `inferenceMaskNames`
+   * masking_pipe.precede(autoencoder, {
+   *   "trainingMaskNames": ["AssetEvent_mask", "PreEvent_mask"],
+   *   "inferenceMaskNames": ["AssetEvent_mask"]
+   * })
+   * ```
+   */
+  precede: ~ py
+
+  doProcess: ~ py
+  isEmptyObj: ~ py
+}

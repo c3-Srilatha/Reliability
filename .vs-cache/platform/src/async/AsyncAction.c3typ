@@ -1,0 +1,123 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Run async action and persist results into results or error field.
+ * @see AsyncActionSpec
+ */
+@db(index=['timeoutMinutes, completedAt'])
+entity type AsyncAction mixes AsyncActionSpec schema name 'ASACT' {
+
+  /**
+   * Timestamp when action was last submitted
+   */
+  submittedAt: datetime
+
+  /**
+   * If this async action is computed.
+   */
+  completed: boolean
+
+  /**
+   * Timestamp when action was marked completed, regardless of whether or not it failed.
+   */
+  completedAt: datetime
+
+  /**
+   * Result of the action if provided.
+   */
+  @db(persistAllFields=true)
+  result: any schema name 'RSLT'
+
+  /**
+   * Error, if accrued during execution.
+   * To pretty-print error message use {@link formatError}.
+   */
+  @db(persistAllFields=true)
+  error: Error schema name 'ERR'
+
+  /**
+   * Used for finding queue entry associated with a {@link submit} for this action during {@link: interrupt operation}.
+   */
+  submitKey: private string
+
+  /**
+   * Used to determine if invocation of {@link applyAndPersistResult} is the latest for this action.
+   */
+  runKey: private string
+
+  /**
+   * Pretty-format {@link error} message.
+   */
+  formatError: inline member function(): string
+
+  /**
+   * Submit action to {@link #ActionQueue} for execution.
+   * Use {@link #hasCompleted} for monitoring progress.
+   * Failed {@link AsyncAction}s will show up in {@link ActionQueue#errors} list and can be listed using
+   * the {@link #allFailed) method.
+   *
+   * @param spec
+   *           Action specification.
+   *
+   * @return AsyncAction instance that could be used to monitor progress and fetch action results.
+   */
+  submit: function(spec: !AsyncActionSpec): !AsyncAction
+
+  /**
+   * Re-submit async action to {@link ActionQueue} for execution. Useful for re-running failed actions.
+   * Use {@link #hasCompleted} for monitoring progress.
+   * `AsyncAction` has to be persisted before using {@link #reSubmit}.
+   *
+   * @return AsyncAction instance that could be used to monitor progress and fetch action results.
+   */
+  reSubmit: member function(): !AsyncAction
+
+  /**
+   * Interrupts (e.g. attempts to cancel) the running action.  When called, assuming the action isn't already completed,
+   * sets the {@link completed} flag to true, the error to {@link Err.Interrupted} and calls {@link ActionQueue#cancel}
+   * with the associated {@link ActionQueueEntry} for the action. Once interrupted, the action may be resubmitted if
+   * {@link AsyncActionSpec#runOnlyOnce} is not true.
+   *
+   * Note that this is only a request to interrupt the actual running action if it is possible to do so.  Even if
+   * possible, it may not happen immediately and that action may continue to run after this returns successfully
+   * (i.e. there is no waiting for the action to be interrupted).
+   *
+   * Also note that this is only supported if {@link AsyncActionSpec#skipQueues is false}.  An error will be thrown
+   * otherwise.
+   *
+   * @return, the final state of the instance, if cleanup was not requested.
+   */
+  interrupt: member function(): !AsyncAction
+
+  /**
+   * Get all failed {@link AsyncAction}s.
+   *
+   * @param spec
+   *         Optional {@link FetchSpec} that can be used to limit output.
+   * @return Arry of failed {@link AsyncAction}s.
+   */
+  allFailed: function(spec: FetchSpec): [AsyncAction]
+
+  /**
+   * Checks whether action execution was completed.
+   */
+  hasCompleted: member function(): !boolean
+
+  /**
+   * Internal method that will be called from ActionQueue.
+   */
+  applyAndPersistResult: private member function()
+
+  /**
+   * Internal function called to check for any currently submitted actions that have passed their {@link timeoutMinutes}
+   * and have not yet completed, and interrupts and fails them.  This will cause their entries in the
+   * {@link ActionQueue} to fail as well.
+   */
+  checkTimeouts: private function()
+}

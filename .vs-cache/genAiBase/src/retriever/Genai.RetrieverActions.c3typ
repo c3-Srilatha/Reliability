@@ -1,0 +1,340 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The actions for a Genai.Retriever (separated so Genai.Retriever.Dense.Engine can mix them in
+ * without being an entity). Ideally, this type would be called Genai.Retriever.Actions, but since
+ * Genai.Retriever must mix this type in, this cannot also be within the Genai.Retriever namespace.
+ */
+private type Genai.RetrieverActions {
+
+  /**
+   * Index the passages in the source collections.
+   *
+   * @param collections
+   *           The collections for which to index passages
+   * @param purge
+   *           If true, any existing index will be purged before indexing.
+   * @return the SourceCollections processed and any errors from them
+   */
+  indexCollections: member function(collections: ![Genai.SourceCollection], purge: boolean): !ObjList<Genai.SourceCollection> py
+
+
+  /**
+   * Unindex the passages in the source collections.
+   *
+   * @param collections
+   *           The collections for which to unindex passages
+   * @param shouldTransitionToDeleted
+   *           Transitions the {@link Genai.SourceFile#status} to {@link Genai.SourceFile.StatusEnum#DELETED} if set to true
+   * @return the SourceCollections processed and any errors from them
+   */
+  unindexCollections: member function(collections: ![Genai.SourceCollection], shouldTransitionToDeleted: boolean): !ObjList<Genai.SourceCollection> py
+
+  /**
+   * Index the passages in the files.
+   *
+   * @param files
+   *           The files for which to index passages
+   * @param purge
+   *           If true, any existing index will be purged before indexing.
+   * @return the SourceFiles processed and any errors from them
+   */
+  indexFiles: member function(files: ![Genai.SourceFile], purge: boolean): !ObjList<Genai.SourceFile> py
+
+  /**
+   * Unindex the passages in the files.
+   *
+   * @param files
+   *           The files for which to unindex passages
+   * @return the SourceFile processed and any errors from them
+   */
+  unindexFiles: member function(files: ![Genai.SourceFile], shouldTransitionToDeleted: boolean): !ObjList<Genai.SourceFile> py
+
+  /**
+   * Handles transition of files to `INDEXED` and `NOT_INDEXED` states when indexing or unindeinxg completes.
+   *
+   * @param indexedPassages
+   *           The passages that successfully indexed from index call or were remaining from an unindex call.
+   * @param affectedSourceFiles
+   *           The {@link Genai.SourceFile}s which were previously indexed. Useful for index with purge or unindexing.
+   * @param purge
+   *           Whether a purge was performed before the index operation.
+   * @param unindexing
+   *           Whether the original call was an index or unindex API for the Retriever. For example:
+   *           #indexFiles #indexCollections #unindexFiles #unindexFiles
+   * @param shouldTransitionToDeleted
+   *           Transitions the {@link Genai.SourceFile#status} to {@link Genai.SourceFile.StatusEnum#DELETED} if set to true and the file is being unindexed.
+   *           If falsy, the file would transition to {@link Genai.SourceFile.StatusEnum#NOT_INDEXED} after being unindexed
+   */
+  onIndexComplete: private member function(indexedPassages: [Genai.SourcePassage],
+                                           affectedSourceFiles: [Genai.SourceFile],
+                                           purge: boolean,
+                                           unindexing: boolean,
+                                           shouldTransitionToDeleted: boolean) py
+
+  /**
+   * Handles restoration of file statuses back to an "indexed" state (`INDEXED`, `NEEDS_REINDEXING`, `NEEDS_REMOVAL`)
+   * for files which are in `failedPassages` but were in the previous zip. The rest of the failed files
+   * go to the `FAILED` state.
+   *
+   * @param failedPassages
+   *           The {@link Genai.SourcePassage}s which failed to index. Their respective {@link Genai.SourceFile}s will be
+   *           updated.
+   * @param errorMessage
+   *           The specific message string for the failure
+   * @param unindexing
+   *           Whether the original call was an index or unindex API for the Retriever. For example:
+   *           #indexFiles #indexCollections #unindexFiles #unindexFiles
+   */
+  onIndexFailure: private member function(failedPassages: ![Genai.SourcePassage],
+                                          errorMessage: !string,
+                                          unindexing: boolean) py
+
+
+  /**
+   * The same as {@link Genai.Retriever#onIndexFailure} but called from the async action processing {@link CronJob} in
+   * {@link Genai.Retriever.IndexAction#processQueues}.
+   */
+  onIndexPassagesFileFailure: private member function(passagesFile: !File, errorMessage: !string, unindexing: boolean) py
+
+  /**
+   * Construct the SimilaritySearchResult array from an array of Documents.
+   *
+   * @param docs
+   *           The array of docs
+   * @param spec
+   *           The spec
+   * @param scoreThreshold
+   *           Optionally drop all docs with scores below the threshold
+   * @return the array of SimilaritySearchResults
+   */
+  constructSimilaritySearchResult: private member function(docs: native,
+                                                           spec: Genai.Retriever.SearchSpec,
+                                                           scoreThreshold: int = 0): ![Genai.Retriever.SimilaritySearchResult] py
+
+  /**
+   * Set up CUDA for GPU use.
+   *
+   * @param device
+   *           The string value for the device being set. '-1' is CPU, otherwise a comma-separated value, e.g. '0' or '0,1,2'
+   */
+  setupGpu: private function(device: !string): boolean py
+
+  /**
+   * Index the set of passages.
+   *
+   * @param passages
+   *           The passages.
+   * @param purge
+   *           If true, any existing index will be purged before indexing.
+   * @return the SourcePassages processed and any errors from them
+   */
+  indexPassages: inline member function(passages: ![Genai.SourcePassage], purge: boolean): !ObjList<Genai.SourcePassage> py-server
+
+  /**
+   * Unindex the set of passages.
+   *
+   * @param passages
+   *           The passages
+   * @param shouldTransitionToDeleted
+   *           Transitions the {@link Genai.SourceFile#status} to {@link Genai.SourceFile.StatusEnum#DELETED} if set to true
+   * @return the SourcePassages processed and any errors from them
+   */
+  unindexPassages: inline member function(passages: ![Genai.SourcePassage], shouldTransitionToDeleted: boolean): !ObjList<Genai.SourcePassage> py
+
+  /**
+   * Returns the top k passages that are most similar to the query.
+   * In the case of post-filtering, if fewer than k passages are retrieved,
+   * the search is repeated until k passages are retrieved.
+   */
+  similaritySearch: abstract member function(spec: !Genai.Retriever.SearchSpec): ![Genai.Retriever.SimilaritySearchResult]
+
+  /**
+   * Used internally when purging the existing indexes.
+   *
+   * NOTE: In the current implementation, unless `purgeZipLocation` is set to true,
+   *       only **local** (to the node and process) state is purged.
+   *
+   * @return the Genai.Retriever on which this was called.
+   */
+  purgeIndex: abstract private member function(purgeZipLocation: boolean): !Genai.Retriever
+
+  /**
+   * Common logic for #purgeIndex.
+   *
+   * @param localRoot
+   *           The local directory, if any, to purge
+   * @param indexZipUrl
+   *           The remote zip location, if any, to delete
+   * @param purgeZipLocation
+   *           Whether to remove the remote zip (if any) and update the SourceFile statuses.
+   */
+  doPurgeIndex: private member function(localRoot: string, indexZipUrl: string, purgeZipLocation: boolean) py
+
+  /**
+   * For testing and debugging purposes. Get the number of passages currently indexed.
+   */
+  passageCount: abstract private member function(): !int
+
+  /**
+   * For internal and debugging purposes. Extract all of the SourceFiles in the retriever's vector store's passages.
+   */
+  indexedSourceFiles: abstract private member function(): [Genai.SourceFile]
+
+  /**
+   * For internal and debugging purposes. Extract all of the SourceFiles in the retriever's vector store's passages.
+   */
+  indexedSourcePassages: abstract private member function(): [Genai.SourcePassage]
+
+  /**
+   * Initialize the vector store.
+   *
+   * @param failIfMissing
+   *    If true, the initialize call will fail if the retriever entity does not already exist.
+   *
+   * @return the number of passages currently loaded in the vector store
+   */
+  initialize: private abstract member function(failIfMissing: boolean): !int
+
+  /**
+   * Generate a list of source ids from {@link Genai.Query#addFilters}. Used by #similaritySearch
+   * to determine which sources, if any, match the filter specified and are accessible to the
+   * current {@link User}.
+   *
+   * @return the matching source ids. An empty array indicates there are no matching sources.
+   * If query has no filters and ACLs are not enabled, this will return None/null to indicate that
+   * no filter should be applied.
+   */
+  queryFilterToSourceIds: private member function(query: !Genai.Query): !?[string] py
+
+  /**
+   * Generate a {@link Filter} from {@link Genai.Query#addFilters}. Used by #similaritySearch
+   * to determine which sources, if any, match the filter specified and are accessible to the
+   * current {@link User}.
+   *
+   * @return the filter, if any.
+   * If query has no filters and ACLs are not enabled, this will return None/null.
+   */
+  queryFilterToC3Filter: private member function(query: !Genai.Query): Filter py
+
+  /**
+   * Private helper to dispatch an IndexAction to asynchronously index via ActionQueue.
+   * @param passages
+   *           The passages to index or unindex.
+   * @param purge
+   *           Whether to purge all existing indices before indexing.
+   * @param unindexing
+   *           The whether the passages are to be indexed or unindexed.
+   * @param shouldTransitionToDeleted
+   *           Transitions the {@link Genai.SourceFile#status} to {@link Genai.SourceFile.StatusEnum#DELETED} if set to true
+   */
+  dispatchIndexAction: private member function(passages: ![Genai.SourcePassage],
+    purge: boolean,
+    unindexing: boolean,
+    shouldTransitionToDeleted: boolean) py
+
+  /**
+   * Implemented in the extending types.
+   *
+   * Not declared abstract so types like {@link Genai.Retriever.Elser} do not need to override.
+   * Index a list of passages in a file. Used by indexing AsyncAction to read in and index the passages.
+   *
+   * @param passagesFile
+   *           A file temporarily written to the same directory as the indexZipUrl, but containing just the passages
+   *           passed to #indexPassages or #unindexPassages.
+   * @param purge
+   *           Whether to purge all existing indices before indexing.
+   * @param unindexing
+   *           The whether the passages are to be indexed or unindexed.
+   * @param usingGpu
+   *           Whether GPU should be used
+   * @param shouldTransitionToDeleted
+   *           Transitions the {@link Genai.SourceFile#status} to {@link Genai.SourceFile.StatusEnum#DELETED} if set to true
+   */
+  indexPassagesFile: private member function(passagesFile: !File, purge: boolean, unindexing: boolean, usingGpu: boolean, shouldTransitionToDeleted: boolean) py
+
+  /**
+   * Read a passagesFile back into memory.
+   * @param passagesFile
+   *           A file temporarily written to the same directory as the indexZipUrl, but containing just the passages
+   *           passed to #indexPassages or #unindexPassages.
+   */
+  readPassagesFile: private inline function(passagesFile: !File): [Genai.SourcePassage] py
+
+  /**
+   * Should be implemented by any extending type that uses a codemap for code snippets within source passages.
+   * Returns the path on the local filesystem where the codemap will be stored, if it exists.
+   *
+   * @return the path where the locally downloaded codemap file will be found if it exists.
+   */
+  codemapFilePath: private member function(): string py
+
+  /**
+   * Return the dictionary of <string id>: <code snippet> constructed from the `reference_map` in the
+   * {@link Genai.SourcePassage#metadata} for all passages.
+   *
+   * @return the map, if it exists at the path specified by #codemapFilePath
+   */
+  codemap: private inline member function(): map<string, string> py
+
+  /**
+   * Zips the data files and uploads to the remote location.
+   *
+   * @param indexZipUrl
+   *           The url where the remote zip will be uploaded.
+   * @param localRoot
+   *           The local directory where the zip file will be persisted before uploading.
+   * @param dataDir
+   *           The local directory to zip.
+   */
+  zipAndUpload: private function(indexZipUrl: !string, localRoot: !string, dataDir: !string) py
+
+  /**
+   * Internal function to remove passages from the index.
+   *
+   * @param passageIds
+   *           The ids of the passages to remove
+   *
+   * @return whether to continue indexing after removal
+   */
+  removePassages: private member function(passageIds: ![string]): boolean py
+
+  /**
+   * Internal function to determine if the retriever supports incremental indexing.
+   * Unless overridden, this will return False (retrievers by default do not support incremental indexing)
+   *
+   * @return whether the retriever supports incremental indexing
+   */
+  supportsIncrementalIndexing: private member function(): boolean py
+
+  /**
+   * For a given set of passageIds, construct a list of SimilaritySearchResults
+   *
+   * @param passageIds
+   *           The passage ids
+   * @return the SimilaritySearchResults
+   */
+  resultsForPassageIds: private optional member function(passageIds: ![string]): ![Genai.Retriever.SimilaritySearchResult]
+
+  /**
+   * For a collection of embeddings, return an array of indices corresponding to the top k matches according to the
+   * Maximal Marginal Relevance (MMR) algorithm
+   * @param embeddingList
+   *           The embeddings to rank
+   * @param similarityToQuery
+   *          The similarity scores of each embedding to the query
+   * @param lambdaMult
+   *          The ratio used to filter passages out, likely defined by {@link Genai.Retriever.MmrSpec#relevanceToRedundancyRatio}
+   * @param k
+   *         The total number of embedding indexes to return
+   * @return the indices
+   */
+  maximalMarginalRelevance: function(embeddingList: ![[float]], similarityToQuery: ![float], lambdaMult: !float, k: !int): ![int] py-query_orchestrator
+}

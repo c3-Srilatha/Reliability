@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The extended arguments to {@link PerfMetric#trends trends}.
+ *
+ * @see PerfMetric#trends
+ */
+type PerfMetricTrendsSpec mixes Spec {
+
+  /**
+   * If specified, only this measure is checked.
+   */
+  measure: string
+
+  /**
+   * Which direction of change should be detected.
+   */
+  direction: string enum('up', 'down', 'both') = 'both'
+
+  /**
+   * Minimum trend/change fraction to be detected.
+   */
+  minChange: double = 0.00050
+
+  /**
+   * Only measures with data points within the last _n_ days are considered. Note that older data points will be used
+   * (depending on #maxValues) if there are _any_ points within this range.
+   */
+  maxAgeDays: int = 7
+
+  /**
+   * The maximum number of most recent values to consider per measure. This limits the total amount of data points,
+   * but this corresponds to a varying amount of time depending on how many measures are recorded per day which match
+   * the overall queries.
+   */
+  maxValues: int = 100
+
+  /**
+   * Maximum number of metrics to return.
+   */
+  limit: int = 100
+
+  /**
+   * Aggregation statistic used for measurement values. The default is the simple average, but other descriptive
+   * statistics are also possible:
+   *  - `avg` arithmetic mean (simple average)
+   *  - `min` minimum value
+   *  - `max` maximum value
+   *  - `variance` the average of the squares of the differences from the mean
+   *  - `median` point that half the values are above and half below
+   *  - `Q1` point that only ¼ of the values are below (first quartile)
+   *  - `Q3` point that only ¼ of the values are above (third quartile)
+   *  - `D1` point that only ⅒ of the values are below (first decile)
+   *  - `D9` point that only ⅒ of the values are above (ninth decile)
+   */
+  aggregateBy: !string enum('avg', 'min', 'max', 'variance', 'median', 'Q1', 'Q3', 'D1', 'D9') = 'avg'
+}

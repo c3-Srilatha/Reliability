@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The spec used by {@link UiSdlUseC3Action} to perform actions on C3 Types.
+ */
+type C3ActionSpec {
+  /**
+   * The name of the type the action should be performed on.
+   */
+  typeName: string
+
+  /**
+   * The name of the action to perform.
+   */
+  actionName: string
+
+  /**
+   * The array of arguments for the action.
+   */
+  argsArray: [any] = []
+
+  /**
+   * DEPRECATED: Replaced by argsArray field
+   * The array of arguments for the action.
+   */
+  @deprecated(finalVersion="8.12")
+  argsArry: [any] = []
+
+  /**
+   * DEPRECATED: Replaced by UiSdlUseC3Action#useC3Action invalidators parameter
+   * An array of values to retrigger the network call if any change.
+   */
+  @deprecated(finalVersion="8.6")
+  invalidators: [any] = []
+
+  /**
+   * The method to use in the request
+   */
+  method: string = 'POST'
+
+  /**
+   * Whether the action should be disabled (i.e., not executed).
+   * When true, the network request will not be sent.
+   */
+  disabled: boolean
+}

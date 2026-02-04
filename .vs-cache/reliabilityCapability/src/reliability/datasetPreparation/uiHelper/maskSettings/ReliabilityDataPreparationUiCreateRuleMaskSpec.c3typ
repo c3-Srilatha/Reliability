@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+  * Type that represents a rule mask for dataset preparation settings. This is used for any mask that is applied based
+  * on one or more sensors' values. Through the UI, non-operational and training/inference rule masks all
+  * represent instances of these rule masks.
+  */
+type ReliabilityDataPreparationUiCreateRuleMaskSpec {
+
+  /**
+   * Specs for the masks that will be created
+   */
+  masks: [ReliabilityDataPreparationRuleMaskSpec] = []
+
+  /**
+   * A placeholder used to store the expressions for the masks. This is used by the UI
+   * in the dataset preparation flow to create UI based masks.
+   */
+  expression: string = ""
+
+  /**
+   * The interval on which the rules will be evaluated
+   */
+  interval: string enum Interval = QUARTER_HOUR
+
+  /**
+   * The window to check the rule against at every data point. This means that if the rule is met at any data point
+   * in the points within the window, the feature will be 1. The window by default the period after and including
+   * the current data point. If shouldLookBack is true, the window will be the period before and including the
+   * current data point. This param is utilized to implement a period of time before or after the mask that should
+   * also be excluded from training data.
+   */
+  window: Period
+
+  /**
+   * Only relevant if `window` is set. If true, the window will be the current data point and the period after it.
+   * If false, the window will be the period before and including the current data.
+   */
+  shouldLookForward: boolean
+}

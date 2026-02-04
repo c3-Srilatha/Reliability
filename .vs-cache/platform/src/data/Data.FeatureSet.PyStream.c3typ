@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This specialization of {@link Data.Stream} contains the implementation details for the python versions of the streaming APIs
+ * on {@link Data.FeatureSet#stream}.
+ *
+ * NOTE: this stream is only implemented to be "in process", which means that passing this stream instance through
+ * a C3 Action will not result in consistent behavior.
+ *
+ * DEVELOPER NOTE: the python implementation is responsible for creating the {@link Data.StreamSpec#batchSize} - let's
+ * call this the "micro-batch" size. It does this by calling the java implementation in {@link Data.FeatureSet.Stream}
+ * to gather the data in the "macro-batch" size (i.e. storage block size) and iterating over that in-memory.
+ * The in-memory "macro-batch" will be discarded when exhausted and the next one will be requested from the java implementation.
+ *
+ * DEVELOPER NOTE: this python implementation tracks mutable state through the `$py_state` attribute, which is a
+ * native python `dict` that holds and maintains state of the stream between `next` calls. This includes state such as:
+ * - in-memory "macro-batch"(s)
+ * - current position in "macro-batch"
+ */
+@beta
+type Data.FeatureSet.PyStream mixes Data.Stream {
+
+  /**
+   * Reference to the "parent" {@link Data.FeatureSet.Stream}, which is responsible for implementing the
+   * "macro-batch"ing.
+   */
+  parentStream: !Data.FeatureSet.Stream
+
+  /**
+   * The "micro-batch" size as described on {@link Data.FeatureSet.PySliceStream}
+   */
+  batchSize: cached property(): !int py
+
+  @call(stayInEngine=true)
+  hasNext: ~ py
+
+  @call(stayInEngine=true)
+  next: ~
+
+  @call(stayInEngine=true)
+  close: ~ py
+
+  @call(stayInEngine=true)
+  reset: ~ py
+}

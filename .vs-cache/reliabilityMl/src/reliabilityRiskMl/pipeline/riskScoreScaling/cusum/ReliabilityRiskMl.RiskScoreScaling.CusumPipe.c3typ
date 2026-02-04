@@ -1,0 +1,97 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This is an implementation of {@link ReliabilityRiskMl.RiskScoreScaling.Pipe} for the
+ * {@link ReliabilityRiskMl.ReconstructionPipeline#riskScoreNormalizationPipe}, that normalizes risk scores based on
+ * the CUSUM algorithm for change point algorithm.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.RiskScoreScaling.CusumPipe extends ReliabilityRiskMl.RiskScoreScaling.Pipe<{trainingFeatures: Data, inferenceFeatures: Data, scaledTrainingFeatures: Data, scaledInferenceFeatures: Data, residuals: Data, scaledResiduals: Data, reconstructions: Data, scaledReconstructions: Data, riskScore: Data, alertContext: Data}, {riskScoreNormalized: Data}> type key 'CP' {
+
+  /**
+   * Scaling factor applied to the intermediary value estimated by Median Absolute Deviation (MAD) to obtain cusumK.
+   * It can be interesting to use this parameter to tune the sensitivity to the outliers of the different base
+   * estimators, as seen for example in this [paper](https://pure.uva.nl/ws/files/2418313/149576_Hafiz_Zafar_Nazir_thesis_plus_cover.pdf).
+   * The default value is chosen from this paper in accordance with the default value of MAD, which
+   * together offer a robust estimator.
+   */
+  scaleFactor: double = 1.4826
+
+  /**
+   * Tolerance parameter signifying acceptable deviation in the CUSUM algorithm. This field can be computed as
+   * a part of training the pipe, but can also be manually specified.
+   * The formula to compute this is cusumK = median(risk score) + tanh_transform(MAD(risk score) * {@link #scaleFactor}) * MAD(risk score)
+   */
+  cusumK: float
+
+  /**
+   * Saturation point for the CUSUM algorihthm. This is the maximum value that the CUSUM value can reach.
+   * This parameter must be specified in order to use the CUSUM algorithm.
+   */
+  cusumH: !float = 720
+
+  /**
+   * Minimum value of cusumK to be used in the CUSUM algorithm. If not specified, defaults to 1.
+   */
+  cusumKMin: double = 1
+
+  /**
+   * Maximum value of cusumK to be used in the CUSUM algorithm. If not specified, defaults to 10.
+   */
+  cusumKMax: double = 10
+
+  /**
+   * The minimum time interval (in seconds) inferred from data that the cusum pipe is trained on.
+   * For example, if the cusum pipe is trained on hourly data, {@link interval} should be 3600.
+   */
+  interval: private int
+
+  /**
+   * Set this to false if you want to use the latest cusum (normalized risk score) value in the alertContext
+   * to start computing the cusum value for the input data to be processed.
+   *
+   * Set this to true if you want to compute the cusum value from scratch starting from the first
+   * risk score in the alertContext.
+   */
+  doNotComputeIncrementalCusum: boolean = false
+
+  /**
+   * Set this to true if you want to preserve the raw cusum value in the output normalized risk score.
+   * By default, the raw cusum value is scaled to be between 0 and 1, by dividing each value by the cusumH.
+   */
+  outputRawCusumValue: boolean = false
+
+  /**
+  * Set this to true if you do not want to fill missing values corresponding to masked data in the input risk scores
+  * with 0s. If set to true, then the cusum value will skip over the masked periods and continue from the last
+  * available cusum value.
+  *
+  * By default, periods corresponding to missing values are filled with 0s, so the cusum value will decrease by
+  * {@link cusumK} for every masked out timestamp.
+  */
+  doNotFillMissingValues: boolean = false
+
+  generatePipe: ~ py
+
+  doTrain: ~ py-data
+
+  afterTrain: ~ py
+
+  isTrainable: ~ py
+
+  isTrained: ~ py
+
+  doProcess: ~ py-data
+
+  resolveForDatasetPreparationRun: ~ py
+}

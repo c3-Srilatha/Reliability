@@ -1,0 +1,130 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration parameters for {@link Genai.Agent.Dynamic}
+ */
+type Genai.Agent.Dynamic.ConfigParams mixes Genai.Agent.ConfigBase {
+  /**
+   * Name of the {@link GenaiCore.Llm.Completion.Client} to use
+   */
+  llmConfigName: !string = "gpt_4o"
+
+  /**
+   * The toolkit the agent has access to.
+   */
+  toolkit: Genai.Agent.Dynamic.Toolkit
+
+  /**
+   * The maximum number of steps the agent can take to answer a query.
+   * If the agent reaches #maxSteps, and the query is not answered, the agent will force a solution.
+   * {link Genai.Agent.Dynamic.ChatManagerSpec#forceSolutionPrompt} will be used to force a solution.
+   */
+  maxSteps: !int = 7
+
+  /**
+   * The max time the agent can take to answer a query.
+   * If the agent reaches #maxSeconds, and the query is not answered, the agent will force a solution.
+   * {link Genai.Agent.Dynamic.ChatManagerSpec#forceSolutionPrompt} will be used to force a solution.
+   */
+  maxSeconds: !int = 180
+
+  /**
+   * Spec containing the arguments that we want to pass to the agent's interal chat manager.
+   */
+  chatManagerSpec: !Genai.Agent.Dynamic.ChatManagerSpec
+
+  /**
+   * Map of `tagType` to {@link Genai.Agent.DynamicTrajectory.Step}.
+   */
+  tagStepMap: map<string, Genai.Agent.DynamicTrajectory.Step.TagType>
+
+  /**
+   * Specialization of the agent instance.
+   * This is used to filter the few-shot
+   * examples in {@link Genai.FewShotExample.PythonAgent} associated with the agent.
+   */
+  specialization: string = "genericAnalysis"
+
+  /**
+   * The maximum number of few-shot examples to retrieve for prompt generation.
+   */
+  numFewShots: int = 3
+
+  /**
+   * Manages the lifecycle of `PythonAgentCodeExecutor` callbacks for code execution workflows.
+   */
+  codeExecutionCallbacks: Genai.Agent.Dynamic.CodeExecutionCallbackSpec
+
+  /**
+   * Defines the spec for managing python agent callbacks, used to manage the lifecycle
+   * of PythonAgent steps and calls.
+   */
+  onStepCallbacksSpec: Genai.Agent.Dynamic.OnStepCallbackSpec
+
+  /**
+   * Template string for including input variables in the user query. In an agent's call step, the
+   * input variables are included in the user query to provide context to the agent. This template
+   * string will print out the input variables in the user query.
+   */
+  inputVariablesPrompt: private string
+
+  /**
+   * Template prompt used for rewriting the conversation to a single step.
+   * A default template will be used if not specified.
+   */
+  rewriteConversationToSingleStepPrompt: private string
+
+  /**
+   * Level of verbosity for output display. Used for debugging purposes on py-client.
+   * - 0: Nothing is printed
+   * - 1: An update is printed every time something is done. E.g. code executed, retried step, etc.
+   * - 2: Details of all the actions take are printed. E.g. llm outputs, code execution outputs, etc.
+   */
+  verbosity: private int = 2
+
+  /**
+   * The path to the folder in which to save the images output from the {@link Genai.Agent.Dynamic}.
+   * If not set, the images will be saved to <file system root url>/ObjectReferenceManagerFiles
+   */
+  imageFileFolderPath: string
+
+  /**
+   * Kwargs used by the ObjectReferences to format the object as a string for the LLM.
+   * Should take the form of {"kwargs": {"PandasTable": {...}, "TextPassage": {...}, ...}},
+   * providing formatting arguments for each subclass defined in object_reference.py.
+   */
+  formatObjectForLLMKwargs: json
+
+  /**
+   * The parameters for the in-memory session store cache.
+   */
+  sessionStoreInMemoryCacheParams: GenaiCore.SessionStore.InMemory.CacheParams
+
+  /**
+   * A {@link Lambda} that can be used to override the default object reference creation defined in object_reference.py.
+   * execution outputs.
+   */
+  objectReferenceCreator: Lambda<function(id: !native, obj: native, formatObjectForLlmKwargs: json): !native>
+
+  /**
+   * A mapping from object reference classes to their respective creators using ActionRef-like structures
+   * For example:
+   * {
+   *  "default": { // Use default for the fallback case
+   *   "typeName": "Genai.Agent.Dynamic.UiHelpers",
+   *   "actionName": "defaultForUiHelper"
+   * },
+   * "PandasTable": {
+   *   "typeName": "Genai.Agent.Dynamic.UiHelpers",
+   *   "actionName": "pandasForUiHelper"
+   * },
+   */
+  uiDataCreator: json
+}

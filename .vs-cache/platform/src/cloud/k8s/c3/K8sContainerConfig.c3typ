@@ -1,0 +1,161 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents additional configuration options for a K8s container brought up through C3server via Cloud Framework.
+ * This Config is identified by the name of the container that the configuration applies to.
+ * Current support is only for the "c3-server" container and "c3-server-log" container.
+ */
+@config(authz=ConfigAuthz.CLUSTER_ADMIN, minOverride=CLUSTER, maxOverride=CLUSTER)
+type K8sContainerConfig mixes Config, Named {
+
+  /**
+   * @param semanticVersion
+   *         Version of the app for which the config is being fetched.
+   * @param bindings
+   *         Bindings to be used for templating the config.
+   * @param failIfMissing
+   *         If true, an error will be thrown if the config is not found.
+   * @return fetched config for the given name
+   */
+  forC3ServerContainer: function(semanticVersion: !SemanticVersion,
+                                 bindings: map<string, string>,
+                                 failIfMissing: boolean): K8sContainerConfig
+
+  /**
+   * @param semanticVersion
+   *         Version of the app for which the config is being fetched.
+   * @param bindings
+   *         Bindings to be used for templating the config.
+   * @param failIfMissing
+   *         If true, an error will be thrown if the config is not found.
+   * @return fetched config for the given name
+   */
+  forC3ServerLogContainer: function(semanticVersion: !SemanticVersion,
+                                    bindings: map<string, string>,
+                                    failIfMissing: boolean): K8sContainerConfig
+
+  /**
+   * Boolean that indicates whether the K8s container should be started with a read-only root filesystem.
+   */
+  readOnlyRootFilesystem: boolean
+
+  /**
+   * Boolean controlling Controls whether a process can gain more privileges than its parent process.
+   */
+  allowPrivilegeEscalation: boolean
+
+  /**
+   * LinuxCap that contains all default linux capabilities.
+   */
+  linuxCap: [string enum LinuxCap]
+
+  /**
+   * Group ID (GID) applied to mounted volumes for setting file ownership and permissions.
+   */
+  fsGroup: string
+
+  /**
+   * User ID (UID) under which all container processes will run by default.
+   */
+  runAsUser: string
+
+  /**
+   * Group ID (GID) under which all container processes will run by default.
+   */
+  runAsGroup: string
+
+  /**
+   * Environment variables that are to be added to the container.
+   */
+  envVars: map<string, string>
+
+  /**
+   * seccompProfile that contains type and localhostProfile.
+   */
+  seccompProfile: K8sSeccompProfile
+
+  /**
+   * containerImageRegistry that represents the image registry the current container is using.
+   */
+  containerImageRegistry: string
+
+  /**
+   * containerImageRepository that represents the image repository the current container is using.
+   */
+  containerImageRepository: string
+
+  /**
+   * containerImageTag that represents the image tag the current container is using.
+   */
+  containerImageTag: string
+
+  /**
+   * containerImageUrl returns the full path of an image the current container is using.
+   */
+  containerImageUrl: member function(): !string
+
+  /**
+   * Helper function to enable some of the linux capabilities of the c3-server K8sContainerConfig.
+   *
+   * @param capabilities
+   *         Specifies the capability to configure.
+   */
+  addLinuxCaps: member function(capabilities: ![string enum LinuxCap])
+
+  /**
+   * Helper function to disable some of the linux capabilities of the c3-server K8sContainerConfig.
+   *
+   * @param capabilities
+   *         Specifies the capability to configure.
+   */
+  removeLinuxCaps: member function(capabilities: ![string enum LinuxCap])
+
+  /**
+   * Helper function to add runtimeDefault seccompProfile of the c3-server K8sContainerConfig.
+   */
+  addRuntimeDefaultSeccompProfile: member function()
+
+  /**
+   * Helper function to add localhost seccompProfile of the c3-server K8sContainerConfig.
+   *
+   * @param localhostProfile
+   *         Specifies the localhostProfile to configure.
+   */
+  addLocalhostSeccompProfile: member function(localhostProfile: !string)
+
+  /**
+   * Helper function to remove seccompProfile of the c3-server K8sContainerConfig.
+   */
+  removeSeccompProfile: member function()
+
+  /**
+   * Volumes that are to be added to the container.
+   */
+  volumes: [K8sVolume]
+
+  /**
+   * Volume Mounts that are to be added to the container. The respective volumes must be defined in the {@link K8sContainerConfig#volumes} field.
+   */
+  volumeMounts: [K8sVolumeMount]
+
+  /**
+   * Volume Mount Paths that are now supported through symLink, require for managing backward compatibility.
+   */
+  symLinkedVolumeMountPaths: private set<string>
+
+  /**
+   * The number of CPUs. Currently being used only for the c3-server-log container.
+   */
+  cpu: double
+
+  /**
+   * The CPU memory size in MB. Currently being used only for the c3-server-log container.
+   */
+  memoryMb: int32
+}

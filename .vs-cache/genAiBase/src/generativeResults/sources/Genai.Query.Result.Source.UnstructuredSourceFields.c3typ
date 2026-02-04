@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Common fields used by unstructured query result sources.
+ */
+type Genai.Query.Result.Source.UnstructuredSourceFields {
+
+  /**
+   * The passage that was selected
+   */
+  passage: !Genai.SourcePassage
+
+  /**
+   * The {@link Genai.SourceFile} that the #passage belongs to.
+   */
+  // TODO: GEN-9667 should this be deleted since SourcePassage has a `source` field?
+  sourceFile: !Genai.SourceFile
+
+  /**
+   * Returns the ID of this relation that was given to the llm to use for citation.
+   */
+  // TODO: GEN-9667 Update logic to always use the relation id instead of the passage id for unstructured sources
+  llmCitationId: inline property(): !string py
+
+  /**
+   * Returns the `passage` that was selected
+   */
+  sourcePassage: inline property(): !Genai.SourcePassage py
+
+  /**
+   * The result from attribution with corroboration for this source relation.
+   */
+  sourceAttribution: [Genai.Agent.Tool.Util.Attributor.Segmentation.Source]
+}

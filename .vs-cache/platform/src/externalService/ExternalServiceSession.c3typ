@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This instance contains information on a single persistent session implemented by script code.
+ * Persistent sessions are used to implement script-based {@link Engine.Deprecated engines}, which allows the code to build and
+ * maintain a cache between calls.
+ * NOTE: In general, an {@link ExternalService} should be accessible during provisioning. The facading here
+ * allows consistent cache access during and outside-of provisioning.
+ *
+ * @see Engine.Deprecated
+ */
+@facade(tenant='c3', tag='c3')
+abstract type ExternalServiceSession mixes Identified, CachedWithDefaultProduce {
+
+  /**
+   * The endpoint of this external service instance
+   */
+  endpoint: Url
+
+  /**
+   * Service instance is automatically cleaned up after this timeout, calculated
+   * as elapsed time from last service "activity".
+   * See ExternalServiceSession#sendKeepAlive and ExternalServiceSession#lastKeepAliveTimestamp
+   * Note: a non-positive value indicates unlimited timeout
+   */
+  idleTimeoutMinutes: !int
+
+  /**
+   * Stopped reason
+   */
+  error: string
+
+  /**
+   * Time that the error happened
+   */
+  errorTimestamp: datetime
+
+  /**
+   * Context for this external service
+   */
+  context: ExternalServiceContext
+
+  /**
+   * Throws exception if current time < errorTimestamp + errorExpireTime
+   * @param errorExpireTime
+   *                     In milliseconds; An error expires after this time period
+   */
+  reportError: private member function(errorExpireTime: int)
+
+  /**
+   * The status of the child process. This will be either RUNNING or STOPPED.
+   */
+  state: !string enum Engine.State
+
+  /**
+   * Stops the service instance
+   */
+  stop: abstract member function(reason: string)
+
+  /**
+   * Sends an indication to the service that the service is non-idle. Used in timeout calculations.
+   */
+  sendKeepAlive: abstract member function()
+
+  /**
+   * Sends an indication to the service that the service is non-idle. Used in timeout calculations.
+   */
+  lastKeepAliveTimestamp: abstract member function()
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An "apply" represents calling a function or lambda value with a set of argument values packaged in an array. This is
+ * useful when the function and arguments are computed in code.
+ *
+ * For example:
+ * ```js
+ * let args = [left];
+ * if (op.isBinary)
+ *   args.push(right);
+ * return op.impl().apply(this, args);
+ * ```
+ * Here the (positional) arguments are in an array that is constructed in code.
+ *
+ * In Python, there is no special function, but we might use `*` or `**` to expand the arguments:
+ * ```py
+ * args = {"left": left}
+ * if op.isBinary:
+ *     args["right"] = right
+ * return op.impl()(this, **args)
+ * ```
+ * Here the (keyword) arguments are in a dictionary that is constructed in code.
+ *
+ * @see Code.Invocation
+ * @see Code.Call
+ */
+@code(java="none")
+type Code.Apply mixes Code.Expr {
+
+  /**
+   * The expression that yields the function value to call.
+   */
+  function: member function(): !Code.Expr
+
+  /**
+   * The expression that yields the "this" value for the function call. If not defined, `this` will be `undefined`
+   * in JavaScript and not passed as the first argument in Python.
+   */
+  this: member function(): Code.Expr
+
+  /**
+   * The expression that yields the argument array to call with.
+   */
+  args: member function(): Code.Expr
+
+  /**
+   * The expression that yields the keyword argument map to call with.
+   */
+  kwargs: member function(): Code.Expr
+
+  _function: private !Code.Expr
+  _this:     private Code.Expr
+  _args:     private Code.Expr
+
+  @code(js="none")
+  _kwargs: private Code.Expr
+}

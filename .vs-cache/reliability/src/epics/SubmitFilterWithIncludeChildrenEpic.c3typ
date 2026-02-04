@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Modifies the filter expression of the filter panel to include the children assets and emits action to request data.
+ * It is intended to be used when the data grid's dataSpec.dataType has a relationship to a parent asset, like ReliabilityAssetAlert
+ * or ReliabilitySensorAlert.
+ *
+ * Required payload:
+ * - targetGridId: The id of the grid to be filtered
+ * - selectedAssetFormFieldName: The name of the field that contains the selected assets in the filter panel (e.g. parent.id)
+ *
+ * Optional payload:
+ * - fieldNameMapping: Used to map form field names to grid field names (similar to specifying `componentsToFilterMapping` in the form)
+ *   Example: { "parent.id": "parent.id", "depth": "parent.depth" }
+ *
+ * **Note:** The filter panel should have a field to select parent assets, a field to select asset levels,
+ * and a field to indicate whether to include children assets called `includeChildren`.
+ * **Note:** Do not use this epic along with `componentsToFilterMapping` in the filter panel to prevent duplicate fetch calls.
+ */
+type SubmitFilterWithIncludeChildrenEpic mixes UiSdlEpic

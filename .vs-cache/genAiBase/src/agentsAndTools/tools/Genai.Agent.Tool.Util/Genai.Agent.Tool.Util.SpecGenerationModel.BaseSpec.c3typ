@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base Spec to be used in generating an {@link EvalSpec} or {@link EvalMetricSpec} using llm
+ */
+type Genai.Agent.Tool.Util.SpecGenerationModel.BaseSpec mixes Genai.Agent.Tool.Util.SpecCorrection.BaseSpec {
+  /**
+   * Config used to specify the LLM that should be used for generation of the Spec.
+   */
+  llmConfig: !Genai.UnstructuredQuery.Engine.ModelConfig
+
+  /**
+   * Prompt sent to the spec generation model to produce the spec to answer a question.
+   */
+  templatePrompt: !Genai.Prompt
+
+  /**
+   * The instance in charge of building the prompt.
+   */
+  // TODO: GENAI-4640 Make Genai.Agent.Tool.Util.TemplatePromptBuilder common accross EvalQuery 
+  templatePromptBuilder: Genai.Agent.Tool.Util.TemplatePromptBuilder
+
+  /**
+   * Whether to exclude the type/field documentations in the prompt
+   */
+  // TODO: GENAI-4640 Refactor once  Genai.Agent.Tool.Util.TemplatePromptBuilder is common accross EvalQuery
+  excludeDocumentationInPrompts: boolean
+
+  /**
+   * If it exists, then skip spec generation and use it as the input of fuzzy matching.
+   * This is used by retrying correction and executing {@link Genai.Agent.Tool.StructuredDataQuery.Base#generateSpec}.
+   */
+  overrideSpec: Genai.StructuredQuery.Spec
+
+  /**
+   * The number of few-shot examples to insert into the spec generation prompt. Set this value to 0 to not include examples or -1
+   * to disable the retriever and fetch all examples.
+   */
+  nExamples: int = 10
+
+  /**
+   * The label to use for the user in the formatted output during few-shot retrieval formatting.
+   */
+  userLabel: !string = 'User:'
+
+  /**
+   * The label to use for the assistant in the formatted output during few-shot retrieval formatting.
+   */
+  assistantLabel: !string = 'Assistant:'
+
+  /**
+   * Arguments to send to {@link Genai.UnstructuredQuery.Engine.ModelConfig#generateText} when generating text
+   * after using few-shot retrieval. This is important to prevent the LLM from indefinitely generating
+   * user and assistant conversation on its own. The stop sequences should match the user and assistant
+   * labels. The 'stop' key might differ per LLM deployment, E.g. different for OpenAI, MIS, etc.
+   */
+  generateTextKwargs: !json = {'stop': ['User:', 'Assistant:']}
+}

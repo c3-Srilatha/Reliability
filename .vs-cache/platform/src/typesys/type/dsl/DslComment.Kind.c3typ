@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The style of a comment. All comments in the DSL are preserved in the built structure, but only special
+ * "documentation" comments show up in the produced documentation. Ordinary single- and multi-line comments do not
+ * affect public documentation, only multi-line comments that start with `/**` are parsed for documentation.
+ */
+enum type DslComment.Kind {
+
+  /**
+   * A C++ style single-line comment, starting with `//` and ending with the end of that line.
+   */
+  SINGLE_LINE
+
+  /**
+   * A C style multi-line comment, starting with `/*` and ending with `*\/`.
+   */
+  MULTI_LINE
+
+  /**
+   * A Javadoc style multi-line comment, starting with `/**` and ending with `*\/`. These are used to associate
+   * documentation with a piece of structure.
+   */
+  DOC
+
+  /**
+   * The characters that start this kind of comment.
+   */
+  leader: function(kind: !string enum DslComment.Kind): !string
+
+  /**
+   * Whether or not this kind of comment is multi-line.
+   *
+   * @see #MULTI_LINE
+   * @see #DOC
+   */
+  isMultiLine: function(kind: !string enum DslComment.Kind): boolean
+
+  /**
+   * Whether or not this kind of comment is single-line.
+   *
+   * @see #SINGLE_LINE
+   */
+  isSingleLine: function(kind: !string enum DslComment.Kind): boolean
+
+  /**
+   * Determine the kind of comment this source represents.
+   *
+   * @param source the comment source (including delimiters)
+   * @param failIfNone throw error instead of returning null if not a comment
+   * @return kind of comment
+   */
+  kindOf: function(source: !?string, failIfNone: boolean): string enum DslComment.Kind
+}

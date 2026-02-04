@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specification for {@link FeatureEvaluatable#evalFeature} and {@link FeatureEvaluatable#evalFeatureSet}.
+ *
+ * Used to define a time range for which we want to eval a feature or a featureset.
+ */
+type EvalFeatureSpec mixes EvalFeatureSpecBase, ProjectionSpecBase {
+
+  /**
+   * Specifies which features to bring back data columns evaluated feature set. This is a string specifying the features to evaluate
+   * and return separated by commas, therefore it is not allowed to have commas in feature names. This field can be used in
+   * {@link FeatureEvaluatable#evalFeatureSetBatch} and {@link Evaluatable#eval}.
+   * For {@link FeatureEvaluatable#evalFeatureSetBatch}, this field can be directly set as a list of feature names that belong to the same {@link Feature.Set}.
+   * For {@link FeatureEvaluatable#eval} to return the eval result of a Feature.Set for certain features, you should use the {@link EvalSpec#projection}
+   * field to specify a list of features names for one single Feature.Set using the <feature set name>.<feature name> format separated by commas, and that will
+   * be converted to this #projection field.
+   *
+   * For example, for a feature set named 'metricFs' with features 'f1', 'f2', 'f3', if we want to evaluate only the feature 'f1' and 'f2', we can use the following two options:
+   * ```python
+   * fs = c3.Feature.Set(id='WindTurbine#metricFs', name='metricFs', features=['f1', 'f2', 'f3'], subjectType=c3.WindTurbine)
+   * fs.materialize(filter='true', sync=True)
+   * # Option 1: evalFeatureSetBatch
+   * c3.WindTurbine.evalFeatureSetBatch(filter='true', featureSet=fs, projection='f1, f2') # Returns the correct f1 and f2 columns data.
+   * # Invalid projections for evalFeatureSetBatch:
+   * projection='f1, f1' # Error: Features [f1] must not repeat in projection.
+   * projection='f1, invalid' # Error: The following columns don't exist in the feature set metricFs: [invalid]
+   * projection='f1.f2' # Error: The following columns don't exist in the feature set metricFs: [f1.f2]
+   * # Option 2: eval
+   * c3.WindTurbine.eval(filter='true', projection='metricFs.f1, metricFs.f2') # Returns the correct f1 and f2 columns data.
+   * # Invalid projections for eval
+   * projection='metricFs.f1, supplyFs.power' # Error: only 1 feature set allowed per evaluation in projection
+   * projection='metricFs, metricFs.f1' # Error: Can't eval feature set and features together inside projection
+   * projection='metricFs.f1, metricFs' # Error: Can't eval feature set and features together inside projection
+   * projection='metricFs.f1, metricFs.f1' # Error: Features [f1] must not repeat in projection
+   * projection='metricFs.f1, metricFs.invalid' # Error: The following columns don't exist in the feature set metricFs: [invalid]
+   * projection='metricFs.f1.f2' # Error: Invalid feature: f1.f2 (f1 and f2 can't be chained together)
+   * ```
+   */
+  projection: ~
+
+  /**
+   * This function returns the validated columns for the input feature set based on the {@link #projection} field of the spec.
+   * If there are invalid columns of this spec, errors will be thrown. See {@link Feature.Set#validateColumns} for how to validate the columns.
+   * For example
+   * ```python
+   * ## Using a metric feature set as example, but the usage is the same for lambda feature set
+   * feats = ['f1', 'f2', 'f3', 'f4']
+   * fs = c3.Feature.Set(name='predict', id='WindTurbine#predict', features=feats, subjectType=c3.WindTurbine).create()
+   * # 1. Returns subset of columns
+   * spec = c3.EvalFeatureSetBatch(projection='f1, f3')
+   * spec.validatedColumns(fs) # This returns ['f1', 'f3']
+   * # 2. Fails if projection contains not exists columns
+   * spec = c3.EvalFeatureSetBatch(projection='f1, f3, invalidFeat')
+   * spec.validatedColumns(fs) # Error: The following columns don't exist in the feature set predict: ['invalidFeat']
+   * # 3. Fails if projection contains duplicate columns
+   * spec = c3.EvalFeatureSetBatch(projection='f1, f3, f1')
+   * spec.validatedColumns(fs) # Error: Features [f1] must not repeat in projection
+   * ```
+   */
+  validatedColumns: cached member function(fs: !Feature.Set): [string]
+}

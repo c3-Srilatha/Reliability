@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A translated fetch spec - used when needing to translate between a {@link FetchSpec} that targets a
+ * UI data model and one that targets the true backend data model (ex: MlModelUi.fetch vs MlModel.fetch)
+ * {@see TranslatedFilter}
+ * {@see TranslatedInclude}
+ */
+type TranslatedFetchSpec {
+
+  /**
+   * The FetchSpec that applies to the backend model
+   */
+  fetchSpec: !FetchSpec
+
+  /**
+   * Additional contextual filters that need to be applied after the fetch
+   */
+  additionalFilter: map<string, json>
+
+  /**
+   * "include" fields that apply to the UI data model and should be added to the return value
+   */
+  additionalInclude: [string]
+}

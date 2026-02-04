@@ -1,0 +1,81 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Invalidation queue statistics returned by {@link InvalidationQueue.count} and {@link InvalidationQueue.countAll}.
+ */
+type InvalidationQueueStats {
+
+  /**
+   * Name of queue.
+   */
+  queue: string
+
+  /**
+   * Target type name, if group by "type" was specified.
+   */
+  targetType: string
+
+  /**
+   * True if the queue is paused, false if it isn't.
+   */
+  paused: boolean
+
+  /**
+   * Number of queue entries in the "initial" status.
+   */
+  initial: int
+
+  /**
+   * Number of queue entries in the "pending" status.
+   */
+  pending: int
+
+  /**
+   * Number of queue entries in the "disabled" status.
+   */
+  disabled: int
+
+  /**
+   * Number of actions that are currently computing for the queue entries.
+   */
+  computingActions: int
+
+  /**
+   * Number of queue entries that are currently being computed.
+   */
+  computingEntries: int
+
+  /**
+   * Number of queue entries that are currently waiting to be computed.
+   */
+  awaitingCompute: int
+
+  /**
+   * Number of actions required to process all pending entries.  Note this will be computed if the
+   * `includePendingActions` parameter is true in `InvalidationQueue.countAll()` or `InvalidationQueue.count()`.
+   * Otherwise it will be 0.
+   */
+  pendingActions: int
+
+  /**
+   * Number of failed entries.
+   */
+  failed: int
+
+  /**
+   * Number of failures that are not yet reviewed.
+   */
+  unreviewedFailed: int
+
+  /**
+   * If an errorSummary was requested in the call to count/countAll, contains the requested
+   * errors for failed entries.
+   */
+  errorSummary: [InvalidationQueueError]
+}

@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlButton} component for testing purposes.
+ */
+type LukeTestUiSdlButton mixes LukeTestComponent {
+
+  rendered: ~ js
+
+  /**
+   * The parent selector for this button.  Should be provided because many buttons may exist on a page and the specificity or the
+   * parent selector is the only way to safely find buttons
+   */
+  parentSelector: ~
+
+  /**
+   * The selector for the button
+   */
+  buttonSelector: string
+
+  /**
+   * Checks if the button is enabled.  Wrapper for {@link LukeWebElement#enabled}
+   * @param timeout
+   *        Luke async timeout for this operation
+   * @return
+   *        a {@link LukeAsyncQueueNode} that will be resolved with the result
+   */
+  enabled: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Clicks the button.  Wrapper for {@link LukeWebElement#click}
+   * @return
+   *        a {@link LukeWebElement} that will be resolved when the click succeeds
+   */
+  clickButton: inline member function(): LukeWebElement js
+}

@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for Jvm#profileMemory action.
+ */
+type JvmProfileMemorySpec mixes Spec {
+
+  /**
+   * Target java object or c3 type instance.
+   */
+  target: native
+
+  /**
+   * If `true` will profile memory used by C3 caches.
+   */
+  caches: boolean
+
+  /**
+   * If `true` will profile memory used by Java static variables that are not C3 caches.
+   */
+  nonCacheStatics: boolean
+
+  /**
+   * If set then will collect instances of C3 Type or Java classes accordingly.
+   */
+  group: string enum('JAVA', 'C3')
+
+  /**
+   * If set then will collect instances of C3 Type or Java classes accordingly.
+   */
+  unit: string enum JvmMemoryUnit = BYTE
+
+  /**
+   * If `true` then JvmMemProfile#objs will contain a flat list of all objects and JvmObjMemUsage#children will be
+   * empty.
+   */
+  flat: boolean
+
+  /**
+   * Maximum depth for children in JvmObjMemUsage.
+   */
+  depth: int32
+
+  /**
+   * Maximum number of elements in JvmMemProfile#objs and in JvmObjMemUsage#children.
+   */
+  limit: int32
+
+  /**
+   * Minimum memory usage for elements in JvmMemProfile#objs and in JvmObjMemUsage#children.
+   */
+  minUsage: int
+
+  /**
+   * If `true` will hint JVM to run garbage collection.
+   */
+  gc: boolean
+
+  /**
+   * If `true` will attempt to allocate large enough memory in hopes that JVM will be forced to run full garbage
+   * collection. WARNING! may cause JVM or Thread death!
+   */
+  forceGc: boolean
+
+  /**
+   * If `true` keys will include java package name.
+   */
+  includeJavaPackageName: boolean
+
+  /**
+   * If `true` will not collapse known collections like `LinkedHashMap` but instead will profile every private field
+   * like `head`, `tail` and `table`.
+   */
+  doNotCollapseKnownCollections: boolean
+
+  /**
+   * If `true` will not ignore `week`, `soft`, `phantom`, etc references.
+   */
+  doNotIgnoreNonStrongReferences: boolean
+
+  /**
+   * If `true` then com.sun.jmx.mbeanserver.JmxMBeanServer will be included in the total memory.
+   */
+  doNotIgnoreJmx: boolean
+
+  /**
+   * Optional override for memory instrumentation strategy; if missing then will use one of these as available
+   * otherwise:
+   *  - AGENT - use java allocation instrumentation agent or fail if not present
+   *  - UNSAFE - use sun.misc.Unsafe or fail if not available
+   *  - SPEC - use predefined sizes for various java classes
+   */
+  strategy: string enum('AGENT', 'UNSAFE', 'SPEC')
+}

@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This pipe calls {@link ModelInference#process} using the specified route. If the pipe expects to use a different
+ * Model Inference instance than {@link ModelInference#inst}, the {@link #modelInferenceName} field should be
+ * set.
+ */
+@beta
+entity type ModelInferenceProxyPipe extends MlAtomicPipe<any, void, any> type key 'MIPP' {
+
+  /**
+   * The route to call.
+   */
+  route: !string
+
+  /**
+   * Name of the {@link ModelInference} client to use. If not specified, the pipe will use the default instance
+   * {@link ModelInference#inst} to call the Model Inference Service.
+   */
+  modelInferenceName: string
+
+  /**
+   * Validates that the Model Inference Service can call the specified route at the moment of validation.
+   */
+  validate: ~ py
+
+  /**
+   * Validates that the pipe can be run, and gives a warning if it cannot.
+   */
+  @dependency(include='route, modelInferenceName')
+  afterCreate: ~ py
+
+  @dependency(include='route, modelInferenceName')
+  doProcess: ~ py
+
+  @dependency(include='route, modelInferenceName')
+  process: ~ py
+}

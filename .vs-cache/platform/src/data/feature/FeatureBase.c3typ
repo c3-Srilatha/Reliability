@@ -1,0 +1,507 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for Feature & Feature Set
+ */
+@dependency(include='this')
+abstract type FeatureBase mixes SeedData {
+
+  /**
+   * Subject type of this feature
+   */
+  subjectType: !Type<<FeatureEvaluatable>>
+
+  @search
+  name: !~
+
+  /**
+   * @return FeatureBase for a subject type and the name of the FeatureBase.
+   */
+  forName: abstract function(subjectType: !Type<<FeatureEvaluatable>>,
+                             name: !string,
+                             failIfMissing: boolean): !mixing FeatureBase
+
+  /**
+   * User specified tags for ease of discovery and maintenance
+   */
+  @search
+  tags: [string]
+
+  /**
+   * A short description of the {@link Feature} or {@link Feature.Set}
+   */
+  @search
+  summary: string
+
+  /**
+   * A long and in-depth description of the {@link Feature} or {@link Feature.Set}
+   */
+  @search
+  description: string
+
+  /**
+   * If a Feature or Feature.Set already exists it can either be overwritten to create a new one or failed based on this property.
+   * Default value of false overwrites the creation
+   */
+  @ser(hidden=true)
+  failIfExists: boolean = false
+
+  /**
+   * Whether the Feature or Feature Set can be materialized. evalFeature/evalFeatureSet on non-materializable feature and feature set
+   * provides the result directly from evaluation rather than from Feature Store.
+   *
+   * **doNotMaterialize** at the **Feature.Set** will supersede **doNotMaterialize** from the underlying features
+   * i.e A **Feature.Set** with **doNotMaterialize=false** will **materialize** ALL of the underlying features,
+   * and a  **Feature.Set** with **doNotMaterialize=true** will **not materialize any** of the underlying features.
+   *
+   * @see Feature#isLegacyMetricBacked
+   */
+  doNotMaterialize: boolean
+
+  // TODO: PLAT-66302 Change return type from Boxed<boolean> to ?boolean
+
+  /**
+   * Determines whether the Feature or Feature Set is time series.
+   * This property is not supported for Feature.Kind.DATA and will return null.
+   */
+  isTimeseries: abstract property(): Boxed<boolean>
+
+  /**
+   * Kind of the Feature or Feature Set
+   */
+  kind: abstract property(): string
+
+  /**
+   * The lambda to produce the Feature or Feature.Set data based on the subject, {@link EvalFeatureSpec} instance and the
+   * Feature or Feature.Set. It will be applied one subject at a time
+   * during materialization or evaluation based on
+   * {@link doNotMaterialize}, {@link EvalFeatureSpec#skipMaterialized} flag value.
+   *
+   * Let's understand this with help of examples:
+   *
+   * Assuming that there are two metrics named **GeneratorRotationSpeedAvg** and **GearOilTemperatureAvg** on
+   * a FeatureEvaluatable subtype **WindTurbine** and **TURBINE-1**, **TURBINE-2** are two of the windturbines, then:
+   *
+   * e.g of a Feature.Set:
+   *
+   * ```python
+   *  def _customFeatureSetDataFunc(subject, spec, fs):
+   *         eval_result = c3.WindTurbine.eval(projection='GeneratorRotationSpeedAvg, GearOilTemperatureAvg', id=subject.id)
+   *         return c3.Feature.CustomMaterializationResult(data=eval_result)
+   *  columns = {"subject" : "string", "timestamp" : "datetime", "GeneratorRotationSpeedAvg" : "double", "GearOilTemperatureAvg" : "double"}
+   *  feature_set = c3.Feature.Set(name="windTurbineFs",
+   *                               subjectType=c3.WindTurbine,
+   *                               columns=columns,
+   *                               src=c3.Lambda.fromPyFunc(_customFeatureSetDataFunc)).upsert()
+   * ```
+   *
+   * e.g of a Feature:
+   *
+   * ```python
+   * def _customFeatureDataFunc(subject, spec, feature):
+   *     eval_result = c3.WindTurbine.eval(projection='GeneratorRotationSpeedAvg', id=subject.id).rename(columns={'GeneratorRotationSpeedAvg' : feature.name})
+   *     return c3.Feature.CustomMaterializationResult(data=eval_result)
+   * feature = c3.Feature(name="generatorRotationSpeedAvgFeature",
+   *                      subjectType=c3.WindTurbine,
+   *                      valueType="double",
+   *                      hasTimestamp=True,
+   *                      src=c3.Lambda.fromPyFunc(_customFeatureDataFunc)).upsert()
+   * ```
+   * The following validations are performed on the output dataframe:
+   * - Data has a "subject" column.
+   * - Data has a "timestamp" column if such is expected in {@link FeatureBase#_columns} and does not have one if it's unexpected.
+   * - Data's columns follow the order of the keys in {@link FeatureBase#_columns}.
+   * - Data is being produced only for the subject we want. Strictly speaking, the actual subject from lambda should be the expected subject.
+   * - Data's timestamps are: a. non-null, b. row-wise sorted from earliest to latest for each subject, and c. within the timerange of provided {@link EvalFeatureSpec}.
+   *
+   * We will fail with a **runtime error** (i.e. during materialization or runtime evaluation) if any of the above validations fails.
+   *
+   * If the data being produced is ignoring the time range, then **timeRangeIgnored** should be set. This will help the
+   * platform to remove the data for a subject if no/empty data is returned for that.
+   * As mentioned above, if the data contains subjects outside of the input subjects, then an error will the thrown during materialization.
+   * Let's modify the above lambda to understand the same:
+   * ```python
+   * def _customFeatureDataFunc(subject, spec, feature):
+   *     import pandas as pd
+   *     eval_result = c3.WindTurbine.eval(projection='GeneratorRotationSpeedAvg', id=subject.id).rename(columns={'GeneratorRotationSpeedAvg' : feature.name}).to_pandas()
+   *     eval_result.loc[0] = ["abc", pd.Timestamp("2022-05-01"), 50]
+   *     return c3.Feature.CustomMaterializationResult(data=eval_result)
+   * ```
+   * As we can see, the data now contains an arbitrary subject "abc" and upon materialization we will see a validation error comparing actual subjects and expected subjects:
+   *
+   * Error invoking Java method Feature#materialize: ValueError: Subject column in the Feature/Feature.Set has additional values: [abc] that are not included in the expected values: [TURBINE-1,TURBINE-2]
+   *
+   * Overall, use of this lambda is useful for situations where platform's native **Data** based Feature authoring experience
+   * is missing any needed capabilities.
+   * @see #srcBatch
+   */
+  src: lambda(subject: !FeatureEvaluatable,
+              spec: EvalFeatureSpec,
+              feature: mixing FeatureBase): Feature.CustomMaterializationResult
+
+  /**
+   * The lambda to produce the Feature or Feature.Set data based on the subject, {@link EvalFeatureSpec} instance and the
+   * Feature or Feature.Set. It will be applied on the batch of subjects all at once
+   * during materialization or evaluation based on
+   * {@link doNotMaterialize}, {@link EvalFeatureSpec#skipMaterialized} flag value
+   *
+   * Let's understand this with help of examples:
+   *
+   * Assuming that there are two metrics named **GeneratorRotationSpeedAvg** and **GearOilTemperatureAvg** on
+   * a FeatureEvaluatable subtype **WindTurbine** and **TURBINE-1**, **TURBINE-2** are two of the windturbines, then:
+   *
+   * e.g of a Feature.Set:
+   *
+   * ```python
+   *  def _customFeatureSetDataFunc(subjects, spec, fs):
+   *         subjectIds = [subject.id for subject in subjects]
+   *         eval_result = c3.WindTurbine.eval(projection='GeneratorRotationSpeedAvg, GearOilTemperatureAvg', ids=subjectIds)
+   *         return c3.Feature.CustomMaterializationResult(data=eval_result)
+   *  columns = {"subject" : "string", "timestamp" : "datetime", "GeneratorRotationSpeedAvg" : "double", "GearOilTemperatureAvg" : "double"}
+   *  feature_set = c3.Feature.Set(name="windTurbineFs",
+   *                               subjectType=c3.WindTurbine,
+   *                               columns=columns,
+   *                               srcBatch=c3.Lambda.fromPyFunc(_customFeatureSetDataFunc)).upsert()
+   * ```
+   *
+   * e.g of a Feature:
+   *
+   * ```python
+   * def _customFeatureDataFunc(subjects, spec, feature):
+   *     subjectIds = [subject.id for subject in subjects]
+   *     eval_result = c3.WindTurbine.eval(projection='GeneratorRotationSpeedAvg', ids=subjectIds).rename(columns={'GeneratorRotationSpeedAvg' : feature.name})
+   *     return c3.Feature.CustomMaterializationResult(data=eval_result)
+   * feature = c3.Feature(name="generatorRotationSpeedAvgFeature",
+   *                      subjectType=c3.WindTurbine,
+   *                      valueType="double",
+   *                      hasTimestamp=True,
+   *                      srcBatch=c3.Lambda.fromPyFunc(_customFeatureDataFunc)).upsert()
+   * ```
+   * The same validations performed on the output dataframe of a {@link FeatureBase#src} are performed here with the only difference that:
+   * - Data is being produced only for the subjects we want. Strictly speaking, actual subjects from lambda should be a subset of the expected subjects.
+   *
+   * and additionally we validate that:
+   * - Data is row-wise grouped by the "subject" column.
+   *
+   * We will fail with a **runtime error** (i.e. during materialization or runtime evaluation) if any of these validations fails.
+   *
+   * If the data being produced is ignoring the time range, then **timeRangeIgnored** should be set. This will help the
+   * platform to remove the data for a subject if no/empty data is returned for that.
+   * Additionally, if the data contains subjects outside of the input subjects, then an error will the thrown during materialization.
+   * Let's modify the above lambda to understand the same:
+   * ```python
+   * def _customFeatureDataFunc(subjects, spec, feature):
+   *     import pandas as pd
+   *     subjectIds = [subject.id for subject in subjects]
+   *     eval_result = c3.WindTurbine.eval(projection='GeneratorRotationSpeedAvg', id=subjectIds).rename(columns={'GeneratorRotationSpeedAvg' : feature.name}).to_pandas()
+   *     eval_result.loc[0] = ["abc", pd.Timestamp("2022-05-01"), 50]
+   *     return c3.Feature.CustomMaterializationResult(data=eval_result)
+   * ```
+   * As we can see, the data now contains an arbitrary subject "abc" and upon materialization we will see a validation error comparing actual subjects and expected subjects:
+   *
+   * Error invoking Java method Feature#materialize: ValueError: Subject column in the Feature/Feature.Set has additional values: [abc] that are not included in the expected values: [TURBINE-1,TURBINE-2]
+   *
+   * Overall, use of this lambda is useful for situations where platform's native **Data** based Feature authoring experience
+   * is missing any needed capabilities.
+   * @see #src
+   */
+  srcBatch: lambda(subjects: ![!FeatureEvaluatable],
+                   spec: EvalFeatureSpec,
+                   feature: mixing FeatureBase): Feature.CustomMaterializationResult
+
+  /**
+   * Allows platform to pre-fetch data for the subject in case it needs something other than **id** in the {@link FeatureEvaluatable} instance being used as
+   * an argument to the {@link #src} and {@link #srcBatch} lambdas. For example, if user lambda uses the `timeseries` field in the WindTurbine type,
+   * they can make the feature set as follows
+   * ```python
+   *    def srcFunc(subject, spec, fs):
+   *        # return data that uses the timeseries field in WindTurbine subjects
+   *        pass
+   *    featureSet = c3.Feature.Set(id='WindTurbine#fs1', name='fs1', src=c3.Lambda.fromPyFunc(srcFunc), columns=columns
+   *                                srcSubjectProjection='timeseries').create()
+   * ```
+   * Note that if this field is not set or null, then we fetch **this** in the subjects to make sure the user lambda has access to the necessary fields.
+   */
+  srcSubjectProjection: string
+
+  /**
+   * @return a list of columns which are part of the Feature or Feature.Set.
+   */
+  _columns: abstract property(): @indexed map<string, ValueType>
+
+  /**
+   * Execute the set custom lambda ({@link #src} or {@link #srcBatch}) on the provided subjects and EvalFeatureSpec and
+   * return the result after extracting the data column from the result.
+   * An error will be thrown if:
+   * 1. The columns in the result are not the same as the columns in the Feature or Feature.Set. {@link Feature.valueType}
+   * and {@link Feature.Set.columns} are used to determine the expected columns.
+   * 2. The data is not sorted by **subject** or **timestamp** column.
+   * 3. Lambda execution fails.
+   * 4. Lambda returns a result which is neither a {@link Data} nor a native value.
+   *
+   * @see #src
+   * @see #srcBatch
+   * @see #subjectProjection
+   * @see Feature#valueType
+   * @see Feature.Set#columns
+   */
+  @dependency(include='name, subjectType, src, srcBatch, srcSubjectProjection')
+  execCustomLambda: private member function(subjects: ![FeatureEvaluatable],
+                                            spec: EvalFeatureSpec): !map<string, ![!Data.Column]>
+
+  /**
+   * Execute the set custom lambda ({@link #src} or {@link #srcBatch}) on the provided subjects and EvalFeatureSpec and
+   * return the result as EvalMetricsResult.
+   * @see execCustomLambda
+   */
+  @dependency(include='name, subjectType, src, srcBatch, srcSubjectProjection')
+  execCustomLambdaAsEmr: private member function(subjects: ![FeatureEvaluatable],
+                                                 spec: EvalFeatureSpec): !EvalMetricsResult
+
+  /**
+   * @return the Tuple with location with the arrow buffer obtained after  executing the {@link #src} lambda with
+   * the provided arguments.
+   * Please note that:
+   * 1. The input subjects to this function are assumed to be already have the {@link #srcSubjectProjection} applied.
+   * 2. Its the **caller's responsibility** to ensure that the file created after executing the lambda (at **path**)
+   * is deleted after use.
+   */
+  execSrcLambda: private function(src: lambda(s: !FeatureEvaluatable,
+                                              spec: EvalFeatureSpec,
+                                              feature: mixing FeatureBase): !Feature.CustomMaterializationResult,
+                                  subjects: ![!FeatureEvaluatable],
+                                  spec: EvalFeatureSpec,
+                                  feature: mixing FeatureBase): { path: string, kind: string }
+
+  /**
+   * @return the Tuple with location with the arrow buffer obtained after executing the {@link #srcBatch} lambda with
+   * the provided arguments.
+   * Please note that:
+   * 1. The input subjects to this function are assumed to be already have the {@link #srcSubjectProjection} applied.
+   * 2. Its the **caller's responsibility** to ensure that the file created after executing the lambda (at **path**)
+   * is deleted after use.
+   */
+  execSrcBatchLambda: private function(srcBatch: lambda(s: ![!FeatureEvaluatable],
+                                                        spec: EvalFeatureSpec,
+                                                        feature: mixing FeatureBase)
+                                                   : !Feature.CustomMaterializationResult,
+                                       subjects: ![!FeatureEvaluatable],
+                                       spec: EvalFeatureSpec,
+                                       feature: mixing FeatureBase): { path: string, kind: string }
+
+  /**
+   * Start a ObjBatchMapReduceJob to delete all the materialized data in the kvStore from this FeatureBase.
+   * @param spec:
+   *        this {@link BatchFetchSpec} is used to pass in the custom job options, such as batchSize. If user passes a null spec or a spec with no batchSize,
+   *        the default batchSize is 100.
+   * @param confirm
+   *        confirm must be set to complete the deletion.
+   * @return the started mapReduce job instance.
+   */
+  @action(group+='delete')
+  deleteMaterializedData: member function(spec: BatchFetchSpec, confirm: boolean): !ObjBatchMapReduceJob
+
+  /**
+   * The field names that are used to compute the {@link FeatureBase#featureFingerprint} for {@link Feature} and
+   * {@link Feature.Set}, which could have different set of field names
+   */
+  computeFieldNames: private cached abstract function(): ![!string]
+
+  /**
+   * The definition of this feature
+   */
+  definition: cached abstract property(): string
+
+  /**
+   * This overrides the `fingerprint` of the {@link Feature} and {@link Feature.Set}
+   * This method does not validate if certain fields used for calculating fingerprint exist or not
+   * on the feature or feature set for performance reasons.
+   * It is the **caller's responsibility** to ensure that using getMissing() or get() before using this function.
+   * Please see {@link FeatureBase#computeFieldNames} for more information.
+   * e.g:
+   * Assuming that there are two features named **activePowerAvgFeature** and **generatorRotationSpeedAvgFeature**
+   * on a FeatureEvaluatable subtype **WindTurbine**.
+   * We create (or already have a) Feature.Set like below and use getMissing() before using featureFingerprint:
+   * ```python
+   * feature_set = c3.Feature.Set(name='windTurbineModelFeatures', subjectType=c3.WindTurbine, features=['activePowerAvgFeature', 'generatorRotationSpeedAvgFeature'], interval='HOUR').create()
+   * feature_set.getMissing(include=",".join(feature_set.computeFieldNames)).featureFingerprint()
+   * ```
+   */
+  featureFingerprint: abstract member function(): !string
+
+  /**
+   * Fingerprint of all the data in this feature
+   */
+  dataFingerprint: abstract member function(subject: !FeatureEvaluatable): @js(bigInt=true) !int
+
+  /**
+   * ML Models that are using this feature
+   */
+  models: abstract member function(): stream<MlModel>
+
+  /**
+   * This is a convenience python API to return a DataFrame with information
+   *  about the models that use this feature / feature set as an input.
+   *
+   * @param filterByName
+   *    Filtering based on name of model
+   * @param order
+   *    listing order `ASC` or `DSC`
+   * @param offset
+   *    offset for display of results
+   * @param limit
+   *    limit for display of results
+   * @return the results as {@link Data}
+   */
+  modelSummary: member function(filterByName: string,
+                                order: string enum('ASC', 'DSC'),
+                                offset: int,
+                                limit: int): !Data py-data
+
+  /**
+   * @return all features for a given subject type
+   */
+  allForSubjectType: function(subjectType: Type<<FeatureEvaluatable>>): stream<mixing FeatureBase>
+
+  /**
+   * Materializes this feature for subjects in the filter.
+   * @param filter:
+   *        filter of the subjects to be used for materialization. If filter is missing, the job will materialize for all the subjects.
+   *        Note that, if the filtered subjects do not exist in the Db, the materialization job will not fail but no entries will be picked up.
+   * @param sync:
+   *        If `sync` is set to **true**, materialization will wait for the job to complete and all subjects will be materialized in one batch, i.e {@link Feature.Store.MaterializationJob#numBatches} = 1
+   *        If `sync` is set to **false**, materialization will create the job and start asynchronously. By default, a batchSize of 1 is used.
+   * @return the {@link Feature.Store.MaterializationJob} instance.
+   *
+   * If you require additional customization of the job (e.g `batchSize`), then please make a {@link Feature.Store.MaterializationJob}
+   * with {@link #makeMaterializationJob} and modify as needed.
+   * Here is an example to customize a job on a Feature.Set:
+   * ```python
+   * feature_set = c3.Feature.Set(name='windTurbineModelFeatures', subjectType=c3.WindTurbine, features=['activePowerAvgFeature', 'generatorRotationSpeedAvgFeature'], interval='HOUR').create()
+   * job = feature_set.makeMaterializationJob(filter='true', sync=False)
+   * job = job.withBatchSize(100)
+   * job = job.create()
+   * job.start()
+   * ```
+   */
+  @deprecated(details="This will be removed in 8.5. Use the other materialize overload")
+  materialize: member function(filter: string serialized Filter, sync: boolean): Feature.Store.MaterializationJob
+
+  /**
+   * Materializes this feature for subjects in the filter.
+   * @return the {@link Feature.Store.MaterializationJob} instance.
+   *
+   * If you require additional customization of the job (e.g `batchSize`), then please make a {@link Feature.Store.MaterializationJob}
+   * with {@link #makeMaterializationJob} and modify as needed.
+   * Here is an example to customize a job on a Feature.Set:
+   * ```python
+   * feature_set = c3.Feature.Set(name='windTurbineModelFeatures', subjectType=c3.WindTurbine, features=['activePowerAvgFeature', 'generatorRotationSpeedAvgFeature'], interval='HOUR').create()
+   * job = feature_set.makeMaterializationJob(filter='true', sync=False)
+   * job = job.withBatchSize(100)
+   * job = job.create()
+   * job.start()
+   * ```
+   */
+  materialize: member function(spec: Feature.MaterializationSpec): Feature.Store.MaterializationJob
+
+  /**
+   * Make a materialization job for the {@link Feature} or {@link Feature.Set}.
+   * @return the {@link Feature.Store.MaterializationJob} instance.
+   */
+  makeMaterializationJob: member function(spec: Feature.MaterializationSpec): Feature.Store.MaterializationJob
+
+  /**
+   * Validates that Data contains `subject` and optional `timestamp` column. If `singleFeature` is set also
+   * validates that there is only one feature value column.
+   *
+   * @return inferred subject type if #subjectType parameter was not provided
+   */
+  validateSubjectAndTimestamp: private function(data: !?Data,
+                                                subjectType: Type<<FeatureEvaluatable>>,
+                                                singleFeature: boolean): !Type<<FeatureEvaluatable>>
+
+  /**
+   * Validates that EvalSpec contains `subject` and optional `timestamp` column. If `singleFeature` is set also
+   * validates that there is only one feature value column
+   *
+   * @returns updated EvalSpec if any extra fields need to be removed post validation
+   *
+   * @see EvalSpec#withoutAnyFilter
+   */
+  validateSubjectAndTimestamp: private function(subjectType: Type<<FeatureEvaluatable>>,
+                                                spec: !EvalSpec,
+                                                singleFeature: boolean): !EvalSpec
+
+  /**
+   * Search and retrieves the {@link Feature} or {@link Feature.Set} using Full Text Search on searchable fields (as annotated by
+   * {@link Ann.Search search}).
+   */
+  @beta
+  search: function(spec: !SearchFetchQuerySpec): stream<mixing FeatureBase>
+
+  /**
+   * Checks if a given feature name of a {@link Feature} or of a {@link Feature.Set} is valid per the following conventions:
+   * 1. The name of the feature does not match any existing field name of the underlying subject {@link Type}.
+   * 2. The feature name is a valid JavaScript identifier and is not reserved.
+   *
+   * @param name
+   *        name of the {@link Feature} to be created
+   * @param subjectType
+   *        underlying subject {@link Type} of the {@link Feature} to be created
+   * @return a {@link Pair} of two elements:
+   *         1. boolean: true if the feature name is valid, false otherwise.
+   *         2. string: error message explaining the violation of the naming convention.
+   */
+  isValid: function(name: !string, subjectType: !Type<<FeatureEvaluatable>>): !Pair<boolean, string>
+
+  /**
+   * Validates feature/feature set id
+   * If id is UUID (generated from Feature.Set.make create, etc methods), it is set as subjectTypeName#name
+   * If not, then it has to already follow subjectTypeName#name convention, else error will be rendered
+   * @return a {@link Pair} of two elements:
+   *         1. boolean: true if the feature Id is valid, false otherwise.
+   *         2. string: error message explaining the violation of the naming convention.
+   *                    It can also return a message on true, "id is UUID",
+   *                    and that would indicate that we need to set id upon return to follow SUBJECT_TYPE#FEATURE_NAME
+   */
+  validateId: function(id: !string, subjectTypeName: !string, name: !string): !Pair<boolean, string>
+
+  beforeCreate: abstract ~
+  beforeUpdate: abstract ~
+  isLambda:     private member function(): boolean
+
+  /**
+   * @return strategies associated with the current feature, which will be used in evaluation. Please note that simply {@link FeatureEvaluatable.Bin.Strategy#init initialization} of strategy is not enough. They should be "operationally ready" to be used.
+   */
+  strategies: private member function(includeNonReady: boolean): [FeatureEvaluatable.Bin.Strategy]
+
+  /**
+   * @return provide the most recent created strategy, which will be used in both materialization and evaluation.
+   */
+  latestStrategy: private member function(includeNonReady: boolean): FeatureEvaluatable.Bin.Strategy
+
+  /**
+   * @return default number of subjects per bin, depending on the total number of subjects present in the related {@link #subjectType} of the given {@link Feature} or of a {@link Feature.Set}:
+   *             1. 1, if subject count < 50
+   *             2. 10, if subject count < 1000
+   *             3. 50, if subject count >= 1000
+   */
+  dfltSubjectsPerBin: member function(): !int
+
+  /**
+   * Initialize the default strategy for this Feature / Feature.Set if none exists before.
+   * Please note that default number of subjects per bin is decided by {@link dfltSubjectsPerBin}.
+   */
+  initDfltStrategy: private member function()
+
+  /**
+   * Initialize a {@link FeatureEvaluatable.Bin.Strategy} strategy for this Feature / Feature.Set such that all ids as retrieved from Db are assigned to different bins based on the "recommended subjects per bin" (**recSubjectsPerBin**).
+   */
+  initStrategy: member function(recSubjectsPerBin: !int)
+}

@@ -1,0 +1,324 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Pkg path attributes extracted from Pkg.Path URL.
+ * Typical Pkg.Path url will have structure like `scheme://pkgName/[overlay]/category/subpath`
+ *
+ * @see Pkg.Url
+ */
+inline type Pkg.Path mixes StringSerializable {
+
+  /**
+   * Glob pattern to determine if a file is a test file.
+   */
+  TEST_FILE_PATTERN: private const string = '((?!.*/disabled/).*/test/(py(\\.\\d+\\.\\d+)?|py(\\.\\d+\\.\\d+)?-.*|js|js-.*|notebook|ts|ts-.*)/.*test_.*\\.(py|js|json|ts|tsx))'
+
+  /**
+   * Pkg URL for this path.
+   *
+   * @see Pkg.Url
+   */
+  url: !string serialized FileUrl
+
+  /**
+   * scheme of this pkg path url.
+   */
+  scheme: string = "meta"
+
+  /**
+   * The name of package Pkg file belongs to.
+   */
+  package: string
+
+  /**
+   * Category for Pkg file.
+   */
+  category: string enum Pkg.Category
+
+  /**
+   * URL encoded sub path of the Pkg file excluding repository, package and category information. This path is
+   * always relative.
+   * ```
+   *    test%20types/TestType.c3typ
+   *    other/OtherType.c3typ
+   * ```
+   */
+  encodedSubPath: string
+
+  /**
+   * overlay of the path, if the path is part of one. There can only be one overlay.
+   */
+  overlay: string enum Pkg.Overlay
+
+  /**
+   * returns the dependency package name in the path, if this has `dep` overlay.
+   * ```
+   *   /pkgA/dep/pkgB/src/TestType.c3typ -> pkgB
+   *   /pkgA/src/TestA.c3typ -> null
+   * ```
+   */
+  depPkgName: string
+
+  /**
+   * If the overlay is DEP, and the dependency package has it's own overlay, it is the dependency package's overlay.
+   * This can't be another Overlay.Dep.
+   * ```
+   *   fromString('/pkgA/dep/pkgB/test/src/TestType.c3typ').depPkgOverlay() -> test
+   *   fromString('/pkgA/dep/pkgB/gen/cache/TypeMetaDeps%23dts/TestType.c3typ.d.ts').depPkgOverlay() -> gen
+   * ```
+   */
+  depPkgOverlay: string enum Pkg.Overlay
+
+  /**
+   * True if this is a test file i.e. overlay or depOverlay  is test. 'test' overlay should contain only things used
+   * for testing that package.
+   * ```
+   *   fromString('/pkgA/dep/pkgB/test/src/SrcType.c3typ').isTest() -> true
+   *   fromString('/pkgA/test/src/TestType.c3typ').isTest() -> true
+   * ```
+   */
+  isTest: property(): boolean java | js
+
+  /**
+   * True if this is a generated file i.e. overlay or depOverlay  is gen. . It will be created when running code-gen.
+   */
+  isGen: property(): boolean java | js
+
+  /**
+   * True, if this is a dependency package path.
+   * ` /pkgA/dep/pkgB/src/TestType.c3typ ->  true`
+   */
+  isDep: property(): boolean java | js
+
+  /**
+   * Local cache of the #safeTargetType method call.
+   */
+  targetType: private string
+
+  /**
+   * @return true if this is a source file.
+   */
+  isSrc: member function(): boolean java | js
+
+  /**
+   * @return true if this is a SEED data file.
+   */
+  isSeed: member function(): boolean java | js
+
+  /**
+   * @return true if this is a c3Pkg.
+   */
+  isPackage: member function(): boolean java | js
+
+  /**
+   * @return true if this is a c3pkg.lock
+   */
+  isPackageLock: member function(): boolean java | js
+
+  /**
+   * @return true if this is a Pkg.Category.OTHER.
+   */
+  isOther: member function(): boolean java | js
+
+  /**
+   * @return true if this is a {@link Pkg.Category#CACHE}
+   */
+  isCache: member function(): boolean java | js
+
+  /**
+   * @return true if this is a Pkg.Category.UI
+   */
+  isUi: member function(): boolean java | js
+
+  /**
+   * @return true if this is a Pkg.Category.UI and conforms to application/kind/filename.ext.
+   */
+  isUiMeta: member function(): boolean
+
+  /**
+   * @return true if this is a Pkg.Category.DATA
+   */
+  isData: member function(): boolean
+
+  /**
+   * @return Ui Application id, for a Ui file.
+   */
+  uiApplicationId: member function(): string
+
+  /**
+   * @return kind of Ui Pkg file.
+   */
+  uiMetaKind: member function(): string
+
+  /**
+   * @return sub path of this file under the package including file name. Sub path is always relative.
+   * ```
+   *    test types/TestType.c3typ
+   *    other/OtherType.c3typ
+   * ```
+   */
+  subPath: member function(): !string
+
+  /**
+   * @return URL encoded file name including the extension.
+   */
+  encodedFileName: member function(): !string
+
+  /**
+   * @return file name of this file.
+   */
+  fileName: member function(): !string
+
+  /**
+   * @return file extension of this file, including the leading dot (e.g., ".c3typ", ".json").
+   */
+  fileExt: member function(): string
+
+  /**
+   * @return file extension of this file without the leading dot (e.g., "c3typ", "json"), or null if no extension.
+   */
+  fileExtWithoutDot: member function(): string
+
+  /**
+   * @return fine name of this file without file extension.
+   */
+  fileNameNoExt: member function(): !string
+
+  /**
+   * @return encoded full path of this file. It includes package but doesn't include scheme. Full path always starts
+   * with '/'.
+   * ```
+   *    /foundation/src/test%20types/TestType.c3typ
+   *    /foundation/test/src/other/OtherType.c3typ
+   * ```
+   */
+  encodedFullPath: member function(): !string
+
+  /**
+   * @return full path of this file. It includes package but doesn't include scheme. This path always starts with '/'.
+   * ```
+   *    /foundation/src/test types/TestType.c3typ
+   *    /foundation/test/src/other/OtherType.c3typ
+   * ```
+   */
+  fullPath: member function(): !string
+
+  /**
+   * @return full directory path of this file. This is like #fullPath, but without the file name.
+   * ```
+   *    /foundation/src/test types/
+   *    /foundation/test/src/other/
+   * ```
+   */
+  fullDir: member function(): !string
+
+  /**
+   * URL encoded sub path of the pkg path along with category. This path is
+   * always relative.
+   * ```
+   *    src/test%20types/TestType.c3typ
+   *    test/src/other/OtherType.c3typ
+   * ```
+   */
+  encodedSubPathWithCategory: member function(): !string java | js
+
+  /**
+   * sub path of the pkg path along with category. This path is
+   * always relative. It is not encoded.
+   *
+   * ```
+   *    src/test types/TestType.c3typ
+   *    test/src/other/OtherType.c3typ
+   * ```
+   */
+  subPathWithCategory: member function(): !string java | js
+
+  /**
+   * return encoded dependency pkg path, if this is a dep overlay, i.e.isDep true.
+   */
+  encodedDepPath: member function(): string java | js
+
+  /**
+   * return dependency pkg path, if this is a dep overlay, i.e.isDep true.
+   */
+  depPath: member function(): string java | js
+
+  /**
+   * return true, if this is a path/file representing Pkg.Issue. Read content to get issues.
+   */
+  isIssue: member function(): boolean java | js
+
+  /**
+   * @return pkg path parsed from pkg URL or encoded full path
+   */
+  fromUrlOrEncodedPath: function(urlOrEncodedPath: !string): !Pkg.Path java | js
+
+  /**
+   * @return pkg path constructed from package name, category, and subpath
+   */
+  fromSubPath: function(pkg: !string, category: !string, subPath: !?string, overlay: string): !Pkg.Path java | js
+
+  /**
+   * @return pkg path constructed from Pkg instance, category, and subpath
+   */
+  fromSubPath: function(pkg: !Pkg, category: !string, subPath: !?string, overlay: string): !Pkg.Path java | js
+
+  @deprecated(finalVersion='7.11', details='Use #fromUrlOrEncodedPath instead')
+  fromUrlOrPath: function(urlOrPath: !string): !Pkg.Path
+
+  /**
+   * @return a string representation of Pkg.Path; same as #encodedFullPath.
+   */
+  toString: member function(): !string java | js
+
+  /**
+   * @return Pkg URL for this path
+   */
+  // TODO: add constructor and remove safeUrl
+  safeUrl: member function(): !string
+
+  // constructor : ~
+
+  /**
+   * If this Pkg path is for a C3 type (e.g, JavaScript code, JSON content, type DSL etc) then name of that type.
+   */
+  safeTargetType: member function(): string
+
+  /**
+   * If this Pkg path is for a C3 type (e.g, JavaScript code, type DSL etc) then type of the part.
+   */
+  safeTargetTypePart: member function(): string enum Pkg.File.TypePart
+
+  /**
+   * return true, if this Pkg path is valid. not Pkg.Category.OTHER and excludeTest if not asked tobe included.
+   */
+  isValid: member function(includeTest: boolean): boolean
+
+  /**
+   * return true, if the file or  parent folder in the path is hidden.
+   */
+  isHidden: member function(): boolean
+
+  /**
+   * return test {@link Action.Requirement} for a given Pkg path.
+   */
+  testRequirement: member function(): string serialized Action.Requirement
+
+  /**
+   * @return serializer / deserializer for file extension of this URL or `null` if none available
+   */
+  serDeser: cached member function(): SerDeser
+
+  /**
+   * @return the prototype name for this path. If the Pkg path does not have a type, we will attempt to read to content
+   *  to see if it has a 'type' field. If it does, we will return the serType associated with that type. Else, we will
+   *  return null
+   */
+  serTypeName: cached member function(failIfMissing: boolean): string
+}

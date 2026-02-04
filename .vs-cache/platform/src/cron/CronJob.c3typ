@@ -1,0 +1,204 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * CronJob allows repetitive actions to be scheduled at a given date/time similar to Unix Cron.
+ */
+@db(index+=['correlationKey'], domain='system')
+@seed(userUpdatable=true, userRemovable=true)
+@cache(all=true)
+entity type CronJob mixes SeedData<CronJob>, NoMetaOverride schema name 'CRON_JOB' {
+
+  description: string
+
+  /**
+   * a user-defined variable that may be used for correlation
+   */
+  correlationKey: string
+
+  action: !ActionRef
+
+  /**
+   * Input arguments to call the function with
+   */
+  inputs: map<string, any> schema name 'INP'
+
+  /**
+   * Whether it is ok to run multiple instances of this job at the same time
+   *
+   * i.e. defines what should be done if triggered job does not finish before
+   *
+   * the next trigger time
+   */
+  @db(writeOnce=true)
+  concurrent: boolean = false
+
+  /**
+   * The schedule of when it will run. This is read by the CronEngine, and items
+   * are added to the CronQueue then run when the next scheduled time/date is reached.
+   */
+  scheduleDef: CronSchedule
+
+  /**
+   * If true, the job will be only run on a leader node (i.e. no task nodes will be required for job to run).
+   */
+  runOnLeader: boolean
+
+  /**
+   * If the job is inactive, it will not run when scheduled.
+   * By default, all jobs are active.
+   */
+  inactive: boolean
+
+  /**
+   * If false (the default), {@link JobHistory} entries will be created each time this cron job runs.  Consider setting
+   * to true for jobs that run very frequently.
+   */
+  noHistory: boolean
+
+  /**
+   * If {@link noHistory} is false, the history of each invocation of the cron job from the CronQueue.  If true, then
+   * only the history for the last invocation.
+   */
+  @db(order='descending(actualTime)')
+  history: [JobHistory](job)
+
+  completed: [JobHistory](job)
+
+  /**
+   * If true, the action for the `CronJob` will be run as the user creating the job.  If false, it will be run as the
+   * generic worker.  Note that the following rules apply to runAsCreatedBy jobs.
+   *
+   * 1. For jobs that specify runAsCreatedBy, only the creator (e.g. user in meta.createdBy), or root or a cluster admin
+   *    can modify the action and input fields.
+   * 2. Only the creator, root or cluster admin can modify the runAsCreatedBy field
+   */
+  runAsCreatedBy: boolean
+
+  /**
+   * Can be called to immediately change the schedule of an existing CronJob. Upon calling this function (assuming
+   * the job isn't inactive), the CronJob will be queued to run with the new schedule, replacing any existing
+   * pending executions of the job.  If instead, the schedule is directly modified on the job (via update/upsert),
+   * then the new schedule will take effect after any existing scheduled executions.
+   */
+  schedule: member function(schedule: !CronSchedule): !CronJob
+
+  /**
+   * Immediately changes the next trigger time of an existing active CronJob to the current time, causing it to be
+   * picked up by the next available and appropriate node.  When the action completes, the next trigger time for the job
+   * will be computed in the normal fashion.  Note that if the job is not active, an error will be thrown.
+   */
+  triggerNow: member function()
+
+  /**
+   * @return the next `limit` scheduled execution times for the CronJob.
+   */
+  executionSchedule: member function(limit: int = 25): [datetime]
+
+  /**
+   * Removes the schedule associated with the job and does not trigger future executions.
+   *
+   * Currently executing instances are not affected.
+   */
+  cancel: member function(): !CronJob
+
+  /**
+   * Maintains the schedule with the job and does not trigger future executions until resumed
+   */
+  pause: member function(): !CronJob
+
+  /**
+   * Resumes triggered executions on scheduled inactive jobs
+   */
+  resume: member function(): !CronJob
+
+  /**
+   * @return the last execution info for all cron jobs
+   */
+  @action(group+='monitor')
+  executionInfo: function(): [CronExecutionInfo]
+
+  /**
+   * Get the last {@link JobHistory} entry for the job.
+   *
+   * @param failIfMissing
+   *        If true, an exception will be thrown if either the job can't be found or if there is no history entry
+   *        for it.
+   *
+   * @return the last {@link JobHistory} entry for the job.
+   */
+  lastRun: member function(failIfMissing: boolean): JobHistory
+
+  /**
+   * Gets the most recent {@link JobHistory} entries for the job.
+   *
+   * @param count
+   *        The maximum number of history entries to return.  Note that if `noHistory` is true for the job then there
+   *        will be at most 1 entry.
+   *
+   * @return the most recent {@link JobHistory} entries for the job.
+   */
+  lastRuns: member function(count: int = 25): [JobHistory]
+
+  /**
+   * Get the last {@link JobHistory} entry for the job when it failed.  Note that if `noHistory` is true for the job,
+   * then this will return nothing if the last run succeeded.
+   *
+   * @param failIfMissing
+   *        If true, an exception will be thrown if either the job can't be found or if there is no history entry
+   *        for a failed run for it.
+   *
+   * @return the last {@link JobHistory} entry for the job.
+   */
+  lastError: member function(failIfMissing: boolean): JobHistory
+
+  /**
+   * Gets the most recent {@link JobHistory} entries for the job when it failed.
+   *
+   * @param count
+   *        The maximum number of history entries to return.  Note that if `noHistory` is true for the job then there
+   *        will be at most 1 entry.
+   *
+   * @return the most recent {@link JobHistory} entries for the job when it failed.
+   */
+  lastErrors: member function(count: int = 25): [JobHistory]
+
+  /**
+   * Validates the cron job and its schedule.
+   *
+   * @param numExecutions
+   *        Maximum number of next execution times to return in the validation result.
+   *
+   * @return The result of the validations.
+   */
+  validate: member function(numExecutions: int = 5): CronValidation
+
+  /**
+   * Makes an appropriate instance of a cron queue entry for the job
+   *
+   * @param isFirstTriggerTime
+   *        True if this is the first time the job is being triggered
+   */
+  makeQueueEntryInInitial: member function(isFirstTriggerTime: boolean): !CronQueueEntry
+
+  @dependency(include='action, inputs, runAsCreatedBy, meta')
+  beforeUpdate: ~
+
+  versionEdits:     ~ not persistable
+  beforeCreate:     ~
+  beforeRemove:     ~
+  validateSeedData: ~
+
+  // TODO: PLAT-107943 - CronJob cache not invalidated after changes to CronJob
+  // Remove these after.. callbacks
+  afterCreate: ~
+
+  afterUpdate: ~
+  afterRemove: ~
+  forId:       ~
+}

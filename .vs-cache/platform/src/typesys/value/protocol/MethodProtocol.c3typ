@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Marker type indicating support for implementation language method application syntax e.g. call via `.func()`.
+ */
+abstract type MethodProtocol mixes ImplLanguageProtocol, Value {
+
+  /**
+   * Implements the `.func()` syntactic sugar in js and py.
+   *
+   * Language SDKs typically just dispatch this call to remote API or java
+   *
+   * Note that since typically implementation is shared across language SDKs and is in java args are `any` and can not
+   * accept `native`
+   *
+   * An example of the subtype is Obj.c3typ that exposes `with<field name>` & `without<field name>` methods via this
+   * protocol
+   *
+   * @param args positional arguments
+   * @param kwargs arguments by name
+   *
+   * @see MethodType#firstKwargIndex
+   * @see MethodType#call
+   */
+  _call_: private abstract member function(name: !string, args: [any], kwargs: map<string, any>): any
+
+  /**
+   * @return true if it is valid to call method by provided name on this instance
+   */
+  _isMethodNameValid_: private abstract member function(name: !string): boolean
+}

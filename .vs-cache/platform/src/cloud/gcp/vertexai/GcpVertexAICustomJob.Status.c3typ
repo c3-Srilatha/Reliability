@@ -1,0 +1,73 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// TODO PLAT-60442 Add docs
+// TODO PLAT-60442 Remove 'JOB_STATE_' prefix form enum values
+enum type GcpVertexAICustomJob.Status {
+
+  /**
+   * The job state is unspecified.
+   */
+  JOB_STATE_UNSPECIFIED
+
+  /**
+   * The job has been just created or resumed and processing has not yet begun.
+   */
+  JOB_STATE_QUEUED
+
+  /**
+   * The service is preparing to run the job.
+   */
+  JOB_STATE_PENDING
+
+  /**
+   * The job is in progress.
+   */
+  JOB_STATE_RUNNING
+
+  /**
+   * The job completed successfully.
+   */
+  JOB_STATE_SUCCEEDED
+
+  /**
+   * The job failed.
+   */
+  JOB_STATE_FAILED
+
+  /**
+   * The job is being cancelled. From this state the job may only go to either JOB_STATE_SUCCEEDED, JOB_STATE_FAILED or
+   * JOB_STATE_CANCELLED.
+   */
+  JOB_STATE_CANCELLING
+
+  /**
+   * The job has been cancelled.
+   */
+  JOB_STATE_CANCELLED
+
+  /**
+   * The job has been stopped, and can be resumed.
+   */
+  JOB_STATE_PAUSED
+
+  /**
+   * The job has expired.
+   */
+  JOB_STATE_EXPIRED
+
+  /**
+   * The job is being updated. The job is only able to be updated at RUNNING state; if the update operation succeeds,
+   * job goes back to RUNNING state; if the update operation fails, the job goes back to RUNNING state with error
+   * messages written to [ModelDeploymentMonitoringJob.partial_errors][] field if it is a ModelDeploymentMonitoringJob.
+   */
+  JOB_STATE_UPDATING
+
+  fromNative: function(spec: @java(class="com.google.cloud.aiplatform.v1.JobState") !native)
+                : !GcpVertexAICustomJob.Status
+}

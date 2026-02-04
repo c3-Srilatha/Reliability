@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies the form and content of a pdf to be generated and where it will be stored when it is generated.
+ */
+type PdfGenerationSpec mixes Spec {
+
+  /**
+   * The optional header text to appear at the top right of each PDF page
+   * When headerText is provided, it will override {@link ApplicationPdfCreator#includeTimestamp}
+   * and appear on the top right of each page
+   */
+  headerText: string
+
+  /**
+   * The link in the C3 File System where the generated PDF will be stored.
+   */
+  url: !string
+
+  /**
+   * The {@link PdfCreator} which creates and returns a PDF with overall styles specified such as
+   * page headers and footers.
+   */
+  pdfCreator: !Type
+
+  /**
+   * The {@link PdfComponent}s that will iteratively add content to the PDF returned by the {@link PdfCreator}.
+   */
+  pdfComponents: ![PdfComponent]
+}

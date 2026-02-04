@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Value type for `native` i.e. value type for private value that has special support in one or more language bindings.
+ * Note that native values are generally not portable between languages and cannot be persisted so are only useful for
+ * private transient values.
+ *
+ * Values declared as `native` implicitly preserve null values. In other words, a null collection value passed to a
+ * context expecting `native` will not result in an empty collection being instantiated. In fact, no processing of
+ * `native` values is done at all; it is up to the consumer to handle any reasonable value or throw an error otherwise.
+ *
+ * When appropriate, DSL syntax can specify which class to use per implementation language using language-specific
+ * annotations such as:
+ * ```type
+ *   threads: private @java(class="List<java.lang.Thread>") native
+ *   ndarray: private @py(class="numpy.ndarray") native
+ * ```
+ * This specifies that in Java compiled code, the `threads` field will use the Java class `List<Thread>` and provides
+ * documentation that for Python the `ndarray` field will be an instance of the Python class `numpy.ndarray`.
+ */
+type NativeType mixes ValueType, DefaultInstance {
+
+  /**
+   * Get the class name for the specified language as specified with language-specific annotations:
+   *
+   * ```type
+   * listToArray: function(list: @java(class="java.util.List<String>") native): [string]
+   * numpyToArray: function(np: @py(class="numpy.ndarray") native): [string]
+   * ```
+   *
+   * If no annotation is specified, default to the most basic type in the language, such as Java's `Object`.
+   *
+   * @see Ann.Java#class
+   * @see Ann.Py#class
+   */
+  className: member function(lang: !string serialized ImplLanguage): !string
+
+  isA:              ~(other: ValueType) java | js
+  isEmptyValue:     ~ java | js | py
+  inst:             cached ~
+  makeValue:        ~ java | py | js
+  valueToJson:      ~ java | js | py
+  valueToTypedJson: ~ java | js | py
+  valueFromJson:    ~ java | py | js
+  toString:         ~ java | js | py
+}

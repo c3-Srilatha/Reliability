@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the spec for the multimodal image verbalizer.
+ */
+type Genai.SourceFile.Chunker.MultimodalPdf.ImageVerbalizerSpec mixes Genai.SourceFile.Chunker.Image.BaseImageVerbalizerSpec{
+  /**
+   * The name of the vision language model to use for verbalization.
+   * * `bedrock` is for Claude models via AWS Bedrock
+   * * `vertex` is for calls through Vertex (either to Google or to Anthropic models).
+   *   * `gemini` is equivalent to `vertex` and may be used for calls through Vertex. It is kept for backward compatibility.
+   * * `openai` is for calls through OpenAI.
+   *   * `gpt4v` is equivalent to `openai` and may be used for calls through OpenAI. It is kept for backward compatibility.
+   */
+  modelName: !string enum("bedrock", "gemini", "gpt4v", "openai", "llava", "vertex")
+
+  /**
+   * Model params for the vision language model.
+   */
+  modelParams: !json
+
+  /**
+   * Prompt for the vision language model.
+   */
+  verbalizationPromptTemplate: !string
+}

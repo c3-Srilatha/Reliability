@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Python AST.
+ * @see https://docs.python.org/3/library/ast.html
+ */
+abstract type PyAst mixes Value {
+
+  /**
+   * Parse a Python source file into an AST.
+   */
+  parse: function(source: !string): !PyAst.Ast py
+
+  /**
+   * Print an AST as a Python source file.
+   */
+  print: abstract function(ast: !PyAst.Ast): !string
+
+  /**
+   * Traverse (depth-first) the entire tree of nodes and call the visitor lambda for each one.
+   *
+   * @param ast node tree
+   * @param visitor lambda to call on each node
+   */
+  visit: abstract function(ast: !PyAst.Ast, visitor: !lambda(node: !PyAst.Ast))
+
+  /**
+   * Traverse (depth-first) the entire tree of nodes and call the visitor lambda for each one. If the lambda returns
+   * false, do not descend into children of the current node (but continue with sibling nodes). The depth argument
+   * passed to the visitor is relative to where in the AST **visit** was called, _not_ the absolute depth.
+   *
+   * @param ast node tree
+   * @param visitor lambda to call on each node
+   */
+  visit: abstract function(ast: !PyAst.Ast, visitor: !lambda(node: !PyAst.Ast, depth: !int): !boolean)
+
+  /**
+   * Load plain JSON from a parsed AST into Objs.
+   */
+  jsonToAst: abstract function(json: !json): !PyAst.Ast
+
+  /**
+   * Produce plain JSON of a parsed AST from Objs.
+   */
+  astToJson: abstract function(ast: !PyAst.Ast): !json
+
+  /**
+   * Parse the source code as Python and return a string with nicely formatted syntax errors (if any).
+   * This is mostly useful for helping with the display of scripts that failed to parse in environments too poor
+   * to display good errors. If there are no errors, an empty string is returned.
+   */
+  parseErrors: abstract function(source: !string): string
+
+  /**
+   * Create the corresponding PyAst Expression type corresponding to a given Object
+   *
+   * @param e
+   *        the object to be converted into a corresponding PyAst Expression
+   * @return
+   *        the PyAst Expr2. Arrays become PyAst.List, Maps become PyAst.Dict, everything else
+   *        becomes a Constant
+   */
+  makeExpression: function(e: any): PyAst.Expr2
+}

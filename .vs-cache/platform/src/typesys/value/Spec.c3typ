@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for a spec parameter of a method. Such parameters are helpful for specifying complex options to methods
+ * and for defining and documenting default values. Spec objects have additional validation when passed as
+ * arguments, see {@link ValidateObjSpec}.
+ *
+ * Spec-specific validation requires all mandatory fields to have values. If an object embedded within a spec
+ * object is also a spec, it is also verified. This allows the implementer of a method that takes a spec to know
+ * that the spec will be "complete".
+ *
+ * ```type
+ * type OperationSpec mixes Spec {
+ *   scalpel: !int = 10
+ * }
+ * ```
+ *
+ * Implementation of a method which takes **OperationSpec** as an argument never needs to do this:
+ *
+ * ```js
+ * function operate(spec) {
+ *   let blade;
+ *   if (spec != null && spec.scalpel)
+ *     blade = spec.scalpel;
+ *   else
+ *     blade = 10;
+ * }
+ * ```
+ *
+ * Instead, it can assume the spec is always present, and because **scalpel** is declared as required, it can assume
+ * there is always a value.
+ *
+ * @see Result
+ * @see Obj#validateObj
+ *
+ * @see Config
+ * @see SeedData
+ * @see Metadata
+ */
+abstract type Spec {
+
+  afterMake: ~
+}

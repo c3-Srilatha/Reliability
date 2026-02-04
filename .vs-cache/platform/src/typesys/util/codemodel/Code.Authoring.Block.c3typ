@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Builder for authoring a block.
+ *
+ * @see Code.Authoring
+ */
+type Code.Authoring.Block mixes Code.Block, Code.Authoring.Node {
+
+  /**
+   * Add a comment to the block.
+   */
+  comment: member function(): !Code.Authoring.Comment
+
+  /**
+   * Add a comment to the block. If the text contains newlines, it will be a multi-line comment, otherwise a
+   * single-line comment.
+   */
+  comment: member function(text: !string): !mixing Code.Authoring.Block
+
+  /**
+   * Add a variable declaration to the block.
+   */
+  var: member function(): !Code.Authoring.Var
+
+  /**
+   * Add a variable declaration to the block, specifying the name.
+   */
+  var: member function(name: !string): !Code.Authoring.Var
+
+  /**
+   * Add a simple if statement, specifying the expression and statement body and return the original block.
+   */
+  if: member function(expr: !Code.Authoring.Expr, body: !Code.Authoring.Block): !mixing Code.Authoring.Block
+
+  /**
+   * Add a simple if statement, specifying the expression and returning its statement body.
+   */
+  if: member function(expr: !Code.Authoring.Expr): !Code.Authoring.Block
+
+  /**
+   * Add an if statement to the block.
+   */
+  if: member function(): !Code.Authoring.Conditional
+
+  /**
+   * Add a return statement to the block.
+   */
+  return: member function(expr: Code.Authoring.Expr): !mixing Code.Authoring.Block
+
+  /**
+   * Add a return null statement to the block.
+   */
+  returnNull: member function(): !mixing Code.Authoring.Block
+
+  /**
+   * Add an assignment statement to a variable name.
+   */
+  assign: member function(name: !string): !Code.Authoring.Assignment
+
+  /**
+   * Add an assignment statement to a field.
+   */
+  assign: member function(ref: !Code.Authoring.FieldRef): !Code.Authoring.Assignment
+
+  /**
+   * Add an already-created node to the block.
+   *
+   * @see #stmts
+   */
+  add: private member function(node: !Code.Authoring.Node): !mixing Code.Authoring.Block
+}

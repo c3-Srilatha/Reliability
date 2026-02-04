@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for all the {@link MlWorkflowCoordinatable}s in C3 AI Reliability.
+ */
+type ReliabilityOrchestrator.JobRun<J: ReliabilityOrchestrator.Job, JS: ReliabilityOrchestrator.JobSpec> {
+
+  /**
+   * The distributed job this run is an instance of.
+   */
+  job: !J
+
+  /**
+   * The array of configurations this job run must execute.
+   */
+  jobSpecs: ![JS]
+
+  /**
+   * When {@link ReliabilityOrchestrator.Job#start} is invoked, it returns an {@link MlOperationRun}.
+   * That is referenced in this field so that it may be used to fetch the job run for downstream
+   * debugging, inspection, or monitoring.
+   */
+  mlOperationRun: private MlOperationRun
+
+  /**
+   * Options that were used to specify execution constraints for this training job run.
+   */
+  options: !ReliabilityOrchestrator.JobOptions
+
+  /**
+   * Returns the status of the {@link MlOperationRun}.
+   * @return The workflow status of the job run.
+   */
+  status: member function(): !Workflow.Status py
+
+  /**
+   * Returns a count of pending, running, completed, and failed.
+   * Even though `failed` is not an official status, any {@link MlWorkflowCoordinatableResult}
+   * that is completed but has an `errorCount > 0` is denoted as `failed`.
+   * @return A {@link Data.Persisted} object containing the status summary counts.
+   */
+  statusSummary: private member function(): !Data.Persisted py-data
+
+  /**
+   * Returns a {@link Data.Persisted} which contains the history of completion statuses
+   * of the {@link MlWorkflowCoordinatableResult}s for this job run.
+   * @param grain
+   *           The time grain for the progress summary (default: 'H' for hourly).
+   * @return A {@link Data.Persisted} object containing the progress summary history.
+   */
+  progressSummary: private member function(
+    grain: string = 'H'
+  ): !Data.Persisted py-data
+}

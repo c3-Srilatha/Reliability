@@ -1,0 +1,130 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an App Token. It is used to authenticate http requests between apps in a cluster,
+ * during App#call.
+ *
+ * App tokens should be prefixed and will be identified by 'c3app' when being sent across apps.
+ * AppTokens can only be generated for the current App, as it must be signed by the current app's private key.
+ * However, any destination app that has previously performed a public key exchange with the current App will be able
+ * to verify the token signature.
+ */
+// TODO: PLAT-85368 Remove AppToken.c3typ
+private type AppToken mixes StringSerializable {
+
+  /**
+   * The appId of the app that signed the token, and triggered the App to App communication
+   */
+  srcAppId: !string
+
+  /**
+   * Optional caller app id if different from the srcAppId. In this case source app is used as "federated identity".
+   * I.e. the destination app is trusting source app to authenticate and authorize client apps and users. Note that the
+   * client app identity is unlikely to exist in the destination app, so it is effectively FYI.
+   */
+  clientAppId: string
+
+  /**
+   * Optional caller user id. destination app is trusting source app to authenticate and authorize calling user. This
+   * user unlikely to exist in destination app, so it is effectively FYI.
+   */
+  clientUserId: string
+
+  /**
+   * The destination/target app's appId in the App to App communication
+   */
+  destAppId: !string
+
+  /**
+   * Roles of the user who issued App#call from the srcAppId.
+   */
+  // TODO: PLAT-85369 Remove AppIdentity.c3typ
+  @deprecated(finalVersion='8.4')
+  userRoles: [string]
+
+  /**
+   * The expiry of the AppToken.
+   */
+  // TODO: PLAT-87336 set AppToken#expiry default to a small interval
+  expiry: DateTime
+
+  /**
+   * true if App#call was issued by platform code asRoot.
+   */
+  // TODO: PLAT-85369 Remove AppIdentity.c3typ
+  @deprecated(finalVersion='8.4')
+  isAsRoot: boolean
+
+  /**
+   * Signed and serialized token
+   */
+  signedToken: !string
+
+  /**
+   * Given the serialized token, it deserializes and validates it
+   * @param signedToken
+   *        Signed and serialized token
+   * @returns AppToken if valid or null.
+   */
+  validate: function(signedToken: !string, failIfInvalid: boolean): AppToken
+
+  /**
+   * Given the serialized token, it deserializes and validates it with the provided key.
+   * This method differs from validate in that validate infers the correct key to use depending on the ids of the
+   * app in the token and the current app. This method uses the key in the method parameter, and fails if signature is
+   * not valid with respect to this key.
+   *
+   * @param signedToken
+   *        Signed and serialized token
+   * @param keyStr
+   *        A Base64 encoded cryptographic key for an app, either the {@link App.SecretKey} or {@link App.PrivateKey}.
+   *
+   * @param jwtAlgorithm
+   *        The algorithm the jwt token was signed with.
+   *
+   * @returns AppToken if valid or null.
+   */
+  validateWithKey: function(signedToken: !string,
+                            keyStr: !string,
+                            jwtAlgorithm: !JwsAlgorithmKind,
+                            failIfInvalid: boolean): AppToken
+
+  /**
+   * Generates a new signed AppToken from the current App to the provided destination App.
+   * If context is root, then will set IsAsRoot flag to true, and userRoles to C3.ClusterAdmin.
+   *
+   * @param destAppId
+   *        The destination App's appId for the app token
+   * @param userRoles
+   *        The roles of the user who issued the App#call
+   * @param isRoot
+   *        If true, the AppToken represents platform issued calls that should always be authorized in the receiver app.
+   * @param expiry
+   *        If provided, the expected expiration of the AppToken. By default, the expiry is not set as the token
+   *        doesn't expiry
+   *
+   * @returns AppToken
+   */
+  // TODO: PLAT-69599 Remove AppToken#userRoles & #isRoot
+  // TODO: PLAT-85369 Remove AppIdentity.c3typ
+  @action(group+='cluster-admin')
+  @deprecated(finalVersion='8.4')
+  generate: function(destAppId: !string, userRoles: [string], isRoot: !boolean, expiry: DateTime): !AppToken
+
+  @action(group+='cluster-admin')
+  generate: function(destAppId: !string, clientAppId: !string, clientUserId: !string, expiry: DateTime): !AppToken
+
+  /**
+   * Computed user from the userRoles and srcAppId
+   */
+  user: property(): User
+
+  toString:   ~
+  fromString: inline ~
+}

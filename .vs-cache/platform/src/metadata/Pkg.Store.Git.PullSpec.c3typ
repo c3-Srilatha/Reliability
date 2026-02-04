@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Pkg.Store.Git.PullSpec mixes Spec {
+
+  /**
+   * If branch is provided, will pull from this branch than previously configured branch.
+   * On success, Will update the configured branch to be the given branch.
+   */
+  branch: string
+
+  /**
+   * If reset is true, remote branch contents will be replacing Pkg.Store and any unpublished changes will be lost.
+   * If reset is false, the changes in Pkg.store will be applied on latest from remote branch.
+   */
+  reset: boolean
+
+  /**
+   * pull from this commit, if that commit is part of configured branch history, otherwise fail.
+   */
+  commitSha: string
+
+  /**
+   * When true, When there are conflicting changes in files,
+   * accept changes from remote branch and reject local. `false` would accept local changes.
+   * This is applied when `reset` is false.
+   */
+  @deprecated(finalVersion=8.9, details="OptionW was never supported, use manual conflict resolution or reset")
+  useRemote: boolean
+}

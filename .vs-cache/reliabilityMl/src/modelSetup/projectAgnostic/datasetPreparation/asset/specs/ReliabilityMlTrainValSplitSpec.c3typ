@@ -1,0 +1,82 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Once all the {@link Feature.Set}s have been created and preprocessed by
+ * {@link ReliabilityMlDatasetPreparationHelper#prepareMlDatasets}, the final step will be to split the
+ * datasets into training and validation datasets. The default behavior is to split the dataset into
+ * 20/80 validation/train datasets, i.e., the first 20% of the data will be used for {@link MlModel}
+ * validation and the latest 80% will be used for training the {@link MlModel}.
+ *
+ * This default behavior can be changed to do the following:
+ * - Change 20/80 to 30/70 or some other percentage split by changing the {@link #percentage} field values.
+ * - Instead of percentage split, choose to split on a certain date by setting the {@link #splitOn} field to a datetime.
+ * - Reverse 20/80 to 80/20, i.e. instead of validation/train change it to train/validation by changing the {@link doNotReverse} field values.
+ * - Gain full control by explicitly providing {@link #trainStart}, {@link #trainEnd}, {@link #valStart}, and {@link #valEnd}. If these 4 are provided, it will take precedence over any other method of splitting the dataset.
+ */
+@beta
+type ReliabilityMlTrainValSplitSpec {
+
+  /**
+   * The percentage of training data. The default is 80, meaning we split
+   * the dataset chronologically into 20% validation and 80% training.
+   */
+  percentage: double = 80
+
+  /**
+   * If provided, split the dataset by timestamp. This will take precedence
+   * over {@link percentage}.
+   */
+  splitOn: datetime
+
+  /**
+   * The default approach to splitting the dataset is chronogically validation
+   * which is followed by training dataset, i.e., the first section of the
+   * dataset will be used for validating the {@link MlModel} and the latter
+   * portion of the dataset will be used to train the {@link MlModel}.
+   * If the user wants to take the more common approach of training dataset
+   * followed by validation dataset, set this field to `true`.
+   * In practice, however, it has been observed that {@link MlModel}s work
+   * better in production when trained on the latest data available. This is
+   * why the default is set to `false`.
+   */
+  doNotReverse: boolean = false
+
+  /**
+   * If this field and the other three fields, i.e., {@link trainEnd}, {@link valStart},
+   * and {@link valEnd} are provided, then the dataset will be split according
+   * to these dates. These dates will take precedence over {@link percentage} splitting
+   * of the data or timestamp based splitting defined by {@link splitOn}.
+   */
+  trainStart: datetime
+
+  /**
+   * If this field and the other three fields, i.e., {@link trainStart}, {@link valStart},
+   * and {@link valEnd} are provided, then the dataset will be split according
+   * to these dates. These dates will take precedence over {@link percentage} splitting
+   * of the data or timestamp based splitting defined by {@link splitOn}.
+   */
+  trainEnd: datetime
+
+  /**
+   * If this field and the other three fields, i.e., {@link trainStart}, {@link trainEnd},
+   * and {@link valEnd} are provided, then the dataset will be split according
+   * to these dates. These dates will take precedence over {@link percentage} splitting
+   * of the data or timestamp based splitting defined by {@link splitOn}.
+   */
+  valStart: datetime
+
+  /**
+   * If this field and the other three fields, i.e., {@link trainStart}, {@link trainEnd},
+   * and {@link valStart} are provided, then the dataset will be split according
+   * to these dates. These dates will take precedence over {@link percentage} splitting
+   * of the data or timestamp based splitting defined by {@link splitOn}.
+   */
+  valEnd: datetime
+}

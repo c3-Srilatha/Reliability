@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Mixin that provides common functionalities for comment types.
+ */
+type CommentMixin {
+  /**
+   * Return a url to download a single file or group of files as a zip. The files are the {@link FileAttachment} that
+   * are linked to the comments passed into the function.
+   * @param comments The list of comments with file attachments.
+   * @return The download URL as a string.
+   */
+  getDownloadUrl: function(comments: ![mixing CommentMixin]): string js-rhino
+
+  /**
+   * Returns a configuration object to upload files to the server.
+   * @return JSON object with the keys: `{env: <env>, app: <app>}`.
+   */
+  getUploadConfig: function(): json js-rhino
+
+  /**
+   * Flag indicating if the comment was made when closing a case.
+   */
+  isCloseComment: boolean
+
+  /**
+   * Fetch comments that have attachments.
+   * @param spec
+   *        The filter criteria for fetching comments.
+   * @return A list of comments with attachments.
+   */
+  fetchCommentsWithAttachments: function(spec: FetchSpec): !FetchResult<mixing CommentMixin> js-rhino
+
+  /**
+   * Fetch count of comments that have attachments.
+   * @param spec
+   *        The filter criteria for fetching comment count.
+   * @return Count of comments with attachments.
+   */
+  fetchCountCommentsWithAttachments: function(spec: FetchSpec): !int js-rhino
+
+  /**
+   * Removes a comment and any attachments associated with it.
+   * @param commentIds
+   *        List of comment IDs to remove.
+   * @param parent
+   *        The ID of the parent entity associated with the comment.
+   * @return List of removed comment IDs.
+   */
+  removeCommentsAndAttachments: function(commentIds: ![string], parent: !string): [string] js-rhino
+}

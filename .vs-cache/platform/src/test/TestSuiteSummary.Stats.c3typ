@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Stats for a group of test suites based on granularity (test case or test assertion).
+ */
+type TestSuiteSummary.Stats {
+
+  /**
+   * Total count.
+   */
+  count: int
+
+  /**
+   * Disabled count.
+   * The count of disabled test cases or assertions for #cases and #assertions respectively.
+   * Whether the test is ignored at the suite or case level, all cases or assertions are counted.
+   */
+  disabled: int
+
+  /**
+   * {@link disabled} / {@link count}
+   */
+  disabledPercentage: double
+
+  /**
+   * Map from ticket number to count of disabled cases (for #cases) or assertions (for #assertions) caused by the
+   * ticket.
+   * Sorted in descending order of count.
+   */
+  disabledByCause: @sorted map<string, int>
+
+  /**
+   * Map from test suite name to count of disabled cases (for #cases) or assertions (for #assertions) in that test
+   * suite.
+   * Sorted in descending order of count.
+   */
+  disabledByTestSuite: @sorted map<string, int>
+
+  /**
+   * Aggregate multiple {@link TestSuiteSummary.Stats} into one.
+   */
+  aggregate: function(stats: [TestSuiteSummary.Stats]): TestSuiteSummary.Stats
+}

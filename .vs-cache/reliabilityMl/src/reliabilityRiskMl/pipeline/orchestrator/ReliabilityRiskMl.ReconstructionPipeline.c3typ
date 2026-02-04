@@ -1,0 +1,152 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a pipeline that extends {@link ReliabilityRiskMl.Pipeline} to include a reconstruction pipe.
+ * The {@link #reconstructionPipe} will produce residual data that will feed into the {@link #riskScorePipe} to produce
+ * risk scores. The inputs to this pipeline remain the same, but this pipeline includes 2 (or 3) additional outputs:
+ * - `reconstructions`: The reconstruction of the original input.
+ * - `residuals`: The residual between the reconstruction and original input.
+ * - `latentProjection` (if applicable): The latent encoding of the original input used to generate the reconstruction.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.ReconstructionPipeline<DX, DY, DO> extends ReliabilityRiskMl.Pipeline<DX, DY, DO, {featureContributions: MlInterpretResult<any>}> mixes ReliabilityMlDatasetPreparationRunResolvable type key 'RRMRP'{
+
+  // TODO REL-13030: Remove this override once the inconsistent behavior  with pipeline hyperparams is resolved.
+  /**
+   * @inheritdoc
+   */
+  withHyperparams: ~ py
+
+  /**
+   * If set, the {@link #reconstructionPipe} must also include `latentProjection` in its output.
+   */
+  @ML(hyperparameter=true)
+  @typeMetaDoc(isAdditional=true)
+  includeLatentProjection: boolean
+
+  /**
+   * If set to false, the {@link scalerPipe} will scale the input data before training the {@link #reconstructionPipe}. At
+   * inference time, it will also re-scale the output of {@link #reconstructionPipe} back to original scales of input
+   * data
+   */
+  @ML(hyperparameter=true)
+  doNotApplyScaling: boolean = false
+
+  /**
+   * The scaler pipe is responsible for scaling the input data before training the {@link #reconstructionPipe}. At
+   * inference time, it will also re-scale the outputs of {@link #reconstructionPipe} back to original scales of input
+   * data. If no pipe is specified, an {@link MlPipe} converted from a native sklearn standard scaler will be used.
+   * If you want to use a different scaler, please make sure the native model has an "inverse_transform" method that
+   * can be used to re-scale the reconstructions.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  scalerPipe: MlPipe = {
+    'type': 'ReliabilityRiskMl.Scaler.StandardScalerPipe'
+  }
+
+  /**
+   * The reconstruction pipe is responsible for outputting a reconstruction of the original input, which may or may not
+   * be from the latent encoding of the original input, and a residual between the input and reconstruction. The
+   * specified pipe must accept a single {@link Data} as input and output {@link Tuple} of `reconstructions` and
+   * `residuals`. If no pipe is specified, the default {@link ReliabilityRiskMl.Reconstruction.Conv1dAutoencoderPipe}
+   * will be used.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  reconstructionPipe: MlPipe = {
+    'type': 'ReliabilityRiskMl.Reconstruction.Conv1dAutoencoderPipe'
+  }
+  /**
+   * The alerting pipe is responsible for outputting an `alert` based on risk score data. The specified pipe must accept
+   * as input a single {@link Data} and output a {@link Data} with a key specified by {@link ReliabilityMLOutputConfig}.
+   * If no pipe is specified, the default {@link ReliabilityRiskMl.Alerting.PercentileDurationPipe} will be used.
+   */
+  alertingPipe: ~ = {
+    'type': 'ReliabilityRiskMl.Alerting.PercentileDurationPipe'
+  }
+
+  /**
+   * The risk score pipe is responsible for outputting a risk score based on an input feature set. The specified pipe
+   * must accept as input a single {@link Data} and output a {@link Data} with a key specified by
+   * {@link ReliabilityMLOutputConfig}. If no pipe is specified, the default
+   * {@link ReliabilityRiskMl.RiskScoreComputation.SigmoidWeightedComputationPipe} will be used.
+   */
+  riskScorePipe: ~ = {
+    'type': 'ReliabilityRiskMl.RiskScoreComputation.SigmoidWeightedComputationPipe'
+  }
+
+  /**
+   * The risk score normalization pipe is responsible for scaling risk score values to be between 0 and 1. The specified
+   * pipe must accept a single {@link Data} as input and output a {@link Data} with a key specified by
+   * {@link ReliabilityMLOutputConfig}. If no pipe is specified, the default
+   * {@link ReliabilityRiskMl.RiskScoreScaling.ThresholdScalerPipe} will be used.
+   */
+  riskScoreNormalizationPipe: ~ = {
+    'type': 'ReliabilityRiskMl.RiskScoreScaling.ThresholdScalerPipe'
+  }
+
+  /**
+   * A map of user-specified {@link ReliabilityRiskMl.ReconstructionPipeline.ScoringMetric} instances for scoring.
+   * For {@link ReliabilityRiskMl.ReconstructionPipeline}, use this field instead of {@link pipelineScoringMetrics}
+   * to score. The keys of the map should be the user-specified names of the metrics, and the values should be the
+   * actual {@link ReliabilityRiskMl.ReconstructionPipeline.ScoringMetric} instances.
+   *
+   * Default:
+   * ```py
+   * {'mae': c3.ReliabilityRiskMl.ReconstructionPipeline.ScoringMetric(
+   *    actualScoringMetric = c3.MlMeanAbsoluteErrorMetric(),
+   *    outputsToSelect = ['scaledReconstructions'],
+   *    targetsToSelect = ['scaledFeatures']
+   * )}
+   * ```
+   */
+  reconstructionPipelineScoringMetrics: map<string, ReliabilityRiskMl.ReconstructionPipeline.ScoringMetric>
+
+  /**
+   * The pipe that should be passed to the interpreter to generate feature contributions. By default, the {@link riskScorePipe}
+   * is used to generate feature contributions.
+   */
+  pipeToInterpret: string enum('riskScorePipe', 'reconstructionPipe') = 'riskScorePipe'
+
+  /**
+   * The interpreter is responsible for interpreting the {@link #riskScorePipe}. If you are using a custom riskScorePipe,
+   * please make sure to provide your custom interpreter for it here. On the other hand, if your riskScorePipe is
+   * {@link ReliabilityRiskMl.RiskScoreComputation.SimpleComputationPipe},
+   * {@link ReliabilityRiskMl.RiskScoreComputation.WeightedComputationPipe},
+   * {@link ReliabilityRiskMl.RiskScoreComputation.DirectionallyWeightedComputationPipe} or
+   * {@link ReliabilityRiskMl.RiskScoreComputation.SigmoidWeightedComputationPipe}, their corresponding
+   * interpreters ({@link ReliabilityRiskMl.Pipeline.Interpreter.SimpleResidualInterpreter},
+   * {@link ReliabilityRiskMl.Pipeline.Interpreter.WeightedResidualInterpreter},
+   * {@link ReliabilityRiskMl.Pipeline.Interpreter.DirectionallyWeightedResidualInterpreter}) or
+   * {@link ReliabilityRiskMl.Pipeline.Interpreter.SigmoidWeightedResidualInterpreter} will be used
+   * automatically.
+   */
+  interpreter: ~
+
+  beforeCreate: ~ py
+
+  generatePipeline: ~ py-data-science
+
+  generateTypeBindings: ~ py
+
+  resolveForDatasetPreparationRun: ~ py
+
+  getFieldNamesToVertexNamesMap: ~ py
+
+  replaceEntityReferences: ~ py
+
+  getInterpreterForPipe: ~ py
+
+  doValidateInput: ~ py
+}

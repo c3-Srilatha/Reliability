@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Azure Data Catalog REST API proxy and C3 IoT helper methods
+ */
+type AzureDataCatalogDataAsset mixes Value {
+
+  /**
+   * Searches over data assets based on the search terms provided.  Uses ADC configuration to populate some parameters.  Checks and
+   * renews OAuth token if necessary.
+   * Example: AzureDataCatalog.searchCatalog("*", null, 1, 10)
+   * @param searchTerms - Terms to search on
+   * @param facets - A comma separated field names to facet the results on.
+   * @param startPage - Start Page of the results used for pagination. Must be a value greater than 0.
+   * @param returnItemCount - Optional. Number of results wanted in one page (Paging).
+   * @return AzureDataCatalogSearchResults
+   */
+  searchCatalog: function(searchTerms: !string,
+                          facets: string,
+                          startPage: int,
+                          returnItemCount: int): AzureDataCatalogSearchResults js-server
+
+  /**
+   * Create an Azure Data Catalog asset for each type specified.
+   * @param typeName - Array of types to be published to Azure Data Catalog
+   * @param catalog - Azure Data Catalog to publish to
+   * @param azureAPIVersion - Azure Data Catalog API version
+   */
+  createAssetFromType: function(typeName: ![string], catalog: !string): AzureDataCatalogRegistrationStats js-server
+
+  /**
+   * Deletes an asset from the specified Azure Data Catalog.  Invokes the Azure Data Catalog REST API.
+   * @param catalogName - Array of types to be published to Azure Data Catalog
+   * @param viewName - Name of the data asset view
+   * @param viewItemId - id of a view item
+   * @param api-version - Azure Data Catalog API version
+   * @returns HttpResponse
+   */
+  deleteAsset: function(catalogName: !string, viewName: !string, viewItemId: !string): boolean js-server
+}

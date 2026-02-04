@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Random Router for {GenaiCore.Llm.Client}.
+ * This router implements a random fallback strategy by attempting to call {@link GenaiCore.Llm.Client#model}(s)
+ * randomly until one succeeds.
+ * If none succeeds, it will return the list of errors encountered at every {@link GenaiCore.Llm.Client#model}.
+ * If #timeoutSeconds is reached, it will return a TimeoutException.
+ *
+ * Each model is internally retried up to 3 times with a 30 second timeout before moving to the next model.
+ * NOTE: #timeoutSeconds takes precedence over the predefined timeout(i.e., 30 seconds) of model calls.
+ * Examples of how #timeoutSeconds affects model fallback behavior:
+ * 1. Setting #timeoutSeconds to higher than 30 seconds ensures the router has sufficient time to try multiple models
+ *    if the first model fails.
+ * 2. Setting #timeoutSeconds to less than 30 seconds may limit the router to only trying the first model
+ *    before timing out.
+ *
+ * @see GenaiCore.Llm.Router
+ */
+// TODO: PLAT-116711 Implement a config/timeoutPerModel for timeout and retry of same model calls
+type GenaiCore.Llm.Router.Random mixes GenaiCore.Llm.Router {
+    route: ~ py
+
+    /**
+     * Maximum number of seconds the router could take to complete the request.
+     * raises a TimeoutException if the elapsed time exceeds #timeoutSeconds.
+     */
+    timeoutSeconds: !int = 120
+}

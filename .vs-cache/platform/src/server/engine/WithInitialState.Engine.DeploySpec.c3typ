@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines {@link WithInitialState.Engine#deploy deployment} spec for {@link WithInitialState.Engine}.
+ *
+ * {@link WithInitialState.Engine} defines own implementation logic for initializing
+ * {@link #initialStateObjsPerRuntime provided} {@link WithInitialState object}s. This logic can be overridden by
+ * supplying `onInterpreterStart` lambda as part of {@link App.Node.ThreadPool.Config.Py.Simple config} of
+ * {@link #threadPool} {@link App.Node.ThreadPool.Spec#py spec}.
+ */
+@beta
+type WithInitialState.Engine.DeploySpec mixes Engine.DeploySpec {
+
+  /**
+   * Map specifying which objects' state should be loaded.
+   *
+   * key - The {@link Action.Requirement requirement} in which {@link WithInitialState object}'s state should be initialized.
+   * value - The list of {@link WithInitialState object}s that should be loaded in memory.
+   *
+   * `py-py4j` is only supported {@link ImplLanguage.Executor}. Please use it in provided
+   * {@link Action.Requirement requirements} or keep empty to default to it.
+   */
+  initialStateObjsPerRuntime: !?map<string serialized Action.Requirement, ![!WithInitialState]>
+}

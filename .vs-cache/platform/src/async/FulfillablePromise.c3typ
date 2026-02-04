@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An empty promise that can be fulfilled or rejected in the future.
+ *
+ * Note that may not be implemented of runtime language does not have a support for it
+ *
+ * @see Promise#make
+ */
+type FulfillablePromise<V> mixes Promise<V>, Value {
+
+  /**
+   * Fulfills the promise with result of application of provided lambda; note that promise can be fulfilled or rejected
+   * once
+   */
+  fulfill: member function(res: !lambda(): V)
+
+  /**
+   * Fulfills the promise; note that promise can be fulfilled or rejected once
+   */
+  fulfill: member function(res: !?V)
+
+  /**
+   * Reject the promise; note that promise can be fulfilled or rejected once
+   */
+  reject: member function(err: !Error)
+
+  /**
+   * Reject the promise; note that promise can be fulfilled or rejected once
+   */
+  reject: member function(err: @java(class='Throwable') !native)
+}

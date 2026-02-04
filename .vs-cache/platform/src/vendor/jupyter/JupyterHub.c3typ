@@ -1,0 +1,134 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type represents C3 managed [JupyterHub](https://jupyter.org/hub).
+ * @inheritdoc CloudService
+ */
+@cloud(cloudFunc='k8sjup')
+@k8s(cloudServiceEndpoint='jupyter',
+     templateFieldTypes={
+                          'overlay.jupyterhub.custom.c3.authRefreshPeriod': 'int',
+                          'overlay.jupyterhub.singleuser.uid': 'int',
+                          'overlay.jupyterhub.singleuser.fsGid': 'int',
+                          'overlay.jupyterhub.singleuser.cpu.guarantee': 'int'
+                        },
+     templateArrayFields={
+                           jupyterConfigAdmin: ".overlay.jupyterhub.hub.config.Authenticator.admin_users",
+                           jupyterHosts: ".overlay.jupyterhub.ingress.hosts"
+                         })
+type JupyterHub mixes CloudService<JupyterHub_Config>, Singleton {
+
+  inst:   ~
+  status: ~
+
+  @deprecated
+  ensureConfig: ~
+
+  beforeStop:         ~
+  beforeTerminate:    ~
+  afterEnsureService: ~
+
+  /**
+   * If no {@link WaitSpec} is provided in {@link CloudServiceStartSpec}, following waitSpec will be used
+   * ```js
+   * WaitSpec.builder().initialSleepMillis(120 * 1000L) // 2 minutes
+   *                   .maxSleepMillis(60 * 1000L) // 1 minutes
+   *                   .maxTotalMillis(360 * 1000L) // 6 minutes
+   *                   .build()
+   * ```
+   */
+  @action(group+='developer')
+  ensureService: ~
+
+  @action(group+='app-admin')
+  stop: ~ from super
+
+  @action(group+='app-admin')
+  terminate: ~ java | js-client | py-client
+
+  // TODO PLAT-66554 Fix CloudService#isDeployed
+  @typesys(todo="PLAT-66554 Fix CloudService#isDeployed")
+  isDeployed: ~
+
+  config:        ~
+  waitForReady:  ~
+  isTerminating: ~
+
+  /**
+   * Creates {@link JupyterHub.Api api} interface that represents [JupyterHub REST Api](https://jupyterhub.readthedocs.io/en/stable/reference/rest-api.html).
+   * @param skipLogin: Invokes the Rest API without logging in to {@link JupyterHub}. Used to execute unauthenticated
+   *                   APIs which doesn't require user to be logged in to {@link JupyterHub}.
+   */
+  api: inline member function(skipLogin: boolean = false): !JupyterHub.Api
+
+  /**
+   * Url for the JupyterHub api to be used for internal communication.
+   */
+  apiUrl: private member function(): string serialized Url
+
+  /**
+   * Public url for the jupyter hub endpoint
+   */
+  externalUrl: member function(): string serialized Url
+
+  /**
+   * Returns an array of the active {@link JupyterLab}s running on the current {@link JupyterHub}.
+   */
+  listLabs: member function(): [JupyterLab]
+
+  /**
+   * Returns a json containing diagnostic information about the kubernetes resources attached to this JupyterHub.
+   */
+  diagnostics: private member function(): JupyterHub.Diagnostics
+
+  /**
+   * Returns the status of the JupyterHub, including the reason for the status if it is not running.
+   */
+  statusWithReason: private member function(): JupyterHub.Status
+
+  /**
+   * Checks whether the user is authorized by calling {@link JupyterHub.Api#verifyUserToken}.
+   */
+  isUserAuthorized: member function(): boolean
+
+  /**
+   * Returns an array of {@link JupyterLab.Metadata} containing all {@link JupyterLab}s details, on the current {@link JupyterHub}.
+   */
+  jupyterLabsWithMetadata: member function(): [JupyterLab.Metadata]
+
+  /**
+   * Spawns {@link JupyterLab} for given user and resource profile
+   *
+   * @param profileName
+   *           {@link Jupyter.ResourceProfile}'s name for new JupyterLab server
+   *
+   * @param unencodedUserId
+   *        Unencoded user id
+   */
+  spawnJupyterLab: private member function(unencodedUserId: !string,
+                                           profileName: string,
+                                           spec: WaitableSpec): JupyterLab
+
+  /**
+   * Returns startup metrics for {@link JupyterHub} and related {@link JupyterLab}s.
+   */
+  @action(group+='app-admin')
+  startupMetrics: member function(): JupyterHub.Metrics
+
+  /**
+   * Returns metrics for {@link JupyterHub} and related {@link JupyterLab}s relevant to performance
+   *
+   * @param numberOfDays
+   *        Number of days to look back for metrics
+   * @param serverVersion
+   *        Server version to look back for metrics
+   */
+  @action(group+='app-admin')
+  psrMetrics: function(numberOfDays: int = 14, serverVersion: ?string): json
+}

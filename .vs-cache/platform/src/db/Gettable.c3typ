@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type containing functions for all fetch operations
+ */
+type Gettable mixes Value {
+
+  /**
+   * Gets an instance of a single obj.  If the caller is not authorized to fetch the obj, it will not be returned.
+   *
+   * @param include
+   *           Optional include spec to retrieve.
+   * @return The requested obj if it exists and null otherwise.  If the 'include' string is specified, then only
+   *         those fields will be returned. Otherwise the entire obj will be returned.
+   */
+  @action(group+='read')
+  get: abstract member function(include: string): mixing Gettable
+
+  /**
+   * Gets an instance of a single obj in it's leaf type if the type is extendable.  If the caller is not authorized
+   * to fetch the obj, it will not be returned.
+   *
+   * @param include
+   *           Optional include spec to retrieve.  Note that the include spec should reference only fields that are
+   *           valid in the returned obj's type.  Otherwise an error may be thrown.
+   * @return The requested obj if it exists and null otherwise.  If the 'include' string is specified, then only
+   *         those fields will be returned. Otherwise the entire obj will be returned.
+   */
+  @action(group+='read')
+  @deprecated(details="Functionality incorporated into `get` function.  Use that instead.")
+  getSpecific: abstract member function(include: string): mixing Gettable
+
+  /**
+   * Function to check if an obj was already fetched with an include that contains at least the fields of a specified
+   * include and fetches the missing data if it wasn't.  The returned instance, by default will be the original instance
+   * if it included at least the data for the requested include spec.  Otherwise it will perform a fetch with the
+   * specified include and return that instance.  See {@link GetMissingSpec} for various options available governing
+   * the behavior.
+   *
+   * @param spec
+   *           Spec that controls various aspects of the function's behavior.
+   * @return instance of the obj with all requested fields.
+   */
+  @action(group+='read')
+  getMissing: abstract member function(spec: !GetMissingSpec): !mixing Gettable
+
+  /**
+   * Gets an obj instance directly from Cassandra, bypassing the normal fetch framework.  It is only valid for C3 types
+   * that are stored in Cassandra.
+   *
+   * IMPORTANT! Cassandra direct IO functions are short term performance enhancements. Long term goal is to make base
+   * apis as fast as direct IO apis.
+   * Use with caution!!!
+   *
+   * @param include
+   *           Optional include spec to retrieve.
+   * @return The requested obj if it exists and null otherwise.  If the 'include' string is specified, then only
+   *         those fields will be returned. Otherwise the entire obj will be returned.
+   */
+  @action(group+='read')
+  getDirect: abstract member function(include: string): mixing Gettable
+}

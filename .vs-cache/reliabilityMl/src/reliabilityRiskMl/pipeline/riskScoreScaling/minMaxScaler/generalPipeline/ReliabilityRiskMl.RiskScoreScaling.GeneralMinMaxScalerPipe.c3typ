@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * `ReliabilityRiskMl.RiskScoreScaling.GeneralMinMaxScalerPipe` is an extendable entity type designed
+ * to apply a general Min-Max scaling technique to the risk scores in the context of reliability risk analysis.
+ * This type scales the risk scores by transforming them into a predefined range (typically [0, 1]).
+ * The general Min-Max scaler allows for flexible and efficient normalization of risk scores and related features.
+ *
+ * The transformation can either be applied inplace or on a copy of the input data, and can optionally clip
+ * values to the range [0, 1] after transformation.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.RiskScoreScaling.GeneralMinMaxScalerPipe extends ReliabilityRiskMl.RiskScoreScaling.Pipe<{features: Data, riskScore: Data, alertContext: Data}, {riskScoreNormalized: Data}> type key 'GMMSP' {
+
+  /**
+   * If enabled, the scaling will be performed on a copy of the input data.
+   * Otherwise, the scaling will be performed inplace on the original data.
+   * Default is true, meaning the scaling will be done on a copy to avoid modifying the original input.
+   */
+  copy: boolean = true
+
+  /**
+   * If enabled, the scaled values will be clipped to the range [0, 1].
+   * This can be useful for ensuring that the transformed values do not fall outside this range.
+   * Default is true, meaning clipping will be performed to ensure the values stay within [0, 1].
+   */
+  clip: boolean = true
+
+  /**
+   * This method generates the scaling pipeline using `py-sklearn`, a Python-based data science library.
+   * The `py-sklearn` implementation likely leverages the `MinMaxScaler` functionality from Scikit-learn to
+   * apply the scaling transformation.
+   */
+  generatePipe: ~ py-sklearn
+
+  /**
+   * This method invokes the `fit()` method on the native model, which is responsible for fitting the scaler
+   * to the data. The `fit()` method computes the scaling parameters (e.g., minimum and maximum values) from
+   * the input data.
+   *
+   * The `doTrain` method is implemented using `py-sklearn`, which suggests that the scaling model is
+   * trained using the `MinMaxScaler` from the `sklearn.preprocessing` module in Python.
+   */
+  doTrain: ~ py-sklearn
+
+  /**
+   * This method invokes the `transform()` method on the native model, which applies the learned scaling
+   * transformation to the input data. After transformation, the input data is scaled to the range defined
+   * by the Min-Max scaler.
+   *
+   * This is the key method that applies the transformation to the data and returns the scaled risk scores.
+   */
+  doProcess: ~ py-sklearn
+}

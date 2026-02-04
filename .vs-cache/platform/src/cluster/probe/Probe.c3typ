@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * List of supported of {@link App.Probe} for a C3 {@link Server}
+ */
+enum type Probe {
+
+  /**
+   * Used to determine if the C3 {@link Server} is ready to accept network traffic.
+   * Runs periodically throughout the lifetime of a C3 {@link Server}.
+   * If the readiness probe is unsuccessful, network requests will not be received by this C3 {@link Server} until the probe succeeds.
+   *
+   * Examples:
+   *  - Useful for slow starting a C3 Server like in ModelInferenceServing where loading LLM models into memory can take a couple of minutes.
+   *  - Useful for load balancing. If a C3 Server becomes overloaded with outstanding client-requests then we can choose to remove this C3 Server from a load-balancer.
+   *  - Useful for handling imminent node shutdowns. If a C3 Server receives a SIGTERM, then we don’t want to accept any more client-requests while being able to drain already accepted client-requests.
+   *  - Useful for implementing targeted down-scaling. If a C3 Server is supposed to be down-scaled, then we want to remove the C3 Server(s) with the least of amount outstanding client requests (nodes which are not "healthy" will be down-scaled first)
+   */
+  READINESS = 'readiness'
+
+  /**
+   * Used to determine if the C3 {@link Server} is "running" or making meaningful progress.
+   * Runs periodically throughout the lifetime of a C3 {@link Server}.
+   * If a C3 {@link Server} fails its liveness probe repeatedly, it will be restarted.
+   *
+   * Examples:
+   *  - Useful to restart the C3 Server when it has effectively “deadlocked” (ex: thread-deadlocked)
+   *  - Useful to recover from corrupt thread states in an Action.Runtime
+   */
+  LIVENESS = 'liveness'
+}

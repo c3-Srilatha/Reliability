@@ -1,0 +1,114 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for the data issue mechanism.  The mechanism is intended to allow certain operations to not completely
+ * fail for resolvable issues (e.g. stored calc failures for string/arry overflows) on specific objs.  This is
+ * primarily a platform feature and the determination of what types of situations warrant its usage will be made
+ * by platform.
+ */
+@db(systemType=true, index+=['targetType, targetField'])
+extendable entity type DataIssue mixes DataIssueDimensions type key 'DATISSUE' schema name 'DATISSUES_DATAISS' {
+
+  /**
+   * Error message indicating the nature of the issue.
+   */
+  errorMsg: string
+
+  /**
+   * Calculates summary of all data issues in this tag.
+   *
+   * @param include
+   *          comma separated list of fields that should be included in the summary.
+   */
+  summary: function(include: string = 'severity'): [DataIssueSummary]
+
+  /**
+   * Validates a single issue.  If the issue is resolved, the entry will be removed.  If the issue remains, the
+   * entry will be reinserted in the db.
+   *
+   * This function can be called by users to address issues that have occurred.
+   *
+   * This function should not be overridden by any extension type since the platform coordinates the processing.
+   */
+  validate: member function()
+
+  /**
+   * Validates multiple issues. Any issues that are resolved will be removed.  Any remaining issues will be
+   * reinserted in the db.
+   *
+   * This function can be called by users to address issues that have occurred and it can be called on the DataIssue
+   * type itself or any of its extension types.
+   *
+   * This function should not be overridden by any extension type since the platform coordinates the processing.
+   *
+   * @param targetType
+   *           If specified, only issues with the specified target type will be validated, otherwise all issues
+   *           in the type will be validated.
+   */
+  validateAll: function(targetType: Type)
+
+  /**
+   * Clears any existing issues for the targetType, targetId and targetField.  Note that this can only be called for
+   * leaf extension types of {@link DataIssue}.
+   *
+   * @param type
+   *        Type to clear issues for
+   * @param targetId
+   *        TargetId of the issues to clear.  If null, all issues for the targetType will be cleared.
+   * @param targetField
+   *        TargetField of the issues to clear.  If null, all issues for the targetType and targetId will be cleared.
+   */
+  clearAll: function(targetType: !Type, targetId: string, targetField: string)
+
+  /**
+   * Called by the platform to add issues that arise (e.g. field level calc field errors) instead of failing the
+   * request where the issues arose. Issues that should be added are at the complete discretion of the owner of
+   * the DataIssue extension type
+   *
+   * This function should not be overridden by any extension type since the platform coordinates the
+   * processing/duplicate detection.
+   */
+  add: member function()
+
+  /**
+   * Adds an issue for the targetType, targetId and targetField.  This will replace any existing issue for the same
+   * values.  Note that this can only be called for leaf extension types of {@link DataIssue}.
+   *
+   * @param type
+   *        Type with the issue
+   * @param errorMsg
+   *        Error message for the issue.
+   * @param targetId
+   *        Id of the instance with the issue.  If null, the issue applies to all instances of the targetType.
+   * @param targetField
+   *        Field in the instance with the issue.  If null, the issue applies to all fields in the instance.
+   */
+  addIssue: function(targetType: !Type, errorMsg: !string, targetId: string, targetField: string)
+
+  /**
+   * Called by the platform to add issues that arise (e.g. field level calc field errors) instead of failing the
+   * request where the issues arose. Issues that should be added are at the complete discretion of the owner of
+   * the DataIssue extension type
+   *
+   * This function should not be overridden by any extension type since the platform coordinates the
+   * processing/duplicate detection.
+   *
+   * @param issues
+   *           Issues to add.
+   */
+  addIssues: function(issues: !?[DataIssue])
+
+  /**
+   * Performs extension type specific validation for a single entry.
+   *
+   * This function can/should be overridden for any extension type.  However, care must be taken to ensure that
+   * the issue gets re-added to the type if the validation fails for any reason.
+   */
+  doValidate: abstract member function()
+}

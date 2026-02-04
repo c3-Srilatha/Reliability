@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Fact<FT> {
+
+  /**
+   * For Informatica
+   */
+  sourceEntityId: string not persistable
+
+  contributingEntityIds: @constraint(length=1000) string
+
+  /**
+   * Populates the hierarchies first (unless skipHierarchyPopulation = true) and the cube based on metadata.
+   *
+   * Shared hierarchies which were populated after the hierarchyRepopulationThreshold will not be repopulated.
+   *
+   * hierarchyRepopulationThreshold to defaults to 12 hours before current time.
+   *
+   * filter: an override filter to apply to source entity. This overrides the @analyticExtract.filter property is usually used for testing.
+   *
+   * Return the number of fact records prepared.
+   */
+  populate: function(skipHierarchyPopulation: boolean, hierarchyRepopulationThreshold: datetime, filter: string): int
+
+  /**
+   * Explicitly populate one or more dimension hierarchies (without touching the fact).
+   *
+   * Shared hierarchies which were populated after the hierarchyRepopulationThreshold will not be repopulated.
+   *
+   * hierarchyRepopulationThreshold to defaults to 12 hours before current time
+   *
+   * Returns the number of hierarchy records populated.
+   *
+   * Replaced by INFA mappings.
+   */
+  populateHierarchies: function(hierarchies: [string], hierarchyRepopulationThreshold: datetime): int
+
+  /**
+   * Generates and returns the fact rows directly (as csv or other textual format usually for consumption by
+   *
+   * an external service like Informatica  (INFA)
+   */
+  generateFactRows: function(sourceEntityId: string, csvHeader: string)
+
+  /**
+   * MapReduce action that returns fact rows for a given source entity id as [Obj]
+   */
+  generateFactObjs: function(sourceEntityId: string): [Fact<FT>]
+
+  /**
+   * Starts MapReduce job that populates facts - you can monitor progress using:
+   *
+   * var job = fRsrcCon.startPopulate()
+   *
+   * c3Grid(FactPopulatorJob.status(job, true))
+   */
+  startPopulate: function(): FactPopulatorJob js-server
+
+  /**
+   * Removes the members in the date hierarchies in this fact
+   *
+   * Returns the total number of members removed
+   */
+  truncateDateHierarchies: function(): int
+}

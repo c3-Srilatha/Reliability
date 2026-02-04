@@ -1,0 +1,77 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@cloud(hasResourceArn=false,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='REQUIRED',
+       cloudFunc='iotThing')
+type AwsIotThing mixes AwsResource {
+
+  /**
+   * Attributes of the thing. It is optional for a thing.
+   * attribute1 = StrPair.make({fst: "Model", snd: "Focus"})
+   * attribute2 = StrPair.make({fst: "Year", snd: "2016"})
+   * attributes = {attribute1, attribute2}
+   */
+  attributes: [StrPair]
+
+  /**
+   * The endpoint will be used as the common part for different types of Url in communication. For example,
+   *
+   * 1) a device that connects with Aws Iot over the Secure Socket will use the Url as
+   *                   "ssl://<endpoint>:8883"
+   * 2) a device that connects with Aws Iot over the Web Socket will use the Url as
+   *                   "wss://<endpoint>:443"
+   * 3) a device that publishes a topic over the restful api will use the Url as
+   *                   "https://<endpoint>/topics/<topic_name>?qos=1"
+   */
+  endpoint: string
+
+  /**
+   * Each thing has its own security certificate. This information will be required when you link up the device
+   * with Aws Iot for secure communication.
+   */
+  certificate: AwsIotCertificate
+
+  /**
+   * Publish messages to an arbitrary topic. Example: vehicle.publish('status', {speed: '60mph', route: 'Shortest Time'})
+   *
+   * @param topic
+   *            Name of the published topic
+   * @param message
+   *            Message content in json Format
+   */
+  publish: member function(topic: !string, message: !json)
+
+  /**
+   * Update the shadow of the thing. Example: vehicle.updateShadow({"speed": "80mph", "temp": "90"})
+   *
+   * @param thingShadow
+   *            The state of thing in JSON format. Check the following link for more information
+   *            http://docs.aws.amazon.com/iot/latest/developerguide/thing-shadow-document.html
+   */
+  updateShadow: member function(thingShadow: !json): !json
+
+  /**
+   * Check the shadow of the thing. Example: vehicle.checkShadow()
+   *
+   * @return The thing shadow in JSON format. Check the following link for more information
+   *         http://docs.aws.amazon.com/iot/latest/developerguide/thing-shadow-document.html
+   */
+  checkShadow: member function(): !json
+
+  /**
+   * Delete the shadow of the thing. Example: vehicle.deleteShadow()
+   */
+  deleteShadow: member function()
+
+  hasTags: ~
+  policy:  AwsIotThingPolicy
+}

@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * MapReduce job to write a {@link Feature.Set.Snapshot} to an open format in a distributed fashion
+ */
+entity type Feature.Set.ExportSnapshotJob extends MapReduce<Feature.Set.Snapshot.Subject, void, void, void> mixes FeatureEvaluatable.Bin.JobBase type key 'FSEJ' {
+
+  /**
+   * Snapshot to be exported
+   */
+  snapshot: !Feature.Set.Snapshot
+
+  /**
+   * Url to write Parquet files to
+   */
+  baseUrl: !string serialized FileUrl
+
+  /**
+   * Overridden to increasing the probability of subjects belonging to the same bin ending up in the same map task / batch.
+   * Simply uses {@link MapReduce#scanTargetType} to get the original stream and then, uses the {@link Feature.Set.Snapshot#latestStrategy} to identify the bins and then, co-locating the ids. This will ensure that when batches are cut from the **stream**, the ids
+   * belonging to the same bin are most likely to end up in the same batch.
+   */
+  scanTargetType: ~
+
+  map: ~
+}

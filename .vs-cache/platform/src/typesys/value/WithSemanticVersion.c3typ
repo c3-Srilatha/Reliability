@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for objects with a {@link SemanticVersion}.
+ */
+abstract type WithSemanticVersion {
+
+  /**
+   * The {@link SemanticVersion} of this instance.
+   */
+  semanticVersion: string serialized SemanticVersion
+
+  /**
+   * A string sortable version of {@link #semanticVersion}.
+   * See {@link SemanticVersion#toSortableString}.
+   */
+  sortableSemanticVersion: string
+
+  /**
+   * A lambda for sorting WithSemanticVersion objects with latest version first
+   */
+  comparator: cached function(): !lambda(v1: !mixing WithSemanticVersion, v2: !mixing WithSemanticVersion): !int32 java
+}

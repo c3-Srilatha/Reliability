@@ -1,0 +1,30 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type housing all statistics for a given {@link InventorySeries#partNumber} part and corresponding {@link PurchaseOrder}s.
+ */
+type PurchaseOrderStats {
+  /**
+   * Represents number of {@link PurchaseOrderLine}s for a given {@link InventorySeries#partNumber} that have been placed in the past.
+   */
+  numberOfReorders: int
+
+  /**
+   * Calculates {#numberOfReorders}.
+   *
+   * @param seriesObj
+   *          The {@link InventorySeries} instance, for which the stats have to be calculated.
+   * @param lookBackTimeRange
+   *          The {@link TimeRange} which will be used in calculation fo the stats. Defaults to {@link ReliabilitySparePartsConfig#purchaseOrderLookBackMonths}.
+   *
+   * @returns instance of {@link InventorySeries} object with {#numberOfReorders} populated.
+  */
+  calculatePurchaseOrderStats: function(seriesObj: !InventorySeries, lookBackTimeRange: TimeRange): !InventorySeries js-rhino
+}

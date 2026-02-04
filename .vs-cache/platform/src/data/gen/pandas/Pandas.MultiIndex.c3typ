@@ -1,0 +1,88 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@deprecated(finalVersion="8.9",
+            details="All the pandas subtypes apis are deprecated on Data types and will be removed in a future release")
+abstract type Pandas.MultiIndex mixes Value, Pandas.Index<Data.MultiIndex> {
+
+  codes:         private abstract property(): ?any
+  dtype:         private abstract property(): ?any
+  dtypes:        private abstract property(): ?any
+  inferred_type: abstract property(): ?any
+  levels:        private abstract property(): ?any
+  levshape:      private abstract property(): ?any
+  lexsort_depth: abstract property(): ?any
+  names:         abstract property(): ?any
+  nlevels:       abstract property(): ?int
+  values:        private abstract property(): ?[any]
+  append:        abstract member function(other: ?any): ?Data.MultiIndex
+  argsort:       abstract member function(): ?[any]
+  astype:        private abstract member function(dtype: ?any, copy: ?any): ?Data.Index
+
+  copy: abstract member function(names: ?any,
+                                 dtype: ?any,
+                                 levels: ?any,
+                                 codes: ?any,
+                                 deep: ?any,
+                                 name: ?any): ?(Data.Index | Data.MultiIndex)
+
+  drop:         private abstract member function(codes: ?any,
+                                                 level: ?any,
+                                                 errors: ?any): ?(Data.Index | Data.MultiIndex)
+  dropna:       abstract member function(how: ?string): ?(Data.Index | Data.MultiIndex)
+  duplicated:   abstract member function(keep: ?any): ?[boolean]
+  equal_levels: abstract member function(other: ?any): ?boolean
+  equals:       abstract member function(other: ?any): ?boolean
+  fillna:       private abstract member function(value: ?any, downcast: ?any): ?any
+
+  format: abstract member function(name: ?any,
+                                   formatter: ?lambda(x: any ...): any,
+                                   na_rep: ?string,
+                                   names: ?any,
+                                   space: ?int,
+                                   sparsify: ?any,
+                                   adjoin: ?any): ?[string]
+
+  from_arrays:          abstract function(arrays: ?any, sortorder: ?any, names: ?any): ?(Data.Index | Data.MultiIndex)
+  from_frame:           abstract function(df: ?any, sortorder: ?any, names: ?any): ?(Data.Index | Data.MultiIndex)
+  from_product:         abstract function(iterables: ?any,
+                                          sortorder: ?any,
+                                          names: ?any): ?(Data.Index | Data.MultiIndex)
+  from_tuples:          abstract function(tuples: ?any, sortorder: ?int, names: ?any): ?(Data.Index | Data.MultiIndex)
+  get_loc:              private abstract member function(key: ?any, method: ?any): ?(int | AnySlice | [boolean])
+  get_loc_level:        private abstract member function(key: ?any, level: ?any, drop_level: ?any): ?any
+  get_locs:             private abstract member function(seq: ?any): ?[any]
+  get_slice_bound:      private abstract member function(label: ?any, side: ?string, kind: ?string): ?int
+  is_lexsorted:         abstract member function(): ?boolean
+  isin:                 abstract member function(values: ?any, level: ?any): ?[any]
+  memory_usage:         abstract member function(deep: ?any): ?int
+  remove_unused_levels: abstract member function(): ?(Data.Index | Data.MultiIndex)
+  rename:               private abstract member function(names: ?any,
+                                                         level: ?any,
+                                                         inplace: ?any): ?(Data.Index | Data.MultiIndex)
+  reorder_levels:       abstract member function(order: ?any): ?(Data.Index | Data.MultiIndex)
+  repeat:               abstract member function(repeats: ?int, axis: ?any): ?(Data.Index | Data.MultiIndex)
+
+  set_codes: private abstract member function(codes: ?any,
+                                              level: ?any,
+                                              inplace: ?any,
+                                              verify_integrity: ?any): ?Data.MultiIndex
+
+  set_levels: private abstract member function(levels: ?any,
+                                               level: ?any,
+                                               inplace: ?any,
+                                               verify_integrity: ?any): ?Data.MultiIndex
+
+  swaplevel:     abstract member function(i: ?any, j: ?any): ?(Data.Index | Data.MultiIndex)
+  to_flat_index: abstract member function(): ?Data.Index
+  to_frame:      abstract member function(index: ?any, name: ?any): ?Data
+  truncate:      abstract member function(before: ?any, after: ?any): ?(Data.Index | Data.MultiIndex)
+
+  @pandas(canReturnData=true)
+  view: abstract member function(cls: ?any): ?any
+}

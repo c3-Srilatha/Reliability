@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The {@link Tester} running Java JUnit tests.
+ */
+type JavaTester mixes Tester {
+
+  runTestSuiteCode:   ~
+  requirement:        ~
+  engine:             ~ = "java-server-java"
+  testSuiteClassName: ~
+
+  /**
+   * Find all Junit tests.
+   */
+  findAllJunitTests: cached function(): [string]
+
+  /**
+   * Fetches the c3 server logs.
+   */
+  fetchLogs: function(): ![string]
+
+  /**
+   * Uses Java reflection to compute the group of test suites which satisfy the semantics of the
+   * {@link Tester#testRunner}'s fields.
+   */
+  testSuitePaths: ~
+
+  /**
+   * @return true if the fields of the `tester` match any tests which should be driven by a `JavaTester`
+   */
+  hasTestsForRunner: function(runner: !TestRunner): !boolean
+
+  /**
+   * @return true if the specified test is currently running. It's used to short-circuit the JavaTester and prevent
+   * server resources from being held if the same test is currently running. Useful to prevent the server from an
+   * "aggressive test client".
+   */
+  isTestCurrentlyRunning: function(test: !string): !boolean
+
+  /**
+   * @return starts a test App for a given Java JUnit test.
+   *
+   * See Java TestApp#pkg annotation.
+   */
+  startTestApp: private function(test: !string): !App
+
+  /**
+   * @return true if there exists a valid JUnit test with the given fully qualified name
+   */
+  isValidJUnitTest: function(test: !string): !boolean
+
+  /**
+   * @return the path of the class of this JUnit test
+   */
+  findClassPath: function(test: !string): !string
+}

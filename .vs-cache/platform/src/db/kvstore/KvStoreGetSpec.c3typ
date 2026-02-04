@@ -1,0 +1,41 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Indicates specification on what needs to be read from the {@link KvRow}
+ */
+@beta
+type KvStoreGetSpec mixes KvStoreAsyncGetSpec {
+
+  /**
+   * List of column names or string containing comma-separated names of columns that need to be included or
+   * namespaced column names in case the concept of grouping column by feature exists in the datastore;
+   * for example: in HBase namespaced column name will be column_family:column_name.
+   * If not set, all columns will be returned
+   * Either one of {@link include} or {@link filter} or none should be provided for filtering. Providing both is
+   * currently not supported
+   */
+  include: [string] | string
+
+  /**
+   * Needed to filter the columns based on specific condition instead of a static list of comma separated values.
+   * Either one of {@link include} or {@link filter} or none should be provided for filtering. Providing both is currently not
+   * supported
+   */
+  filter: string
+
+  /**
+   * Limit the number of columns returned as a result of the query
+   */
+  limit: int
+
+  /**
+   * Enable tracing info for this query from the underlying kv store (if supported) or return null
+   */
+  explain: boolean
+}

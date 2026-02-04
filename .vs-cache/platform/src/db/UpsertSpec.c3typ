@@ -1,0 +1,215 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Controls various aspects of the operation of {@link Persistable#upsert}, {@link Persistable#create},
+ * {@link Persistable#update} and their batch counterparts.
+ */
+type UpsertSpec mixes RetryableSpec {
+
+  /**
+   * Forces any recalculating of calculated fields for the object being upserted to be done asynchronously, rather
+   * than as part of the request.
+   *
+   * This is set for things such as data load where we want to get the data in as fast as possible where the
+   * refreshing of the calculated fields will be done either by the invalidation queue mechanism (incremental)
+   * or {@link App#rebuild} (initial).
+   */
+  forceAsyncCalcFieldRefresh: boolean
+
+  /**
+   * Set by RefreshCalcFieldsTask for the update to the calc fields themselves.  It is used to avoid
+   * duplicate/circular updating of calculated fields that depend on each other.  It should not be used otherwise.
+   */
+  calcFieldsBeingRefreshed: [string]
+
+  /**
+   * For large batches of input obs, they will be committed to the database in batches of this size.
+   */
+  commitSize: int
+
+  /**
+   * When set to true, allows overriding the system-managed metadata fields ({@link Meta#updated},
+   * {@link Meta#updatedBy}, {@link Meta#created}, and {@link Meta#createdBy}) with values provided in the input
+   * object's meta field.
+   *
+   * Design Intent: This option is specifically designed for CI/data loading scenarios where data loads
+   * don't always come in order and/or you need to indicate that an object was created earlier than when it was
+   * originally loaded, based on the actual data being loaded. It is not intended for arbitrary modification of metadata
+   * by application logic for reasons unrelated to data loading integrity.
+   *
+   * Behavior when enabled:
+   * - For new records: If only one of created/updated info is specified, it will be used for both. If neither is
+   *   specified, system defaults are used. The created timestamp must be <= updated timestamp.
+   * - For existing records: The behavior for {@link Meta#created} and {@link Meta#createdBy} is complex:
+   *   - Historic updates: If the new {@link Meta#created} timestamp is earlier than the current value in the database,
+   *     the new created info is applied (this represents correcting historical data)
+   *   - Non-historic updates: If the new {@link Meta#created} timestamp is later than or equal to the current value,
+   *     both the new {@link Meta#created} and {@link Meta#createdBy} are ignored and the existing database values are
+   *     retained
+   *   - Updated info: {@link Meta#updated} and {@link Meta#updatedBy} are always applied if specified
+   * - System updates: This setting is ignored for system updates (when the operation is performed by the system rather
+   *   than a user).
+   *
+   * Restrictions and Safeguards:
+   * - Not allowed on types that mix {@link NoMetaOverride} - attempting to use this on such types will throw an error
+   * - Only works when the input object has a non-null meta field with the desired values
+   * - Built-in validation ensures {@link Meta#updated} cannot be set earlier than {@link Meta#created}
+   * - For existing records, creation metadata is only updated for historic corrections (earlier timestamps)
+   * - These fields are system-managed and should not be arbitrarily modified by application logic
+   *
+   * Intended use cases:
+   * - CI/Data Loading: When data loads arrive out of order and you need to correct creation timestamps
+   *   based on the actual data being loaded
+   * - Data Migration: Preserving original creation/update timestamps and users from source systems
+   * - Bulk Data Loading: Ensuring metadata reflects the source system's information rather than load time
+   * - Historical Data Correction: Backdating creation information when the data indicates earlier creation
+   * - Audit Trail Integrity: Maintaining accurate creator and creation time information for compliance
+   *
+   * @see NoMetaOverride For types that disallow this functionality
+   * @see Meta For the metadata fields that can be overridden
+   */
+  metaOverride: boolean
+
+  /**
+   * Turns off all asynchronous invalidation/processing that would ordinarily be triggered by the request (e.g. stored
+   * calcs, created/updated/removed callbacks, etc.).  Note that this will be ignored for any callback that specifies
+   * {@link Ann.Db#callbackRequired}.
+   */
+  disableAsyncProcessing: boolean
+
+  /**
+   * Disables calls to any defined before callback functions (e.g. {@link Persistable#beforeCreate},
+   * {@link Persistable#beforeUpdate} and {@link Persistable#beforeRemove}).  Note that this will be ignored for any
+   * callback that specifies {@link Ann.Db#callbackRequired}.
+   */
+  disableBeforeCallbacks: boolean
+
+  /**
+   * Disables calls to any defined after callback functions (e.g. {@link Persistable#afterCreate},
+   * {@link Persistable#afterUpdate} and {@link Persistable#afterRemove}).
+   */
+  disableAfterCallbacks: boolean
+
+  /**
+   * Include spec indicating which fields should be returned for the returned objs of the operation.  Specifying
+   * this will cause an additional fetch to be made for created/updated objs to get the data for those fields.
+   * The default is to return the id only (which does not require an additional fetch).
+   *
+   * Any valid include spec is supported.
+   *
+   * @see FetchSpec.include
+   */
+  @deprecated(details='Use returnInclude')
+  include: string
+
+  /**
+   * Include spec indicating which fields should be returned for the returned objs of the operation.  Specifying
+   * this will cause an additional fetch to be made for created/updated objs to get the data for those fields.
+   * The default is to return the id only (which does not require an additional fetch).
+   *
+   * Any valid include spec is supported.
+   *
+   * @see FetchSpec.include
+   */
+  returnInclude: string
+
+  /**
+   * Indicates that if objs with the same id are found in the input batch, only the first one will be processed.
+   * All others will be ignored.  This is used by data load for cases where every loaded timeseries data point
+   * causes an attempt to upsert identical timeseries headers.
+   */
+  ignoreDuplicates: boolean
+
+  /**
+   * Only relevant for operations of types that mixin {@link SeedData}.  This is used to force updates to be
+   * processed as though they were from a user, rather than authorizer/provisioner.
+   *
+   * @see SeedData
+   */
+  forceUserUpdate: boolean
+
+  /**
+   * If true and the type mixes in {@link SeedData}, the special seed data handling (e.g. protecting user updates
+   * etc.) will not be performed.  Instead the operation will be treated as a normal upsert.
+   */
+  ignoreSeed: boolean
+
+  /**
+   * If true then an ObjList will be returned containing the errors.  Otherwise batch operations will throw a
+   * C3BatchException if any error occurs.
+   */
+  dontThrowOnBatchError: boolean
+
+  /**
+   * If true, instances will use the direct creation mechanism into cassandra.  This is only valid if the
+   * operation is createBatch and the type is in Cassandra.
+   */
+  createDirect: boolean
+
+  /**
+   * Indicates that the upsert request should not attempt to dedup incoming input.
+   */
+  noHistoryDedup: private boolean
+
+  /**
+   * Indicates which parent field should be used for deduping timed relations.
+   */
+  timedRelationParentField: string
+
+  /**
+   * If true, and the the type being upserted mixes {@link Versionable}, the update will become a saved version.
+   *
+   * @see Versionable
+   */
+  saveVersion: boolean
+
+  /**
+   * If true and the backing datastore supports it, conflicts on create will be ignored.
+   */
+  ignoreCreateConflicts: boolean
+
+  /**
+   * If true and no changes are detected during the upsert operation, the obj will still be "touched" (e.g. the version
+   * number will be incremented and the `meta.updated` `meta.updatedBy` and `meta.timestamp` fields will be updated).
+   * Otherwise the operation will be a no-op.
+   */
+  forceTouch: boolean
+
+  /**
+   * When set to something > 0 and there is a backing db that supports it, the timeout for operations/statements on
+   * the connection used will be set with this timeout value.  Note that this will apply to all child actions
+   * (synchronous only) that occur as part of the action this is called on.  Also note this applies to the execution of
+   * individual db operations and not the entire function execution.
+   *
+   * Note that this will be ignored for any backing datastore that does not support it.
+   */
+  stmtTimeoutMs: int
+
+  /**
+   * Indicates that the upsert operation is idempotent.  In this context it means that any version numbers on the input
+   * objs will be ignored (i.e. no version checking will be done).  If any internal version conflicts occur (strictly
+   * due to timing/high concurrency, the operation will be internally retried based on the `UpsertSpec#retrySpec`. For
+   * non-idempotent operations (the default), any version conflict will cause the operation to fail (will currently
+   * only log a warning but will eventually cause the operation to fail).
+   */
+  idempotent: boolean
+
+  /**
+   * FOR INTERNAL USE ONLY - When true, any attempt to update an existing obj (either through update, upsert or merge)
+   * where no version number was provided in the input, will be considered a version conflict.  For the new upsertObjs,
+   * updateObjs, and mergeObjs, this will cause the `objs` lambda to be called again to address the situation.  This
+   * will enforce that those new apis are used properly.  For the existing apis, the version conflict would cause them
+   * to fail.  Note that since this is for internal use only, that scenario will not occur yet.
+   *
+   * This will be removed once we fully enforce version control and only allow a missing version number for legitimate
+   * idempotent operations (e.g. DI).
+   */
+  @deprecated
+  strictVersionCheck: private boolean
+}

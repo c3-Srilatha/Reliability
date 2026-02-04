@@ -1,0 +1,89 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Functions implemented in Java (built into the platform).
+ */
+@annotation(appliesTo=['type', 'field', 'function'])
+type Ann.Java mixes Ann.ImplLanguage {
+
+  /**
+   * If `true` then Java Code gen will not use native Java values, e.g. for `lambda` but instead will generate signature
+   * boxed instance type; i.e. `Lambda`
+   */
+  boxed: boolean
+
+  /**
+   * If set Java code-gen will use wildcard for return class var bindings. I.e. without it:
+   * ```
+   * Array<Obj> singletonArray()
+   * ```
+   * with `@java(returnWildcardVarBindings=true)`
+   * ```
+   * Array<? extends Obj> singletonArray()
+   * ```
+   */
+  returnWildcardVarBindings: boolean
+
+  /**
+   * Name of the underlying java class. Useful for creating class instances using `Class.forName`. This is different from
+   * canonical name for arrays and inner classes. In java, <object>.getClass.getName() returns class name.
+   * Example: int[] - "[I", List - "java.util.List" , String[] - "[Ljava.lang.String"
+   */
+  @beta
+  runtimeClassName: string
+
+  /**
+   * {@link JavaToC3FieldMapper} type used to get/set values to/from the java object.
+   */
+  @beta
+  runtimeFieldMapper: string
+
+  /**
+   * Maps a c3 field to a constructor parameter position. The field value is comma separated with the first value
+   * representing the constructor index and the second value representing the parameter index.
+   * ```
+   * class A { A(int f1, String f2); A(String f2); }
+   * ```
+   * The above class will generate c3 fields
+   * ```
+   * @java(constructorParamPos=["0,0","0,1"])
+   * f1: int
+   * @java(constructorParamPos=["1,0"])
+   * f2: string
+   * ```
+   */
+  @beta
+  constructorParamPos: [string]
+
+  /**
+   * The Java class name of the native field type, parameter or return value (as marked with the "native" value type).
+   *
+   * ```type
+   * listToArray: function(list: @java(class="java.util.List<String>") native): [string]
+   * ```
+   */
+  class: ~
+
+  /**
+   * Indicated that build time Java code-gen should auto generate `setCached<method>`
+   */
+  codeGenSetCached: boolean
+
+  /**
+   * Indicated that build time Java code-gen should generate _ImplBase instead of _Impl
+   */
+  codeGenImplBase: boolean
+
+  handcraftedImpl: boolean
+  codeGenType:     boolean
+  codeGenExtends:  boolean
+  codeGenSuper:    boolean
+  codeGenWildcard: boolean
+  codeGen:         string
+}

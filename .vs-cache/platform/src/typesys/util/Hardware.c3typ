@@ -1,0 +1,112 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Information about the machine (container) on which the server/client is running.
+ */
+type Hardware mixes Spec {
+
+  /**
+   * The host name of the machine.
+   */
+  name: string
+
+  /**
+   * The name and version of the operating system.
+   */
+  os: string
+
+  /**
+   * The type of the CPUs.
+   */
+  cpu: string
+
+  /**
+   * Returns the number of CPUs that the current process (JVM or Python Interpreter) can use, taking into account the container CPU limits and system CPUs.
+   * In Python, this can be used instead of Python native `os.cpu_count()` which returns the number of logical CPUs in the system,
+   * not what the container is restricted to.
+   * Checkout {@link https://github.com/python/cpython/issues/80235} for more info.
+   *
+   * On client Python, information is retrieved from `/sys/fs/cgroup/cpu/` which is similar to how pylint solved
+   * the problem {@link https://github.com/d1gl3/pylint/blob/b4f5c4482e37045d75188bc3087196a70cdbe575/pylint/lint/run.py#L34}
+   * and how OpenJDK used to solve it {@link https://github.com/python/cpython/issues/80235#issuecomment-1505024722}.
+   *
+   * When called from client Python SDK, the number belongs to the client node (eg. JupyterLab container), not the server.
+   */
+  cpuCount: int32
+
+  /**
+   * The maximum memory available to Java in GB.
+   */
+  memoryGB: int32
+
+  /**
+   * The total memory available to the instance.
+   */
+  osMemoryGB: int32
+
+  /**
+   * The maximum disk space available.
+   */
+  diskGB: int32
+
+  /**
+   * Information about the virtualization infrastructure hosting the machine.
+   *
+   * @see https://aws.amazon.com/ec2/instance-types/
+   */
+  instanceType: string
+
+  /**
+   * A computed label for comparing like machines. For AWS machines, this will be
+   * the instance type, otherwise it will be string such as "MacBookPro11,3" for MAC OS X
+   * (or "other" if nothing else can be determined).
+   */
+  label: string
+
+  /**
+   * The hash of the concatenation of all fields in the Hardware
+   */
+  hash: member function(): !string
+
+  /**
+   * Get information about the current machine.
+   * If called from the python client, this will return the information about the machine (container) running the python client interpreter.
+   */
+  current: cached function(): !Hardware java | py-client
+
+  /**
+   * Returns @see GpuVendor based on the GPU(s) the machine has access to. Returns null if there are no GPUs available.
+   * If called from the python client, this will return the information about the machine (container) running the python client interpreter.
+   */
+  gpuVendor: cached function(): string serialized GpuVendor java | py-client
+
+  /**
+   * Details of available GPUs
+   * @see GpuStats
+   */
+  // TODO: PLAT-76286 When restricted parametric type is used as field as an ArrayValueType, v8 build fails.
+  // Once above is fixed we should change the below to GpuStats<T: GpuStat>
+  gpuStats: property(): GpuStats java | py-client
+
+  /**
+   * The current disk usage in GB.
+   */
+  calculateDiskUsageGB: function(): double
+
+  /**
+   * The estimated disk usage. Note that this information may be out of date.
+   */
+  @cache(ttl='2m', ttr='1m')
+  estimateDiskUsageGB: cached function(): double
+
+  /**
+   * The estimated available disk space in GB. Note that this is not an exact measure.
+   */
+  estimatedDiskFreeGB: function(): double
+}

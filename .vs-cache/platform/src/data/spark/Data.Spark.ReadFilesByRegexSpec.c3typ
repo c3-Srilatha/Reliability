@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Data.Spark.ReadFilesByRegexSpec {
+
+  /**
+   * A list of file paths to parse from
+   */
+  rootUrls: [string]
+
+  /**
+   * The regex used to parse rows from the file content. Each capture group
+   * in the regex becomes a column in the output DataFrame.
+   */
+  regex: string
+
+  /**
+   * Optional list of column names for the output DataFrame.
+   * The list size must match the number of regex capture groups.
+   * If omitted, columns are named c1, c2, ... cN by default.
+   */
+  headers: [string]
+
+  /**
+   * If true, includes a 'path' column with the source file path.
+   * Defaults to false.
+   */
+  includePath: boolean
+
+  /**
+   * The maximum number of subsequent lines to append to the last column of a regex match, for handling multi-line entries.
+   * Default is 1, which means the last column will only contain the line that matched the provided regex.
+   * If set to -1, all lines following the regex matched line, up to the next matched line, will be appended
+   * to the text in the last column
+   */
+  maxLinesForLastColumn: int = 1
+
+  /**
+   * The maximum size in megabytes for varchar columns.
+   * Defaults to 1.0 MB.
+   */
+  maxVarcharColumnSizeMb: double = 1.0
+
+  /**
+   * Additional Spark reader options
+   */
+  options: map<string, string>
+
+  /**
+   * Behavior when a varchar column exceeds the size limit specified by {@link #maxVarcharColumnSizeMb}.
+   * Defaults to FAIL.
+   */
+  onVarcharColumnTooLarge: string enum Data.Spark.ColumnOverflowAction = TRUNCATE
+}

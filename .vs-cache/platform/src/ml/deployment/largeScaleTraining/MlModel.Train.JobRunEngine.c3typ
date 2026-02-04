@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Manages creation and execution of workflows for training and scoring an instance of {@link MlModel.Train.Template#model}.
+ * This engine is invoked by {@link MlModel.Train.JobRun#startTrainJob}.
+ */
+@deprecated(details="All functionality is now merged with MlModel.Train.Result")
+private type MlModel.Train.JobRunEngine {
+
+  /**
+   * Creates a {@link Workflow} and inputs required for training and scoring a {@link MlModel.Train.Template#model}.
+   * @param jobRunEngineInput
+   *    An instance of {@link MlModel.Train.JobRunEngine.Input} holding inputs required for execution of {@link MlModel.Train.Template#model}.
+   * @return a map whose values are {@link Workflow} and inputs required for {@link Workflow} execution.
+   */
+  createTrainAndScoreWorkflow: function(jobRunEngineInput: !MlModel.Train.JobRunEngine.Input): !map<string, any> py
+
+  /**
+   * Creates a {@link Workflow} and starts the execution for training and scoring a {@link MlModel.Train.Template#model}.
+   * @param jobRunEngineInput
+   *    An instance of {@link MlModel.Train.JobRunEngine.Input} holding inputs required for execution of {@link MlModel.Train.Template#model}.
+   * @return an instance of {@link MlOperationRun} tracking execution of {@link Workflow}. The result of the run will be
+   *    of the format `{"trained_pipeline": MlPipeline, "train_scores": map<string, double>}`
+   */
+  startTrainAndScore: function(jobRunEngineInput: !MlModel.Train.JobRunEngine.Input): !MlOperationRun<any> py
+
+  /**
+   * Helper function to parse input in the form of {@link MlModel.Train.JobRunEngine.Input} and feed to
+   * {@link MlModel#train}.
+   *
+   * @param jobRunEngineInput
+   *   an instance of {@link MlModel.Train.JobRunEngine.Input} holding inputs required for execution of {@link MlModel#train}.
+   * @return handler to async result of {@link MlModel#train}.
+   */
+  doTrainAndScore: function(jobRunEngineInput: !MlModel.Train.JobRunEngine.Input): !MlModel.OperationRun py
+}

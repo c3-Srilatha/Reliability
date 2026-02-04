@@ -1,0 +1,121 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Compound Metrics, are high level objects that are referenced by clients of this API.
+ * Each Compound Metric represents a concept (i.e. 'Electricity Consumption' or 'Waste Produced per Employee').
+ * Each of these Compound Metrics is defined without reference to the type they apply to;
+ * there is only one 'Electricity Consumption' Compound Metric on a given environment, not one for FixedAssets and
+ * another for Organizations.  The most significant part of a Compound Metric is its expression.
+ * The expression references other Compound and Simple Metrics and describes how they are to be combined.
+ */
+type CompoundMetric mixes Metric, Identified {
+
+  /**
+   * Check whether a compound metric is valid or not for a particular source type
+   * @param metric
+   *            The metric to be validated
+   * @param sourceType
+   *            (Optional) validity of the compound metric for the given source type
+   * @param overridenMetrics
+   *            List of overridden metrics. Used to verify current metric by providing definition for others on the fly
+   * @return a boolean value specifying if a metric is valid or not.
+   * In case of invalid metric it throws an exception. Be sure to catch the exception for the error message
+   */
+  isValid: function(metric: !CompoundMetric, sourceType: Type, overridenMetrics: [Metric]): boolean
+
+  /**
+   * This API returns Descendants (tree) of Compound and Simple Metrics that
+   * may be involved in the evaluation of input expression.
+   *
+   * @param expression
+   *                The compound metric that you need to find descendants for
+   * @param sourceType
+   *                If sourceType is optionally specified, the tree is pruned to include
+   *                only those Simple Metrics whose sourceType is-equal-to/child-of specified sourceType
+   * @return the descendants of the given metric
+   */
+  getDescendants: function(expression: string, sourceType: Type): DescendantsResult
+
+  /**
+   * API to return all simple metrics associated with a compound metric expression
+   *
+   * @param expression
+   *                The compound metric expression for which simple metrics are desired
+   * @param sourceType
+   *                 If sourceType is optionally specified, the list is pruned to include
+   *                 only those Simple Metrics whose sourceType is-equal-to/child-of specified sourceType
+   * @return the list of simple metrics for the given expression
+   */
+  listSimpleMetrics: function(expression: string, sourceType: Type): [SimpleMetric]
+
+  /**
+   * API to return all simple metric ids associated with a compound metric expression
+   *
+   * @param expression
+   *                The compound metric expression for which simple metrics are desired
+   * @param sourceType
+   *                 If sourceType is optionally specified, the list is pruned to include only those Simple Metrics
+   *                 whose sourceType is-equal-to/child-of specified sourceType
+   * @return the list of simple metrics for the given expression
+   */
+  listSimpleMetricsIds: function(expression: string, sourceType: Type): [string]
+
+  /**
+   * Returns a list of all the dependent metrics
+   * @param expression
+   *                The expression for which you need to find dependents
+   * @return a list of all dependent metrics
+   */
+  dependentMetrics: function(expression: !string): [string]
+
+  /**
+   * Compound metric expression can include other compound metrics or simple metrics or both in its expression
+   */
+  expression: !~
+
+  /**
+   * @return the id of the unit for the compound metric.
+   */
+  unitId: inline member function(): string
+
+  /**
+   * @return the evaluation expression for the compound metric.
+   */
+  evalExpr: inline member function(): string
+
+  /**
+   * @return all of the variable names for the compound metric.
+   */
+  varNames: inline member function(): [string]
+
+  /**
+   * @return All compound metrics.
+   */
+  metrics: private inline function(): [CompoundMetric]
+
+  /**
+   * Gets a compound metric by its id.
+   *
+   * @param metricId
+   *        Id of metric to get.
+   *
+   * @return The requested compound metric.
+   */
+  metricForId: private inline function(metricId: !string): CompoundMetric
+
+  /**
+   * Gets the expression for a metric with a specified id.
+   *
+   * @param metricId
+   *        Id of metric to get the expression for.
+   *
+   * @return The requested metric expression.
+   */
+  metricExpr: private inline function(metricId: !string): string
+}

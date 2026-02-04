@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A spec for creating a {@link Genai.Agent.Tool.C3Method} instance.
+ */
+type Genai.Agent.Tool.C3Method.Spec mixes Spec {
+  /**
+   * The suffix to append to the tool's id.
+   * If not specified, a random suffix will be added (to allow multiple instances of the same method).
+   */
+  idSuffix: string
+
+  /**
+   * If true, the metadata instance and config will only be returned. Otherwise, both will
+   * be persisted to package metadata.
+   *
+   * **NOTE:** the package must be in dev mode to persist the tool metadata.
+   */
+  doNotPersist: boolean
+
+  /**
+   * The base version of {@link Genai.Agent.Tool.C3Method} currently only supports methods whose parameters
+   * and return value are all primitives ({@see PrimitiveType}). If `skipValidation` is not set `true`, then
+   * the method will be validated to ensure that it meets this requirement.
+   */
+  skipValidation: boolean
+
+  /**
+   * The {@link Genai.UnstructuredQuery.Engine.ModelConfig} to be used for generating the arguments for the method call
+   */
+  generateArgsLlmConfigName: !string = 'default_orchestrator_model'
+}

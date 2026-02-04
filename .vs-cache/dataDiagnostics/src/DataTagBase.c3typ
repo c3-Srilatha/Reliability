@@ -1,0 +1,72 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Runs logic that is used to tag an entity type based on either the attributes/fields it has
+ * or the kind of data attached to the type based on the result of an eval metrics call.
+ */
+@db(index+=['srcType'], unique=['name'])
+entity extendable type DataTagBase extends DataDiagnostic mixes FeatureEvaluatable type key 'DTB' {
+
+  /**
+   * The name of the {@link DataTagBase} which is the value used for display and representation
+   * of the {@link DataTagBase}. Users should populate this field with a useful name that describes
+   * the data tagging logic.
+   */
+  name: !~
+
+  /**
+   * The history of counts and percentages of the {@link DataTagRelation}s for this data tag.
+   */
+  @db(order='descending(timestamp)')
+  countHistory: [DataTagCountHistory](parent)
+
+  /**
+   * Runs the data tagging logic for an instance.
+   */
+  populateDataTags: member function(overrideDiagnosticSpec: DataDiagnosticOverrideSpec = {}) js-rhino
+
+  /**
+   * The part of the data tag logic which will take in the entities to tag from a {@link FetchResult} or {@link EvalMetricsResult},
+   * tag them, and also remove the tags on the entities which did not satify the data tag logic.
+   *
+   * @param entities
+   *           A list of entities to be tagged as determined by the DataTag logic.
+   * @param overrideFilterSpec
+   *           A spec that was being used to determine the scope of the DataTag logic
+   *           and is necessary to remove tags for entities that were previously tagged by this DataTag.
+   */
+  tagEntities: private member function(entities: [string], overrideFilterSpec: DataDiagnosticFilterSpec) js-rhino
+
+  /**
+   * Takes in a {@link EvaluateResult} from this data tag and returns the IDs of the entities to tag in that result.
+   * @param evaluateResult
+   *           The {@link EvaluateResult} gotten from {@link DataDiagnostic#retrieveDiagnosticData}.
+   */
+  entitiesFromEvaluateResult: private member function(evaluateResult: !EvaluateResult): [string] js-rhino
+
+  /**
+   * Takes in the {@link EvalMetricsResult} from this data tag and returns the IDs of the entities to tag in that result.
+   *
+   * @param evalMetricsResult
+   *           The {@link EvalMetricsResult} from which will be chcked for non-zero results to tag.
+   */
+  entitiesFromEvalMetricsResult: private member function(evalMetricsResult: !EvalMetricsResult): [string] js-rhino
+
+  /**
+   * This function will take in some parameters from the caller which will represent an eval metrics call
+   * with start and end dates, bindings for the arguments and then expected results.
+   *
+   * @param spec
+   *           The {@link ValidateDiagnosticSpec} used to mock the data tag logic and validate if tagging will occur.
+   *
+   * Returns whether or not the dataTag would be populated.
+   */
+  validateDataTagLogic: member function(spec: !ValidateDiagnosticSpec): boolean js-rhino
+}

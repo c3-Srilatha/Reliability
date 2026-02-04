@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Remote.PyTypeLoader mixes Remote.TypeLoader {
+
+  /**
+   * Return all types necessary for bootstrapping the py-client SDK. This list differs among SDKs due to differing
+   * implementation.
+   */
+  bootstrapTypes: ~
+
+  persistableRelatedTypes: ~
+
+  /**
+   * Returns an indexed map of all the file paths and their corresponding source code necessary for
+   * Python client side bootstrapping by bundling several requests for bootstrapping-necessary metadata into one call
+   * and endpoint.
+   * @param debug
+   *           Whether to include the code to support Python debugging
+   */
+  bootstrapSourceCodeAndFilePaths: function(debug: boolean): @indexed map<string serialized Pkg.Path, string>
+
+  /**
+   * @return metadata for the input types for a particular {@Link Action.Engine}.
+   */
+  metaJsons: function(typeNames: ![string],
+                      actionEngine: !string serialized Action.Engine,
+                      skipTypes: [string]): map<string, json>
+
+  /**
+   * @return metadata of all bootstrap types for the py-client SDK.
+   */
+  bootstrapMetaJsons: cached function(actionEngine: !string serialized Action.Engine): map<string, json>
+
+  /**
+   * @return metadata necessary to make a fetch call on Persistable for the py-client SDK.
+   */
+  persistableRelatedMetaJsons: cached function(actionEngine: !string serialized Action.Engine): map<string, json>
+}

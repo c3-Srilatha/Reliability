@@ -1,0 +1,92 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@action(group+='cluster-admin')
+type VaultEncrypter {
+
+  /**
+   * True if vault encryption is enabled
+   */
+  isEnabled: function(): boolean
+
+  /**
+   * Enables vault encryption.
+   * This will migrate all current vault values to be encrypted with the provided key.
+   * If migration fails, a {@link BatchError} will be thrown containing all errors, and migration will not occur.
+   *
+   * @param secret
+   *        The vault secret key (MEK)
+   * @param confirm
+   *        Confirm that you want to enable vault encryption
+   * @return the number of configs successfully encrypted, -1 if already enabled
+   */
+  enableVault: function(secret: @value(secret=true) !string, confirm: !boolean): int
+
+  /**
+   * Disables vault encryption
+   * This will migrate all current vault values to be decrypted with the stored key.
+   * If migration fails, a {@link BatchError} will be thrown containing all errors, and migration will not occur.
+   *
+   * @param confirm
+   *        Confirm that you want to disable vault encryption
+   * @param currentSecretOverride
+   *        The optional key used to decrypt values. If null, will use the current key
+   *        This option is for safety, in case certain values were encrypted with a separate key or the current key is
+   *        lost or not working properly
+   * @return the number of configs successfully decrypted, -1 if already disabled
+   */
+  disableVault: function(confirm: !boolean, currentSecretOverride: @value(secret=true) string): int
+
+  /**
+   * Rotates the MEK used to encrypt values in the vault
+   * This will migrate all current vault values to be re-encrytpe with the provided key.
+   * If migration fails, a {@link BatchError} will be thrown containing all errors, and migration will not occur.
+   *
+   * @param newSecret
+   *        The new vault secret key to re-encrypt values with
+   * @param confirm
+   *        Confirm that you want to swap vault secret key
+   * @param currentSecretOverride
+   *        The optional key used to decrypt values before re-encryption. If null, will use the current key
+   *        This option is for safety, in case certain values were encrypted with a separate key or the current key is
+   *        lost or not working properly
+   * @return the number of configs successfully migrated to new key, -1 if already using new key
+   */
+  rotateVaultSecret: function(newSecret: @value(secret=true) !string,
+                              confirm: !boolean,
+                              currentSecretOverride: @value(secret=true) string): int
+
+  /**
+   * Encrypts the given string using the current key.
+   * @param value
+   *        The string to encrypt.
+   * @return The encrypted string.
+   */
+  encrypt: private function(value: string): string
+
+  /**
+   * Decrypts the given string using the current key.
+   * @param value
+   *       The string to decrypt.
+   * @return The decrypted string.
+   */
+  decrypt: private function(value: string): string
+
+  /**
+   * Returns a Java Key using the given string as the contents of the key.
+   *
+   * @param str
+   *        The key contents.
+   * @param algorithm
+   *        The algorithm used for encrypting and decrypting data.
+   * @return A Java Key.
+   */
+  symmetricStringToKey: private function(str: @value(secret=true) !string,
+                                         algorithm: !string enum CryptoCipherTransformation)
+                                  : @java(class="java.security.Key") native
+}

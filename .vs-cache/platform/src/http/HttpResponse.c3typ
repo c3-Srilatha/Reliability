@@ -1,0 +1,115 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * HTTP response, usually produced by {@link HttpRequest#sendAsync} or {@link HttpRequest#sendSync sendSync}.
+ *
+ * If result in the response is a stream, and the client header is set to `Accept: text/event-stream`, api server will
+ * stream the results back with server sent events (SSE) protocol.
+ */
+inline type HttpResponse mixes HttpResponseMetadata {
+
+  /**
+   * The original request this response corresponds to.
+   */
+  request: HttpRequest
+
+  /**
+   * The entity body as {@link Content} from the response, if any.
+   */
+  body: member function(): Content java | js | py
+
+  /**
+   * Whether any body is present (regardless of status code).
+   */
+  hasBody: member function(): boolean java | js | py
+
+  /**
+   * The time in milliseconds that sending the request and reading the response took.
+   */
+  elapsedMs: double
+
+  /**
+   * @return `true` if the request succeeded (2xx).
+   */
+  succeeded: member function(): boolean java | js | py
+
+  /**
+   * @return `true` if the request failed (4xx, 5xx).
+   */
+  failed: member function(): boolean java | js | py
+
+  /**
+   * @return error information if request has #failed.
+   */
+  error: member function(): Error java | js | py
+
+  /**
+   * @return `true` if the request was a redirect (3xx).
+   */
+  redirected: member function(): boolean java | js | py
+
+  /**
+   * @return new location if request was #redirected.
+   */
+  redirectUrl: member function(): string java | js | py
+
+  /**
+   * @return C3 server id if this request was sent to C3 server or null or error otherwise.
+   */
+  serverId: member function(failIfNot: boolean): string
+
+  /**
+   * Parse the response body as JSON. If the body is empty, the value is null, otherwise it must be valid JSON.
+   */
+  json: member function(): json java | js | py
+
+  /**
+   * Get the response body as a string. If the body is empty, the value is null.
+   */
+  string: member function(): string java | js | py
+
+  _body: private binary | ByteStream | BytePushStream | Stream
+
+  fromJava: private inline function(request: !HttpRequest,
+                                    @java(class='org.apache.http.HttpResponse')
+                                    rsp: !native): !HttpResponse
+
+  fromJavaClosable: private inline function(request: !HttpRequest,
+                                            @java(class='org.apache.http.client.methods.CloseableHttpResponse')
+                                            srp: !native): !HttpResponse
+
+  /**
+   * Construct HttpResponse from python native http.client.HttpResponse.
+   */
+  fromPython: private inline function(rsp: !native): !HttpResponse py
+
+  withBody: member function(body: binary | string): !mixing HttpResponse java | js
+
+  /**
+   * Constructs a new HttpResponse with the given FormPost as the body.
+   */
+  withFormPostBinding: member function(formPost: Html.FormPostBinding): !mixing HttpResponse java | js
+
+  /**
+   * Adds a Set-Cookie header to the response. Note that each cookie uses a separate header so a new header is always
+   * added.
+   *
+   * @param name cookie name
+   * @param value cookie value
+   * @return modified response
+   */
+  withSetCookie: member function(name: !string, value: !?string): !mixing HttpResponse java | js
+
+  /**
+   * Write body, headers, status code, and reason phrase from ths HttpResponse to provided java native
+   * HttpServerResponse. This is not a pure function - the HttpServerResponse will be mutated.
+   */
+  writeToHttpServerResponse: private member function(@java(class='io.vertx.core.http.HttpServerResponse')
+                                                     res: !native)
+}

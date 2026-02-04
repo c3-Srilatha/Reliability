@@ -1,0 +1,31 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This implementation of {@link DataGrid} is useful for building in-memory grids that don't need scrolling.
+ * The rows and columns are specified at creation and this type itself just implements the abstract methods of
+ * {@link DataGrid} around that.
+ */
+type DataGrid.Simple mixes DataGrid {
+
+  /**
+   * Construct an instance from the prebuilt column and row information. There must be at least one column defined,
+   * although the rows may be empty.
+   */
+  fromColsRows: function(cols: ![!DataGrid.Col], rows: [!DataGrid.Row]): !DataGrid.Simple java | js
+
+  /**
+   * Construct an instance from the prebuilt row information. Columns are manufacturered for the rows with the index
+   * as the label. There must be at least one row and it must have at least one column.
+   */
+  fromRows: function(rows: [!DataGrid.Row]): !DataGrid.Simple java | js
+
+  size:  ~ java | js
+  row:   ~ java | js
+  _rows: private [!DataGrid.Row]
+}

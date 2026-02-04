@@ -1,0 +1,22 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type provided to the user lambda to send information to be converted into details. Please note that platform will ensure
+ * that its processed and added to overall state.
+ */
+type DataValidation.Rule.MapResult {
+
+  /**
+   * Data which needs to be added to the details and will be accessible during and after the {@DataValidation.Run} finishes.
+   * If the returned details is empty, including an empty list (js/python) and empty value (null in js and None in python),
+   * the rule can still pass and the details will also be empty.
+   */
+  // TODO: PLAT-126573: FieldType [any] | native converts empty list to None in Python
+  details: [json] | native
+}

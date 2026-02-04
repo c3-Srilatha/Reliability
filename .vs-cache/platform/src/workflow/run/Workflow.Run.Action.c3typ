@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A workflow vertex run for a Workflow.Action.
+ */
+entity type Workflow.Run.Action extends Workflow.Run.Vertex type key 'ACTION' {
+
+  /**
+   * Set to true initially in {@link execute} to lock other requests out of concurrently
+   * executing.
+   */
+  executing: boolean
+
+  /**
+   * Set to true when the action for the vertex is successfully completed.
+   */
+  completed: boolean
+
+  /**
+   * Set to true when the action for the vertex fails.
+   */
+  failed: boolean
+
+  /**
+   * Number of attempts made by {@link #checkStatus} to redispatch the action.
+   * See {@link Workflow.Run.Config#maxActionDispatchAttempts}.
+   */
+  redispatchAttempts: int
+
+  /**
+   * Executes the action for the vertex.  Called by the {@link WorkflowQueue}.
+   */
+  execute: private member function()
+
+  /**
+   * Executes the action with the input args for the vertex.
+   *
+   * @return the result of executing the action
+   */
+  executeAction: private member function(): any
+
+  /**
+   * Gets any queue error entries for the vertex run
+   *
+   * @param include
+   *        Optional include spec to fetch with.
+   *
+   * @return A stream of any queue error entries for the
+   */
+  fetchErrorEntries: member function(include: string): stream<InvalidationQueueError>
+
+  /**
+   * Dispatches the action to the ActionQueue for async processing.
+   *
+   * @param redispatch
+   *        If true, the action is being redispatched and the run state needs to be adjusted accordingly.
+   */
+  dispatchToQueue: member function(redispatch: boolean)
+
+  /**
+   * Determines if there are any queue entries.
+   *
+   * @param checkFailed
+   *        If true, a check will also be made for failed queue entries.
+   *
+   * @return True if there are any queue entries for the run.
+   */
+  hasQueueEntry: member function(checkFailed: boolean): boolean
+
+  recover:     ~
+  checkStatus: ~
+  cancel:      ~
+  doStart:     ~
+}

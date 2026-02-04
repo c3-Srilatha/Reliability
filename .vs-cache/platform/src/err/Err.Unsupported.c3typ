@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Error type representing unsupported value / state.
+ */
+type Err.Unsupported mixes Error {
+
+  @error(message='Unsupported Java ${class} for ${for}!')
+  unsupportedJavaClass: function(class: @java(class='java.lang.Class') !native, for: !?string): !Err.Unsupported
+
+  @error(message='Unsupported type: ${type} for: ${for}')
+  unsupportedType: function(type: !?Type, for: !?string): !Err.Unsupported
+
+  @error(message='Unsupported value: ${value} for: ${for}')
+  unsupportedValue: function(value: !?any, for: !string): !Err.Unsupported
+
+  @error(message='Unsupported value type: ${vt} for: ${for}')
+  unsupportedValueType: function(vt: !?ValueType, for: !?string): !Err.Unsupported
+
+  @error(message='Unsupported value conversion for: ${value} to: ${to}')
+  unsupportedValueConversion: function(value: !?any, to: !string): !Err.Unsupported
+
+  @error(message='Unsupported operation: ${op}')
+  unsupportedOperation: function(op: !string): !Err.Unsupported
+
+  @error(message='Unsupported operation ${op} for ${for}')
+  unsupportedOperation: function(op: !?string, for: !string): !Err.Unsupported
+
+  @error(message="Unsupported value ${quote(value)} for field ${typeName}.${fieldName}.")
+  unsupportedFieldValue: function(value: !?any, typeName: !?string, fieldName: !?string): !Err.Unsupported
+
+  @error(message="Unsupported language ${quote(lang)} for ${typeName}.${methodName}.")
+  unsupportedLanguage: function(lang: !?string, typeName: !?string, methodName: !?string): !Err.Unsupported
+
+  @error(message="Unsupported content type ${quote(contentType)} for ${typeName}.${methodName}.")
+  unsupportedContentType: function(contentType: !?string, typeName: !?string, methodName: !?string): !Err.Unsupported
+
+  @error(message="${quote(what)} unsupported for ${actionEngine}.")
+  unsupportedForActionEngine: function(what: !string, actionEngine: !string): !Err.Unsupported
+
+  @error(message="Unsupported header ${header} for ${for}.")
+  unsupportedHeader: function(header: !string, for: !string): !Err.Unsupported
+}

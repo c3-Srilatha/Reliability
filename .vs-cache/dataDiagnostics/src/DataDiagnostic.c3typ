@@ -1,0 +1,294 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A {@link DataDiagnostic} represents a unit of logic to run on a set of entities inside of an Application.
+ *
+ * The diagnostic should be attached to a {@link Persistable} type and will either run an `evalMetrics` call
+ * if the {@link DataDiagnostic#metricExpression} is specified, an `evaluate` call if {@link DataDiagnostic#expression}
+ * is specified, or will default to a fetch call. Furthermore, a {@link DataDiagnostic#referentialIntegrityString} can
+ * be specified. This field, in the backend, actually gets transformed into a {@link DataDiagnostic#expression} upon
+ * creation such that evaluate calls will be made.
+ *
+ * In general, entities returned by the fetch, having truthy expression engine function results, or having
+ * non-zero metric results are considered to have satisfied the diagnostic logic. Extending types such as tags
+ * or alerts take the results of the diagnostic and complete the logic by tagging or alerting on the relevant
+ * entities (those which satisfied the diagnostic logic).
+ */
+entity extendable type DataDiagnostic schema name 'DT_DGN' {
+
+  /**
+   * The entity type which this data diagnostic is running logic for.
+   */
+  srcType: !Type
+
+  /**
+   * High level description of what this data diagnostic is doing.
+   */
+  description: string
+
+  /**
+   * The metric expression used in the data diagnostic logic.
+   */
+  @constraint(condition='(!exists(metricExpression)) || (exists(interval) && exists(period))')
+  metricExpression: string
+
+  /**
+   * Override simple metrics that the developer may optionally define and call
+   * instead of seeded metrics.
+   */
+  overrideSimpleMetrics: [SimpleMetric] schema suffix 'OSM'
+
+  /**
+   * Override compound metrics that the developer may optionally define and
+   * call instead of seeded metrics.
+   */
+  overrideCompoundMetrics: [CompoundMetric] schema suffix 'OCM'
+
+  /**
+   * The unit used in the metric evaluation of the diagnostic logic.
+   */
+  unit: Unit
+
+  /**
+   * Bindings to use with any metrics invoked by the metric expression.
+   */
+  bindings: map<string, any> schema name 'BGS'
+
+  /**
+   * The {@link EvalMetricsOptions} to use when running the evalMetrics call.
+   */
+  options: EvalMetricsOptions
+
+  /**
+   * Bindings which are required for the diagnostic to function properly.
+   * This field should be overridden with a default for subtypes which only support metric-based diagnostics and always require certain bindings.
+   */
+  requiredBindings: private [string] schema suffix 'REQ_BIND'
+
+  /**
+   * Field to override bindings for specific {@link #srcType} entities.
+   */
+  entitySpecificBindings: map<string, OverrideBindings> schema suffix 'ESB'
+
+  /**
+   * {@link DataDiagnosticBatchConfig} for how this data diagnostic will be split into its own batches
+   * or if it will be split at all.
+   */
+  batchConfig: DataDiagnosticBatchConfig
+
+  /**
+   * {@link Interval} used for the metric evaluation.
+   */
+  interval: string enum Interval
+
+  /**
+   * The {@link Period} of time the diagnostic runs the eval metric call on.
+   */
+  period: Period
+
+  /**
+   * The timezone the used in the evaluation of the metric.
+   */
+  timeZone: string = UTC
+
+  /**
+   * The cron job which will run this data diagnostic logic on a set schedule.
+   */
+  cronJob: CronJob
+
+  /**
+   * A filter used to retrieve entities of type `srcType` to run the data diagnostic logic on.
+   */
+  filter: !Filter
+
+  /**
+   * Include string to within the {@link FetchSpec} if the diagnostic is configured to perform a fetch.
+   */
+  fetchInclude: string
+
+  /**
+   * An {@link ExpressionEngineFunction} to apply on the entities of type `srcType` and within the
+   * scope of the diagnostic. The entities which produce a truthy result from the expression will be
+   * considered to hav satisfied the diagnostic logic.
+   *
+   * All {@link DataDiagnostic}s on the same `srcType` which specify this field and have a filter
+   * specifying the totality of instances of a type (i.e. `1==1`) should be batched together inside
+   * the asynchronous jobs that process {@link DataDiagnostic}s so as to not scan the same table multiple times.
+   */
+  expression: string
+
+  /**
+   * A comma-separated list of field paths which should have their referential integrity checked. The field
+   * paths should all end in a reference field to a type (a reference to a single instance of a type). Referential
+   * integrity indicates that a reference field on the type or reachable from the type both has a reference
+   * value and that reference value exists in the table it is a foreign key reference to.
+   *
+   * Example string:
+   *        referenceField0,referenceField1.referenceField2,collectionField[0].referenceField3
+   * With this comma-separated list, referenceField0, referenceField2, and referenceField3 will all
+   * be checked for referential integrity in their respective tables. And a positive result (tagging or alerting)
+   * is considered to be the case when there is no referential integrity. In reality, this field gets parsed into
+   * an {@link #expression} by attaching `meta.referenceInvalid` to the end of each comma-separated path.
+   */
+  referentialIntegrityString: string
+
+  /**
+   * If enabled set to true then the data diagnostic will be evaluated inside of a Batch Job
+   * that runs on the schedule denoted by {@link DataDiagnostic#cronJob}.
+   */
+  enabled: boolean
+
+  /**
+   * Returns whether or not the {@link #filter} for this data diagnostic is comprehensive or, in other words,
+   * will always include all instances of type {@link #srcType}.
+   */
+  hasComprehensiveFilter: member function(): boolean js-rhino
+
+  /**
+   * Returns the action name that the diagnostic will call. Can be any of `fetch`, `evaluate`, or `evalMetrics`.
+   */
+  actionName: member function(): string js-rhino
+
+  /**
+   * Returns whether or not the data diagnostic will call fetch on the {@link #srcType}.
+   */
+  usesFetch: member function(): boolean js-rhino
+
+  /**
+   * Returns whether or not the data diagnostic will call evaluate on the {@link #srcType}.
+   */
+  usesEvaluate: member function(): boolean js-rhino
+
+  /**
+   * Returns whether or not the data diagnostic will call evalMetrics on the {@link #srcType}.
+   */
+  usesEvalMetrics: member function(): boolean js-rhino
+
+  /**
+   * Determines whether or not the data diagnostic will call evalMetricsWithMetadata
+   * on the {@link #srcType} and which fields ({@link #overrideSimpleMetrics} and
+   * {@link #overrideCompoundMetrics}) should define the overriden metric.
+   */
+  getOverrideMetrics: member function(): [SimpleMetric | CompoundMetric] js-rhino
+
+  /**
+   * Helper function to perform evalMetrics with given sourceType and metricsSpec.
+   * If there is existing {@link #overrideSimpleMetrics} or {@link #overrideCompoundMetrics},
+   * these overrides will be used in the evalMetrics call.
+   */
+  performEvalMetrics: member function(srcType: Type, metricsSpec: EvalMetricsSpec): EvalMetricsResult js-rhino
+
+  /**
+   * Helper function that performs evalMetrics when retrieveDiagnosticData is called on a {@link DataDiagnostic} with
+   * {@link #actionName} "evalMetrics". Sets EvalMetricsSpec based on specified filter and dataVariables.
+   */
+  retrieveEvalMetricsDiagnosticData: member function(filter: Filter,
+                                                     dataVariables: mixing DataDiagnostic,
+                                                     overrideDiagnosticSpec: DataDiagnosticOverrideSpec = {})
+                                              : EvalMetricsResult js-rhino
+
+  /**
+   * Helper function to validate a given `sourceId` for
+   * {@link #entitySpecificBindings}.
+   *
+   * If the given `sourceId` is valid, returns the {@link DataDiagnostic}
+   * object with the {@link #bindings} and {@link #entitySpecificBindings}.
+   * Otherwise, throws an error.
+   */
+  validateSourceId: member function(sourceId: string): DataDiagnostic js-rhino
+
+  /**
+   * API to retrieve specific bindings for a {@link #srcType} entity to enable
+   * individualized metric evaluation in {@link #retrieveDiagnosticData}.
+   *
+   * If given a `sourceId`, returns the bindings for that specific entity. If
+   * no `sourceId` is specified, returns the default {@link #bindings}.
+   */
+  getBindings: member function(sourceId: string,
+                               overrideDiagnosticSpec: DataDiagnosticOverrideSpec = {}): json js-rhino
+
+  /**
+   * API to update bindings for a specific {@link #srcType} entity.
+   *
+   * If given a `sourceId`, updates the bindings for that specific entity. If
+   * no `sourceId` is specified, updates the default {@link #bindings}.
+   */
+  updateBindings: member function(config: !json, sourceId: string, merge: boolean) js-rhino
+
+  /**
+   * Fetches all {@link #bindings}. Returns names and values of {@link #bindings}.
+   * Specified spec determines the limit and offset of the FetchResult. No other
+   * properties of spec are used.
+   */
+  fetchDiagnosticBindings: member function(spec: FetchSpec): FetchResult<json> js-rhino
+
+  /**
+   * Fetches the binding values of the source entities with the given sourceIds, for the binding with the
+   * specified bindingName.
+   *
+   * If a specific sourceId does not have an override value, returns the default value for this
+   * binding from {@link #bindings}. Otherwise, the binding value from {@link #entitySpecificBindings}
+   * for this binding is returned.
+   *
+   * Specified spec determines the limit and offset of the FetchResult. No other properties of spec are used.
+   */
+  fetchBindingValues: member function(sourceIds: [string], spec: FetchSpec): FetchResult<json> js-rhino
+
+  /**
+   * Lambda function that can be used to override the existing logic on a type that extends {@link DataDiagnostic}.
+   */
+  customDiagnosticLogic: lambda(srcObj: any) schema name 'CDL'
+
+  /**
+   * Function that retrieves the data in this data diagnostic based on fields such as `metricExpression`, `expression`, `filter`,
+   * `period`, and `interval`.
+   */
+  retrieveDiagnosticData: member function(overrideDiagnosticSpec: DataDiagnosticOverrideSpec = {})
+                                   : !(FetchResult | EvaluateResult | EvalMetricsResult) js-rhino
+
+  /**
+   * Get the {@link Filter} that specifies which entities to evaluate the data diagnostic logic on.
+   */
+  getDiagnosticFilter: member function(overrideFilterSpec: DataDiagnosticFilterSpec): !Filter js-rhino
+
+  /**
+   * Run the lambda functions attached to a data diagnostic instance.
+   */
+  executeLambda: inline member function(action: lambda(srcObj: any)): binary js-rhino
+
+  /**
+   * Validates the format and of fields on the data diagnostic and will throw an error if they are incorrect based
+   * on the {@link DataDiagnostic#srcType} which they will be used for.
+   *
+   * Specifically checks if {@link DataDiagnostic#expression}, {@link DataDiagnostic#referentialIntegrityString}, and
+   * {@link DataDiagnostic#filter} are all valid.
+   */
+  beforeCreate: ~ js-rhino
+
+  /**
+   * Validates the format and of fields on the data diagnostic and will throw an error if they are incorrect based
+   * on the {@link DataDiagnostic#srcType} which they will be used for.
+   *
+   * Specifically checks if {@link DataDiagnostic#expression}, {@link DataDiagnostic#referentialIntegrityString}, and
+   * {@link DataDiagnostic#filter} are all valid.
+   */
+  beforeUpdate: ~ js-rhino
+
+  /**
+   * Performs the necessary validation of {@link DataDiagnostic}s as needed in the {@link DataDiagnostic#beforeCreate}
+   * and {@link DataDiagnostic#beforeUpdate} functions.
+   */
+  processNewOrUpdatedDiagnostics: function(objs: !?[mixing DataDiagnostic]): !ObjList<mixing DataDiagnostic> js-rhino
+
+  /**
+   * Updates a value in the diagnostic's {@link bindings} map.
+   */
+  updateBindingValue: member function(bindingName: !string, bindingValue: !any) js-rhino
+}

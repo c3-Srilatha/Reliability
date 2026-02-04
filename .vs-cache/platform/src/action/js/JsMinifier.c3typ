@@ -1,0 +1,39 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Implementation of JavaScript minification and source map generation. This does *not* support transpilation and
+ * allows invalid syntax to handle file fragments. Note that this doesn't really make the files smaller (other than
+ * removing comments), but does allow multiple files to be delivered as a single script in a way that preserves
+ * debuggability via source maps.
+ *
+ * @see https://en.wikipedia.org/wiki/Minification_(programming)
+ * @see https://developer.chrome.com/blog/sourcemaps/
+ */
+type JsMinifier {
+
+  /**
+   * The source files to be minified.
+   */
+  sourceFiles: [!JsMinifier.SourceFile]
+
+  /**
+   * Prefix for all source files in the source map; output to the "sourceRoot" field.
+   */
+  sourceRoot: string
+
+  /**
+   * Produce the merged single-line script from the #sourceFiles.
+   */
+  minify: member function(): string
+
+  /**
+   * Produce the source map that allows debugging the minified script.
+   */
+  sourceMap: member function(): !json
+}

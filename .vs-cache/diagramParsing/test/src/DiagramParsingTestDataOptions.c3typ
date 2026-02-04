@@ -1,0 +1,106 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A few test data options for creating Diagram Parsing test data.
+ */
+type DiagramParsingTestDataOptions {
+
+  /**
+   * Whether or not to remove all data before loading test data.
+   */
+  doNotRemoveTestData: boolean
+
+  /**
+   * Flag indiciating whether or not to persist the created files
+   */
+  doNotPersistFiles: boolean
+
+  /**
+   * Flag inidicating whether or not to connect assets to diagrams
+   */
+  doNotConnectAssets: boolean
+
+  /**
+   * Flag indicating whether or not to verify {@link ParsedSensor}s
+   */
+  doNotVerifySensors: boolean
+
+  /**
+   * Flag indicating whether or not to collide {@link ParsedSensor}s
+   */
+  doNotCollideSensors: boolean
+
+  /**
+   * Flag indicating whether or not to have {@link ParsedSensor#actualSensor}s
+   */
+  doNotNullifySensors: boolean
+
+  /**
+   * Flag indicating whether to run the {@link DiagramParsingMatchingHelper#parseAndMatchBatch} on test files.
+   * Setting this flag to true,
+   *  - Uploads 'test/resource/diagrams.pdf' repeatedly {@link #numFiles} number of times.
+   *  - Uploads {@link Sensor}s as target sensors to be matched.
+   *  - Runs {@link SourceParsableDiagram#triggerBatchParseAndMatchWorkflowOnFormSubmit} on the urls.
+   *
+   * **NOTE: **Setting this flag to true, will not respect any other options except for `numFiles`; the entire test data will be created as result of real parsing workflows.
+   * The parsing workflow runs asynchronously and the status can be monitored via the corresponding {@link UploadedFileCollection#getParsingStatus}.
+   * Expect {@link ParsedSensor}s and {@link ParsableDiagram}s to be populated once the parsing workflow has 'Completed' and
+   * the {@link ActionQueue action} and {@link WorkflowQueue workflow} queues have been processed.
+   */
+  runParseAndMatchWorkflow: boolean
+
+  /**
+   * Number of P&ID source files to be created
+   */
+  numFiles: int = 20
+
+  /**
+   * Number of {@link ParsableDiagram}s per source file to be created
+   */
+  diagramsPerFile: int = 5
+
+  /**
+   * Number of {@link PhysicalAsset} to be linked to {@link ParsableDiagram}
+   */
+  numPhysicalAssets: int = 20
+
+  /**
+   * Range of number of {@link ParsedSensor}s per {@link ParsableDiagram} to be created
+   * Is an array of two numbers representing the minimum and maximum
+   */
+  sensorRangePerDiagram: Range<int> = {min: 5, max: 20}
+
+  /**
+   * Number of {@link ParsedSensor}s per {@link ParsableDiagram} to be created
+   */
+  numUploadJobs: int = 5;
+
+  /**
+   * Percentage of all created {@link ParsedSensor}s to be verified
+   */
+  percentVerifiedSensors: double = 0.2
+
+  /**
+   * Percentage of all created {@link ParsedSensor}s  to have no {@link ParsedSensor#actualSensor}
+   */
+  percentWithNoSensors: double = 0.05
+
+  /**
+   * Percentage of created {@link ParsedSensor}s to point to same {@link ParsedSensor#actualSensor}s
+   *
+   * Overview of logic used to make them collide.
+   * For example, If you want 5% of 2000 which is, 100 parsed sensors collide,
+   * These are split into two sets of 50 parsed sensors in which like:
+   * SET 1: ['PS001', 'PS002', 'PS003', ....]
+   * SET 2: ['PS051', 'PS052', 'PS053', ....]
+   * ['PS001', 'PS051'] & ['PS002', 'PS052'] & ['PS003', 'PS053'] point to same actual sensors
+   */
+  percentCollidingSensors: double = 0.3
+}

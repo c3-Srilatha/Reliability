@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type CreateSnapshotSpec mixes EvalFeatureSpecBase {
+
+  /**
+   * This filter field is used decide what subjects to copy to the snapshot table. If the filter field is null,
+   * the `subjects` field has to exist.
+   */
+  subjectFilter: string
+
+  /**
+   * This `subjects` field is used decide what subjects to copy to the snapshot table. If the `subjects` field is `null`,
+   * the `filter` field has to exist. Note that we only allow 10k subjects to be passed in the subjects array.
+   * If there are any more number of subjects than that, then we will throw an exception in the createSnapshot API.
+   */
+  subjects: [FeatureEvaluatable]
+
+  /**
+   * This field can be specified to determine the batch size  of the KvRows to copy to the snapshot. This option is
+   * highly experimental and not tested thoroughly yet.
+   */
+  @beta
+  batchSize: private int = 100
+
+  /**
+   * A human readable description of what snapshot will be created
+   */
+  description: string
+
+  /**
+   * Validate the field values in the CreateSnapshotSpec instance. If any field is invalid, throw the correct error.
+   */
+  validate: member function()
+
+  /**
+   * Extract the filter from the #subjectFilter and #subjects fields. If #subjectFilter is specified, then use it,
+   * if #subjects is specified, then convert the subjects into an equivalent ids filter.
+   */
+  extractFilter: member function(): !string
+
+  /**
+   * If specified, then the snapshot will be created using an existing snapshot
+   */
+  sourceSnapshotId: string
+
+  // Provide the name of the snapshot to be created using `createSnapshot` API.
+  snapshotId: ~
+
+  /**
+   * Convert the CreateSnapshotSpec to an EvalFeatureSpec by adding the {@link #sourceSnapshotId}
+   */
+  toEvalFeatureSpec: private member function(): !EvalFeatureSpec
+}

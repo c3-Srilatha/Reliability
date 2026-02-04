@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A bulleted or ordered list. This can contain only list item blocks ({@link DocumentationBlockKind kind} `LI`).
+ * Due to parsing from Markdown, it supports the "loose / tight" distinction of Markdown lists.
+ */
+type DocumentationList mixes DocumentationBlock {
+
+  /**
+   * True if this is an ordered list (has the {@link #kind} `OL`).
+   */
+  ordered: property(): boolean
+
+  /**
+   * True if this is a bullet list (has the {@link #kind} `UL`).
+   */
+  bulleted: property(): boolean
+
+  /**
+   * If the list is authored with no blank lines within any item or between items, it is considered "tight" and list
+   * items will not have a paragraph within them.
+   */
+  tight: boolean
+
+  /**
+   * The starting marker number for {@link #ordered ordered lists}.
+   */
+  startNumber: int32
+
+  kind: ~ = UL
+}

@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type overrides the default behavior of the {@link Data.Persisted} type to use the local filesystem to
+ * persist/retrieve data to achieve better performance.
+ */
+@beta
+private type Data.Persisted.Local mixes Data.Persisted {
+
+  DFLT_LOCAL_TABLE_NAME: private const string = "Data_Persisted_Local"
+  pushStream:            ~
+  stream:                ~
+  supportsMultiNode:     ~
+  close:                 ~
+  toPersistedLocal:      ~ py
+  numFilesForBaseDir:    ~
+
+  /**
+   * Uploads the local files to remote filesystem and creates an instance of {@link Data.Persisted} from this
+   * {@link Data.Persisted.Local}.
+   * @returns The instance of the {@link Data.Persisted} .
+   */
+  toPersisted: ~
+
+  /**
+   * Adds the prefix of the absolute path to the local directory where the data is persisted.
+   * @param path
+   *            partial path.
+   * @returns The complete absolute path to the local directory where the data is persisted.
+   */
+  baseDir: function(path: !string): !string py
+
+  /**
+   * @return the absolute path to the local directory that will store the one or more files
+   *           associated with this {@link Data.Persisted.Local}.
+   */
+  localDir: private member function(): !string py
+
+  /**
+   * @return the parent directory for {@link #localDir}. This is the directory where all
+   *           {@link Data.Persisted.Local} should be stored.
+   */
+  localBaseDir: private function(): !string py
+}

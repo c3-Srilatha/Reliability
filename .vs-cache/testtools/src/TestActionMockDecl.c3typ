@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type TestActionMockDecl {
+  /**
+   * Input of this mocked action.
+   *
+   * If this is null, it will match any input.
+   */
+  input: map<string,any> schema name 'INPT'
+
+  /**
+   * Result of the call.
+   */
+  result: any
+
+  /**
+   * Root url where mocked requests are stored / saved.
+   */
+  rootUrl: string serialized Url
+
+  /**
+   * If true then will not mock but instead will call target action and save requests under #rootUrl.
+   */
+  refreshMocks: boolean
+
+  /**
+   * Make every response distinct even if the type and inputs to the action are the same.
+   * Typically in a test, the mocked action has to return different values based on the sequence within the test.
+   * The mockFiles will be distinct based on the value of a static global counter. This is useful to mock an external
+   * REST point in an integration-test where requests are serialized. Note that the sequence is global to the test
+   * so it will only work if the full test class is run as a whole.
+   */
+  useUniqueResponses: boolean
+
+  /**
+   * Lambda that should return `true` if it mocks action with provided input.
+   *
+   * If this is null, it will match everything.
+   */
+  claims: Lambda<function(action: Action.Spy, input: map<string,any>): boolean>
+
+  /**
+   * Lambda that should return result of this action mocks for provided input.
+   */
+  impl: Lambda<function(action: Action.Spy, input: map<string,any>): any>
+
+  spyType: private Type
+
+  forResult: function(decl: TestActionMockDecl): TestActionMockDecl js-server
+
+  forLambda: function(decl: TestActionMockDecl): TestActionMockDecl js-server
+
+  forAuto: function(decl: TestActionMockDecl): TestActionMockDecl js-server
+
+}

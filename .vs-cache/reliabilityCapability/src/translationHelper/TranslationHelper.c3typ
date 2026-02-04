@@ -1,0 +1,102 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// TODO REL-7046: Remove this type.
+
+/**
+ * Helper type that allows for the fetching/getting of backend data, while also returning translated text.
+ * Intended to allow transforms access to translations.
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+type TranslationHelper {
+  /**
+   * Performs a fetch on a type defined by `translationSpec` with the arg `spec`, and returns the result
+   * with the added `translationMap` property.
+   * @param spec
+   *           The fetch specification to use for the query.
+   * @param translationSpec
+   *           The translation specification defining the type and translation mapping.
+   * @return A JSON object containing the fetch result with added translationMap property.
+   */
+  fetch: function(spec: FetchSpec, translationSpec: TranslationSpec): json js-rhino
+
+  /**
+   * Performs a get call on a type defined by `translationSpec`, and returns the result
+   * with the added `translationMap` property.
+   * @param id
+   *           The id of the object to get.
+   * @param include
+   *           The include string to use for the get call.
+   * @param translationSpec
+   *           The translation specification defining the type and translation mapping.
+   * @return A JSON object containing the get result with added translationMap property.
+   */
+  get: function(id: string, include: string, translationSpec: TranslationSpec): json js-rhino
+
+  /**
+   * Performs a fetch on a type defined by `translationSpec` with the arg `spec`.
+   *
+   * This function also checks permissions for the user to call the action and will throw an exception if the user
+   * is not authorized.
+   *
+   * @param spec
+   *           See {@link TranslationSpec} for details on the spec to this function.
+   * @return A JSON object containing the action result with added translationMap property.
+   */
+  applyActionAndGetTranslations: private function(spec: TranslationSpec): json js-rhino
+
+  /**
+   * Performs a call to an specific action on a type defined by `translationSpec` with the arg `spec` plus any
+   * additional arguments (`customActionArgs`).
+   * @param customActionName
+   *           The action used to retrieve data.
+   * @param spec
+   *           The fetch specification to use for the query.
+   * @param customActionArgs
+   *           The arguments that needs to pass to the action.
+   * @param translationSpec
+   *           The translation specification defining the type and translation mapping.
+   * @return The result of the action with the added `translationMap` property.
+   *
+   * Example usage:
+   * result = TranslationHelper.customActionName(
+   *     '<Method Name>',
+   *     {
+   *       filter: Filter.eq('', ''),
+   *       include: '',
+   *       order: 'descending(id)',
+   *       limit: 3,
+   *     },
+   *     { alertId: '123' },
+   *     {
+   *       typeName: '<Helper Type>',
+   *       translationMap: {
+   *         <Custom Name>: '<Translation Key>',
+   *         <Custom Name 2>: '<Translation Key 2>',
+   *       },
+   *     }
+   * );
+   */
+  customActionName: function(customActionName: string, spec: FetchSpec, customActionArgs: map<string, any>, translationSpec: TranslationSpec): json js-rhino
+
+  /**
+   * Wrap everything into a single object to make a call to #customActionName
+   * @param spec
+   *           A JSON object containing all the parameters needed for the custom action call.
+   * @return A JSON object containing the result of the custom action call.
+   */
+  customActionNameWithSpec: function(spec: json): json js-rhino
+
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

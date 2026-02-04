@@ -1,0 +1,126 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type describes a single type declaration language (DSL) keyword, which is useful for code formatting. Note that
+ * keywords in the DSL are _not_ reserved words. For example a method can be named "type" (and in fact
+ * {@link WithType#type there is one}).
+ *
+ * Also note that some keywords are actually two words, for example "with millis" and "not remixable". In these cases,
+ * neither of the individual words are keywords, only both together.
+ *
+ * Finally, there is keyword-like syntax for method claims. For example "js-browser" at the end of a declaration may be
+ * styled as a keyword, but again "js" by itself is not a reserved word and "js-browser" in other context is an
+ * expression that subtracts the "browser" field from the "js" field.
+ *
+ * To perform more targeted syntax highlighting, these should be applied only when the following token is not a ':'
+ * (negative lookahead). For claim keywords, they may be followed by a dash and any word characters or additional
+ * dashes, plus an optional version, and can appear only at the end of a line.
+ *
+ * @see type-dsl.c3doc.md
+ * @see ui-dsl.c3doc.md
+ */
+type DslKeyword {
+
+  /**
+   * The keyword text, for example "private" or "schema name".
+   */
+  keyword: !string
+
+  /**
+   * A short description of the function of the keyword.
+   */
+  toolTip: !string
+
+  /**
+   * A reference to the documentation for this keyword. For example "EventStreamType" for the "event stream" keyword.
+   */
+  docRef: !string
+
+  /**
+   * Whether this is a 2-word keyword such as "type key".
+   */
+  twoWord: property(): boolean
+
+  /**
+   * Whether this keyword represents a method claim, such as "py".
+   */
+  claim: property(): boolean
+
+  /**
+   * Build a regular expression that matches this keyword, with a capturing group of the keyword itself.
+   */
+  re: member function(): @java(class="java.util.regex.Pattern") native
+
+  /**
+   * Look up a keyword for a particular DSL language. Keywords are case-sensitive and two-word keywords must be
+   * separated with a single space (ASCII 32).
+   *
+   * @param lang the DSL language
+   * @param find the text of the keyword
+   * @param failIfNone throw error instead of returning null if not found
+   * @return keyword in this language, if known
+   */
+  lookup: function(lang: !string enum DslLanguage, find: !?string, failIfNone: boolean): DslKeyword
+
+  /**
+   * Get all keywords for a particular DSL language. Note that this will include the language keywords that introduce
+   * claims, but not all possible combinations of runtimes ("py", but not "py-scikit-learn@3.10.1").
+   *
+   * @param lang the DSL language
+   * @return all keywords for this language
+   */
+  all: cached function(lang: !string enum DslLanguage): ![DslKeyword]
+
+  /**
+   * Get all keywords for `.c3typ` files. This is a convenience method and returns the same thing as `all(TYPE)`.
+   */
+  allType: cached function(): ![DslKeyword]
+
+  /**
+   * Get the language keywords for `.c3typ` file method claims. For example "java" and "py". These make up the first
+   * component of a claim that may include a runtime and version. A complete claim might be "py-scikitlearn@3.9" of
+   * which "py" is the language.
+   *
+   * @see ImplLanguage#dslNameOf
+   */
+  claimLangs: cached function(): ![string serialized ImplLanguage]
+
+  /**
+   * Determine if the specified position represents a keyword. Because of context, the entire line should be passed
+   * and the offset as to which character is being investigated.
+   *
+   * @param lang the DSL language
+   * @param line the line of interest
+   * @param offset 0-based character offset in the line
+   * @return matched keyword or null if not a keyword
+   */
+  findKeyword: function(lang: !string enum DslLanguage, line: !?string, offset: !int): DslKeyword.Bounds
+
+  /**
+   * Determine if the specified position represents a type keyword. Because of context, the entire line should be passed
+   * and the offset as to which character is being investigated.
+   *
+   * @param line the line of interest
+   * @param offset 0-based character offset in the line
+   * @return matched keyword or null if not a keyword
+   */
+  findTypeKeyword: function(line: !?string, offset: !int): DslKeyword.Bounds
+
+  /**
+   * Build a regular expression that matches a claim in a `.c3typ` file. This must be a claim keyword with an optional
+   * runtime and version at the end of a line.
+   */
+  claimRe: cached function(): @java(class="java.util.regex.Pattern") native
+
+  /**
+   * Build a regular expression that matches non-claim keywords for a particular DSL language with a capturing group
+   * of the keyword itself.
+   */
+  keywordRe: cached function(lang: !string enum DslLanguage): @java(class="java.util.regex.Pattern") native
+}

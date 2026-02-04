@@ -1,0 +1,108 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Result row returned from {@link DbAdming.getBlockedStmts}.
+ */
+type DbAdmin.BlockedStmtResult.Pg mixes DbAdmin.BlockedStmtResult {
+
+  /**
+   * Type of lock that is blocked.
+   */
+  waitingLocktype: string
+
+  /**
+   * Table that the blocked statement is waiting for.
+   */
+  waitingTable: string
+
+  /**
+   * Statement/query that is blocked.
+   */
+  waitingQuery: string
+
+  /**
+   * Lock mode of lock that is waiting.
+   */
+  waitingMode: string
+
+  /**
+   * Process id for session that is blocked.
+   */
+  waitingPid: int
+
+  /**
+   * When was the lock requested
+   */
+  waitingSince: datetime
+
+  /**
+   * Number of seconds the lock request has been waiting
+   */
+  waitingForSec: double
+
+  /**
+   * Client ip address of statement owner that is blocked.
+   */
+  waitingClientAddr: string
+
+  /**
+   * Client host name of statement owner that is blocked.
+   */
+  waitingClientHostname: string
+
+  /**
+   * Client port of statement owner that is blocked.
+   */
+  waitingClientPort: int
+
+  /**
+   * Type of lock that is blocking the waiting one.
+   */
+  otherLocktype: string
+
+  /**
+   * Table locked that is blocking the waiting one.
+   */
+  otherTable: string
+
+  /**
+   * Statement/query that is blocking the waiting one.
+   */
+  otherQuery: string
+
+  /**
+   * Lock mode of the lock that is blocking the waiting one.
+   */
+  otherMode: string
+
+  /**
+   * Process id for the session that is blocking the waiting one.
+   */
+  otherPid: int
+
+  /**
+   * True if the lock blocking the waiting one is actually granted and false if it is blocked as well.
+   */
+  otherGranted: boolean
+
+  /**
+   * Client ip address of statement owner that is blocking the waiting one.
+   */
+  otherClientAddr: string
+
+  /**
+   * Client host name of statement owner that is blocking the waiting one.
+   */
+  otherClientHostname: string
+
+  /**
+   * Client port of statement owner that is blocking the other one.
+   */
+  otherClientPort: int
+}

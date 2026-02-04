@@ -1,0 +1,56 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Holds fields for {@see Lock}
+ */
+private type LockSpec mixes Spec {
+
+  /**
+   * Lock key. Note, this key should be unique within the app
+   * {@see Lock#key} to set this field
+   */
+  key: private string
+
+  /**
+   * If set, then attempt to lock will be tried exactly once and will not wait for {@link #timeout} seconds.
+   * This will also set {@link #doNotThrowOnFailure} to true since it simulates a tryLock which returns true / false
+   */
+  doNotWait: private boolean = false
+
+  /**
+   * If set, then any lock failure will throw this message.
+   */
+  alreadyLockedErrorMessage: private string
+
+  /**
+   * Timeout in milliseconds to wait for before throwing an exception based on {@link doNotThrowOnFailure}
+   * Default timeout is 1 minute
+   * {@see Lock#timeout} to set this field
+   */
+  timeout: private int = 60000
+
+  /**
+   * Maximum number of times attempts to acquire a lock will be made . This means that it will run at most 1 + maxRetries
+   * times including the initial attempt
+   */
+  maxRetries: int
+
+  /**
+   * If set, no error will be thrown if failed to acquire lock in desired time {@link timeout}
+   * {@see Lock#doNotThrowOnFailure} to set this field
+   */
+  doNotThrowOnFailure: private boolean = false
+
+  /**
+   * Periodic heartbeat check to see if lock should continue be held or cleaned up. By default, the scope of the lock will be until
+   * the action calling to acquire the lock is alive
+   * {@see Lock#heartbeat} to set this field
+   */
+  heartbeat: private lambda(entry: !RecoveryState): !boolean schema name 'HRTBT'
+}

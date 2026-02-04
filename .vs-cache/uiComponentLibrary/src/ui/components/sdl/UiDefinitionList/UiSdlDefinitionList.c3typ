@@ -1,0 +1,80 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that displays field values from one record.
+ */
+@uiSdlDesignerComponent(designable=true,
+                        attributes=['nestable'],
+                        category='UiSdlDefinitionList.CategoryName',
+                        name='UiSdlDefinitionList.ComponentName',
+                        icon='shapes')
+@typeScript
+@uiComponentCategorizer(name='Definition list', category='Components')
+type UiSdlDefinitionList mixes UiSdlComponent<UiSdlDefinitionListDataSpec> {
+
+  /**
+   * The specification used for retrieving data displayed by the definition list.
+   */
+  @uiSdlDataSpec(dataDestinationField='dataRecord')
+  dataSpec: ~
+
+  /**
+   * Holds the data to display in the definition list.
+   */
+  dataRecord: Obj
+
+  /**
+   * Configuration of the header subcomponent.
+   */
+  header: UiSdlComponentHeader
+
+  /**
+   * Triggered when the value content of the list item is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @param obj
+   *            The data object for the list item.
+   * @returns A `LIST_ITEM_CLICK` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='LIST_ITEM_CLICK')
+  clickListItemAction: function(id: !string, obj: json): !UiSdlDefinitionListItemClickAction ts-client
+
+  /**
+   * Specify whether to show definitions horizontally or vertically.
+   */
+  orientation: string enum('VERTICAL', 'HORIZONTAL')
+
+  /**
+   * Configuration to set the elements of the definition list to the same width. Only applicable when orientation is set to 'HORIZONTAL'.
+   */
+  @constraint(condition='orientation == "HORIZONTAL"')
+  equalWidth: boolean = false
+
+  /**
+   * Show divider lines between definitions.
+   */
+  divider: boolean = false
+
+  /**
+   * Specifies the ordering of the definition list items.
+   *
+   * Possible values:
+   * - 'OFF': No ordering is applied.
+   * - 'ORDERED': The items are ordered using numbers.
+   * - 'UNORDERED': The items are unordered using bullet points.
+   */
+  ordering: string enum('OFF', 'ORDERED', 'UNORDERED')
+
+  /**
+   * Specifies the row spacing size
+   */
+  rowSpacing: string enum("SMALL", "LARGE")
+
+}

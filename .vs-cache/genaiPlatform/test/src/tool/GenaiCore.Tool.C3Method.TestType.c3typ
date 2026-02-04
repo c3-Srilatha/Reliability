@@ -1,0 +1,213 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A test type for {@link GenaiCore.Tool.C3Method}.
+ */
+entity type GenaiCore.Tool.C3Method.TestType {
+
+  /**
+   * A valid method for Tool.C3Method.
+   * @param s
+   *          A string.
+   * @param i
+   *          An integer
+   * @param d
+   *          A datetime.
+   *
+   * @return A double
+   */
+  validMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * Another valid method for Tool.C3Method that doesn't return anything.
+   * @param f
+   *          A float
+   */
+  validMethod: function(f: float) js-rhino
+
+  /**
+   * A third valid method for Tool.C3Method.
+   * @param f
+   *          A float
+   * @param b
+   *          A boolean
+   * @param s
+   *          A string
+   *
+   * @return A string
+   */
+  validMethod: function(f: float, b: boolean, s: string="foo"): string js-rhino
+
+  /**
+   * A valid method with only one overload/implementation
+   * @param b
+   *        A boolean
+   * @param i
+   *        An integer
+   * @return a string
+   */
+  validMethodOneOverload: function(b: boolean, i: int=42): !string py
+
+  /**
+   * A valid method with only one overload/implementation that uses json
+   * @param in
+   *        A json object
+   * @return a json object
+   */
+  validMethodJson: function(in: json): !json js
+
+  /**
+   * A valid method with collections
+   * @param m
+   *        A map
+   * @param a
+   *        An array
+   * @return a set
+   */
+  validMethodCollections: function(m: map<string, int>, a: [int]): !set<float> js
+
+  /**
+   * A valid method that takes a 'simple' reference type as a param and returns a list of 'simple' reference types.
+   * @param i
+   *          An integer
+   * @param o
+   *         A 'simple' (testing "double quotes" too) reference type
+   * @return A list of 'simple' reference types
+   */
+  validMethodSimpleReference: function(i: int, o: GenaiCore.Tool.C3Method.TestType.Simple): ![GenaiCore.Tool.C3Method.TestType.Simple] py
+
+  /**
+   * An invalid method that takes a 'complex' reference type as a param and returns a list of strings.
+   * @param i
+   *          An integer
+   * @param o
+   *         A 'complex' reference type
+   * @return A list of strings
+   */
+  invalidMethodComplexReference: function(i: int, o: GenaiCore.Tool.C3Method.TestType.Complex): ![string] py
+
+  /**
+   * An invalid method for Tool.C3Method.
+   * @param s
+   *          A string.
+   * @param t
+   *          A test type.
+   */
+  invalidMethod: function(s: !string, t: !GenaiCore.PgVectorTestType) js
+
+  /**
+   * Another invalid method for Tool.C3Method.
+   * @param m
+   *          A map.
+   * @param b
+   *          A boolean.
+   * @return A FetchSpec
+   */
+  invalidMethod: function(m: map<string, GenaiCore.Tool.C3Method.TestType>, b: boolean): !FetchSpec js
+
+  /**
+   * A third invalid method for Tool.C3Method.
+   * @param ts
+   *          An of test type instances.
+   * @return A string
+   */
+  invalidMethod: function(ts: [GenaiCore.Tool.C3Method.TestType]): !string js
+
+
+  noDocsMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * A test method that has no parameters documented
+   */
+  noParamsDocMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * A test method that is missing documentation for some parameters
+   * @param s
+   *        A string.
+   * @param d
+   *        A datetime.
+   */
+  notAllParamsDocMethod: function(s: !string, i: !int, d: datetime): !double js-rhino
+
+  /**
+   * Add two numbers
+   * @param a
+   *        The first number
+   * @param b
+   *        The second number
+   *
+   * @return The sum of the two numbers
+   */
+  add: function(a: !int, b: !int): !int js
+
+  /**
+   * Subtract one number from another
+   * @param a
+   *        The number from which to subtract
+   * @param b
+   *        The number to subtract
+   *
+   * @return The difference between the two numbers
+   */
+  subtract: function(a: !int, b: !int): !int js
+
+  /**
+   * Multiply two numbers
+   * @param a
+   *        The first number
+   * @param b
+   *        The second number
+   *
+   * @return The product of the two numbers
+   */
+  multiply: function(a: !float, b: !float): !float py
+
+  /**
+   * Perform a simple arithmetic operation on two numbers according to the input.
+   * @param input
+   *        The 'spec' "defining" the operation
+   * @return The result of the operation
+   */
+  calculate: function(input: !GenaiCore.Tool.C3Method.TestType.CalculateInput): !GenaiCore.Tool.C3Method.TestType.CalculateOutput py
+
+  /**
+   * Repeats the instance's name `n` times.
+   * @param n
+   *          The number of times to repeat the name
+   * @return the repeated name
+   */
+  repeatName: member function(n: !int): !string py
+
+  /**
+   * Overridden for testing purposes. Returns an instance with name "not {{name}}"
+   * @param name
+   *          The name of the instance
+   * @return the instance
+   */
+  forName: function(name: !string): !GenaiCore.Tool.C3Method.TestType py
+  /**
+  * Mock function for testing tool creation using Python C3Method without input.
+  * @return JSON response: {"id": "c1", "name": "Mock Cluster One"}
+  */
+  getClusters: function(): json py
+
+  /**
+  * Mock function for testing tool creation using JavaScript C3Method without input.
+  * @return JSON response: {"id": "c2", "name": "Mock Cluster Two"}
+  */
+  getClustersJS: function(): json js-server
+
+  /**
+   * Returns the user's email address.
+   * @return A JSON response containing the user's email.
+   */
+  whoAmI: function(): json js-server
+}

@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the config for {@link Genai.SourceFile.Chunker.Mew3}.
+ */
+type Genai.SourceFile.Chunker.Mew3.Config mixes Singleton, Config {
+  /**
+    * The pipeline construction for the document parser.
+    * This should contain specs for layout parser, table parser, image parser, and text parser.
+    * A default {@link Genai.SourceFile.Chunker.Mew3.Config} is seeded and accessible with #inst
+    */
+  pipelineSpec: json
+
+  /**
+    * The configuration for the document itself (for example, handling cropping with different libraries).
+    * A default {@link Genai.SourceFile.Chunker.Mew3.Config} is seeded and accessible with #inst
+    */
+  documentSpec: json
+
+  /**
+    * Whether to skip parsing text components.
+    */
+  skipTextParsing: boolean = false
+
+  /**
+    * Whether to skip parsing image components.
+    */
+  skipImageParsing: boolean = false
+
+  /**
+    * Whether to skip parsing table components.
+    */
+  skipTableParsing: boolean = false
+
+  /**
+    * Additional fields to set in mew3.settings.
+    */
+  additionalSettings: json
+
+  /**
+    * The number of chunks to split the document into
+    */
+  pageChunks: int
+
+  /**
+   * The path in FileSystem storing the Mew3 wheel, which will be pip-installed.
+   * Until the wheel can be cleanly included directly in the Python runtime, this allows
+   * installing a wheel included in the genAiBase package itself.
+   */
+  mew3WheelPath: private string serialized FileUrl
+}

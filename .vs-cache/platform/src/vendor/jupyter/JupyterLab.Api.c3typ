@@ -1,0 +1,100 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type represents JupyterLab and implements some of its [REST API](https://jupyter-server.readthedocs.io/en/latest/developers/rest-api.html).
+ */
+// TODO PLAT-42951 Reimplement Jupyter* types with OpenApi.generateType
+// TODO PLAT-65209 Verify and fix other JupyterHub.API* and JupyterLab.Api* methods after upgrading helm chart
+private type JupyterLab.Api mixes REST {
+
+  /**
+   * Create a new {@link JupyterLab.Session}, or return an existing session if a session of the same name already exists.
+   *
+   * @param kernel
+   *        Kernel to start for this session
+   * @param name
+   *        Displayed name of session
+   * @param path
+   *        Path in Jupyter where this session will be started
+   * @param type
+   *        Type of session to launch
+   */
+  @rest(uri='api/sessions', skipThis=true, method='POST')
+  startSession: abstract member function(kernel: !JupyterKernelSpec,
+                                         name: !string,
+                                         path: !string,
+                                         type: !string = 'notebook'): !JupyterLab.Session
+
+  /**
+   * Stop {@link JupyterLab.Session} to terminate resources.
+   */
+  @rest(uri='api/sessions', skipThis=true, method='DELETE')
+  stopSession: abstract member function(@rest(partOfURI=true, uriPrefix='/') sessionId: !string)
+
+  /**
+   * Change JupyterLab log level.
+   */
+  @rest(uri='c3/log-level', skipThis=true, method='POST')
+  setLogLevel: abstract member function(level: !string enum('CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'TRACE', 'NOTSET'))
+
+  /**
+   * An action to carry out for a seeded or upserted {@link ImplLanguage.Runtime runtime}, corresponding to a JupyterLab [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html).
+   *
+   * This is a C3 implemented api endpoint.
+   *
+   * @param runtime
+   *          The runtime name based on seeded {@link ImplLanguage.Runtime runtime}. It can be either ipython-resolved or declared.
+   *          Later will be resolved to ipython internally. If runtime is not resolvable to ipython an error will be thrown.
+   * @param action
+   *          Action that will be executed. Options are:
+   *              `create`: Install a JupyterLab [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) based on name of seeded runtime.
+   *              `remove`: Remove a JupyterLab [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html) based on name of seeded runtime.
+   *              `check` : Check if [kernel](https://docs.jupyter.org/en/latest/projects/kernels.html), based on name of seeded runtime, is already installed or not.
+   *                        Raises `404` error if the corresponding kernel by name is not found.
+   */
+  // TODO PLAT-78595 Revisit the REST method types for each `action` for kernel management
+  @rest(uri='c3_kernel_manager', skipThis=true, method='POST')
+  kernel: abstract member function(@rest(parameterName='runtime_name')
+                                   runtime: !string serialized ImplLanguage.Runtime,
+                                   @rest(parameterName='action')
+                                   action: !string enum('create', 'remove', 'check'))
+
+  /**
+   * Interrupts kernel by id.
+   */
+  @rest(uri='api/kernels', skipThis=true, method='POST')
+  interruptKernel: abstract member function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/interrupt')
+                                            kernelId: !string)
+
+  /**
+   * Syncs notebook dependencies for a given upserted {@link JupyterNotebook} path.
+   */
+  @rest(uri='sync_notebook_dependencies', skipThis=true, method='GET')
+  syncNotebookDependencies: abstract member function(@rest(queryParameter=true) notebookPath: !string)
+
+  /**
+   * Create content in Jupyter Worktree.
+   *
+   * @param path
+   *          Relative path to the file or directory in Jupyter Worktree. If no parent directory exists it will be created automatically.
+   */
+  @rest(uri='api/contents', skipThis=true, method='PUT')
+  createContent: abstract member function(@rest(partOfURI=true, uriPrefix='/')
+                                          path: !string,
+                                          @rest(parameterName='type')
+                                          jupyterContentType: !string enum('notebook', 'directory', 'file'),
+                                          @rest(parameterName='content')
+                                          content: string)
+
+  /**
+   * Gets JupyterLab logs.
+   */
+  @rest(uri='tail_logs', skipThis=true, method='GET', acceptType='text/plain')
+  logs: abstract member function(@rest(queryParameter=true) numLines: int): !string
+}

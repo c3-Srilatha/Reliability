@@ -1,0 +1,131 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Houses all utility functions which are used to manage access controls to {@link Facility} entities.
+ */
+type FacilityAccessManager {
+  /**
+   * Default authorized {@link Role}s.
+   * Users having any of these roles can update the [AclEntries](AclEntry) for any facility.
+   * These users' access controls to the facility are determined by seeded {@link AclPrivilege} for {@link Facility}.
+   */
+  adminGroups: [Role] = ['Reliability.Implementation.Role', 'C3.AppAdmin']
+
+  /**
+   * Additional {@link Role}s.
+   * Only {@link User}s belonging to these roles are considered as additional users in the UI.
+   */
+  additionalGroups: [Role] = [
+    'Reliability.Engineer.Role',
+    'Reliability.ModelAdministrator.Role',
+    'Reliability.ModelOperationsReadOnly.Role',
+    'Reliability.LimitedModelUser.Role',
+  ]
+
+  /**
+   * Any additional {@link User}s apart from users belonging to {@link FacilityAccessManager#adminGroups} that have access to a facility.
+   * These users' access controls to the facility are determined by seeded {@link AclPrivilege} for {@link Facility}.
+   */
+  users: [User]
+
+  /**
+   * Method to retrieve the list of unique {@link User}s that have access to the
+   * provided list of facilities.
+   *
+   * @param facilityIds
+   *        The stringified list of facilities.
+   * @param spec
+   *        The {@link FetchSpec} used to specify which users should be included in the fetch.
+   * @return the list of users as a {@link FetchResult}.
+   */
+  getUsersForFacilities: function(facilityIds: !string, spec: FetchSpec = {}): FetchResult<User> js-rhino
+
+  /**
+   * Method to count the number of users that have access to the provided list of [facilities](Facility).
+   *
+   * @param facilityIds
+   *        The stringified list of facilities.
+   * @param spec
+   *        The {@link FetchSpec} used to specify the users included in the count.
+   * @return The number of users with access to the list of facilities.
+   */
+  getUsersCountForFacilities: function(facilityIds: !string, spec: FetchSpec = {}): int js-rhino
+
+  /**
+   * Method to retrieve the list of {@link User}s who have not been assigned to the
+   * provided facility. Only users belonging to {@link #additionalGroups} are considered.
+   * @param include
+   *        The stringified comma separated field names which have to be included from the {@link User} type.
+   * @param spec
+   *        The {@link FetchSpec} used to specify which users should be included in the fetch.
+   *
+   * @return the list of unassigned users.
+   */
+  getUnassignedUsersForFacility: member function(include: string, spec: FetchSpec = {}): FetchResult<User> js-rhino
+
+  /**
+   * Method to remove the access of {@link User}s from this facility.
+   *
+   * @param users
+   *        The list of users whose access has to be removed.
+   *
+   * @return number of users whose access has been successfully removed.
+   */
+  removeUserAccess: member function(users: ![User]): int js-rhino
+
+  /**
+   * Method to add {@link #users} to this facility.
+   *
+   * @param users
+   *        The list of users whose access have to be added.
+   *
+   * @return number of newly added users.
+   */
+  addUserAccess: member function(users: ![User]): int js-rhino
+
+
+  /**
+   * Method to add new {#additionalGroups} or {#adminGroups} to this facility.
+   *
+   * @param roles
+   *          The list of roles which need to be added for this facility.
+   * @param groupType
+   *          Type of group whose roles have to be updated.
+   *          It can be passed as either 'admin' or 'additional'. Any other string passed, is ignored and function returns without any modifications.
+   *          'admin' will modify {#adminGroups}, 'additional' will modify {#additionalGroups} for this facility.
+   *
+   * @return number of new roles added successfully.
+   */
+  addUserGroups: member function(roles: ![Role], groupType: !string): int js-rhino
+
+  /**
+   * Method to modify {#additionalGroups} or {#adminGroups} to this facility.
+   *
+   * @param roles
+   *          The list of roles which need to be removed from this facility.
+   * @param groupType
+   *          Type of group whose roles have to be updated.
+   *          It can be passed as either 'admin' or 'additional'. Any other string passed, errors out.
+   *          'admin' will modify {#adminGroups}, 'additional' will modify {#additionalGroups} for this facility.
+   *
+   * @return number of existing roles removed successfully.
+   */
+  removeUserGroups: member function(roles: ![Role], groupType: !string): int js-rhino
+
+  /**
+   * Helper function to get the field name for the given group type.
+   *
+   * @param groupType
+   *          Type of group whose roles have to be updated.
+   *          It can be passed as either 'admin' or 'additional'. Any other string passed, errors out.
+   * @return The field name for the given group type.
+   */
+  _getGroupFieldFromType: member function(groupType: !string): string js-rhino
+}

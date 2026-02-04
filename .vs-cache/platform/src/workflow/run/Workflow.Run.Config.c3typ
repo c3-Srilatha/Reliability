@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration options for {@link Workflow.Run} execution and idle detection.
+ */
+type Workflow.Run.Config mixes Config {
+
+  /**
+   * If true, disables removal of completed {@link Workflow.Run.Vertex} instances from the db during execution
+   * of {@link Workflow.Run}. This may impact performance, however provides debugging and monitoring
+   * of {@link Workflow.Run}s.
+   */
+  keepCompletedVertexRuns: boolean
+
+  /**
+   * If true, then this disables the default persistence of {@link Workflow.Run.Vertex} in {@link Workflow.Run#results}.
+   * NOTE: this persistence is a cheaper way of providing debugging and monitoring for {@link Workflow.Run}s than
+   * {@link #keepCompletedVertexRuns}.
+   */
+  disableVertexRunPersistenceInResult: boolean
+
+  /**
+   * The maximum number of {@link Workflow.Run} the `workflow-run-recover` {@link CronJob} should attempt to recover
+   * per cron period.
+   * See {@link Workflow.Run#recoverStuck} for usage.
+   */
+  cronRecoverRunLimit: int
+
+  /**
+   * The number of seconds since `runStatus.started` after which a {@link Workflow.Run} will be considered
+   * "idle" by `workflow-run-recover` {@link CronJob}.
+   * See {@link Workflow.Run#recoverStuck} for usage.
+   */
+  cronRecoverRunIdleTimeSeconds: int
+
+  /**
+   * The number of seconds since `updatingStartTime` after which a {@link Workflow.Run} will be unlocked
+   * by `workflow-run-recover` {@link CronJob}.
+   * See {@link Workflow.Run#recoverStuck} for usage.
+   */
+  cronRecoverRunLockSeconds: int
+
+  /**
+   * If set, then the {@link Workflow} type will also be cleaned up as part of the `workflow-run-cleanup` {@link CronJob}.
+   * See {@link Workflow#removeStaleInstances} for usage.
+   */
+  enableWorkflowCleanUp: boolean
+
+  /**
+   * The number of hours that a Workflow.Run or Workflow.Run.Vertex is stored in the database, before
+   * it is automatically cleaned up by `workflow-run-cleanup` {@link CronJob}.
+   * See {@link Workflow#removeStaleInstances} for usage.
+   */
+  timeToLiveMinutes: int = 24*7*60
+
+  /**
+   * The maximum number of times an action will be redispatched by {@link Workflow.Run.Action} before it is considered
+   * unrecoverable.
+   * NOTE: this action re-dispatch only applies to actions for which there is no feedback from the {@link ActionQueue}. For
+   * example, if the queue entry is dropped.
+   */
+  // Developer Note: this is purposefully defaulted to be low, since queue entries being dropped is NOT typical behavior,
+  // and it's very likely that even 2 in a row indicates something seriously wrong with the submitted action.
+  maxActionRedispatchAttempts: int = 1
+}

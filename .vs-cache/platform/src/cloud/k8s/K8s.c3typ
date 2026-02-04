@@ -1,0 +1,87 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A K8s cloud service orchestrator (e.g. EKS, AKS). Provides general implementations for
+ * interacting with a K8s API server.
+ */
+abstract type K8s mixes CloudServiceOrchestrator<K8sCloudServiceSession> {
+
+  ensureService:         ~
+  stopService:           ~
+  serviceById:           ~
+  services:              ~
+  containerLogs:         ~
+  inst:                  ~
+  maxNodeMemory:         ~
+  maxNodeCompute:        ~
+  debugInfo:             ~
+  containerGroupMetrics: ~
+  containerGroupLimits:  ~
+
+  /**
+   * Computes the URL to access a given {@link K8sService}.
+   *
+   * @param service
+   *            the service to for which the url is computed.
+   * @return the computed url.
+   */
+  serviceEndpointForService: private member function(service: !K8sService): Url
+
+  /**
+   * @return the K8s-compliant name for the given resource id. @see CloudId
+   */
+  resourceNameFromResourceId: private function(cid: !string): !string
+
+  /**
+   * @return the K8s-compliant name for the given cloud resource func and the given service id.
+   *            @see ExternalCloudServiceId
+   */
+  resourceNameFromServiceId: private function(serviceId: !string, cloudFunc: !string): !string
+
+  /**
+   * @return the namespace name used by the C3 cluster.
+   */
+  namespaceNameForCluster: private function(): !string
+
+  /**
+   * @return the total memory available in the C3 cluster.
+   *         If not able to obtain results, returns -1
+   */
+  totalMemoryBytes: private member function(): !int
+
+  /**
+   * @return the memory allocated in the C3 cluster.
+   *         If not able to obtain results, returns -1
+   */
+  allocatedMemoryBytes: private member function(): !int
+
+  /**
+   * @return the memory used in the C3 cluster.
+   *         If not able to obtain results, returns -1
+   */
+  usedMemoryBytes: private member function(): !int
+
+  /**
+   * @return the total number of CPU cores available in the C3 cluster.
+   *         If not able to obtain results, returns -1
+   */
+  totalCpuCores: private member function(): !int
+
+  /**
+   * @return the total number of CPU cores allocated in the C3 cluster.
+   *         If not able to obtain results, returns -1
+   */
+  allocatedCpuCores: private member function(): !int
+
+  /**
+   * @return the total number of CPU cores used in the C3 cluster.
+   *         If not able to obtain results, returns -1
+   */
+  usedCpuCores: private member function(): !int
+}

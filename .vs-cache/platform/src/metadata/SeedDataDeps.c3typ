@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+abstract type SeedDataDeps<S: SeedData> {
+
+  /**
+   * Type of the seed data type this dependency is for
+   */
+  seedDataType: function(): !Type<<SeedData>>
+
+  /**
+   * Key value of the seed data element; normally `id`
+   */
+  key: !string
+
+  /**
+   * Retrieves backwards depending instances of seed data for a given dependency element
+   *
+   * @see SeedData#dependencies
+   */
+  backwardDeps: function(dependencyName: !string, dependencyKey: !any): set<S>
+
+  /**
+   * All dependencies of seed data for this type
+   */
+  all: private function(): [SeedData<S>]
+}

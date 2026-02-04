@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Epic used to handle user navigating away from cloning model workflow.
+ * The epic handles the following cases:
+ * 1. On 'Reliability.ModelOperationsPageTitle.ACTIVE_TAB_SET', it gets the model id:
+ *      - If model id is not defined: it opens exit modal, clears the application states, and redirects user to intended
+ *          navigation page using {@link NavigationHelper#handleExitAnyway}.
+ *      - If model id is defined:
+ *          - starts listening to any GLOBAL_REDIRECT's happening and force redirects user back to cloning model page via
+ *            a {@link NavigationHelper#handleForceBackRedirect}
+ *          - opens exit modal.
+ *
+ * 2. On 'Reliability.CloningModelExitCloningModal.SECONDARY_BUTTON_CLICK':
+ *      - fires 'GLOBAL_REDIRECT' to page user originally intended to navigate to,
+ *      - clears application states.
+ */
+@typeScript
+type ExitCloningModelEpic mixes UiSdlEpic {
+
+    epic: ~ ts-client
+}

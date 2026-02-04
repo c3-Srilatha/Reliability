@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A documentation topic can register a "pre-processor" which is given the existing content and can manipulate it as
+ * needed, returning augmented/generated Markdown which will be parsed and processed as normal.
+ *
+ * To register a pre-processor, the metadata header line "Preprocessor" should be use like so:
+ * ```
+ * Preprocessor: TypeName
+ * ```
+ * The specified type must mixin DocumentationPreprocessor and implement #preprocess.
+ *
+ * @see DocumentationPostprocessor
+ */
+abstract type DocumentationPreprocessor mixes Value {
+
+  /**
+   * Take the topic file body as present in the repository file and massage it _before_ normal Markdown parsing.
+   * Note that metadata will have been stripped out prior to calling this method, so it will only see the original
+   * document body.
+   *
+   * Metadata lines will be replaced by blank lines so line numbers in input will match up with the original file,
+   * so the processor should be prepared to skip leading blank lines. The metadata headers themselves are passed as the
+   * last argument to the method.
+   *
+   * @param input the topic body content
+   * @param path metadata resource path
+   * @param metadata document metadata headers
+   * @return processed Markdown file
+   */
+  preprocess: abstract function(input: !string, path: string, metadata: map<string, string>): !string
+}

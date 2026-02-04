@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type to render a toolbar of actions, each with an icon and short text label.
+ * Additional actions can also be placed in a dropdown list which is expanded and
+ * collapsed from a button. Both toolbar and dropdown actions are configured using
+ * {@link StudioToolbarAction}.
+ */
+@typeScript
+type StudioToolbar mixes UiSdlComponent<any>{
+
+  /**
+   * {@link StudioToolbarAction} actions to place in the toolbar.
+   */
+  toolbarActions: [StudioToolbarAction]
+
+  /**
+   * Maximum number of actions to display as icons in the toolbar. If more actions are
+   * given than the collapseThreshold, the right most icon will be converted into a dropdown menu
+   * to display additional actions.
+   */
+  collapseThreshold: int = 4
+
+  /**
+   * Which direction the dropdown actions should deploy in
+   */
+  dropdownDirection: string enum ('left', 'right') = 'left'
+
+  /**
+   * Triggered when the component is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @returns A `TOOLBAR_ITEM_CLICK_${actionSuffix}` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='TOOLBAR_ITEM_CLICK_${actionSuffix}')
+  toolbarItemClickAction: private function(id: string, actionSuffix: string): !UiSdlReduxAction ts-client
+}

@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A joined DFE is made up of multiple other analytic outputs, but all of the same base type
+ * (and usually not DFEs); This introduces a slightly different dependency in that the joined DFE is dependent on all
+ * analytics which produce results of that output type (or a sub-type).
+ * All the relevant source analytics must run (although they need not produce a result)
+ * before the joined DFE is satisfied.
+ *
+ * Analytic results can form the input to later analytics. In example below, if there are thirteen individual analytics in
+ * an Revpro application , these produce several different sub-types of AnalyticResult.
+ *
+ * Then, another (meta) analytic can be run to join these individual results to produce a summary result.  We want to
+ * join the result of the individual analytics to produce a higher-level analytic result (which also features as
+ * an important object in UI application).
+ *
+ * This is done using a joined DFE that declares it takes an array of the results produced by the individual analytics.
+ * This implicitly creates a dependency between the second-tier analytic and the various first-tier analytics.
+ * Joined DFEs mix in the special marker type JoinedDataFlowEvent which declares the first-level analytic result type to be joined.
+ *
+ * ```
+ *   entity type RevProAnalyticResult mixes AnalyticResult {
+ *      (common fields)
+ *
+ *   type ConsumptionOnInactiveMeterRevProAnalyticResult extends RevProAnalyticResult {
+ *     (specific fields for "consumption on inactive meter")
+ *
+ *   type ConsumptionOnInactiveMeterRevProAnalytic extends Analytic<MeterMonthHourlyElectricConsumption,ConsumptionOnInactiveMeterRevProAnalyticResult> {
+ *     category : ~ = "RevPro"
+ *
+ *   type AnotherRevProAnalyticResult ...
+ *   type AnotherRevProAnalytic ...
+ *
+ *   @dfe(...)
+ *   type RevProAnalyticSet mixes JoinedDataFlowEvent<Location,RevProAnalyticResult>
+ *
+ *   type RevenueOpportunity mixes Alert {
+ *     (opportunity fields)
+ *
+ *   type RevenueOpportunityCalculator mixes Analytic<RevProAnalyticSet, RevenueOpportunity> {
+ *     category : ~ = "RevPro"
+ * ```
+ */
+type JoinedDataFlowEvent<ST, RT> mixes DataFlowEvent<ST> {
+
+  start:   datetime
+  end:     datetime
+  results: [RT]
+}

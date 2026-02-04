@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A session store that is backed by {@link KvStore} via {@link GenaiCore.Session.Kv}. This session
+ * store is distributed and safe to use for use cases where there are multiple instances session client.
+ */
+entity type GenaiCore.SessionStore.Kv extends GenaiCore.SessionStore.Persistable type key 'KV' {
+
+  /**
+   * If set, a {@link GenaiCore.SessionStore.InMemory} configured according to the params will be used
+   * as an in-memory cache for the KvStore. This is useful for reducing the number of reads from the KvStore.
+   */
+  inMemoryCacheParams: GenaiCore.SessionStore.InMemory.CacheParams
+
+  /**
+   * If set, then the in-memory cache will be instrumented with tracing. See
+   * {@link GenaiCore.SessionStore.InMemory#disableTracingInstrumentation}.
+   * By default, the tracing instrumentation is disabled for the in-memory cache.
+   */
+  enableCacheTracingInstrumentation: boolean
+
+  /**
+   * @return the in-memory cache associated with this session store.
+   * NOTE: this API should only be used for testing!
+   */
+  inMemoryCache: private inline member function(): !GenaiCore.SessionStore.InMemory py
+
+  initState: ~ py
+  doUpdateState: ~ py
+
+  /**
+   * @inheritdoc
+   * **NOTE** SessionStore.Kv will raise an exception if the provided session does not exist
+   */
+  doGetState: ~ py
+  deleteStateBatch: ~ py
+
+  // js-rhino to be as performant as possible given that this has to do in-memory filtering of a scan of ALL sessions
+  /**
+   * @inheritdoc
+   * **NOTE** For `SessionStore.Kv`, this method requires a full table scan and therefore can be both 'expensive' and
+   * slow. It is designed for use only as part of cron/background cleanup jobs.
+   */
+  sessions: ~ js-rhino
+  sessionForId: ~ py
+}

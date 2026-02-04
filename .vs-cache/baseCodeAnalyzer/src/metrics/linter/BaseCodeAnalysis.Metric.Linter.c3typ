@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Code analysis metric that performs linting on the code.
+ */
+type BaseCodeAnalysis.Metric.Linter mixes BaseCodeAnalysis.Metric {
+
+  /**
+   * Function to identify linting errors and return {@link BaseCodeAnalysis.Result}s.
+   *
+   * @param fileSpecs
+   *           The file specifications to run the linter on.
+   * @param options
+   *           The options to pass to the linter.
+   * @return The results of the linters.
+   */
+  calculateResults: ~
+
+  /**
+   * Helper method that returns the contents of the content of files under the resources/rcfiles directory.
+   *
+   * @param fileName
+   *           The name of the file under the resources/rcfiles directory.
+   * @return The contents of the file.
+   */
+  rcFileContent: function(fileName: !string enum ('eslintrc', 'prettierrc', 'pylintrc')): !string js-rhino
+
+  /**
+   * nodejs function to identify linting errors for js, jsx, ts and tsx files and
+   * return {@link BaseCodeAnalysis.Result}s.
+   *
+   * This function runs in the nodejs environment and is used by the #calculateResults
+   * function. This function needs to be async as it handles promises. When the `@nodejs`
+   * annotation is used with `async=true`, the function is run in the nodejs environment
+   * and the return value is synchronous.
+   *
+   * @param fileSpecs
+   *           The file specifications to run the linter on.
+   * @param eslintrc
+   *           The eslintrc file contents to use for linting.
+   * @param prettierrc
+   *           The prettierrc file contents to use for linting when `style-guide-prettier` is used.
+   *           This must be a valid JSON string, not a JavaScript string for a `.prettierrc.js` file.
+   * @return The results of the linter.
+   */
+  @nodejs(async=true)
+  runEslint: function(
+    fileSpecs: [BaseCodeAnalysis.FileSpec],
+    eslintrc: string,
+    prettierrc: string
+  ): [BaseCodeAnalysis.Metric.Result] js-codeanalysis-node
+
+  /**
+   * Python function to identify linting errors for python files and return {@link BaseCodeAnalysis.Result}s.
+   *
+   * @param fileSpecs
+   *           The file specifications to run the linter on.
+   * @param pylintrc
+   *           The pylintrc file contents to use for linting.
+   * @return The results of the linter.
+   */
+  runPylint: function(fileSpecs: [BaseCodeAnalysis.FileSpec], pylintrc: string): [BaseCodeAnalysis.Metric.Result] py-codeanalysis
+}

@@ -1,0 +1,45 @@
+
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the data structure for an alert in the Experimental Model Preview Page.
+ */
+type ReliabilityMlModelExperiment.AlertData {
+
+  /**
+   * Fake {@link ReliabilityAssetAlert#id}, to be able to plot the alerts on the chart.
+   */
+  id: string
+
+  /**
+   * The {@link ReliabilityMl.Project#alertOutputs} that generated the alert.
+   */
+  name: string
+
+  /**
+   * Timestamp of the alert.
+   */
+  timestamp: datetime
+
+  /**
+   * A `number` representing the {@link ReliabilityMl.Project#algorithmOutputs} for the alert.
+   */
+  primaryModelOutput: number
+
+  /**
+   * Map of {@link Feature#id} to its normalized contribution value for the alert.
+   * It contains the following fields:
+   * - `featureName`: The {@link Feature#id} of the feature.
+   * - `contribution`: Normalized (`0-1`) value of the feature contribution for the alert.
+   * - `sensorId`: If found, it will contain the related {@link Sensor#id}.
+   * - `actualValue`: The numerical value of the feature at the time of the alert.
+   */
+  featureContributions: [json]
+}

@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+* Type containing default fields for configurations of dataset preparation workflow.
+*/
+type DatasetPreparationDefaultSettings {
+  /**
+   * A {@link Period} to specify the {@link ReliabilityAsset} time window for {@link Sensor} data utilized in the dataset.
+   */
+  defaultWindow: Period
+
+  /**
+   * Default start {@link datetime} of window for {@link Sensor} data utilized in the dataset.
+   */
+  defaultWindowStart: datetime
+
+  /**
+   * Default end {@link datetime} of window for {@link Sensor} data utilized in the dataset.
+   */
+  defaultWindowEnd: datetime
+
+  /**
+   * The default data {@link Interval} to analyze the data of the {@link Sensor}.
+   */
+  defaultDataInterval: Interval
+
+  /**
+   * The default training percentage.
+   */
+  defaultTrainingPercentage: double
+
+  /**
+   * The default validation percentage.
+   */
+  defaultValidationPercentage: double
+
+  /**
+   * A threshold of {@link Sensor} flatline percentage.
+   * The {@link Sensor}s will be excluded by default for the values below the missing data threshold.
+   */
+  defaultFlatlineThreshold: int
+
+  /**
+   * A threshold of {@link Sensor} missing data percentage.
+   * The {@link Sensor}s will be excluded by default for the values below the missing data threshold.
+   */
+  defaultMissingDataThreshold: int
+
+  /**
+   * The size of dataset for training.
+   */
+  defaultTrainingDataset: int
+
+  /**
+   * A {@link Period} of time before each event to exclude {@link Sensor} data for training.
+   */
+  defaultPreEventMaskPeriod: Period
+
+  /**
+   * A {@link Period} of time after each event to exclude {@link Sensor} data for training and inference.
+   */
+  defaultPostEventMaskPeriod: Period
+
+  /**
+   * A {@link Interval} of time to analize the data of the {@link Sensor}.
+   */
+  defaultInterval: string enum Interval
+
+  /**
+   * Defines the partition of the subset on the training step.
+   */
+  defaultTrainingSubset: !string enum('start', 'end')
+
+  /**
+   * Default value for {@link ReliabilityDataPreparationUiBaseSettings#variance}.
+   */
+  defaultVariance: double
+
+  /**
+   * Whether to disable the data interval input
+   */
+  disableInterval: boolean
+}

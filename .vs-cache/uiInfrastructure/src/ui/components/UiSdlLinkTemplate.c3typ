@@ -1,0 +1,75 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for constructing a link.
+ */
+@typeScript
+type UiSdlLinkTemplate mixes UiSdlDynamicOptionsGeneratable {
+
+  /**
+   * target page name of this link.
+   */
+  targetPage: string
+
+  /**
+   * A parametric url path, optionally using double curly braces to denote interpolation placeholders.
+   *
+   * @example
+   *     "sdl-demo/BrowsingData/{{id}}"
+   */
+  @restriction(filter='targetPage!=null', order='0')
+  href: string
+
+  /**
+   * Whether the link should be treated as an internal application link or an external link.
+   */
+  internal: private boolean = false
+
+  /**
+   * Whether clicking the link to a new page will open a new tab.
+   */
+  opensNewTab: private boolean = false
+
+  /**
+   * Whether clicking the link download a file.
+   */
+  download: private boolean = false
+
+  /**
+   * New filename of the downloaded file.
+   *
+   * If not specified, the original filename of the downloaded file will be used.
+   */
+  downloadFileName: private string
+
+  /**
+   * The variable inside curly braces.
+   * @example
+   *     if href is "sdl-demo/BrowsingData/{{id}}" page variable will be "id"
+   */
+  @restriction(filter="contains(href, '{{') && contains(href, '}}')", order='1')
+  pageVariable: string
+
+  /**
+   * The field to look at value for page variable filter.
+   * @example
+   *      if pageVariableFilterField is 'name' and 'name' field has value 'myName',
+   *      assuming pageVariable is 'id' then combine together it will become id='myName' in url.
+   */
+  @restriction(filter='pageVariable!=null', order='2')
+  @uiSdlDropTargetField
+  pageVariableFilterField: string
+
+  /**
+   * Whether the interpolated parameters in the link should be url encoded or not.
+   */
+  urlEncode: private boolean
+
+  getDynamicOptionsForField: ~
+}

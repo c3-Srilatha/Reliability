@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Link between a {@link Genai.Query.Result} and one of the {@link Genai.SourcePassage}s that was deemed 'relevant' to
+ * the user's query. These results are used to populate the relevant documents section of the UI, but except for the
+ * first few, are not used for generating the answer.
+ */
+entity type Genai.Query.ResultToPassageRelation extends Genai.Query.Result.Relation mixes Genai.Query.Result.Source.UnstructuredSourceFields type key "PSG" {
+  /**
+   * The relevance score associated with this {@link Genai.SourceFile} for the {@link Genai.Query.Result#searchQuery}.
+   * Between 0 and 1.
+   */
+  score: double
+
+  /**
+   * Relevance score scaled to 100, for UI display
+   */
+  scaledScore: int calc round(score * 100)
+
+   /**
+   * Feedback on the inclusion of the file into the search results of the query
+   */
+  feedback: [Genai.Query.Result.PassageFeedback](passageRelation)
+
+  /**
+   * Leave feedback for a {@link Genai.Query.ResultToPassageRelation}.
+   */
+  leaveFeedback: member function(feedback: !Genai.Query.Result.BaseFeedback): !Genai.Query.Result.PassageFeedback js-rhino
+}

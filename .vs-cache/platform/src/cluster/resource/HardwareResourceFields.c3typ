@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type used to capture information about different aspects of hardware such as instanceType, gpuKind, and hardwareAvailability
+ */
+type HardwareResourceFields {
+
+  /**
+   * Cloud Provider Machine Type Name (ex: "n2d-standard-32" on gcp)
+   */
+  instanceType: string
+
+  /**
+   * Name of the GPU Vendor (ex. nvidia, amd, or intel)
+   *
+   * Use {@link #acceleratorKind} instead.
+   */
+  @deprecated(details="Use `#acceleratorKind` instead`")
+  gpuVendor: string enum GpuVendor
+
+  /**
+   * The specific kind of GPU (ex. A100-SXM4-40GB)
+   *
+   * Use {@link #acceleratorKind} instead.
+   */
+  @deprecated(details="Use `#acceleratorKind` instead`")
+  gpuKind: string
+
+  /**
+   * Specifies the {@link HardwareAvailability} for a given VM.
+   */
+  hardwareAvailability: !string enum HardwareAvailability = HIGH
+
+  /**
+   * The specific kind of {@link HardwareAccelerator} (ex. A100-SXM4-40GB).
+   *
+   * This field is required if {@link #acceleratorCount} greater than 0.
+   */
+  acceleratorKind: string serialized GpuDevice
+}

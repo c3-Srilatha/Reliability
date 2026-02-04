@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Serializer to use for {@link GenaiCore.SessionStore}.
+ */
+type GenaiCore.SessionStore.Serializer {
+
+  /**
+   * Serialize the given `obj` to a string. Should be symmetric with {@link #deserialize}.
+   *
+   * @param obj
+   *          object instance to serialize.
+   * @return the serialized object.
+   */
+  serializeValue: inline member function(obj: !native): !(string | binary) py
+
+  /**
+   * Deserialize the string into an obj. Should be symmetric with {@link #serialize}.
+   *
+   * @param serialized
+   *          object to deserialize.
+   * @return the deserialized object.
+   */
+  deserializeValue: inline member function(serialized: !(string | binary)): !native py
+
+  /**
+   * Serialize an entire state object to a string. The default implementation calls #serializeValue on each value
+   * and then json.dumps the resulting map.
+   *
+   * @param state
+   *          the state object, represented as a map, to serialize
+   * @return the serialized state.
+   */
+  serializeState: inline member function(state: !map<string, native>): !(string | binary) py
+
+  /**
+   * Deserialize an entire state object from a string. The default implementation calls json.loads on the string
+   * and then #deserializeValue on each value.
+   *
+   * @param serialized
+   *          the serialized state to deserialize.
+   * @return the deserialized state, as a map.
+   */
+  deserializeState: inline member function(serialized: !(string | binary)): !map<string, native> py
+
+  /**
+   * If provided, the serializer whose #serializeValue and #deserializeValue will be used.
+   * If not provided, the default serializer will be used (c3.GenaiCore.Serializer.Default(withDefaults=True))
+   */
+  baseSerializer: GenaiCore.Serializer
+}

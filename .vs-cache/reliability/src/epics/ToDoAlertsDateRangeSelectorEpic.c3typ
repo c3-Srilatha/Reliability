@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Epic that listens for `VALUE_SET` actions under the "To Do Alerts" date range selector, and does the following:
+ *   - Calculates the start filtering date using `now() - selectedPeriod` using {@link ReliabilityTransformUtil#dateMinusPeriod}.
+ *   - Stores the calculated UTC date in {@link ReliabilityApplicationState#alertFilteringStartDate} as `string`.
+ *   - Stores a string serialization of the selected {@link Period} in
+ *     {@link ReliabilityApplicationState#alertFilteringStartDatePeriod}.
+ *
+ * Payload should be an object with the following properties:
+ *
+ * - `stateId`: Application State Id
+ * - `timeFrameSelectorId`: UI TimeFrame Dropdown Selector Id, ex: `Reliability.ToDoAlertsTopContentFrameDateRangeFilter`
+ * - `defaultPeriod`: (Optional) In case `timeFrameSelectorId` has no value, the epic will use this period as default.
+ *
+ * **NOTE:** The date is always set to local midnight.
+ */
+@typeScript
+type ToDoAlertsDateRangeSelectorEpic mixes UiSdlEpic {
+
+  epic: ~ ts-client
+}

@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a collection of files uploaded together along with their parsing status.
+ * An entity of this type is created upon file upload and deleted once parsing has `COMPLETED` or `FAILED` for the respective files as indicated by `parsingStatus`.
+ */
+entity type UploadedFileCollection schema name "UPLDD_FL_CLLCTN" {
+  /**
+   * The collection of {@link SourceParsableDiagram}s associated with this collection.
+   */
+  sourceParsableDiagrams: ![SourceParsableDiagram]
+
+  /**
+   * The DS {@link Workflow.Run} triggered on the {@link #sourceParsableDiagrams} in this collection.
+   */
+  workflowRun: Workflow.Run
+
+  /**
+   * Flag indicating whether user has dismissed a card notification corresponding to this `uploadedFileCollection` in the UI.
+   * Used to handle hiding of card notifications from `ParsingJobsSidePanelCardList`, but still run the parsing job in background.
+   * This flag is set to `true` when user dismisses a notification in the UI through {@link DismissParsingJobEpic}.
+   */
+  userDismissed: boolean = false
+
+  /**
+   * The number of {@link SourceParsableDiagram}s being tracked
+   */
+  numFiles: int calc count(sourceParsableDiagrams)
+
+  /**
+   * The current status of the parsing job, populated by {@link #getParsingStatus}
+   */
+  parsingStatus: string enum ParsingStatusEnum = WAITING_IN_QUEUE
+
+  /**
+   * Gets the current {@link ParsingStatusEnum} of this file collection
+   * The status depends on the `workflowRun` status.
+   * @param returnInclude Any valid include spec is supported, the returned object has these fields in addition to `parsingStatus`
+   * @returns this collection with updated `parsingStatus`.
+   */
+  getParsingStatus: member function(returnInclude: string): UploadedFileCollection js-rhino
+
+  /**
+   * Returns UploadedFileCollection fetchResult with latest parsingStatus
+   * @param spec
+   *        accepts {@link FetchSpec}
+   * @returns {@link FetchResult} of UploadedFileCollection with `parsingStatus` updated
+   */
+  fetchWithLatestStatus: function(spec: FetchSpec): !FetchResult<UploadedFileCollection> js-rhino
+}

@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base interface for types that implement a client for a particular LLM task.
+ * The client essentially joins one or more models to a {@link #router}.
+ * For example, see {@link GenaiCore.Llm.Completion.Client}.
+ * Since there can be multiple clients per task, this type is {@link Named}.
+ * The default client instance shall be named "default", so in order to configure a
+ * default instance, be sure to create a configuration with that name.
+ *
+ * See {@link GenaiCore.Llm.Completion.Client}, as an example of a type implementing this interface.
+ */
+@config(doNotDefaultIfMissing=true)
+abstract type GenaiCore.Llm.Client mixes DefaultInstance, Named, Config {
+
+  /**
+   * If provided, then this instance will be treated as a reference and a {@link Config} lookup
+   * will be performed at the beginning of any function call.
+   * If not provided, then this instance will be treated as "in memory" and the fields will
+   * be used as-is for any function call.
+   */
+  name: ~
+
+  /**
+   * Optional description for intended usage of this client instance.
+   */
+  description: string
+
+  /**
+   * A reference to the model(s) that this client should use.
+   */
+  model: !(GenaiCore.Llm.Model | [GenaiCore.Llm.Model])
+
+  /**
+   * @return a native list of models, based on {@link #model}
+   */
+  models: inline cached property(): native py
+
+  /**
+   * Routing logic that implements load balancing between {@link #models} (and auth), if
+   * multiple are provided.
+   */
+  router: GenaiCore.Llm.Router
+
+  /**
+   * Helper method to perform the task (passed by name as string)
+   *
+   * @param task
+   *          The task to perform
+   * @param kwargs
+   *          Additional kwargs for the task.
+   * @return the result of the task
+   */
+  doTask: private inline member function(task: !string enum GenaiCore.Llm.Task.Enum, kwargs: json): !json py
+
+  // Disabled due to PLAT-98343
+  setConfigValues: ~ py
+
+  inst: ~ py
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility type for anonymizing personally identifiable fields in the C3 type instance.
+ */
+type Anonymizer mixes Singleton {
+
+  /**
+   * Field for JavaFaker to enable randomization of values
+   */
+  faker: private @java(class='net.datafaker.Faker') native
+
+  /**
+   * This function will anonymize any field that has annotated PII category in the type definition and any field that's
+   * specified in the parameter piiFields with the AnonymizationCategory. The default behavior uses jFairy to generate
+   * a random value based on the category.
+   *
+   * @param obj
+   *          The object that you want to anonymize
+   * @param piiFields
+   *          Additional fields of the object that you want to anonymize in addition to the fields annotated with
+   * @PII(category="someCategory". Keys: field names, values: the anonymization category that should be applied on the
+   * field, must be taken from AnonymizationCategory ('address', 'name', 'phone', 'dob', 'email' or 'random').
+   * @return A new obj with requested fields anonymized
+   */
+  @action(group+='read')
+  anonymize: function(obj: !Obj, piiFields: map<string, string>): !Obj
+
+  /**
+   * This is the batch function of {@link anonymize}.
+   *
+   * @param objs
+   *          The objs that you want to anonymize
+   * @param spec
+   *          For more information,
+   *          @see AnonymizationSpec
+   *
+   * @return A new obj array with requested fields anonymized
+   * @see anonymize
+   */
+  @action(group+='read')
+  anonymizeBatch: function(objs: !?[Obj], spec: AnonymizationSpec): [Obj]
+
+  /**
+   * Check if the dataset is k anonymous
+   *
+   * @param objs,  input objs
+   * @param k,     kAnonymityFactor
+   * @param spec,  AnonymizationSpec
+   * @return true if k anonymous, false otherwise
+   */
+  isKAnonymous: function(objs: !?[Obj], spec: !AnonymizationSpec): boolean
+
+  /**
+   * Returns Singleton instance of Anonymizer
+   */
+  inst: ~
+}

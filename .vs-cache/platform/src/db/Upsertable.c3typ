@@ -1,0 +1,314 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type containing functions for upsert operations (e.g. create/upsert/update/merge and their batch equivalents).
+ */
+type Upsertable mixes Creatable {
+
+  /**
+   * Updates an instance of a C3 type. If the operation fails an exception will be thrown.  This will fail if the
+   * instance does not already exist.
+   *
+   * @param srcObj
+   *        If specified, the initial state of obj before any updates.  The actual update to the obj will be only the
+   *        diff between the obj and srcObj.  If not specified, the obj will completely replace the existing one.
+   * @param spec
+   *        Various parameters that control the operation of function.
+   * @return The updated obj.  If an include spec is specified in the 'spec#returnInclude' field, then the returned
+   *         obj will have only those fields populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  update: abstract member function(srcObj: mixing Upsertable, spec: UpsertSpec): mixing Upsertable
+
+  /**
+   * Creates an instance of a C3 type if it doesn't exist or updates it if it does. If the operation fails an
+   * exception will be thrown.
+   *
+   * @param srcObj
+   *        If specified, the initial state of obj before any updates.  The actual update to the obj will be only the
+   *        diff between the obj and srcObj.  If not specified, the obj will completely replace the existing one if it
+   *        doesn't already exist.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return The created or updated obj.  If an include spec is specified in the 'spec#returnInclude' field, then the
+   *         returned obj will have only those fields populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  upsert: abstract member function(srcObj: mixing Upsertable, spec: UpsertSpec): mixing Upsertable
+
+  /**
+   * Merges an instance of a C3 type if it exists and creates it if it doesn't. Merging an obj instance by default only
+   * updates the non-null field values in the input obj.  Null field values are ignored.  Nullness of field values
+   * is honored at every level for fields that have an included type (e.g. non-entity type) as their value type. To
+   * explicitly control which field values are applied, specify a value for {@link Mergespec#mergeInclude} or
+   * {link Mergespec#csvInclude} to explicitly merge only those fields (including merging null values).
+   *
+   * For collections, the merge operation is applied to every element in the source and updated collection rather than
+   * merging the collections themselves.  This means that every element will be merged with the element with the same
+   * key/index and the resulting element will be the result of that merge.  As a result, merge can not be used to
+   * add/append elements to a collection.
+   *
+   * Example: SomeType.make({id: 'text', fieldA: null}).merge({mergeInclude: "fieldA"})
+   *
+   * If the operation fails an exception will be thrown.
+   *
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return The created or updated obj.
+   *
+   * @see Mergespec#csvInclude
+   */
+  @deprecated(finalVersion='8.9', details='Use version with mergeInclude parameter')
+  @action(group+='write')
+  merge: abstract member function(spec: MergeSpec): mixing Upsertable
+
+  /**
+   * Merges an instance of a C3 type if it exists and creates it if it doesn't.
+   *
+   * @param mergeInclude
+   *           Used to control which fields from the type are are to be merged.  Only the fields indicated in the
+   *           mergeInclude will be merged.  Note that this has the same structure/rules as {@link FetchSpec#include}.
+   *           However, fields that wouldn't be persisted as part of the operation are ignored.
+   *
+   *           IMPORTANT: The best practice for using this is to specify only those fields from the input that should be
+   *           merged.  Fields indicated, either explicitly or implicitly (e.g. via specifying "this"), will be merged
+   *           even if they are null in the input.  Any existing data for included null input fields will be removed.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return The created or updated obj.
+   */
+  @action(group+='write')
+  merge: abstract member function(mergeInclude: !string, spec: MergeSpec): mixing Upsertable
+
+  /**
+   * Updates the 'meta.updated' field to the current time.  If the obj doesn't exist an error will be returned.
+   *
+   * @param spec
+   *           Various parameters that control the operation of function.
+   *
+   * @return The created or updated obj.
+   */
+  @action(group+='write')
+  touch: abstract member function(spec: TouchSpec): mixing Upsertable
+
+  /**
+   * Updates multiple instances of a C3 type. If the operation fails and {@link UpsertSpec#dontThrowOnBatchError} is not
+   * specified (the default), then a C3BatchException will be thrown.  Otherwise {@linkerrors will be reported in the
+   * returned {@link ObjList}.  This will fail if any of the instances don't already exist.
+   *
+   * @param objs
+   *        Updated objs.
+   * @param srcObjs
+   *        If specified, the initial state of objs before any updates.  The actual update to the objs will be only the
+   *        diff between the obj and its corresponding srcObj.  If not specified for an obj, the obj will completely
+   *        replace the existing one.
+   * @param spec
+   *        Various parameters that control the operation of function.
+   * @return List of updated objs and any errors encountered (if 'spec#dontThrowOnBatchError' is true).  If an include
+   *         spec is specified in 'spec#returnInclude' field, then the returned objs will have only those fields
+   *         populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  updateBatch: abstract function(objs: !?[mixing Upsertable],
+                                 srcObjs: [mixing Upsertable],
+                                 spec: UpsertSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Updates multiple instances of a C3 type. If the operation fails due to a version conflict error, the lambda will be
+   * called again to provide updated instances to be updated. If the operation fails for other reasons and
+   * {@link UpsertSpec#dontThrowOnBatchError} is not specified (the default), then a C3BatchException will be thrown.
+   * Otherwise errors will be reported in the returned {@link ObjList}.
+   *
+   * @param objs
+   *        Lambda providing objs to be upserted
+   * @param spec
+   *        Various parameters that control the operation of the operation
+   * @return List of updated objs and any errors encountered (if 'spec#dontThrowOnBatchError' is true).  If an include
+   *         spec is specified in 'spec#returnInclude' field, then the returned objs will have only those fields
+   *         populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  updateObjs: abstract function(objs: !lambda(): [mixing Upsertable], spec: UpsertSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Creates instances of a C3 type if they don't already exist and updates them if they do exist. If the operation
+   * fails errors will be reported in the returned {@link ObjList}.
+   *
+   * @param objs
+   *        Updated or new objs.
+   * @param srcObjs
+   *        If specified, the initial state of objs before any updates.  The actual update to the objs will be only the
+   *        diff between the obj and its corresponding srcObj.  If not specified, the obj will completely replace the
+   *        existing one if it doesn't already exist.
+   * @param spec
+   *        Various parameters that control the operation of function.
+   * @return List of created or updated objs and any errors encountered (if 'spec#dontThrowOnBatchError' is true).  If
+   *         an include spec is specified in 'spec#returnInclude' field, then the returned objs will have only those
+   *         fields populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  upsertBatch: abstract function(objs: !?[mixing Upsertable],
+                                 srcObjs: [mixing Upsertable],
+                                 spec: UpsertSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Creates instances of a C3 type if they don't already exist and updates them if they do exist. If the operation
+   * fails due to a version conflict error, the lambda will be called again to provide updated instances to be upserted.
+   * If the operation fails for other reasons and {@link UpsertSpec#dontThrowOnBatchError} is not specified (the
+   * default), then a C3BatchException will be thrown. Otherwise errors will be reported in the returned
+   * {@link ObjList}.
+   *
+   * @param objs
+   *        Lambda providing objs to be upserted
+   * @param spec
+   *        Various parameters that control the operation of the operation
+   * @return List of created or updated objs and any errors encountered (if 'spec#dontThrowOnBatchError' is true).  If
+   *         an include spec is specified in 'spec#returnInclude' field, then the returned objs will have only those
+   *         fields populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  upsertObjs: abstract function(objs: !lambda(): [mixing Upsertable], spec: UpsertSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Updates the 'meta.updated' field to the current time for a batch of objs.  Attempts to touch non-existing
+   * objs will be considered an error.
+   *
+   * @param objs
+   *        Objs to touch.
+   *
+   * @return List of touched objs and any errors encountered (if 'spec#dontThrowOnBatchError' is true).  If an
+   *         include spec is specified in 'spec#returnInclude' field, then the returned objs will have only those fields
+   *         populated. Otherwise only the id field will be populated.
+   */
+  @action(group+='write')
+  touchBatch: abstract function(objs: !?[mixing Upsertable], spec: TouchSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Merges multiple instances of a C3 type or creates them if they don't exist. If the operation fails and {@link
+   * UpsertSpec#dontThrowOnBatchError} is not specified (the default), then a C3BatchException will be thrown.
+   * Otherwise errors will be reported in the returned {@link ObjList}.  The merge operation is described in the {@link
+   * merge} function.
+   *
+   * If the operation fails errors will be reported in the returned {@link ObjList}.
+   *
+   * @param objs
+   *           Objs to merge.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return List of created or merged objs and any errors encountered (if {@link UpsertSpec#dontThrowOnBatchError} is
+   *         true.  Only the id field will be populated.
+   *
+   * @see Mergespec#mergeInclude
+   * @see Mergespec#csvInclude
+   */
+  @deprecated(finalVersion='8.9', details='Use version with mergeInclude parameter')
+  @action(group+='write')
+  mergeBatch: abstract function(objs: !?[mixing Upsertable], spec: MergeSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Merges multiple instances of a C3 type or creates them if they don't exist. If the operation fails and {@link
+   * UpsertSpec#dontThrowOnBatchError} is not specified (the default), then a C3BatchException will be thrown.
+   * Otherwise errors will be reported in the returned {@link ObjList}.  The merge operation is described in the {@link
+   * merge} function.
+   *
+   * If the operation fails errors will be reported in the returned {@link ObjList}.
+   *
+   * @param objs
+   *           Objs to merge.
+   * @param mergeInclude
+   *           Used to control which fields from the type are are to be merged.  Only the fields indicated in the
+   *           mergeInclude will be merged.  Note that this has the same structure/rules as {@link FetchSpec#include}.
+   *           However, fields that wouldn't be persisted as part of the operation are ignored.
+   *
+   *           IMPORTANT: The best practice for using this is to specify only those fields from the input that should be
+   *           merged.  Fields indicated, either explicitly or implicitly (e.g. via specifying "this"), will be merged
+   *           even if they are null in the input.  Any existing data for included null input fields will be removed.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return List of created or merged objs and any errors encountered (if {@link UpsertSpec#dontThrowOnBatchError} is
+   *         true.  Only the id field will be populated.
+   *
+   * @see Mergespec#csvInclude
+   */
+  @action(group+='write')
+  mergeBatch: abstract function(objs: !?[mixing Upsertable],
+                                mergeInclude: !string,
+                                spec: MergeSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Merges multiple instances of a C3 type or creates them if they don't exist. If the operation fails due to a version
+   * conflict error, the lambda will be called again to provide updated instances to be upserted. If the operation
+   * fails for other reasons and {@link UpsertSpec#dontThrowOnBatchError} is not specified (the default), then a
+   * C3BatchException will be thrown. Otherwise errors will be reported in the returned {@link ObjList}. The merge
+   * operation is described in the {@link merge} function.
+   *
+   * @param objs
+   *        Lambda providing objs to be upserted
+   *
+   * @param objs
+   *        Lambda providing objs to be merged
+   * @param mergeInclude
+   *           Used to control which fields from the type are are to be merged.  Only the fields indicated in the
+   *           mergeInclude will be merged.  Note that this has the same structure/rules as {@link FetchSpec#include}.
+   *           However, fields that wouldn't be persisted as part of the operation are ignored.
+   *
+   *           IMPORTANT: The best practice for using this is to specify only those fields from the input that should be
+   *           merged.  Fields indicated, either explicitly or implicitly (e.g. via specifying "this"), will be merged
+   *           even if they are null in the input.  Any existing data for included null input fields will be removed.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return List of created or merged objs and any errors encountered (if {@link UpsertSpec#dontThrowOnBatchError} is
+   *         true.  Only the id field will be populated.
+   *
+   * @see Mergespec#csvInclude
+   */
+  @action(group+='write')
+  mergeObjs: abstract function(objs: !lambda(): [mixing Upsertable],
+                               mergeInclude: !string,
+                               spec: MergeSpec): ObjList<mixing Upsertable>
+
+  /**
+   * Merges an obj into multiple instances of a C3 type (e.g. mass merge). Like the {@link merge} and {@link mergeBatch}
+   * functions, the set of fields to be merged can be controlled by specifying an include spec in either
+   * {@link Mergespec#mergeInclude} or {@link Mergespec#csvInclude}.  Additionally, the objs to perform the operation on
+   * can be controlled by specifying the {@link MergeAllSpec#filter}.  Valid filter expressions follow the same rules as
+   * in {@link FetchSpec#filter}.  If not specified, all instances will be merged.
+   *
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return The number of objs that were merged.
+   */
+  @deprecated(finalVersion='8.9', details='Use version with mergeInclude parameter')
+  @action(group+='write')
+  mergeAll: abstract function(mergeObj: !?mixing Upsertable, spec: MergeAllSpec): int
+
+  /**
+   * Merges an obj into multiple instances of a C3 type (e.g. mass merge). The objs to perform the operation on can be
+   * controlled by specifying the {@link MergeAllSpec#filter}.  Valid filter expressions follow the same rules as in
+   * {@link FetchSpec#filter}.  If not specified, all instances will be merged.
+   *
+   * @param mergeInclude
+   *           Used to control which fields from the type are are to be merged.  Only the fields indicated in the
+   *           mergeInclude will be merged.  Note that this has the same structure/rules as {@link FetchSpec#include}.
+   *           However, fields that wouldn't be persisted as part of the operation are ignored.
+   *
+   *           IMPORTANT: The best practice for using this is to specify only those fields from the input that should be
+   *           merged.  Fields indicated, either explicitly or implicitly (e.g. via specifying "this"), will be merged
+   *           even if they are null in the input.  Any existing data for included null input fields will be removed.
+   * @param spec
+   *           Various parameters that control the operation of function.
+   * @return The number of objs that were merged.
+   */
+  @action(group+='write')
+  mergeAll: abstract function(mergeObj: !?mixing Upsertable, mergeInclude: !string, spec: MergeAllSpec): int
+
+  create:               abstract ~
+  createBatch:          abstract ~
+  createBatchObjStream: abstract ~
+}

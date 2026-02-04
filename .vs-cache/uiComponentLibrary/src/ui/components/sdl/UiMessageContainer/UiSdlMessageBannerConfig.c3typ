@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type defining the structure of a payload for {@link UiSdlMessageContainer#showBannerAction}.
+ * It describes a message banner displayed {@link UiSdlMessageContainer}.
+ */
+@typeScript
+type UiSdlMessageBannerConfig {
+
+  /**
+   * The animation that should be used when displaying and closing the banner.
+   */
+  animation: string enum UiSdlMessageBannerAnimation
+
+  /**
+   * The primary text for the banner. It is bolded and can be up to 1 line in length.
+   */
+  primaryText: string | UiSdlDynamicValueSpec
+
+  /**
+   * The secondary text for the banner. It is not bolded and can be up to 2 lines in length.
+   */
+  secondaryText: string | UiSdlDynamicValueSpec
+
+  /**
+   * The style of the banner which determines both icon and color.
+   */
+  bannerType: string enum UiSdlMessageBannerType
+
+  /**
+   * Whether or not to display the default close button.
+   */
+  closeButtonEnabled: boolean = true
+
+  /**
+   * A unique id given to every message by UiSdlMessageContainer. For internal use only.
+   */
+  messageId: private string
+
+  /**
+   * The id of the UiSdlMessageContainer this message belongs to. For internal use only.
+   */
+  componentId: private string
+
+  /**
+   * The status of the banner. For internal use only.
+   */
+  status: private string enum UiSdlMessageBannerStatus
+}

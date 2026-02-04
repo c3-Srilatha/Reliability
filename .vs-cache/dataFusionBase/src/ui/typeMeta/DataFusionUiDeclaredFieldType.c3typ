@@ -1,0 +1,124 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI wrapper to represent {@link DeclaredFieldType}
+ */
+// TODO: PLAT-113967 Add tests
+@typeScript
+type DataFusionUiDeclaredFieldType mixes DeclaredFieldType {
+
+  /**
+   * Holds the UI related settings for the {@link DeclaredFieldType}
+   */
+  uiSettings: DataFusionUiDeclaredFieldTypeUiSettings
+
+  /**
+   * Updates the `uiSettings` of DataFusionUiDeclaredFieldType by merging with the existing uiSettings.
+   *
+   * @param fieldType
+   *        The DataFusionUiDeclaredFieldType object.
+   * @param uiSettings
+   *        The DataFusionUiDeclaredFieldTypeUiSettings object containing the new UI settings for the field.
+   * @returns A new DataFusionUiDeclaredFieldType object with the updated `uiSettings`.
+   */
+  updateUiSettings: function(fieldType: DataFusionUiDeclaredFieldType,
+                             uiSettings: DataFusionUiDeclaredFieldTypeUiSettings): !DataFusionUiDeclaredFieldType ts-client
+
+  /**
+   * Sanitizes a single field name by converting it to camelCase, ensuring it does not
+   * conflict with existing or reserved names, and limiting its length to 30 characters.
+   *
+   * @param fieldName
+   *       The string representing the field name to sanitize.
+   * @param currentFieldNames
+   *       A Set of strings representing the field names that are currently in use.
+   * @param reservedFieldNames
+   *       An array of strings representing field names that are reserved and cannot be used.
+   * @returns A new string representing the sanitized and processed field name.
+   */
+  sanitizeFieldName: function(fieldName: string,
+                              currentFieldNames: set<string>,
+                              reservedFieldNames: [string]): !string ts-client
+
+  /**
+   * Determines if a given DataFusionUiDeclaredFieldType represents a foreign key field.
+   *
+   * @param fieldType
+   *         The DataFusionUiDeclaredFieldType object to check.
+   * @returns `true` if the `fieldType`'s `valueType` is `DeclaredReferenceType` or `ReferenceType`, `false` otherwise.
+   */
+  isForeignKeyField: function(fieldType: DataFusionUiDeclaredFieldType): boolean ts-client
+
+  /**
+   * Checks if a given DataFusionUiDeclaredFieldType represents a foreign key reference field.
+   *
+   * @param fieldType
+   *           The DataFusionUiDeclaredFieldType object to check.
+   * @returns `true` if the `fieldType` has an `fkey` property, `false` otherwise.
+   */
+  isForeignKeyReferenceField: function(fieldType: DataFusionUiDeclaredFieldType): boolean ts-client
+
+  /**
+   * Retrieves the 'id' property from the `uiSettings` of a DataFusionUiDeclaredFieldType object.
+   *
+   * @param fieldType
+   *        The DataFusionUiDeclaredFieldType object from which to retrieve the 'id'.
+   * @returns The value of the 'id' property within the `uiSettings`, or `undefined` if not found.
+   */
+  getIdFromFieldType: function(fieldType: DataFusionUiDeclaredFieldType): !string ts-client
+
+  /**
+   * Creates an identifier string for a DataFusionUiDeclaredFieldType by joining its
+   * `schemaName` and `dataType` properties with a hyphen ('-').
+   *
+   * @param fieldType
+   *           The DataFusionUiDeclaredFieldType object from which to create the ID.
+   * @returns A string representing the combined schemaName and dataType, or a different
+   * value (e.g., empty string, undefined) if either property is missing.
+   */
+  getFieldTypeDataType: function(fieldType: DataFusionUiDeclaredFieldType): !string ts-client
+
+  /**
+   * Maps a SourceCollectionUiSchemaMismatchError object to a user-friendly error message string.
+   *
+   * @param mismatch
+   *           The SourceCollectionUiSchemaMismatchError object representing the schema mismatch.
+   * @returns a {@link Translation} string.
+   */
+  mapSchemaMismatchErrorToErrorMessage: function(mismatch: SourceCollectionUiSchemaMismatchError): !string ts-client
+
+  /**
+   * Determines if a DataFusionUiDeclaredFieldType is considered "selected" based on its `uiSettings.selected` property.
+   *
+   * @param fieldType
+   *           The DataFusionUiDeclaredFieldType object to check.
+   * @returns `true` if `fieldType.uiSettings.selected` is `true` or `undefined`, `false` otherwise.
+   */
+  isFieldTypeSelected: function(fieldType: DataFusionUiDeclaredFieldType): boolean ts-client
+
+  /**
+   * Filters an array of DataFusionUiDeclaredFieldType objects, returning only those that are considered "selected".
+   *
+   * @param fieldTypes
+   *            An array of DataFusionUiDeclaredFieldType objects to filter.
+   * @returns A new array containing only the DataFusionUiDeclaredFieldType objects that are selected.
+   */
+  getSelectedFieldTypes: function(fieldTypes: [DataFusionUiDeclaredFieldType]): [DataFusionUiDeclaredFieldType] ts-client
+
+  /**
+   * Fetches the declaredFieldTypes which are remixed for particular application through declaredRemixes field in TypeMeta
+   *
+   * @param packageName
+   *            Current package name where we have edited the typeMeta with remix fields.
+   * @param typeMeta
+   *            TypeMeta for which we want to extract remixed declaredFieldTypes.
+   * @returns A new array containing names of the remix field names.
+   */
+  fetchDeclaredRemixFieldTypeNames: function(pkgName: !string, typeMeta: !TypeMeta): ![string] ts-client
+}

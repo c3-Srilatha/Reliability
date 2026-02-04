@@ -1,0 +1,98 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * CLM - Claim Information.  Basic data about the claim.
+ */
+type X12HealthClaim {
+
+  /**
+   * Identifier used to track a claim from creation by the health
+   * care provider through payment (CLM01)
+   */
+  claimSubmitterIdentifier: string
+
+  /**
+   * Monetary amount.  Total amount of all submitted charges of service segments for this claim. CLM02
+   */
+  monetaryAmount: double
+
+  /**
+   * Corresponds to CLM03
+   */
+  claimFillingIndicatorCode: string
+
+  /**
+   * Corresponds to CLM04
+   */
+  nonInstitutionalClaimTypeCode: string
+
+  /**
+   * Identifies the place of service or the type of bill related to the
+   * location at which a health care service was rendered
+   */
+  healthCareServiceLocationInformation: X12HealthCareServiceLocationInformationCondition
+
+  /**
+   * Code indicating a Yes or No condition or response
+   */
+  responseCodes: [string] schema suffix 'RC'
+
+  /**
+   * Code indicating whether the provider accepts assignment (CLM07)
+   */
+  providerAcceptAssignmentCode: string
+
+  /**
+   * Code indicating whether the provider has on file a signed statement by
+   * the patient authorizing the release of medical data to other
+   * organizations (CLM09)
+   */
+  releaseOfInformationCode: string
+
+  /**
+   * Code indicating how the patient or subscriber authorization signatures were obtained and
+   * how they are being retained by the provider.
+   */
+  patientSignatureSourceCode: string
+
+  /**
+   * Identifies one or more related causes and associated state or country information.
+   */
+  relatedCausesInformation: X12RelatedCausesInformation
+
+  /**
+   * Corresponds to CLM12
+   */
+  specialProgramCode: string
+
+  /**
+   * Corresponds to CLM14
+   */
+  levelOfServiceCode: string
+
+  /**
+   * Corresponds to CLM16
+   */
+  providerAgreementCode: string
+
+  /**
+   * Corresponds to CLM18
+   */
+  claimCodeStatus: string
+
+  /**
+   * Corresponds to CLM19
+   */
+  claimSubmissionReasonCode: string
+
+  /**
+   * Code indicating the reason why a request was delayed
+   */
+  delayReasonCode: string
+}

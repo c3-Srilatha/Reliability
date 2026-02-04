@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * UI represents of model registry entry. Is not associated with a specific version.
+ * {@link ModelRegistry.Model.Metadata}
+ */
+type MlModelRegistryUi.Entry mixes FetchableUi, WithUniqueId {
+
+  /**
+   * The path of the registry entry.
+   */
+  path: string
+
+  /**
+   * Description of the registry entry
+   */
+  description: string
+
+  /**
+   * The number of versions for this path
+   */
+  numVersions: int
+
+  /**
+   * The last time this path registry was updated
+   */
+  lastUpdated: MlActionMetaUi
+
+  /**
+   * Converts an instance of {@link ModelRegistry.Model.Metadata} to {@link MlModelRegistryUi.Entry}.
+   */
+  from: function(entry: ModelRegistry.Model.Metadata): MlModelRegistryUi.Entry js-server
+
+  /**
+   * Lists all the available paths in the Model Registry
+   */
+  listPaths: function(spec: FetchSpec): [string] js-server
+
+  translateFetchSpec: ~ js-server
+  translateFilter:    ~ js-server
+  translateInclude:   ~ js-server
+  fetch:              ~ js-server
+  fetchCount:         ~ js-server
+
+  /**
+   * All the versions of this registry item.
+   */
+  fetchVersions: member function(spec: FetchSpec): FetchResult<MlModelRegistryUi.EntryVersion> js-server
+}

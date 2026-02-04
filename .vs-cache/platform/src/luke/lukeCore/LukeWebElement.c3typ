@@ -1,0 +1,301 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An abstract interface representing any concrete type that mixes {@link LukeWebElement}.
+ * T is a concrete type that implements {@link LukeWebElement} and that is backed by a specific automation engine
+ */
+@beta
+abstract type LukeWebElement<T> mixes LukeAsyncQueueNode {
+
+  /**
+   * Whether the node should be resolved only when a web element is found
+   */
+  resolveOnFound: boolean
+
+  /**
+   * Whether smart locators have been used to identify the element
+   */
+  hasTriedSmartLocator: boolean
+
+  /**
+   * Clicks the underlying Selenium Web Element
+   * @return a {@link LukeWebElement} that will be resolved when the click succeeds
+   */
+  click: abstract inline member function(): T
+
+  /**
+   * Right-clicks the underlying Luke Web Element
+   * @return a {@link LukeWebElement} that will be resolved when the click succeeds
+   */
+  rightClick: inline member function(): T js
+
+  /**
+   * Double-clicks the underlying Luke Web Element
+   * @return a {@link LukeWebElement} that will be resolved when the click succeeds
+   */
+  doubleClick: inline member function(): T js
+
+  /**
+   * Scrolls to the underlying Luke Web Element
+   * By default, the scroll position will be the target element's top left, offset in x and y directions can also be specified.
+   * @param xOffset
+   *          offset in x direction
+   * @param yOffset
+   *          offset in y direction
+   * @return a {@link LukeWebElement} that will be resolved when the scrollTo succeeds
+   */
+  scrollTo: abstract inline member function(xOffset: int = 0, yOffset: int = 0): T
+
+  /**
+   * Scrolls an element's parent recursively to make the element into the viewport.
+   * Note that {@link #scrollTo} only scrolls the window to the position of an element, which
+   * does not guarantee that the element will be in the viewport. For example, if an element is in
+   * a scrollable container div, {@link #scrollTo} will not scroll the parent div and make the
+   * element visible in the viewport. In contrast, {@link #scrollIntoView} will scroll parent
+   * containers recursively as needed to make sure the target element is in the viewport.
+   *
+   * @return a {@link LukeWebElement} that will be resolved when the element is scrolled into the viewport
+   */
+  scrollIntoView: abstract inline member function(): T
+
+  /**
+   * Moves the mouse to the underlying Luke Web Element
+   * By default, the scroll position will be the target element's top left, offset in x and y directions can also be specified.
+   * @param xOffset
+   *          offset in x direction
+   * @param yOffset
+   *          offset in y direction
+   * @return a {@link LukeWebElement} that will be resolved when the scrollTo succeeds
+   */
+  moveTo: abstract inline member function(xOffset: int = 0, yOffset: int = 0): T
+
+  /**
+   * Searches for an element within the current element that matches the css selector
+   * @param selector
+   *          The css selector or xPath selector. Note that if xPath is used, please add a prefix 'xp:', e.g. 'xp: ./button' to differentiate it from a CSS selector.
+   * @param resolveOnFound
+   *          If true, only resolve the node when a dom element is found
+   * @return a {@link LukeWebElement} that will be resolved with the search result
+   */
+  search: abstract inline member function(selector: !string, resolveOnFound: boolean): T
+
+  /**
+   * Searches for all elements within the current element that match the css selector
+   * @param selector
+   *          The css selector or xPath selector. Note that if xPath is used, please add a prefix 'xp:', e.g. 'xp: ./button' to differentiate it from a CSS selector.
+   * @param resolveOnFound
+   *          If true, only resolve the node when at least a dom element is found
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the search result (an array of {@link LukeWebElement})
+   */
+  searchAll: abstract inline member function(selector: !string, resolveOnFound: boolean): LukeAsyncQueueCollection<T>
+
+  /**
+   * Searches for all elements within the current element that match the css selector and returns the first element that has the given text.
+   * @param selector
+   *          The css selector
+   * @param text
+   *          The text to match
+   * @param resolveOnFound
+   *          If true, only resolve the node when a dom element is found
+   * @return a {@link LukeWebElement} that will be resolved with the search result
+   */
+  searchForElementWithText: abstract inline member function(selector: !string,
+                                                            text: !(string | LukeDynamicValue),
+                                                            resolveOnFound: boolean): T js
+
+  /**
+   * Sets value on the underlying Luke Web Element
+   * @param value
+   *          The value to be set
+   * @return a {@link LukeWebElement} that will be resolved when the value is set
+   */
+  setValue: abstract inline member function(value: string | int | boolean | LukeDynamicValue): T
+
+  /**
+   * Gets value from the underlying Luke Web Element
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the value
+   */
+  getValue: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Gets the text of the underlying Luke Web Element
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the text
+   */
+  text: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Gets the visibility of the underlying Luke Web Element
+   * @param isInViewPort
+   *           Whether to check if the element is within the viewport regarding the scroll position
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the visibility
+   */
+  visible: abstract inline member function(isInViewPort: boolean): LukeAsyncQueueNode
+
+  /**
+   * Checks whether the underlying Luke Web Element is enabled
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the result
+   */
+  enabled: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Checks whether the underlying Luke Web Element (an option element,
+   * an input element of type checkbox, or a radio button) is selected
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the result
+   */
+  selected: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Gets the classNames of the underlying Luke Web Element
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the classNames
+   */
+  classNames: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Gets a string representation of the HTML nested under the corresponding Luke Web Element
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the stringified HTML
+   */
+  innerHTML: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Gets the inner text of the  corresponding Luke Web Element
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with the stringified HTML
+   */
+  innerText: abstract inline member function(): LukeAsyncQueueNode
+
+  /**
+   * Gets a css property from the element
+   * @param name
+   *          The name of css property
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with css property
+   */
+  cssProperty: abstract inline member function(name: !string): LukeAsyncQueueNode
+
+  /**
+   * Uploads a file to an input
+   * @parm path
+   *         The path to the file to be uploaded in the {@link Pkg}
+   * @return a {@link LukeAsyncQueueNode} that will be resolved
+   */
+  uploadFile: abstract inline member function(path: string): LukeAsyncQueueNode
+
+  /**
+   * Uploads multiple files to an input
+   * @parm paths
+   *         The paths to the files to be uploaded in the {@link Pkg}
+   */
+  uploadFiles: abstract inline member function(paths: ![string]): Promise<json> js-client
+
+  /**
+   * Selects an option by given index.
+   * @param index
+   *        The index of option to select. The index starts from 1.
+   * @return a {@link LukeWebElement} that will be resolved.
+   */
+  selectByIndex: abstract inline member function(index: int): T
+
+  /**
+   * Selects an option by given value.
+   * @param value
+   *        The value of option to select.
+   * @return a {@link LukeWebElement} that will be resolved.
+   */
+  selectByValue: abstract inline member function(value: string): T
+
+  /**
+   * Gets the given element attribute from the element.
+   * @param attribute
+   *         Name of attribute to extract.
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with attribute.
+   */
+  getElementAttribute: abstract inline member function(attribute: string): LukeAsyncQueueNode
+
+  /**
+   * Triggers an event on current element.
+   * @param eventType
+   *         The type of the event
+   * @param extraArguments
+   *         Arguments to be passed to any event listeners
+   * @param eventCategory
+   *         The category of the event, e.g. MouseEvent. By default, CustomEvent will be used
+   * @return The {@link LukeWebElement} that will resolve the same dom element
+   */
+  trigger: abstract inline member function(eventType: !string, extraArguments: Obj, eventCategory: string): !T
+
+  /**
+   * Returns a LukeWebElement resolving to the parent element of the current one.
+   * @return a {@link LukeWebElement} that will be resolved with the parent element.
+   */
+  parentElement: abstract inline member function(): T
+
+  /**
+   * Inject a snippet of JavaScript into the page for execution in the context of the current frame, with
+   * the current element reference passed in and available.
+   * If returning an object with circular references, this will throw a `Maximum call stack size exceeded`
+   * and additional treatment/manipulation will need to be done within the client-side script.
+   * Examples:
+   * ```js
+   * this.client.search('span.some-class').runLambda(function (element) { element.remove(); });
+   *
+   * this.client.search('span.some-class').runLambda(function (element, textValue) {
+   *    $(element).html(textValue); // Sets html of the element
+   * }, ['some text']);
+   * ```
+   *
+   * @param  funk
+   *            The function to execute, with the element passed in as the first argument to it.
+   * @param  args
+   *            Additional arguments, accessible within the function as `arguments[i]`,
+   *            where `i` corresponds to the index of the argument, and `i >= 1`.
+   * @return The result of running the script.  If the script returns null this will return true
+   */
+  runLambda: abstract inline member function(funk: !lambda(): json, args: [any]): LukeAsyncQueueNode
+
+  /**
+   * Runs an asynchronous function with the passed arguments in the contact of the current frame, with the current
+   * element reference passed in as a parameter.
+   * The function is expected to return a promise that will be resolved when the async logic completes.
+   *
+   * Example:
+   * ```js
+   * this.client.search('span.some-class').runAsyncLambda(function (element) {
+   *   return new Promise(function (resolve, reject) {
+   *     setTimeout(function () {
+   *       resolve($(element).html()); // Will return the element's text content after 2 seconds
+   *     }, 2000);
+   *   });
+   * })
+   * ```
+   *
+   * @param  funk
+   *            The lambda function to execute.
+   * @param  args
+   *            Lambda arguments, accessible within the function as `arguments[i]`,
+   *            where `i` corresponds to the index of the argument
+   * @param  timeout
+   *            Timeout in seconds for the async script execution
+   * @return An async node that is resolved with the result of successfully running the lambda.
+   */
+  runAsyncLambda: abstract inline member function(funk: !lambda(): json,
+                                                  args: [any],
+                                                  timeout: int): LukeAsyncQueueNode
+
+  /**
+   * Triggers the event of pressing the enter key on the element.
+   * @return The {@link LukeWebElement} that will resolve the same dom element
+   */
+  pressEnterKey: abstract inline member function(): T
+
+  /**
+   * Toggles (select/unselect) the element.
+   * @param checked
+   *          Whether the element should be selected.
+   * @return The {@link LukeWebElement} that will resolve the same dom element
+   */
+  toggle: abstract inline member function(checked: boolean): T
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Py.Profiler mixes DefaultInstance {
+
+  /**
+   * Allows server side python calls to be profiled. If set to true this will create a .prof in {@link FileSystem.TelemetryDirs}
+   * pyProfile directory. This profiling only includes the python stack-level profiling.
+   * This will enable profiling on current node for the current app
+   * By default, python profiling is disabled
+   *
+   * @param timeout
+   *        Duration after which profiling will be disabled. This will not affect any actions started before the timeout
+   * @see #stop
+   */
+  start: member function(timeout: Duration = "1h")
+
+  /**
+   * Disable python profiling on current nodes for current app
+   *
+   * By default, python profiling is disabled
+   *
+   * @see #start
+   */
+  stop: member function()
+
+  /**
+   * Allows server side python calls to be profiled. If set to true this will create a .prof in {@link FileSystem.TelemetryDirs}
+   * pyProfile directory. This profiling only includes the python stack-level profiling.
+   * This will enable profiling on all nodes for the current app
+   * Note: In SNE, this will enable profiling for all apps since the node is shared.
+   * By default, python profiling is disabled
+   *
+   * @param timeout
+   *        Duration after which profiling will be disabled. This will not affect any actions started before the timeout
+   * @see #stopOnAllAppNodes
+   */
+  startOnAllAppNodes: function(timeout: Duration = "1h")
+
+  /**
+   * Disable python profiling on all nodes for current app
+   * Note: In SNE, this will disable profiling for all apps since the node is shared.
+   * By default, python profiling is disabled
+   *
+   * @see #startOnAllAppNodes
+   */
+  stopOnAllAppNodes: function()
+
+  /**
+   * Show profiling stats for a particular .prof file.
+   * If no file is provided, profiling stats for last profiled action, if present, will be displayed
+   */
+  report: member function(profFile: File): Html py-profiler_312
+
+  /**
+   * Returns a map of all profiled Files with key in format 'typename-methodname-timestamp' and value as the file.
+   */
+  listProfFiles: function(): map<string, File>
+}

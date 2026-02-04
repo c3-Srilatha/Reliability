@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * See {@link FaultySensor} for the overview of the faulty sensor retraining process.
+ *
+ * This type denotes the relationship between {@link ReliabilityMlModel}s that were created during the faulty sensor
+ * retraining process. This allows the application logic to track which models were automatically created and develop
+ * a history of where retrained models come from. This is useful because when a sensor becomes operational again, the
+ * goal is to return to the original model that was using the sensor.
+ *
+ * Example:
+ *
+ * Notation for example: Model 1 uses sensors A, B, C = M1 (A, B, C)
+ *
+ * Start: M1 (A, B, C)
+ * A becomes faulty: M2 (B, C)
+ * D becomes faulty: No change
+ * B becomes faulty: M3 (C)
+ * D becomes operational: No change
+ * A becomes operational: M4 (A, C)
+ *
+ * In order to create M4, we need to know that M1 is the source of truth for M3.
+ *
+ * Some example relations for the above example:
+ * - { child: M3, sourceOfTruth: M1, parent: M2 }
+ * - { child: M4, sourceOfTruth: M1, parent: M3 }
+ * - ...
+ */
+@db(unique=['child'], createOnly=true)
+entity type FaultySensor.RiskModelSourceOfTruthRelation {
+
+  /**
+   * The `child` is the `to` field for both types of relations (#sourceOfTruth and #parent) tracked on this type.
+   *
+   * The `child` is the newly created model that was created as a copy of the #sourceOfTruth model.
+   *
+   * See example on the type documentation.
+   */
+  child: !ReliabilityMlModel
+
+  /**
+   * The {@link ReliabilityMlModel} that is the source of truth for the {@link #child} model. During the
+   * {@link FaultySensor} retraining process, this model was used to create the {@link #child} model by removing
+   * the data from [faulty sensors](SensorOperationalStatusEnum).
+   */
+  sourceOfTruth: !ReliabilityMlModel
+
+  /**
+   * The `parent` is the model that was active and was using a faulty sensor with the {@link FaultySensor} retraining
+   * process began. This model may not be the same as the #sourceOfTruth model if the #parent model itself was
+   * created during a previous run of the retraining process.
+   *
+   * The #parent relation provides a more complete view of how the models were created over multiple runs of the
+   * retraining process.
+   */
+  parent: !ReliabilityMlModel
+
+  /**
+   * Provided a set of models, return a map from the [input model ID](#child) to the #sourceOfTruth model for that
+   * model. This directly returns what is stored in #sourceOfTruth for the #child.
+   *
+   * The size of the output map is equal to the size of the input set of models. If there is no relation for an input,
+   * it is assumed that the source of truth is the model itself.
+   *
+   * There are no guarantees on the fields populated on the values of the output map.
+   *
+   * @param models
+   *        The models for which to find the #sourceOfTruth.
+   * @return a map from the input model ID to the #sourceOfTruth model for that model.
+   */
+  getSourceOfTruthForModelsBatch: function (models: set<!ReliabilityMlModel>): map<string, ReliabilityMlModel> py
+}

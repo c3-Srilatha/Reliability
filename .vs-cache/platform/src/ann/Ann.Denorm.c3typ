@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Main annotation to populate when creating a type that mixes in HierarchyDenorm. This type helps in indicating
+ * properties for denormalizing the graph.
+ */
+@annotation(appliesTo=['type'])
+type Ann.Denorm mixes Annotation {
+
+  /**
+   * Captures the set of types that should be denormed. When denormalize() is triggered,
+   * data will be fetched from every type defined in this array.
+   * The denormalized data will be saved in the type on which this annotation is defined.
+   * Every item in the "sources" list should have mixed in Relation<T>. This facilitates
+   * consistent and easy retrieval of input data.
+   */
+  sources: [DenormSource]
+
+  /**
+   * This must be specified on the vertexType.
+   * It tells vertexType the name of type that stores the denormed hierarchy.
+   */
+  target: Type
+
+  /**
+   * false : The source contains first level denormed data. Each node can contain multiple parents (More like a graph)
+   * true  : The source contains a "parent" field forming a strict hierarchy. Each node can have exactly 1 parent. (More like a tree)
+   */
+  strictHierarchy: boolean = false
+}

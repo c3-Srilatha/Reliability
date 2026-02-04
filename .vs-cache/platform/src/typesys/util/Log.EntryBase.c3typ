@@ -1,0 +1,71 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single timestamped log entry in a C3 log, produced by {@link Logger}. This can be any log entry,
+ * not just for actions.
+ */
+type Log.EntryBase mixes StringSerializable {
+
+  /**
+   * The entire text of the log entry.
+   */
+  content: !string
+
+  /**
+   * Timestamp of when the log entry was reported. Logged using {@link DateTime#millis} format.
+   */
+  timestamp: datetime with millis
+
+  /**
+   * Message that was logged.
+   */
+  msg: string
+
+  /**
+   * The line number (1-based) of the log header if read from a file.
+   *
+   * @see #endLineNum
+   */
+  startLineNum: int
+
+  /**
+   * The final line number (1-based) of the log entry. This is often the same as #startLineNum, but may be larger if
+   * the message occupies multiple lines.
+   *
+   * @see #startLineNum
+   */
+  endLineNum: int
+
+  /**
+   * Same as {@link #fromString}, except does not attempt to construct sub-types of {@link Log.BaseEntry}. In other
+   * words, this constructor will always return an instance of the type it is called on.
+   */
+  baseEntryFromString: private inline function(s: !?string): Log.EntryBase
+
+  /**
+   * Parse a matching datetime value as it appears at the beginning of a log header line.
+   */
+  parseTimestamp: function(s: !?string): !datetime
+
+  /**
+   * Extract an exception structure from the log entry. If there is not an identifiable exception, return null.
+   */
+  extractException: member function(failIfMissing: boolean): ExceptionStackTrace
+
+  /**
+   * Extract a stack trace structure from the log entry. If there is not an identifiable stack trace, return null.
+   */
+  extractStackTrace: member function(failIfMissing: boolean): ThreadStackTrace
+
+  /**
+   * Parses the specified string as a log entry, creating the appropriate sub-type given the type of entry.
+   * If the string cannot be interpreted as any type of log entry, return null.
+   */
+  fromString: ~
+}

@@ -1,0 +1,114 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Language of example code. This is a combination of some key {@link ImplLanguage implementation languages} and other
+ * forms of API invocation such as {@link https://en.wikipedia.org/wiki/REST REST}.
+ *
+ * @see DocumentationParserSpec#exampleLang
+ * @see DocumentationExample#lang
+ */
+enum type DocumentationExample.Language {
+
+  /**
+   * Java source.
+   * @see ImplLanguage#JAVA
+   */
+  JAVA = 'Java'
+
+  /**
+   * JavaScript source (any ECMAScript version).
+   * @see ImplLanguage#JAVASCRIPT
+   */
+  JAVASCRIPT = 'JavaScript'
+
+  /**
+   * Python source.
+   * @see ImplLanguage#PYTHON
+   */
+  PYTHON = 'Python'
+
+  /**
+   * TypeScript source.
+   * @see ImplLanguage#TYPESCRIPT
+   */
+  TYPESCRIPT = 'TypeScript'
+
+  /**
+   * C3 Type declaration (`.c3typ` files).
+   */
+  TYPE = 'Type'
+
+  /**
+   * TypeScript source with JSX syntax.
+   * @see ImplLanguage#TSX
+   */
+  TSX = 'TSX'
+
+  /**
+   * REST API raw JSON
+   */
+  REST_JSON = 'REST (JSON)'
+
+  /**
+   * REST API via cURL
+   * @see https://curl.se/
+   */
+  REST_CURL = 'REST (cURL)'
+
+  /**
+   * HyperText Markup Language (HTML).
+   */
+  HTML = 'HTML'
+
+  /**
+   * JavaScript Object Notation (JSON).
+   */
+  JSON = 'JSON'
+
+  /**
+   * Plain text. This is a fallback for when there is no supported syntax for the example.
+   */
+  TEXT = 'text'
+
+  /**
+   * @return true if this is an {@link ImplLanguage implementation language}
+   */
+  isImplLanguage: function(s: !?string enum DocumentationExample.Language): boolean
+
+  /**
+   * @return {@link ImplLanguage} value
+   */
+  toImplLanguage: function(s: !?string enum DocumentationExample.Language, failIfInvalid: boolean): ImplLanguage
+
+  /**
+   * @return true if this is a form of REST calling
+   */
+  isRest: function(s: !?string enum DocumentationExample.Language): boolean
+
+  /**
+   * @return true if this is a type declaration
+   */
+  isType: function(s: !?string enum DocumentationExample.Language): boolean
+
+  /**
+   * @return syntax coloring label for this language
+   */
+  syntaxLang: function(s: !?string enum DocumentationExample.Language): !string
+
+  /**
+   * @return MIME type of this language
+   */
+  mediaType: function(s: !?string enum DocumentationExample.Language): string serialized ContentType
+
+  /**
+   * Get the canonical (enum) value for the specified value. Like {@link ImplLanguage#forName} this handles common
+   * aliases and abbreviations.
+   */
+  forName: inline function(name: !?string, failIfInvalid: boolean): string enum DocumentationExample.Language
+}

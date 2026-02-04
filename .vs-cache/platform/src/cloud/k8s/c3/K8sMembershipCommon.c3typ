@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Common utility methods for K8s-based infrastructure lifecycle management.
+ */
+abstract type K8sMembershipCommon {
+
+  /**
+   * Performs infrastructure "shutdown" for an App/Env in 3 phases using tag-based resource selection.
+   *
+   * All operations are scoped to resources tagged with {@code cloudTagKey=cloudTagValue}.
+   *
+   * Preservation rules:
+   * - Always preserve externally-managed resources: any resource with {@code K8sTagKey.K8S_MANAGED_BY}
+   *   is excluded from all phases.
+   * - Preserve service config metadata during shutdown: resources with {@code CloudTagKey.SERVICE_CONFIG}
+   *   are excluded from Phase 1 deletion.
+   *
+   * Phase 1: Delete cloud-service resources (resources tagged with {@code CloudTagKey.SERVICE}).
+   * Uses {@code CloudService.Impl.K8s.typesDeletedOnStop()} to avoid deleting PVCs and Cassandra CRDs.
+   *
+   * Phase 2: Hibernate Cassandra CRDs (so they remain but stop consuming resources).
+   *
+   * Phase 3: Scale down remaining workload resources (excluding {@code CloudTagKey.SERVICE} resources
+   * which were already handled in Phase 1).
+   *
+   * @param cloudTagKey
+   *        Tag key to use as anchor. Must be either {@code CloudTagKey.APP_ID} or {@code CloudTagKey.ENV_ID}.
+   * @param cloudTagValue
+   *        Tag value to match (e.g., App ID or Env ID)
+   * @return Array of errors encountered during shutdown (may be empty)
+   */
+  @action(group+='cluster-admin')
+  doInfraShutdown: function(cloudTagKey: !string, cloudTagValue: !string): ![Error]
+
+  /**
+   * Performs infrastructure "cleanup" by deleting all namespaced resources for an App/Env.
+   *
+   * All operations are scoped to resources tagged with {@code cloudTagKey=cloudTagValue}.
+   * Resources marked as externally-managed via {@code K8sTagKey.K8S_MANAGED_BY} are preserved.
+   *
+   * Note: Unlike shutdown, cleanup does NOT preserve {@code CloudTagKey.SERVICE_CONFIG} resources
+   * (unless they are also protected by {@code K8sTagKey.K8S_MANAGED_BY}).
+   *
+   * @param cloudTagKey
+   *        Tag key to use as anchor. Must be either {@code CloudTagKey.APP_ID} or {@code CloudTagKey.ENV_ID}.
+   * @param cloudTagValue
+   *        Tag value to match (e.g., App ID or Env ID)
+   * @return Array of errors encountered during cleanup (may be empty)
+   */
+  @action(group+='cluster-admin')
+  doInfraCleanup: function(cloudTagKey: !string, cloudTagValue: !string): ![Error]
+}

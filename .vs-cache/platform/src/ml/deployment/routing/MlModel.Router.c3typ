@@ -1,0 +1,175 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for {@link MlModel} routing mechanism.
+ * Each {@link MlProject} has a router to associate a {@link MlSubject} instance with the correct models.
+ * The main function exposed by this type is {@link models}: it returns the deployed models that can be used to
+ * compute predictions for the given subject.
+ *
+ * Note that a router must return at most one {@link MlModel.Route.Status.Label#CHAMPION CHAMPION} route (or model)
+ * for a given {@link MlSubject}.
+ * In the case that several CHAMPION routes are valid, the most recently deployed route (or the route whose status
+ * was the most recently updated) will be used.
+ *
+ * To implement a custom routing mechanism, extend this type and implement the abstract functions, then create an
+ * instance of the new router type and use it to set the field {@link MlProject#router}.
+ *
+ * @see MlModel.RelationRouter
+ * @see MlProject#router
+ */
+abstract extendable entity type MlModel.Router {
+
+  /**
+   * All the declared {@link MlModel.Route routes} handled by the router.
+   */
+  allRoutes: [MlModel.Route](router)
+
+  /**
+   * The project for which this router is used. The router can only route to models that are part of that project.
+   */
+  project: MlProject(router)
+
+  /**
+   * @return a new instance of a router for the given {@link MlSubject} subtype.
+   */
+  fromSubjectType: abstract function(subjectType: !Type<<MlSubject>>): !mixing MlModel.Router
+
+  /**
+   * Return the currently deployed routes for a given subject.
+   *
+   * Example:
+   * ```python
+   * >>> router.routes(wind_turbine, "label == 'CHAMPION' && intersects(tags, 'best-run')")
+   * ```
+   *
+   * @param subject
+   *          the {@link MlSubject} for which the routes are to be retrieved.
+   * @param statusFilter
+   *          a {@link Filter} to further select the routes to return, applied on {@link MlModel.Route#status}.
+   * @return the list of routes currently deployed for the subject and that satisfy the `statusFilter`.
+   *
+   * @see #routesAsOf
+   */
+  routes: member function(subject: !MlSubject, statusFilter: string serialized Filter): [MlModel.Route]
+
+  /**
+   * Return the routes deployed at the specified date for a given subject.
+   *
+   * Example:
+   * ```python
+   * >>> router.routesAsOf("2022-05-01", wind_turbine, "label == 'CHAMPION'")
+   * ```
+   *
+   * @param asOf
+   *          the date to consider to evaluate which routes are deployed on the subject (second argument)
+   * @param subject
+   *          the {@link MlSubject} for which the routes are to be retrieved.
+   * @param statusFilter
+   *          a {@link Filter} to further select the routes to return, applied on {@link MlModel.Route#status}.
+   * @return the list of routes deployed for the subject at the `asOf` date and that satisfy the `statusFilter`.
+   *
+   * @see #routes
+   */
+  routesAsOf: abstract member function(asOf: !datetime,
+                                       subject: !MlSubject,
+                                       statusFilter: string serialized Filter): [MlModel.Route]
+
+  /**
+   * Helper function to filter routes to tie-break for a single champion route.
+   *
+   * @param routes
+   *          list of routes for a {@link MlSubject}.
+   * @return routes list, which has at most one champion.
+   */
+  ensureSingleChampion: private function(routes: [MlModel.Route]): [MlModel.Route]
+
+  /**
+   * Return the currently deployed models for a given subject.
+   *
+   * Example:
+   * ```python
+   * >>> router.models(wind_turbine, "label =='CHAMPION' && intersects(tags, 'best-run')")
+   * ```
+   *
+   * @param subject
+   *          the {@link MlSubject} for which the models are to be retrieved.
+   * @param statusFilter
+   *          a {@link Filter} to further select the models to return, applied on {@link MlModel.Route#status}.
+   * @return the list of models currently deployed for the subject and that satisfy the `statusFilter`.
+   *
+   * @see #modelsAsOf
+   */
+  models: member function(subject: !MlSubject, statusFilter: string serialized Filter): [MlModel]
+
+  /**
+   * Return the models deployed at the specified date for a given subject.
+   *
+   * Example:
+   * ```python
+   * >>> router.modelsAsOf("2022-05-01", wind_turbine, "label =='CHAMPION'")
+   * ```
+   *
+   * @param asOf
+   *          the date to consider to evaluate which models are deployed on the subject (second argument)
+   * @param subject
+   *          the {@link MlSubject} for which the models are to be retrieved.
+   * @param statusFilter
+   *          a {@link Filter} to further select the models to return, applied on {@link MlModel.Route#status}.
+   * @return the list of models deployed for the subject at the `asOf` date and that satisfy the `statusFilter`.
+   *
+   * @see #models
+   */
+  modelsAsOf: member function(asOf: !datetime, subject: !MlSubject, statusFilter: string serialized Filter): [MlModel]
+
+  /**
+   * Perform the necessary logic to update the state of the routing system when a route is updated.
+   *
+   * If the route is not handled by the router, an error is thrown.
+   *
+   * @param route
+   *          the updated route
+   *
+   * @see doUpdateRoute
+   * @see MlModel.Route#updateStatus
+   */
+  @dependency(include="this, project.this")
+  updateRoute: member function(route: !MlModel.Route)
+
+  /**
+   * Batched version of {@link MlModel.Router#updateRoute}.
+   *
+   * @param routes
+   *          list of routes to update.
+   * @param groupId
+   *          optional group identifier for the batch. If specified, then there is a minor optimization in
+   *          fetching existing router artifacts.
+   */
+  updateRouteBatch: member function(routes: ![MlModel.Route], groupId: string)
+
+  /**
+   * Actual implementation for {@link updateRoute}.
+   *
+   * Checks to verify that the route handled by the router are performed in {@link updateRoute},
+   * then this function is called.
+   */
+  doUpdateRoute: abstract member function(route: !MlModel.Route)
+
+  /**
+   * Batched version of {@link MlModel.Router#doUpdateRoute}.
+   * NOTE: by default, this implementation naively for-loops over concrete implementation of {@link #doUpdateRoute}. If
+   * the concrete implementation could be sped up by batching, then the concrete type should override this function.
+   *
+   * @param routes
+   *          list of routes to update.
+   * @param groupId
+   *          optional group identifier for the batch. If specified, then there is a minor optimization in
+   *          fetching existing router artifacts.
+   */
+  doUpdateRouteBatch: member function(routes: ![MlModel.Route], groupId: string)
+}

@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Role of the App.Node in {@link App} / {@link Env} / {@link Cluster}.
+ */
+enum type App.Node.Role {
+
+  /**
+   * Node accepting API requests and managing workers and other nodes
+   */
+  LEADER = 'leader'
+
+  /**
+   * Node managing the single compute instance of the cluster running task, data or db nodes
+   */
+  WORKER = 'worker'
+
+  /**
+   * Node managing the single compute instance of the cluster running 3rd party software like Cassandra or PG
+   */
+  AGENT = 'agent'
+
+  /**
+   * Node running on a worker compute instance executing tasks
+   */
+  TASK = 'task'
+
+  /**
+   * Node running on a worker compute instance holding data
+   */
+  DATA = 'data'
+
+  /**
+   * Node running on a worker compute instance performing database connection pooling
+   */
+  PROXY = 'proxy'
+
+  /**
+   * Node that usually used for running {@link Engine engines}
+   */
+  SERVICE = 'service'
+
+  /**
+   * Node that performs the operation of all server roles
+   */
+  ALL = '*'
+
+  /**
+   * @return cloud role for the provided App.Node.Role
+   */
+  cloudRole: function(role: !string enum App.Node.Role): !string
+
+  /**
+   * @return App.Node.Role for the provided cloud role
+   */
+  forCloudRole: function(cloudRole: !string): !string enum App.Node.Role
+}

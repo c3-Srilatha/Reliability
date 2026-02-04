@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the specs for image parsing.
+ */
+type Genai.SourceFile.Chunker.MultimodalPdf.ImageParserSpec mixes Spec {
+  /**
+   * Defines the the specs for image verbalization.
+   */
+  imageVerbalizerSpec: Genai.SourceFile.Chunker.MultimodalPdf.ImageVerbalizerSpec
+
+  /**
+   * The number of threads to use for parallel verbalization of images for API-based models.
+   * If it is a local visual language model, this is ignored since the verbalization will be performed serially.
+   */
+  numThreadsForVerbalization: int = 1
+
+  /**
+   * The name of the model used for layout detection.
+   */
+  layoutModel: string enum ('AutoLayoutModel', 'Detectron2LayoutModel', 'EfficientDetLayoutModel') = 'Detectron2LayoutModel'
+
+  /**
+   * The name of the model used for caption generation.
+   */
+  captionModel: string enum ('NougatSmall', 'NougatBase') = 'NougatSmall'
+
+  /**
+   * The threshold value for object detection confidence. The range is [0, 1].
+   */
+  detectionThreshold: float = 0.8
+
+  /**
+   * Whether to disable caption parsing.
+   */
+  disableCaptionParsing: boolean
+
+  /**
+   * The list of keywords used for identifying image-related blocks.
+   * e.g. ["figure", "fig", "image", "diagram", "graph", "chart", "note", "plot"]
+   */
+  keywords: [string]
+
+  /**
+   * If true, errors in image parsing will be raised instead of only logged.
+   */
+  raiseOnError: boolean
+}

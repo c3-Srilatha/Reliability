@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type describing parameters that are needed to construct a Timeseries for provided field values
+ */
+type TimeseriesFieldSpec mixes TimeseriesAggFields, Spec {
+
+  /**
+   * Specifies how to extract the value information from the object
+   * This field is required, with the exception of when the #aggFunc field is set to `COUNT` or `ROLLINGCOUNT`.
+   * Note that this field must return a primitive data type that will be converted into a double value.
+   */
+  valueExpr: string serialized Expr
+
+  /**
+   * The expression for evaluating the data version of the data point
+   * This field is used for resolving conflicts in scenarios where two points are for the same time period but have
+   * different versions. The data point with a higher data version will be chosen.
+   */
+  dataVersionExpr: string serialized Expr
+
+  /**
+   * The expression for evaluating if the data point value is estimated or not. This can be used in reporting whether
+   * the data for every interval is estimated or not, for downstream analysis and reporting.
+   * For example, if a bill was an estimated for a month, then while returning the time series, it is useful to indicate
+   * that the month's bill was estimated and not actual.
+   * If both actual and estimated is provided for the same period, the actual value will be chosen.
+   */
+  isEstimatedExpr: string serialized Expr
+}

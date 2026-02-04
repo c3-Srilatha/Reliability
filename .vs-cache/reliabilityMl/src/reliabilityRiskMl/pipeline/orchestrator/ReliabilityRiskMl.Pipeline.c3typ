@@ -1,0 +1,308 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a pipeline that can be specifically used within the C3 AI Reliability application. This pipeline
+ * computes, or learns to compute, a risk score from input time series data and generates an alert if the risk score
+ * exceeds a certain threshold. There are 7 required inputs and 1 optional input (all of which should be {@link Data}
+ * and should include a `subject` and `timestamp` index):
+ * - `features`: The input time series data for a singular asset.
+ * - `mask_IsAssetNotOperational`: A mask to exclude points when the asset is not operational.
+ * - `mask_AssetEvent`: A mask to exclude points when there is an event on the asset.
+ * - `mask_PreAssetEvent`: A pre-event mask to exclude likely anomalous behavior in the lead up to an event.
+ * - `mask_PostAssetEvent`: A post-event mask to exclude likely transient behavior during startups.
+ * - `mask_AdHocTraining`: User-defined training mask.
+ * - `mask_AdHocInference`: User-defined inference mask.
+ * - `target` (optional): The target risk score.
+ *
+ * This pipeline outputs 3 artifacts (the specific output keys are defined by {@link ReliabilityMLOutputConfig}):
+ * - Risk scores: A risk score for various points in time (may not include all points from input)
+ * - Normalized risk scores: The risk score for various points in time scaled to be between 0 and 1.
+ * - Alerts: A value for various points in time signifying whether or not an alert should be raised based on the
+ *   risk scores.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Pipeline<DX, DY, DO, DI> extends MlTemplate.Pipeline<DX, DY, void, DO, DI> mixes ReliabilityMlDatasetPreparationRunResolvable type key 'RRMP'{
+
+  /**
+   * The total lookback duration of all pipes in this pipeline. Used for internal data handling in the model
+   * deployment framework.
+   */
+  lookbackDuration: private Duration
+
+  /**
+   * If set, the {@link #riskScorePipe} must accept a `target` as an input.
+   */
+  @ML(hyperparameter=true)
+  @typeMetaDoc(isAdditional=true)
+  hasTarget: boolean
+
+  /**
+   * The masking pipe is responsible for outputting a new feature set given a feature set and a mask. The specified pipe
+   * must accept as input a {@link Tuple} of `features` and `mask`, and must output `maskedFeatures`. If no pipe is
+   * specified, the default {@link ReliabilityRiskMl.Masking.SemisupervisedMaskingPipe} will be used.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  maskingPipe: !MlPipe = {
+    'type': 'ReliabilityRiskMl.Masking.SemisupervisedMaskingPipe'
+  }
+
+  /**
+   * The alerting pipe is responsible for outputting an `alert` based on risk score data. The specified pipe must accept
+   * as input a single {@link Data} and output a {@link Data} with a key specified by {@link ReliabilityMLOutputConfig}.
+   * If no pipe is specified, the default {@link ReliabilityRiskMl.Alerting.GeneralPercentileDurationPipe} will be used.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  alertingPipe: !MlPipe = {
+    'type': 'ReliabilityRiskMl.Alerting.GeneralPercentileDurationPipe'
+  }
+
+  /**
+   * The risk score pipe is responsible for outputting a risk score based on an input feature set. The specified pipe
+   * must accept as input a single {@link Data} and output a {@link Data} with a key specified by
+   * {@link ReliabilityMLOutputConfig}. If no pipe is specified, the default
+   * {@link ReliabilityRiskMl.RiskScoreComputation.GeneralSimpleComputationPipe} will be used.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  riskScorePipe: !MlPipe = {
+    'type': 'ReliabilityRiskMl.RiskScoreComputation.GeneralSimpleComputationPipe'
+  }
+
+  /**
+   * The risk score normalization pipe is responsible for scaling risk score values to be between 0 and 1. The specified
+   * pipe must accept a single {@link Data} as input and output a {@link Data} with a key specified by
+   * {@link ReliabilityMLOutputConfig}. If no pipe is specified, the default
+   * {@link ReliabilityRiskMl.RiskScoreScaling.GeneralThresholdScalerPipe} will be used.
+   */
+  @db(persistAllFields=true)
+  @ML(containsHyperparams=true)
+  riskScoreNormalizationPipe: !MlPipe = {
+    'type': 'ReliabilityRiskMl.RiskScoreScaling.GeneralThresholdScalerPipe'
+  }
+
+  /**
+   * The interpreter is responsible for interpreting the {@link riskScorePipe}. If none is specified, a default will
+   * be used if the specified {@link riskScorePipe} is one of the out-of-the-box {@link ReliabilityRiskMl.RiskScoreComputation.Pipe}
+   * that are not based on reconstructions.
+   */
+  @db(persistAllFields=true)
+  interpreter: MlInterpreter
+
+  /**
+   * A map of user-specified {@link ReliabilityRiskMl.Pipeline.ScoringMetric} instances for scoring. The keys
+   * of the map should be the user-specified names of the metrics, and the values should be the actual
+   * {@link ReliabilityRiskMl.Pipeline.ScoringMetric} instances.
+   */
+  pipelineScoringMetrics: map<string, ReliabilityRiskMl.Pipeline.ScoringMetric>
+
+  /**
+   * A list of all the categories of masks that must be applied to remove rows from
+   * the features data while training the pipeline.
+   * There are, overall, 7 types of masks. By default, 6 of them will be applied to
+   * remove unwanted rows from the features dataset to train the model.
+   * Change this field to construct a pipeline which will mask out only the data you want.
+   */
+  trainingMasks: [string] = [
+    'mask_IsAssetNotOperational',
+    'mask_AssetEvent',
+    'mask_PreAssetEvent',
+    'mask_PostAssetEvent',
+    'mask_AdHocTraining',
+    'mask_AlgorithmicallyComputed'
+  ]
+
+  /**
+   * A list of all the categories of masks that must be applied to remove rows from
+   * the features data while performing pipeline inference.
+   * There are, overall, 7 types of masks. By default, 4 of them will be applied to
+   * remove unwanted rows from the features dataset to run model inference.
+   * Change this field to construct a pipeline which will mask out only the data you want.
+   */
+  inferenceMasks: [string] = [
+    'mask_IsAssetNotOperational',
+    'mask_AssetEvent',
+    'mask_PostAssetEvent',
+    'mask_AdHocInference'
+  ]
+
+  /**
+   * Returns a superset of all the categories of masks that may be applied to train/infer
+   * from a pipeline.
+   * Only a subset of these masks can be used in the {@link trainingMasks} or the
+   * {@link inferenceMasks} fields.
+   */
+  maskCategories: function(): ![string] py
+
+  /**
+   * Validates if the {@link trainingMasks} and {@link inferenceMasks} provided are a subset
+   * of {@link maskCategories}. If not, an error will be thrown.
+   */
+  validateTrainingAndInferenceMasks: private member function(): string py
+
+  /**
+   * Use this method to implement your own custom input validation logic before the default
+   * input validation for the pipeline is performed.
+   */
+  beforeValidateInput: member function(): [string] py
+
+  /**
+   * This method is used to perform the default validation of the user provided inputs
+   * when creating an instance of this pipeline.
+   */
+  doValidateInput: member function(): [string] py
+
+  /**
+   * Use this method to implement your own custom input validation logic after the default
+   * input validation for the pipeline is performed.
+   */
+  afterValidateInput: member function(): [string] py
+
+  /**
+   * This method is used to validate the user provided inputs passed in when creating an
+   * instance of this pipeline, and throws an error if checks fail.
+   *
+   * This method sequentially, calls {@link #beforeValidateInput}, {@link #doValidateInput} and
+   * {@link #afterValidateInput}, collects the errors generated from input validation and
+   * throws an error if any checks fail.
+   */
+  validateInput: member function() py
+
+  /**
+   * This method will either validate the input and output types of each pipe in this pipeline or create the default
+   * pipe if nothing was specified by the user.
+   */
+  withDefaultOrValidate: private inline function(fields: map<any, any>, defaults: map<string, Type>, expectedBindings: map<string, any>): map<any, any> py
+
+  beforeCreate: ~ py
+
+  generatePipeline: ~ py-data-science
+
+  generateTypeBindings: ~ py
+
+  resolveForDatasetPreparationRun: ~ py
+
+  replaceEntityReferences: ~ py
+
+  /**
+   * This provides a map of the field names of this pipeline to their corresponding vertices in a generated instance
+   * of this pipeline. For this pipeline, the fields mapped to vertices are: {@link maskingPipe},
+   * {@link #riskScorePipe}, {@link #riskScoreNormalizationPipe}, and {@link #alertingPipe}.
+   */
+  getFieldNamesToVertexNamesMap: member function(): !map<string, [string]> py
+
+  /**
+   * This API provides an interface to generate a new pipeline instance from an existing trained instance of this
+   * pipeline, by replacing the sub-pipes corresponding to fields on this pipeline with new sub-pipes.
+   *
+   * For each sub-pipe provided in `updatedPipes`, this can be done in 2 ways:
+   *
+   * 1. Replace only the user provided fields on the sub-pipe, while cloning the rest of the sub-pipe. This is the
+   * default behavior of the API, and corresponds to setting `fullOverride` to false. In this case, the provided
+   * sub-pipes should not be persisted to the database, and the updated sub-pipes MUST be trained.
+   *
+   * 2. Replace the entire sub-pipe with the user provided sub-pipe. This can be done by setting `fullOverride` to true.
+   * In this case, the provided sub-pipes MUST be trained.
+   *
+   *
+   * The updated sub-pipes MUST be trained in order to be able to generate a new pipeline instance. This API will not only
+   * replace the fields corresponding to the sub-pipes, but will also update the vertices of the new pipeline instance
+   * to reflect the new sub-pipes. This will allow the new pipeline instance to be used for inference.
+   *
+   * @param updatedPipes
+   *        A map from field names on this pipeline to instances of TRAINED sub-pipes that will be used to
+   *        replace the existing sub-pipes in the newly generated pipeline. The keys of this map can be found by
+   *        calling {@link #getFieldNamesToVertexNamesMap} on a pipeline instance. For the
+   *        {@link ReliabilityRiskMl.Pipeline}, the keys for the map can be: `maskingPipe`, `riskScorePipe`,
+   *        `riskScoreNormalizationPipe`, `alertingPipe` and `interpreter`. If using an
+   *        {@link ReliabilityRiskMl.ReconstructionPipeline}, additionally keys corresponding to `scalerPipe` and
+   *        `reconstructionPipe` can be specified.
+   * @param fullOverride
+   *        If set to false, the provided `updatedPipes` will clone the existing pipeline's sub-pipe, and only update the
+   *        fields that are in the user provided sub-pipe. This is the default behavior. The provided
+   *        `updatedPipes` should not be persisted to the database, and the updated sub-pipes MUST be trained.
+
+   *        If set to true, the provided `updatedPipes` will be used to completely replace the existing pipeline vertices with
+   *        the provided sub-pipes. The provided `updatedPipes` MUST be trained.
+   *
+   *        Note that if a sub-pipe field in the original pipeline and the user provided sub-pipe for that field are of
+   *        different types, then for that field, this API will always perform a full override, regardless of the value of
+   *        `fullOverride`.
+   *
+   *        If `fullOverride` is set to true, the user-provided `updatedPipes` must already be trained. If `fullOverride` is
+   *        false, then the user-provided `updatedPipes` need not be trained themselves, but the modified pipes
+   *        after the partial override must be trained.
+   *
+   * @return A new pipeline instance with the updated sub-pipes and vertices.
+   */
+  replaceByFieldNames: member function(
+    updatedPipes: !map<string, any>,
+    fullOverride: boolean = false
+  ): !MlPipeline py
+
+  /**
+   * This API provides an interface to generate a new pipeline instance from an existing trained pipeline instance
+   * pipeline, by replacing the fields on this pipeline with a new pipeline. The new pipeline can then be trained.
+   *
+   * For each sub-pipe provided in `updatedPipes`, this can be done in 2 ways:
+   *
+   * 1. Replace only the user provided fields on the sub-pipe, while cloning the rest of the sub-pipe. This is the
+   * default behavior of the API, and corresponds to setting `fullOverride` to false. In this case, the provided
+   * sub-pipes should not be persisted to the database.
+   *
+   * 2. Replace the entire sub-pipe with the user provided sub-pipe. This can be done by setting `fullOverride` to true.
+   *
+   *
+   * @param updatedPipes
+   *        A map from field names on this pipeline to instances of sub-pipes that will be used to
+   *        replace the existing sub-pipes in the newly generated pipeline. The keys of this map can be found by
+   *        calling {@link #getFieldNamesToVertexNamesMap} on a pipeline instance. For the
+   *        {@link ReliabilityRiskMl.Pipeline}, the keys for the map can be: `maskingPipe`, `riskScorePipe`,
+   *        `riskScoreNormalizationPipe`, `alertingPipe` and `interpreter`. If using an
+   *        {@link ReliabilityRiskMl.ReconstructionPipeline}, additionally keys corresponding to `scalerPipe` and
+   *        `reconstructionPipe` can be specified.
+   * @param fullOverride
+   *        If set to false, the provided `updatedPipes` will clone the existing pipeline's sub-pipe, and only update the
+   *        fields that are in the user provided sub-pipe. This is the default behavior. The provided
+   *        `updatedPipes` should not be persisted to the database.
+
+   *        If set to true, the provided `updatedPipes` will be used to completely replace the existing pipeline vertices with
+   *        the provided sub-pipes.
+   *
+   *        Note that if a sub-pipe field in the original pipeline and the user provided sub-pipe for that field are of
+   *        different types, then for that field, this API will always perform a full override, regardless of the value of
+   *        `fullOverride`.
+   *
+   * @return A new pipeline instance with the updated sub-pipes.
+   */
+  replaceFields: member function(
+    updatedPipes: !map<string, any>,
+    fullOverride: boolean = false
+  ): !MlPipeline py
+
+  /**
+   * This API returns an instance of an {@link MlInterpreter} that should be used for the out of the box {@link #riskScorePipe}s.
+   * @param pipe
+   *        The type of the {@link #riskScorePipe} for which the {@link MlInterpreter} should be created
+   * @param setBindings
+   *        Set this field to true if the returned {@link MlInterpreter} should already have it's input bindings set, and be used
+   *        for inference directly, without having to train this {@link ReliabilityRiskMl.Pipeline}.
+   *
+   * @return An instance of the {@link MlInterpreter} that should be used with the pipe passed in, if any.
+   */
+  getInterpreterForPipe: function(
+    pipe: Type,
+    setBindings: boolean = false
+  ): MlInterpreter py
+}

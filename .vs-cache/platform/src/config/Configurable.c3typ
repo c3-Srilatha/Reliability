@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Common base type for all configurable types.
+ *
+ * Typically kind of Configurable (i.e. whether it is Identifiable, Singleton etc) matches kind of Config. However this
+ * is not strictly required. E.g. Configurable could be Identifiable but Config could be Singleton or per sub-type.
+ * However users of this type should not be concerned by this implementation detail and should never use corresponding
+ * Config sub-type. Rather all usage should be limited to Configurable#config.
+ *
+ * When mixing in this type, along with AclEnabled and/or Versionable, this type should be mixed in first, followed
+ * by AclEnabled then Versionable (as appropriate).
+ *
+ * @see Config
+ */
+abstract type Configurable<C: Config> {
+
+  /**
+   * Returns cached configuration for instance of this type. See Configurable type documentation for more details.
+   *
+   * @param secrets
+   *          if set to `true` and current role has sufficient permissions configuration will contain values of secret
+   *          fields. Otherwise configuration will not have values for secrets.
+   * @return instance of configuration - never `null`.
+   */
+  config: member function(secrets: boolean): !C
+
+  /**
+   * @return configuration key for this instance.
+   */
+  configKey: inline member function(): string
+
+  /**
+   * @return configuration key for this type assuming it is singleton.
+   */
+  configSingletonKey: member function(): string
+
+  /**
+   * @return type configuration for the given {@link Configurable} type.
+   * E.g. {@see REST} & {@see RestConfig}
+   */
+  typeConfig: function(): !C
+}

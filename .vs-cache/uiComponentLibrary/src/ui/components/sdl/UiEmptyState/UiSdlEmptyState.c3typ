@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type for empty state.
+ */
+@typeScript
+@uiComponentCategorizer(name='Empty state', category='Patterns')
+type UiSdlEmptyState mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * URL where to get image.
+   */
+  imageUrl: string
+
+  /**
+   * The size of the empty state component.
+   * This changes the size of the image and primary action button.
+   */
+  size: string enum('small', 'large') = 'small'
+
+  /**
+   * The header text.
+   */
+  headerText: string serialized UiSdlDynamicValueSpec
+
+  /**
+   * The height of the component
+   */
+  height: int
+
+  /**
+   * The description text.
+   */
+  descriptionText: string serialized UiSdlDynamicValueSpec
+
+  /**
+   * The configurations for the optional first action button.
+   */
+  primaryActionButton: UiSdlAction
+
+  /**
+   * The configurations for the optional second action button.
+   */
+  secondaryActionButton: UiSdlAction
+
+  /**
+   * Triggers an action when either `primaryActionButton` or `secondaryActionButton` is clicked.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *           The suffix of the action that should be triggered.
+   *
+   * @returns An `EMPTY_STATE_ACTION_CLICK_${actionSuffix}` action.
+   */
+  @uiSdlActionCreator(actionType='EMPTY_STATE_ACTION_CLICK_${actionSuffix}')
+  clickButtonAction: function(id: string, actionSuffix: !string): UiSdlEmptyStateActionClickAction ts-client
+}

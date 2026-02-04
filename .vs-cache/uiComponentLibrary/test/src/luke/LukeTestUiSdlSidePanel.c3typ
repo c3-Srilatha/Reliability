@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlSidePanel} component for testing purposes.
+ */
+type LukeTestUiSdlSidePanel mixes LukeTestComponent {
+
+  parentSelector:     ~ = '.c3-sdl-side-panel'
+  renderingSelectors: ~ = ['.c3-sdl-side-panel-header', '.c3-sdl-side-panel-content']
+
+  /**
+   * Selector for the action group button
+   */
+  actionGroupButtonSelector: string = '.c3-sdl-action-button-group'
+
+  /**
+   * Selector for the side panel header
+   */
+  sidePanelHeaderSelector: string = '.c3-sdl-side-panel-header'
+
+  /**
+   * Selector for items
+   */
+  itemSelector: string = '.action-dropdown .item'
+
+  /**
+   * The selector for the close icon.  Only present if the {@link UiSdlSidePanel#header} has a
+   * {@link UiSdlSidePanelHeader#closeIcon} defined.
+   */
+  closeIconSelector: string = '.c3-sdl-side-panel-close'
+
+  /**
+   * The selector for the open icon.  Only present if the {@link UiSdlSidePanel#header} has a
+   * {@link UiSdlSidePanelHeader#openIcon} defined.
+   */
+  openIconSelector: string = '.c3-sdl-side-panel-open'
+
+  /**
+   * The selector of the side panel when the side panel is open
+   */
+  sidePanelOpenSelector: string = '.c3-sdl-side-panel.open'
+
+  /**
+   * Opens the {@link UiSdlSidePanel}
+   *
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved after opening the UiSdlSidePanel
+   */
+  open: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Closes the {@link UiSdlSidePanel}
+   *
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved after closing the UiSdlSidePanel
+   */
+  close: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Checks if the {@link UiSdlSidePanel} is open
+   *
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved as a boolean
+   */
+  isOpen: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Checks if the {@link UiSdlSidePanel} is closed
+   *
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved as a boolean
+   */
+  isClosed: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Click the specified action in the action group
+   *
+   * @param actionSelector
+   *    Selector for the dropdown / action group button if non-dropdown
+   * @param actionLabel
+   *    Action label that user wishes to apply
+   */
+  clickHeaderAction: inline member function(actionSelector: !string, actionLabel: string) js
+
+  /**
+   * Checks if the {@link #parentSelector} has a CSS className.  Uses {@link LukeCore#search} to find the
+   * {@link #parentSelector} on the page.  If there are multiple {@link UiSdlSidePanel}s on the page it will find the first
+   * one.
+   *
+   * @param className
+   *          The className to check for
+   * @param timeout
+   *          Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved as a boolean
+   */
+  containerHasClassName: inline member function(className: !string, timeout: int): LukeAsyncQueueNode js
+}

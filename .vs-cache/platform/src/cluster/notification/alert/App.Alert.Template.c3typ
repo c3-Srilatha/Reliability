@@ -1,0 +1,103 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Template for Alert rules. Concrete {@link App.Alert.Rule} instances are created based off of
+ * {@link App.Alert.Template}.
+ * Creation of {@link App.Alert.Template} is generally a development time activity, whereas
+ * creation of {@link App.Alert.Rule} are created on production deployments. However, {@link App.Alert.Template}
+ * can also be created at runtime if unique scenarios arise.
+ * Template developers define what the underlying metric expression and {@link #categories}
+ * the template belongs to. Runtime {@link App.Alert.Rule} creation simply makes the template more specific
+ * to the production use case.
+ */
+entity type App.Alert.Template mixes WithName, WithDescription, App.Metric.Container {
+
+  /**
+   * Metric definition to be alerted on. The expression does not have to yet be fully resolved (ie. all required
+   * variables do not have to be defined), the exact expression for the alert will be constructed on the
+   * concrete {@link App.Alert.Rule} instance.
+   * This should effectively be "writeOnce".
+   */
+  expression: !App.Metric.Bound<App.Metric.QuerySpec>
+
+  /**
+   * Specifies how triggered alerts, {@link App.Alert}, should be named. The variables in the {@link Template}
+   * must be based off of the tag values of the timeseries triggering the alert. The {@link Template} should
+   * ensure uniqueness amongst different possible alerts for this {@link App.Alert.Template}.
+   * If not specified, system does a best guess for how to name the {@link App.Alert}, namely will default to
+   * {@link App.Metric#sourceTemplate} of the bound metric.
+   */
+  triggeredAlertNameTemplate: string serialized Template
+
+  /**
+   * Describes any treatment to apply to the {@link #expression} once it is in a concrete {@link App.Alert.Rule}.
+   */
+  kind: string enum App.Alert.TemplateKind = CUSTOM
+
+  /**
+   * Message to be sent with the notification when this alert is triggered. The message can be templatized with:
+   * (1) tag names in the alert series - Value will be replaced with the tag value
+   * (2) {@link App.Metric.Variable} ids - Value will be replaced with the corresponding
+   *     {@link App.Alert.Rule#variables} value that is set when the rule is created. Note that if the variable is
+   *     not required, it may not be available at runtime to resolve the {@link Template. If the
+   *     {@link App.Metric.Variable#id} has non alphanumeric characters, it must be escaped with `\` in the
+   *     template (see https://freemarker.apache.org/docs/dgui_template_exp.html).
+   * (3) delay - {@link App.Alert.Rule#delay}
+   * (4) severity - {@link App.Alert.Rule#severity}
+   */
+  message: !string serialized Template
+
+  /**
+   * Categories of this alert
+   */
+  categories: [App.Monitoring.Category] = [{id: 'other'}]
+
+  /**
+   * Additional information to associate with an alert instance. Such as further description or runbooks.
+   * Annotations can be templatized with:
+   * (1) tag names in the alert series - Value will be replaced with the tag value
+   * (2) {@link App.Metric.Variable} ids - Value will be replaced with the corresponding
+   *     {@link App.Alert.Rule#variables} value that is set when the rule is created. Note that if the variable is
+   *     not required, it may be available at runtime to resolve the {@link Template. If the
+   *     {@link App.Metric.Variable#id} has non alphanumeric characters, it must be escaped with `\` in the
+   *     template (see https://freemarker.apache.org/docs/dgui_template_exp.html).
+   * (3) delay - {@link App.Alert.Rule#delay}
+   * (4) severity - {@link App.Alert.Rule#severity}
+   */
+  annotations: map<string, string serialized Template>
+
+  /**
+   * All {@link App.Alert.Rule} instantiated from this template.
+   */
+  rules: [App.Alert.Rule](template)
+
+  /**
+   * Represents the variables that a {@link App.Alert.Rule} has the option of filling.
+   * {@see App.Metric.Container#exposedVariables}
+   */
+  exposedVariables: ~
+
+  /**
+   * Variables that need to be populated on the {@link App.Alert.Template} due to the nature of its {@link #kind}.
+   */
+  templateKindVariables: private [App.Metric.Variable] not persistable
+
+  /**
+   * Returns templates available for the app
+   */
+  @action(group='read')
+  templatesForApp: inline function(appId: string serialized AppId, spec: FetchSpec): [App.Alert.Template]
+
+  /**
+   * Validates and fills all fields with resolved instances. Populates `unresolvedVariables` as well.
+   */
+  validateAndFillImpl: ~
+
+  unresolvedVariablesImpl: ~
+}

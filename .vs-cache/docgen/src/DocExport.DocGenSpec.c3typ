@@ -1,0 +1,68 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Spec used by {@link DocExport#generateDocumentation}.
+ */
+@deprecated(finalVersion='13', details='This is a legacy Type from {@link DocExport}. Use {@link DocSiteExport} instead.')
+private type DocExport.DocGenSpec mixes Spec {
+
+  /**
+   * The portal host to use when constructing urls.
+   */
+  portalHost: !string = 'https://developer.c3.ai/'
+
+  /**
+   * The batch options to use for the {@link GuideDocExport} batch job that parallelizes the export
+   * of guide `c3doc.md` files.
+   * Specifies the batch size and timeout duration for each guide export operation.
+   */
+  guideDocBatchOptions: !DocExport.DocGenSpec.BatchJobOptions = { batchSize: 10, timeout: '30m' }
+
+  /**
+   * The batch options to use for the {@link TopicDocExport} batch job that parallelizes the export
+   * of topic `c3doc.md` files.
+   * Specifies the batch size and timeout duration for each topic export operation.
+   */
+  topicDocBatchOptions: !DocExport.DocGenSpec.BatchJobOptions = { batchSize: 30, timeout: '30m' }
+
+  /**
+   * The batch options to use for the {@link TypeDocExport} batch job that parallelizes the export
+   * of `.c3typ` files.
+   * Specifies the batch size and timeout duration for each type export operation.
+   */
+  typeDocBatchOptions: !DocExport.DocGenSpec.BatchJobOptions = { batchSize: 150, timeout: '1h' }
+
+  /**
+   * If true, implicitly include all packages with a missing version which implies that the package belongs to the platform.
+   */
+  includePlatformDocumentation: boolean = false
+
+  /**
+   * The packages to include in the documentation generation. Only these packages will be included in documentation
+   * generation, if specified.
+   */
+  packagesToInclude: [string]
+
+  /**
+   * The packages to exclude in the documentation generation. This configuration takes precedence over #packagesToInclude.
+   */
+  packagesToExclude: [string] = ['docgen']
+
+  /**
+   * The packages to include in the documentation generation, along with their versions. This takes precedence over
+   * both #packagesToInclude and #packagesToExclude.
+   *
+   * WARNING!
+   * - THIS IS ONLY FOR TESTING THE OUTPUT DETERMINISTICALLY. SHOULD NOT BE USED FOR PRODUCTION ARTIFACT GENERATION!
+   * - The package versions are set as-is, i.e, not trimmed down to `major.minor` as they are when run without this
+   *   spec.
+   */
+  packageVersionsToInclude: private map<string, string serialized SemanticVersion>
+}

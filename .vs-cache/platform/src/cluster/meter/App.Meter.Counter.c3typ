@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Counter monitors monotonically increasing values. Counters never resets to a lesser value.
+ * If you need to track a value that goes up and down, use {@link App.Meter.Gauge}.
+ */
+@beta
+inline private type App.Meter.Counter mixes App.Meter {
+
+  /**
+   * Increment count of this Counter meter
+   *
+   * @param amount
+   *        increment amount
+   * @param tags
+   *        tag/s that will replace tag values defined in {@link App.Meter.Counter#tags tags} field of this {@link App.Meter.Counter}'s metadata.
+   */
+  increment: member function(amount: double = 1, tags: map<string, string>)
+
+  /**
+   * Return current count value for specified tag values.
+   * @param tags
+   *        custom tag/s for a metric name, tag keys should match tags defined in {@link App.Meter#tags}
+   */
+  count: member function(tags: map<string, string>): double
+}

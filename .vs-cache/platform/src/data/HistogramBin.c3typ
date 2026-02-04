@@ -1,0 +1,98 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a single bin in a Histogram. A HistogramBin includes all information about elements within a particular
+ * range of values. A collection of HistogramBin contains all information for a Histogram.
+ */
+type HistogramBin<VT> mixes Mutable, Obj {
+
+  /**
+   * Total number of entries in this bin.
+   */
+  count: !int
+
+  /**
+   * Percentage of the total histogram represented by this bucket.
+   */
+  percent: !double
+
+  /**
+   * If the data was numeric, startValue will be set.
+   *
+   * start (inclusive) specifies the value range start that is covered by this bin
+   */
+  start: !?VT
+
+  /**
+   * If the data was numeric, endValue will be set.
+   *
+   * end (exclusive) specifies the value range end that is covered by this bin
+   */
+  end: !?VT
+
+  /**
+   * Provides the interpolated value of the bin based on the start, end and relativePos of the value in the bin
+   * `relativePos` maybe defined either based on bin count or percent.
+   */
+  interpolatedValue: member function(relativePos: !double): !?VT
+
+  /**
+   * Count per unit width of the bin. To calculate percent per unit for a given bin, one needs to take the
+   * countOfBin/(totalCountOfHistogram * widthOfBin). At the bin level, the totalCountOfHistogram is not available, so
+   * this field density represents the countOfBin/widthOfBin. When histogram.toString() is plotted, the height of the
+   * bar for a bin will be: bin.density()/histogram.count(). This method is only defined for HistogramBin<Number>.
+   */
+  density: member function(): !double
+
+  /**
+   * Average value of the bin (start + end / 2). This method is only defined for HistogramBin<number>.
+   */
+  average: member function(): !double
+
+  /**
+   * Width of the bin (end - start). This method is only defined for HistogramBin<number>.
+   */
+  width: member function(): !double
+
+  /**
+   * Creates a copy of the histogram bin (preserves start, end, count, and percent).
+   */
+  copy: member function(): !HistogramBin<VT>
+
+  /**
+   * Creates an empty copy of the histogram bin (preserves start and end).
+   */
+  emptyCopy: member function(): !HistogramBin<VT>
+
+  /**
+   * The width of overlapping values between two bins. eg, 1-5 and 3-8 have an overlap of 2. This method is only defined
+   * for HistogramBin<number>.
+   */
+  overlap: member function(other: !HistogramBin<VT>): !double
+
+  /**
+   * Shortcut to create a new HistogramBin<Boolean> for BooleanHistograms
+   */
+  ofBoolean: function(): !HistogramBin<boolean>
+
+  /**
+   * Shortcut to create a new HistogramBin<Number> for NumericHistograms
+   */
+  ofNumber: function(): !HistogramBin<number>
+
+  /**
+   * Shortcut to create a new HistogramBin<String> for CharHistograms
+   */
+  ofChar: function(): !HistogramBin<string>
+
+  /**
+   * @return elementType of the bin. Useful for APIs relying on the type of the Histogram.
+   */
+  elementType: cached member function(): !ValueType
+}

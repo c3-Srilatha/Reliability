@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Computed priorities to use for the priority value in the analytics/metrics queues for specific src objs.
+ */
+@db(systemType=true, compactType=true, datastore='kv')
+private entity type MetricPriority schema name 'metric_MetricPriority' {
+
+  /**
+   * Priority for the entry.  The entry can be identified by the id which is composed of <srcTypeId>_<metricGroupOrName>_<srcObjId>
+   */
+  priority: int
+
+  /**
+   * Version is not persisted
+   */
+  version: ~ not persistable
+
+  /**
+   * Name is not persisted
+   */
+  name: ~ not persistable
+
+  /**
+   * Gets the priority to use for creating an analytics or metrics queue entry
+   *
+   * @param srcTypeId
+   *        Source type id.
+   * @param metricGroupOrName
+   *        Metric group (for analytics queue) or metric name (for metrics queue).
+   * @param srcObjId
+   *        Source obj id
+   *
+   * @return Priority for the requested source obj, or max int if no priority is found
+   */
+  priorityForSource: inline function(srcTypeId: !int, metricGroupOrName: !string, srcObjId: !string): !int
+}

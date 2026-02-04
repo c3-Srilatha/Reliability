@@ -1,0 +1,132 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Util methods common for {@link SklearnLikePipe} which implements {@link MlAtomicPipe} and template pipe
+ * implementation. For example see {@link SklearnPipe}.
+ */
+type SklearnLikePipe.FieldsAndUtils {
+
+  /**
+   * Name for the function on the native model to call to do {@link MlTrainable#train}.
+   */
+  trainFunc: string = "fit"
+
+  /**
+   * Flag denoting whether to maintain column indices between the inputs and outputs of this pipe. If this flag is
+   * true, and the input and output column size don't match, then the unchanged output will be returned from
+   * {@link SklearnPipe#process}.
+   */
+  keepInputColumnIndices: boolean
+
+  /**
+   * Iterate over all supported process function names in the order that the fields are declared in {@link SklearnProcessingFunctionName}.
+   * Find and return the first match.
+   * @param model
+   *           native sklearn-like Python estimator
+   * @return an auto-detected process function name for a given native sklearn-like model, or None if none were detected
+   */
+  findProcessingFunctionName: inline function(model: !native): SklearnProcessingFunctionName py
+
+  /**
+   * This method uses sklearn.utils.validation.check_is_fitted.
+   * @param model
+   *           native sklearn-like Python estimator
+   * @return whether or not the native Sklearn-like model has been fitted.
+   */
+  isFitted: inline function(model: !native): !boolean py
+
+  /**
+   * The {@link #name} the pipe should have after a call to {@link #convert}
+   * @param model
+   *           native sklearn-like Python estimator
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return the value provided in the `spec` for the `name`, if not empty.  Otherwise, return the type of the Python object converted.
+   */
+  afterConvertModelName: private member function(model: !native, spec: MlConvertSpec): !string py
+
+  /**
+   * The {@link #processFunc} the pipe should have after a call to {@link #convert}.
+   * The process function must be defined on the Python native model being converted.
+   * @param model
+   *           native sklearn-like Python estimator
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return the value provided in the `spec` for `processFunc` if not empty.  Otherwise, try to guess the function name with {@link #findProcessingFunctionName}.
+   * @raise ValueError if the process function is not defined on the Python native model being converted, or if the processing function cannot be guessed or found in the convert spec.
+   */
+  afterConvertProcessFunc: private member function(model: !native, spec: MlConvertSpec): !string py
+
+  /**
+   * The value of {@link #trained} the pipe should have after a call to {@link #convert}
+   * @param model
+   *           native sklearn-like Python estimator
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return the same value as {@link #isFitted} on the converted model
+   */
+  afterConvertTrainStatus: private member function(model: !native, spec: MlConvertSpec): !boolean py
+
+  /**
+   * The {@link #trainFunc} the pipe should have after a call to {@link #convert}
+   * @param model
+   *           native sklearn-like Python estimator
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return the value provided in the `spec` for `trainFunc`
+   */
+  afterConvertTrainFunc: private member function(model: !native, spec: MlConvertSpec): string py
+
+  /**
+   * The value of {@link #keepInputColumnIndices} the pipe should have after a call to {@link #convert}
+   * @param model
+   *           native sklearn-like Python estimator
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return the value provided in the `spec` for `keepInputColumnIndices`
+   */
+  afterConvertKeepInputColumnIndices: private member function(model: !native, spec: MlConvertSpec): !boolean py
+
+  /**
+   * The value of {@link #flattenInput} the pipe should have after a call to {@link #convert}
+   * @param model
+   *           native sklearn-like Python estimator
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return False by default
+   */
+  afterConvertFlattenInput: private member function(model: !native, spec: MlConvertSpec): !boolean py
+
+  /**
+   * This method will be used in doTrain, and will be fed with the beforeTrainResults passed to doTrain.
+   * @param beforeTrainResults
+   *           A native python dictionary that holds the native `model`, `x`, and `y`.
+   * @return
+   *           a native tuple with 3 elements:
+   *           - function: the training function of the native sklearn-like Python estimator
+   *           - dictionary: the training keyword arguments to pass to it
+   *           - dictionary: the fallback keyword arguments to pass to it in case of failure
+   */
+  nativeTrainFuncAndKwargs: private member function(beforeTrainResults: !native): !native py
+
+  /**
+   * Returns an instance of the pipe after the convert is done.
+   *
+   * DEVELOPER NOTE: Any post conversion logic should go here.
+   * @param model
+   *           the native model that is passed to {@link #convert}.
+   * @param spec
+   *           an {@link MlConvertSpec} for specifying conversion specifications.
+   * @return a new instance of {@link MlAtomicPipe}
+   *
+   * @see MlAtomicPipe#afterConvert
+   */
+  afterConvert: private member function(model: !native,
+                                        spec: MlConvertSpec): !mixing SklearnLikePipe.FieldsAndUtils py
+}

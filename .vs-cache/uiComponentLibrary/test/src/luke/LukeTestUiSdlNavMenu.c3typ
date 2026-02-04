@@ -1,0 +1,99 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Representation of the {@link UiSdlNavMenu} component for testing purposes.
+ */
+type LukeTestUiSdlNavMenu mixes LukeTestPage {
+
+  /**
+   * Selector for the main menu {@link UiSdlNavMenu}
+   */
+  mainMenuSelector: private string = '.c3-nav-menu'
+
+  /**
+   * Selector for the sub menu {@link UiSdlNavSubMenu}
+   */
+  subMenuSelector: private string = '.c3-nav-sub-menu:not(.hoverable)'
+
+  /**
+   * Selector for footer menu {@link UiSdlNavMenu#footer}
+   */
+  footerMenuSelector: private string = '.c3-nav-section.footer-menu'
+
+  /**
+   * Selector for hover menu {@link UiSdlNavSubMenu}
+   * Hover menu is optional and is a sub menu that will show up when you hover on a menu item.
+   */
+  hoverMenuSelector: private string = '.c3-nav-sub-menu.hoverable'
+
+  /**
+   * Selector for section title {@link UiSdlNavMenuSection#title}
+   */
+  sectionTitleSelector: private string = '.c3-nav-section-title'
+
+  /**
+   * Selector for menu items {@link UiSdlNavMenuItem}
+   */
+  menuItemSelector: private string = 'li.item a'
+
+  /**
+   * Selector for active menu items {@link UiSdlNavMenuItem}
+   */
+  activeItemSelector: private string = 'li.item.active'
+
+  /**
+   * Selector for sub menu collapse button.
+   * By clicking this button you can collapse or show the sub menu.
+   */
+  subMenuCollapseButtonSelector: private string = 'button.c3-nav-sub-menu-action'
+
+  rendered: ~ js
+
+  /**
+   * Click the given menu item and navigate to a different page. The menu item can come from
+   * main menu, sub menu or hover menu as long as it's rendered on the current page.
+   * If the menu item is from hover menu, you need to show hover menu before calling this function.
+   *
+   * @param menuItemText
+   *          The text of menu item that you want to click on and navigate to.
+   *          If there are duplicate texts it will use the first one.
+   *
+   * @return the url of the page you navigated to or throw an error if this menu item is not rendered.
+   */
+  clickMenuItem: inline member function(menuItemText: !string, timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Gets the items in the main menu.
+   *
+   * @param timeout
+   *           Timeout in seconds for the chain
+   * @return a {@link LukeAsyncQueueNode} that will be resolved with main menu
+   * item elements.
+   */
+  getMainMenuItems: inline member function(timeout: int): LukeAsyncQueueNode js
+
+  /**
+   * Gets the active menu item from main menu.
+   *
+   * @return the active menu item, or `undefined` if there is no active menu item.
+   */
+  getMainMenuActiveMenuItem: inline member function(): LukeWebElement js
+
+  /**
+   * Gets the active menu item from sub menu.
+   *
+   * @param subMenuType
+   *          An enum to indicate the submenu type between 'HOVERED' and 'NORMAL'
+   *          Defaults to 'NORMAL'
+   *
+   * @return the active menu item, or `undefined` if there is no active sub menu item.
+   */
+  getSubMenuActiveMenuItem: inline member function(subMenuType: string enum('HOVERED', 'NORMAL') = 'NORMAL')
+                                            : LukeWebElement js
+}

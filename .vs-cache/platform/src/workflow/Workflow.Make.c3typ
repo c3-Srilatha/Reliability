@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized {@link Workflow.Vertex} that represents an object or map "make" operation.
+ * This is often done to merge several data outputs into a single input for a {@link Workflow.Action}.
+ * All the inputs of this vertex are combined into a single object of type {@link #targetType}
+ * ```
+ * -------------------                            ----------------------
+ * | Workflow.Action  | out ----------------> a   |                     |
+ * -------------------                            |                     |                        --------------------
+ *                                                |   Workflow.Make     |  out -------------> in | Workflow.Action |
+ * -------------------                            |                     |                        --------------------
+ * | Workflow.Action  | out ----------------> b   |                     |
+ * -------------------                            ----------------------
+ * ```
+ * As an example of the "make" operation, assume the {@link Workflow.Make} instance visually depicted above and that
+ * the values passed to `a` and `b` are "hello" and 42, respectively.
+ * If {@link #targetType} is an {@link Obj}:
+ * ```
+ * // targetType = MyObj.myType()
+ * type MyObj {
+ *   a: !string
+ *   b: !int
+ * }
+ * // out = MyObj(a="hello", b=42)
+ * ```
+ * If {@link #targetType} is an {@link Map}:
+ * ```
+ * // out = {"a": "hello", "b": 42}
+ * ```
+ */
+type Workflow.Make mixes Workflow.Vertex {
+
+  /**
+   * Inputs will be made into a single object or map of type specified by {@link #targetType}.
+   * See typedoc for examples.
+   */
+  targetType: !ValueType
+
+  /**
+   * @param targetType
+   *         value to set for {@link #targetType}.
+   * @para inTypes
+   *         type information for expected inputs on the vertex.
+   * @param name
+   *         optional name for the constructed vertex.
+   * @return constructed vertex with given out type.
+   */
+  fromTargetType: function(targetType: !ValueType,
+                           inTypes: !map<string, ValueType>,
+                           name: string): !mixing Workflow.Make
+}

@@ -1,0 +1,166 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents Page Object Pattern. Similar to [WebDriver.IO](https://webdriver.io/docs/pageobjects/).
+ * It holds reusable selectors and functions for a page in {@link LukeCore} tests.
+ */
+@beta
+type LukeTestPage mixes LukeTestComponent, PageLoadTimeMeasurable {
+
+  /**
+   * e.g. workbench.DataExplorerPage in
+   * /Users/blakehowell/c3/c3base/base/tools/ui/C3Tools/pages/DataExplorer.c3ui
+   */
+  pageComponentId: string
+
+  /**
+   * Default user name
+   */
+  username: string = 'BA'
+
+  /**
+   * Default password
+   */
+  password: string = 'BA'
+
+  /**
+   * The path of URL. The path is rendered with `pathParams` to support dynamic paths.
+   * Examples: `dashboard`, `/ai-studio/projects/show/{{projectId}}/exMachina/{{id}}`
+   */
+  path: string
+
+  @deprecated(details='Use @{baseUrl}')
+  domain: string = 'http://localhost:8080'
+
+  /**
+   * Base url (possibly a vanity url) to access the page.
+   * Example: `http://localhost:8080` and `https://pacificOcean.c3iot.com`
+   */
+  baseUrl: string
+
+  /**
+   * Parameters to populate the path with.
+   * The keys must match the variables used inside `path` template field.
+   * The values replace the variables used inside `path` template field when `getUrl` is called.
+   */
+  pathParams: map<string, string>
+
+  /**
+   * Id of page record. For example, "1234".
+   *
+   * If domain is `https://pacificOcean.c3iot.com/`, path is `sharkWatch/recommendation,
+   * paramsId is `4548a40d`, the full URL will be
+   * `https://pacificOcean.c3iot.com/sharkWatch/recommendation/4548a40d`
+   *
+   * paramsId is also referred to as `filename`, as specified in https://www.w3schools.com/html/html_urlencode.asp/.
+   * For example, as in the url `scheme://prefix.domain:port/path/filename`
+   */
+  @deprecated(finalVersion='7.11', details='use pathParams instead')
+  paramsId: string
+
+  /**
+   * Parameters that are passed as query params to the page. For example, if the the full URL is
+   * `https://pacificOcean.c3iot.com/sharkWatch/recommendation/4548a40d?endagered=true&teeth=sharp`,
+   * then domain should be `https://pacificOcean.c3iot.com/`, path should be `sharkWatch/recommendation/{{paramsId}},
+   * pathParams should be {paramsId: '4548a40d'}, and the additionalParams should be {endangered: true, teeth: 'sharp'}.
+   */
+  additionalParams: json
+
+  /**
+   * The fragment that need to be passed to the page. For example, if the the full URL is
+   * `https://pacificOcean.c3iot.com/sharkWatch/recommendation/4548a40d?endagered=true&teeth=sharp#pacific`,
+   * then domain should be `https://pacificOcean.c3iot.com/`, path should be `sharkWatch/recommendation,
+   * paramsId should be `4548a40d`,and the additionalParams are endangered=true&teeth=sharp
+   * and the fragment is pacific. Pass the raw fragment here, since it will be encoded internally
+   */
+  fragment: string
+
+  /**
+   * The title of the page
+   */
+  title: string
+
+  /**
+   * Modal element
+   */
+  modalElement: string = '.modal'
+
+  /**
+   * Element of modal title
+   */
+  modalTitleElement: string = '.modal-title'
+
+  /**
+   * Element of modal body
+   */
+  modalBodyElement: string = '.modal-body'
+
+  /**
+   * Element that contains the breadcrumbs on the page
+   */
+  breadcrumbsEl: string = '.c3-breadcrumbs'
+
+  /**
+   * Selector for side sub menu minimize button
+   * The button has the same class '.btn-minimize' regardless of whether or not the menu is minimized
+   */
+  sideSubMenuMinimizeButtonEl: string = '#side-sub-menu .btn-minimize'
+
+  /**
+   * Selector for side sub menu container
+   */
+  sideSubMenuContainerEl: string = '.c3-side-sub-menu-container'
+
+  /**
+   * Selector for side sub menu nav container, which are children of {@see sideSubMenuContainerEl}
+   */
+  sideSubMenuNavContainerEl: string = '.c3-side-sub-menu-container nav.sub-menu-container'
+
+  /**
+   * Dependency crumbs element
+   */
+  dependencyCrumbsEl: string = '.c3-breadcrumbs .redirect'
+
+  /**
+   * Selector for items in the side sub menu
+   */
+  sideSubMenuItemEl: string = '.sub-menu-container .item'
+
+  /**
+   * Side menu collapse button
+   */
+  sideMenuCollapseButton: string = '#side-sub-menu .btn-minimize'
+
+  /**
+   * The id of the {@link PageGroup} for this page
+   */
+  pageGroup: string
+
+  /**
+   * Open page function using credential specified by {@link username} and {@link password}. When using {@link LukeBrowser}
+   * engine, the username and password will be used as login only if the url of the page has a different domain from the
+   * Luke Playground page. That means if you want to use a special user account for testing UI hosted on the same server as Luke Playground,
+   * you will need to create a {@link VanityUrl} with a different domain. For example, if Luke Playground is hosted at http://localhost:8080/index_browser.html,
+   * and your UI is hosted at http://localhost:8080/my-app, the UI page will always have the same login as the Luke Playground, because they are of the same domain.
+   * In order to use a different login for testing, you can create a vanity url with a different domain (for instance, http://my-ui:8080/my-app).
+   * As such, a different login can be used for testing the UI. This restriction does not exist in cross-domain / cross-server testing.
+   *
+   * Note that, like any other Luke API, openPage is asynchronous. It basically schedules a retriable task
+   * to open the page in the future. If the API is not run in a context where {@link Luke#run} gets triggered
+   * automatically (e.g. in {@link LukeCore#runJasmine}), you will need to call {@link Luke#run} to trigger the run.
+   */
+  openPage: inline member function() js
+
+  openForMeasuringLoadTime: ~ js-server
+
+  /**
+   * Get the url of this page
+   */
+  getUrl: inline member function(): string js
+}

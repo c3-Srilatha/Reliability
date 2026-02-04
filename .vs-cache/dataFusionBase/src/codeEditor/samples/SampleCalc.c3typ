@@ -1,0 +1,21 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@codeEditorTemplate(name="Simple Calc", description="Entity with simple calc fields", displayIcon="calculator")
+entity type SampleCalc {
+
+  intField:      int
+  intField2:     int
+  doubleField:   double
+  arry:          [int] schema name 'AR'
+  calcInt:       int stored calc intField
+  calcArry:      [int] schema name 'CALCA' stored calc arry
+  calcInt2:      int stored calc intField + intField2
+  calcInt3:      int stored calc exists(intField) ? intField : parent.calcInt2
+  calcIntNested: int stored calc calcInt
+}

@@ -1,0 +1,388 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * @inheritdoc
+ */
+/*
+ * c3-analysis-disable c3-excessive-method-params -- existing functions should not cause error
+ */
+remix type ReliabilityMlModel {
+
+  /**
+   * The {@link ReliabilityOrchestrator.TrainingJobResult}, as part of which, this {@link ReliabilityMlModel}
+   * was created in an asynchronous manner.
+   */
+  jobResult: private ReliabilityOrchestrator.TrainingJobResult (trainedModel)
+
+  /**
+   * The {@link ReliabilityAssetAlert}s triggered by this model that have been closed.
+   */
+  @db(filter='currentState.id == "Closed"')
+  triggeredClosedAlerts: [ReliabilityAssetAlert](triggeringModel)
+
+  /**
+   * The feedback provided by users for this model.
+   */
+  @db(order='descending(meta.created)')
+  feedback: [ModelUserFeedback](model)
+
+  /**
+   * Latest suggestion provided for this model
+   */
+  latestSuggestion: ModelUserFeedback stored calc feedback.(exists(suggestion))[0]
+
+  /**
+   * The [relation](FaultySensor.RiskModelSourceOfTruthRelation) created when (and only when) this model was generated
+   * as part of the {@link FaultySensor} retraining process. It enables tracking the initial model and how it was
+   * modified over time to account for [faulty sensors](Sensor#operationalStatus).
+   */
+  faultySensorSourceOfTruthRelation: FaultySensor.RiskModelSourceOfTruthRelation(child)
+
+  /**
+   * The {@link ReliabilityOrchestrator.TrainingJobResult} that trained this model.
+   */
+  trainJobResult: ReliabilityOrchestrator.TrainingJobResult(trainedModel)
+
+  /**
+   * {@link AlertMutedPeriod}s during which alerts from this model have been muted.
+   */
+  @db(order='descending(meta.created)')
+  mutedPeriods: [AlertMutedPeriod](target)
+
+  /**
+   * The current {@link AlertMutedPeriod} for this model, if one exists.
+   */
+  @db(filter='start <= now() && end > now()')
+  currentMutedPeriod: AlertMutedPeriod(target)
+
+  /**
+   * Indicates whether alerts for this model are currently muted.
+   */
+  isMuted: boolean calc currentMutedPeriod.active
+
+  /**
+   * The status label for alerts for this model, indicating whether they are currently muted or unmuted.
+   * This field is intended to be used only in the UI for display or filtering purposes.
+   */
+  // TODO REL-27672:  [REL 21.0.0] [Mute Alerts] - Remove the mutedDisplayStatusLabel field in ReliabilityMlModel and Sensor when PLAT-131868 is fixed
+  mutedDisplayStatusLabel: string stored calc currentMutedPeriod.active ? 'MUTED' : 'UNMUTED'
+
+  /**
+   * Function that calls the `ReliabilityOrchestrator.AdjustModelHyperparamsProcess.Spec` to create the Workflow.Run and
+   * initializes `latestAdjustModelHyperparamsExperiment` type with the `Workflow.Run` and new Hyperparameters.
+   */
+  createAdjustModelHyperparamsExperiment: member function(
+    modelName: string,
+    start: DateTime,
+    end: DateTime,
+    newHyperparams: map<string, map<string, any>>
+  ): Workflow.Run js
+
+  /**
+   * Gets the respective hyperparameters (including nested as a field on the pipeline can have additional hyperparameters)
+   * associated with the model's underlying pipeline.
+   *
+   * @param isForInferenceOnly
+   *        Whether to get the hyperparameters relevant only for model inference.
+   *
+   * @return {ModelConfigJsonHyperparams} with key and additional hyperparameters.
+   */
+  getHyperparams: member function(isForInferenceOnly: boolean): ModelConfigJsonHyperparams js-rhino
+
+  /**
+   * Helper method to promote an [experimental model](ReliabilityMlModel) to a `CANDIDATE` or `CHAMPION` model.
+   * This method cleans #latestAdjustModelHyperparamsExperiment from the base model, and then
+   * runs #createAgnosticAcceptExperimentalModelWorkflow for {@link ReliabilityMlModel}s or
+   * #createRiskAcceptExperimentalModelWorkflow for {@link ReliabilityRiskMlModel}s.
+   *
+   * ```
+   * ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+   * │ Retrieve     │    │ Create       │    │ Run Training │
+   * │ Experimental ├───►│ ModelConfig  ├───►│ Deployment   │
+   * │ Model        │    │ Run          │    │ Workflow     │
+   * └──────────────┘    └──────────────┘    └──────────────┘
+   * ```
+   *
+   * @param spec
+   *        Optional configurations for how to accept the experiment.
+   * @returns
+   *        The {@link Workflow.Run} that tracks the progress of the training job for the UI.
+   */
+  acceptLatestModelExperiment: member function(
+    spec: ReliabilityMlModel.AcceptExperimentSpec
+  ): Workflow.Run js-rhino
+
+  /**
+   * Helper method to store the latest model experiment in #latestAdjustModelHyperparamsExperiment.
+   *
+   * @param experimentalModel
+   *        The experimental model to store. (Output from {@link ReliabilityOrchestrator.AdjustModelHyperparamsProcess.Spec})
+   */
+  setExperimentalModel: member function(
+    experimentalModel: !ReliabilityMlModel
+  ) js-rhino
+
+  /**
+   * **Not intended to be called standalone, it represents a nested action of #createAgnosticAcceptExperimentalModelWorkflow**
+   *
+   * Helper method that executes {@link ReliabilityOrchestrator.TrainingJob} over a experimental model to deploy it as
+   * a candidate model.
+   *
+   * @param project
+   *        The project that the base model belongs to.
+   * @param experimentalModel
+   *        Experimental Model that is trained but not yet deployed.
+   * @param asset
+   *        The asset on which the experimental model will be deployed.
+   * @param modelConfigRun
+   *        The {@link ModelConfigRun} that tracks the progress of the training job for the UI.
+   * @returns
+   *        The {@link MlOperationRun} that tracks the progress of the training job.
+   */
+  runExperimentalModelTrainingJob: function(
+    project: ReliabilityMl.Project,
+    experimentalModel: ReliabilityMlModel,
+    asset: ReliabilityAsset,
+    modelConfigRun: ModelConfigRun
+  ): MlOperationRun<ReliabilityOrchestrator.TrainingJobRun> py
+
+  /**
+   * **Not intended to be called standalone, it represents a nested action of #createAgnosticAcceptExperimentalModelWorkflow**
+   *
+   * Helper method that executes {@link ReliabilityOrchestrator.PostTrainingJobSpec} over a deployed experimental model.
+   *
+   * @param trainingRun
+   *        The {@link ReliabilityOrchestrator.TrainingJobRun} used to deploy the experimental model. It is used to
+   *        populate {@link ReliabilityOrchestrator.PostTrainingJobSpec#assetToModelRelationFilter}.
+   * @returns
+   *        The {@link MlOperationRun} that tracks the progress of the training job.
+   */
+  runExperimentalPostModelTrainingJob: function(
+    trainingRun: ReliabilityOrchestrator.TrainingJobRun,
+    project: ReliabilityMl.Project
+  ): MlOperationRun<ReliabilityOrchestrator.PostTrainingJobRun> py
+
+  /**
+   * This utility method is used remove the {@link ReliabilityMlModel#latestAdjustModelHyperparamsExperiment}
+   * at the end of either #createAgnosticAcceptExperimentalModelWorkflow or #createRiskAcceptExperimentalModelWorkflow.
+   *
+   * @param experimentalModel
+   *        Experimental Model that is trained but not yet deployed.
+   * @returns
+   *        The {@link Workflow.Vertex} that will run {@link ReliabilityMlModelExperiment#remove}.
+   */
+  removeExperimentVertex: private function(experimentalModel: ReliabilityMlModel): Workflow.Vertex py
+
+  /**
+   * Helper method to create a {@link Workflow} with the following steps:
+   * 1. Run #runExperimentalModelTrainingJob.
+   * 2. Run #runExperimentalPostModelTrainingJob.
+   * 3. Run {@link ModelOpsHelper#changeModelStatus} if {@link ReliabilityMlModel.AcceptExperimentSpec} is true.
+   *
+   * ```
+   *                                              if spec.deployAsChampion
+   *     ┌──────────────┐   ┌────────────────┐        ┌──────────────┐
+   * in  │              │out│                │$success│ Change Model │ out
+   * ───►│ Training Job ├──►│ Post Train Job ├─┬─────►│ Deployment   ├─┬─►
+   *     │              │   │                │ │      │ Status       │ │
+   *     └──────────────┘   └────────────────┘ │      └──────────────┘ │
+   *                                           │                       │
+   *                                           │      ┌──────────────┐ │
+   *                                           │      │ Clean Latest │ │
+   *                                           └─────►│ Experiment   ├─┘
+   *                                                  │ Field        │
+   *                                                  └──────────────┘
+   * ```
+   *
+   * @param spec
+   *        Optional configurations for how to accept the experiment.
+   * @param project
+   *        The project that the base model belongs to.
+   * @param experimentalModel
+   *        Experimental Model that is trained but not yet deployed.
+   * @param asset
+   *        The asset on which we will deploy the experimental model.
+   * @param modelConfigRun
+   *        The {@link ModelConfigRun} that tracks the progress of the training job for the UI.
+   * @returns
+   *        The Workflow with the steps to deploy the experimental model.
+   */
+  createAgnosticAcceptExperimentalModelWorkflow: function(
+    spec: ReliabilityMlModel.AcceptExperimentSpec,
+    project: ReliabilityMl.Project,
+    experimentalModel: ReliabilityMlModel,
+    asset: ReliabilityAsset,
+    modelConfigRun: ModelConfigRun
+  ): Workflow py
+
+  /**
+   * This method Fetches the date options for the given modelId with the dates for original validation time frame,
+   * last week, last month, last three months, and last six months.
+   *
+   * @returns the array of objects with the start and end dates
+   */
+  getPreviewTimeFrameOptions: function(modelId: string serialized ReliabilityMlModel):  FetchResult<json> js-rhino
+
+  /**
+   * Helper method called by #acceptLatestModelExperiment to create a {@link Workflow} that consists of:
+   * 1. {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining} for running model classification, model validation,
+        and generating model validation reports.
+   * 2. {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelDeployment} for running model deployment. Models get deployed as
+   *    candidate in {@link ReliabilityOrchestrator.ReliabilityRisk.Spec.ModelTraining}. The deployment vertex will skip over these
+   *    models if the deployment label is the same as current deployment status.
+   * 3. #removeExperimentVertex for removing the {@link ReliabilityMlModel#latestAdjustModelHyperparamsExperiment at the end.
+   *
+   * @param spec
+   *        Optional configurations for how to accept the experiment.
+   * @param experimentalModel
+   *        Experimental Model that is trained but not yet deployed.
+   * @param asset
+   *        The asset on which the experimental model will be deployed.
+   * @param modelConfigRun
+   *        The {@link ModelConfigRun} that tracks the progress of the training job for the UI.
+   * @returns
+   *        The Workflow with the steps to deploy the experimental model.
+   */
+  createRiskAcceptExperimentalModelWorkflow: function(
+    spec: ReliabilityMlModel.AcceptExperimentSpec,
+    experimentalModel: ReliabilityMlModel,
+    asset: ReliabilityAsset,
+    modelConfigRun: ModelConfigRun
+  ): Workflow py
+
+  /**
+   * This method deletes the {@link ReliabilityMlModelExperiment} referenced through the #latestAdjustModelHyperparamsExperiment field.
+   *
+   * @returns
+   *        The ID of the workflow that was canceled.
+   *        This Id should be removed from the Local Storage, that is used to track the workflow and show global banner.
+   */
+  discardLatestExperiment: member function(): string js-rhino
+
+  /**
+   * This method gets the `apiEndPoint` of the report for this model that can be downloaded from the UI.
+   * else, it returns the {@link File#apiEndpoint} of the first file on this model.
+   *
+   * By default, this method generates the report for the model if it doesn't exist.
+
+   * @param checkExistsOnly
+   *        Optional param that can be passed, which if true, only checks if a report already exists for this model.
+   *
+   * @returns
+   *        either existence of the report or `apiEndpoint` of the report that can be downloaded from the UI.
+   */
+  getReportEndPointForUi: member function(checkExistsOnly: boolean = false): !boolean | !string js-rhino
+
+  /**
+   * Updates {@link monitoringScore} for a given monitoring classification label.
+   */
+  updateMonitoringClassification: member function(label: !string, user: User) js-rhino
+
+  /**
+   * Generates {@link PdfComponent}s for the report for a single {@link ReliabilityMlModel}
+   * Only works for ReliabilityRiskWithResidualDiagnostics {@link ReliabilityMl.Project}
+   */
+  generateReportComponents: member function(reportSpec: !ReliabilityMlModelReportSpec, modelStatus: MlModel.Route.Status.Label, asset: ReliabilityAsset): [PdfComponent] py-pdf_generation
+
+  /**
+   * Function to process risk scores in a time range.
+   * Reads persisted results from the {@link MlProject} corresponding to reliability risk.
+   * It will generate {@link RiskScoreSpec}s if any alert is predicted.
+   * @param timeRange
+   *    Time range where it will look for risk score predictions
+   * @return
+   *    Generated {@link RiskScoreSpec}s
+   */
+  getAlertPredictionSpecs: member function(timeRange: TimeRange): [RiskScoreSpec] js-rhino
+
+  /**
+   * Creates required pdf components for an {@link ReliabilityAssetAlert} report
+   * @param riskScoreSpec
+   *    Represents an alert prediction for a {@link ReliabilityMlModel} and a {@link ReliabilityAsset} in a certain timestamp,
+   *    from which the components are going to be generated
+   * @param reportSpec
+   *    User preferences specifications for the report
+   */
+  generateAlertReportComponents: function(riskScoreSpec: !RiskScoreSpec, reportSpec: !ReliabilityAssetAlertReportSpec): [PdfComponent] py
+
+  /**
+   * Gets a collection of feature contributions using the provided {@link RiskScoreSpec}.
+   * This method maps feature names to their contribution values, which indicate the impact each feature had on the risk score.
+   *
+   * This method also normalizes the feature contribution values using either the `ModelRiskScoreContributorsRatio`, `ModelValidationRiskScoreContributorsRatio` or `RiskScoreContributorsRatio`.
+   * The normalized feature contribution values sum up to 1.
+   * The method fetches all the feature contribution headers for an alert and constructs a metric name depending on the {@link RiskScoreSpec}.
+   * The metric is then evaluated on the {@link ReliabilityAsset} to compute the normalized value of the feature contribution.
+   * For normalization, the metrics compute a sum of the feature contribution value and divide it by the sum of all the feature contribution associated with the alert.
+   *
+   * @param spec - The specification for fetching the features.
+   * @returns A map where the keys are feature names and the values are their corresponding normalized contribution values.
+   */
+  getFeatureContributions: function(spec: !RiskScoreSpec): map<string, double> js-rhino
+
+  /**
+   * Helper method to persist {@link MlOperationRun#result} data into {@link ReliabilityMlModelExperiment}.
+   * It expects three operations; {@link MlModel#process} and {@link MlModel#interpret} operations over the experimental
+   * model, and a {@link MlModel#process} from the {@link ReliabilityMlModelExperiment#baseModel}.
+   *
+   * These three operation runs are transformed into the following fields:
+   *
+   * - {@link ReliabilityMlModelExperiment#alertData}: {@link Data.Persisted} containing the timestamp and normalized
+   *   feature contribution for them.
+   *
+   * - {@link ReliabilityMlModelExperiment#algorithmData}: {@link Data.Persisted} containing the
+   *   {@link ReliabilityMl.Project#algorithmOutputs} as columns from the {@link ReliabilityMlModel model}.
+   *
+   * - {@link ReliabilityMlModelExperiment#baseModelAlgorithmData}: Same as above, but instead of reading from the
+   *   [experiment model](ReliabilityMlModelExperiment#experimentalModel) its from the
+   *   [base model](ReliabilityMlModelExperiment#baseModel).
+   *
+   * @param processMlRun
+   *        {@link MlOperationRun#result} resulted from {@link MlModel#process} executed over the experimental model.
+   * @param interpretMlRun
+   *        {@link MlOperationRun#result} resulted from {@link MlModel#interpret} executed over the experimental model.
+   * @param baseProcessMlRun
+   *        {@link MlOperationRun#result} resulted from {@link MlModel#process} executed over the base model.
+   */
+  persistExperimentProcessAndInterpretOutputs: member function(
+    processMlRun: !native,
+    interpretMlRun: native,
+    baseProcessMlRun: native
+  ) py-data
+
+  /**
+   * Replicates the experiment model to create a new model. The newly created model
+   * does not need to be retrained because only non-trainable hyperparameters are allowed
+   * to change as part of the model replication process.
+   *
+   * For example, parameters such as `alert_threshold` can be changed, as they only affect
+   * how the model runs inference. However, parameters like RandomForestRegressor n_estimators
+   * cannot be changed because altering such parameters would require retraining the model.
+   *
+   * @param spec
+   *        The specifications to replicate the model.
+   * @return A new {@link ReliabilityMlModel} object that is the replicated version of the current model.
+   */
+  replicateModelExperiment: member function(
+    spec: ReliabilityMlModelReplicateSpec
+  ): !ReliabilityMlModel py-server-py4j
+
+  /**
+   * This method Fetches the dates for original training and validation time period for the given modelId
+   * @param modelId
+   *        The modelId is which we pass as the param in the funtion to extract the validation time range for the model.
+   * @returns an object with the original training and validation start and end dates along with the display string.
+   */
+  getOriginalTrainingValidationPeriods: function(modelId: string serialized ReliabilityMlModel): json js-rhino
+}
+
+/*
+ * c3-analysis-enable c3-excessive-method-params
+ */

@@ -1,0 +1,245 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state that stores all the UI logic for Asset Onboarding.
+ */
+@typeScript
+type AssetOnboardingApplicationState mixes SettableApplicationState {
+
+  /**
+   * Whether or not the user is editing the hierarchy
+   */
+  editMode: boolean
+
+  /**
+   * The edits made to the asset hierarchy, keyed by the asset id.
+   * See {@link AssetOnboardingEditInfo} for more details on structure.
+   */
+  edits: map<string, AssetOnboardingEditInfo>
+
+  /**
+   * The names of facilities to be created, keyed by the facility id.
+   */
+  createdFacilityNames: map<string, string>
+
+  /**
+   * Assets and facilities that have been renamed, keyed by the asset id.
+   */
+  renamedAssets: map<string, string>
+
+  /**
+   * The id of the currently selected asset.
+   */
+  selectedAssetId: string
+
+  /**
+   * Flag to indicate if the selected asset is a {@link Facility}.
+   */
+  isFacility: boolean
+
+  /**
+   * Stores the url of the page user originally intended to navigate to when exiting asset onboarding edit mode.
+   */
+  redirectTo: string
+
+  /**
+   * Stores the value of any editable, pre-populated form field on the page.
+   */
+  formFieldValue: string
+
+  /**
+   * Stores the information of selected node on the AssetOnboardingApplicationState
+   */
+  selectedNode: json
+
+  /**
+   * Stores the function to get the cell actions for a node in the asset hierarchy spreadsheet.
+   *
+   * Takes two arguments, the node and whether or not this node is a facility.
+   */
+  getCellActionsForNodeFunction: native
+
+  /**
+   * Stores the identifier for the component to be shown in the side panel.
+   *
+   * assetDefault
+   *    - The default asset information component
+   * assetAddCustom
+   *    - The Add Custom Asset Interaction
+   * assignAssetImportance
+   *    - Assign Asset Importance Level interaction
+   * assetDuplicate
+   *    - The Add Duplicate Asset Interaction
+   * facilityDuplicate
+   *    - The Add Duplicate Facility Interaction
+   * assetSaveAsHierarchy
+   *    - The Save as Hierarchy Temaplate Interaction
+   * facilityDefault
+   *    - The default facility information component
+   * facilityChangeHierarchyStatus
+   *    - The Change Hierarchy Status component
+   */
+  currentSidePanelComponent: string
+
+  /**
+   * Represents a mapping of nodes to the denormalized children entries for all the  move edits
+   * that haven't been applied yet.
+   * Each entry in the map contains information about a node and the unapplied move edits
+   * that correspond to its subtree, where `moveEdits` is a list of assetIds that are moved.
+   *
+   * Example
+   * {
+   *   "1234-123-1234": {
+   *     "nodeId": "1234-123-1234", // Unique identifier of the node.
+   *     "moveEdits": ["2222-222-2222", "4444-444-4444"] // List of associated move edits.
+   *   }
+   * }
+   */
+  nodeDescendantEditsMap: json
+
+  /**
+   * Epic to handle the data requests for asset onboarding
+   */
+  @uiSdlEpic(actionType='DATA_REQUEST')
+  requestDataEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `CREATE_ASSET` action is triggered, this epic creates a new asset and adds it to the
+   * hierarchy. If no `parent` is passed in the payload the {@link #selectedNode} is used as the parent.
+   */
+  @uiSdlEpic(actionType='CREATE_ASSET')
+  createAssetEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `DUPLICATE_ASSET` action is triggered, this epic creates duplicate assets
+   * for the subtree of the currently selected node.
+   */
+  @uiSdlEpic(actionType='DUPLICATE_ASSET')
+  duplicateAsset: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `SAVE_AS_HIERARCHY_TEMPLATE` action is triggered, this epic creates a hierarchy template
+   * with the subtree of the currently selected node.
+   */
+  @uiSdlEpic(actionType='SAVE_AS_HIERARCHY_TEMPLATE')
+  saveAsHierarchyTemplateEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `HIGHLIGHT_SUBTREE` action is triggered, this epic highlights the subtree
+   * of the asset.
+   */
+  @uiSdlEpic(actionType='HIGHLIGHT_SUBTREE')
+  highlightSubtreeEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `MOVE_ASSET` action is triggered, this epic moves the asset in the hierarchy.
+   */
+  @uiSdlEpic(actionType='MOVE_ASSET')
+  moveAssetEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `DELETE_ASSET` action is triggered, this epic deletes the asset from the hierarchy.
+   */
+  @uiSdlEpic(actionType='DELETE_ASSET')
+  deleteAssetEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `CREATE_FACILITY` action is triggered, this epic creates a new facility and adds it to the
+   * hierarchy.
+   */
+  @uiSdlEpic(actionType='CREATE_FACILITY')
+  createFacilityEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * When the `DELETE_FACILITY` action is triggered, this epic deletes the facility from the hierarchy.
+   */
+  @uiSdlEpic(actionType='DELETE_FACILITY')
+  deleteFacilityEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * Epic to handle the TabPanel button click
+   */
+  @uiSdlEpic(actionType='TAB_PANEL_BUTTON_CLICK')
+  tabPanelButtonClickEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+  * Starts the sensor mapping workflow for a particular asset.
+  *
+  * If the asset specified in {@link #edits} has not been created,
+  * a warning modal is displayed to the user.
+  *
+  * The epic extracts `assetId` and `assetName` from the payload.
+  * If the payload does not provide this information, it defaults
+  * to using the `selectedNode` from the {@link AssetOnboardingApplicationState} state.
+  */
+  @uiSdlEpic(actionType='START_SENSOR_MAPPING')
+  startSensorMappingEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * Epic to set the information of a node in AssetHierarchyViewerGraph to {@link AssetOnboardingApplicationState} state.
+   */
+  @uiSdlEpic(actionType='SET_NODE_DATA')
+  setGraphNodeDataEpic: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * Epic to refresh the selectedNode based on the latest data from the graph.
+   */
+  @uiSdlEpic(actionType='REFRESH_SELECTED_NODE')
+  refreshSelectedNode: function(
+    actionStream: !UiSdlActionsObservable,
+    stateStream: !UiSdlStatesObservable
+  ): !UiSdlActionsObservable ts-client
+
+  /**
+   * Helper function that determines whether an asset is a facility or sensor, then returns its status and associated color
+   */
+  _getAssetMappingStatus: function(asset: json, isFacility: boolean): json ts-client
+
+  /**
+   * Helper function that maps {@link SensorMappingStatus} enum or {@link FacilityHierarchyStatus} enum to a {@link ThresholdConfigColor}
+   */
+  _getMappingStatusColor: function(mappingStatus: string): string ts-client
+}

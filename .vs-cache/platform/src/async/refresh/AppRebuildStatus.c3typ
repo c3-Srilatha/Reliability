@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type AppRebuildStatus mixes AppRebuildStepStatus {
+
+  /**
+   * Status for 'createdOrUpdated' step.
+   */
+  createdOrUpdated: !AppRebuildStepStatus
+
+  /**
+   * Status for 'storedCalcs' step.  If 'hierarchies' was not specified for the rebuild, then this will be
+   * for the rebuilding of ALL stored calcs.  If 'hierarchies' was specified, then this will be for those
+   * stored calcs that do not depend on any hierarchy denorm types.
+   */
+  storedCalcs: !AppRebuildStoredCalcsStepStatus
+
+  /**
+   * Status for the 'hierarchies' step.
+   */
+  hierarchies: !AppRebuildHierarchiesStepStatus
+
+  /**
+   * If 'hierarchies' was specified for the rebuild, the status for the stored calcs that depend on the
+   * hierarchy denorm results. Otherwise, this will be skipped.
+   */
+  storedCalcs2: !AppRebuildStoredCalcsStepStatus schema suffix 'C2'
+
+  /**
+   * Status for the 'acls' step.
+   */
+  acls: !AppRebuildStepStatus
+
+  /**
+   * Status for the 'partitionableCompaction' step.
+   */
+  partitionableCompaction: !AppRebuildStepStatus
+
+  /**
+   * Status for the 'normalizedTimeseries' step.
+   */
+  normalizedTimeseries: !AppRebuildStepStatus
+
+  /**
+   * Status for the 'metricDeps' step.
+   */
+  metricDeps: !AppRebuildStepStatus
+
+  /**
+   * Status for the 'analytics' step.
+   */
+  analytics: !AppRebuildStepStatus
+
+  /**
+   * Status for the 'metrics' step.
+   */
+  metrics: !AppRebuildStepStatus
+}

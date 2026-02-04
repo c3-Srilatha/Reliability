@@ -1,0 +1,101 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Remixable type that serves dual purpose: manage all services in the same Pkg and ensures that outputs are known to Studio.
+ */
+@beta
+type Microservice.Service.Manager {
+
+  /**
+   * List service types available for configuration in the {@link Pkg pkg}.
+   *
+   * @return subtypes of Microservice.Service that can be configured in this {@link Pkg pkg}.
+   */
+  listServiceTypes: private function(): [!Type<<Microservice.Service>>] js-server
+
+  /**
+   * List service type names available for configuration in the Pkg.
+   *
+   * @return names of subtypes of Microservice.Service that can be configured in this {@link Pkg pkg}.
+   */
+  listServiceTypeNames: function(): [!string serialized Type<<Microservice.Service>>] js-server
+
+  /**
+   * List Services instances configured by {@link #seedParams}.
+   *
+   * Some Services may have more than one instance.
+   * For example: ["ModelInference[NarwhalV8]", "ModelInference[NarwhalV9]", "MyAttributionService", "ModelRegistry"]
+   *
+   * @return list of configured {@link Microservice.Service services} that will be running in this {@link Pkg pkg}.
+   */
+  listConfiguredServices: private function(): [Microservice.Service] js-server
+
+  /**
+   * List interfaces provided by Service in this Pkg, including inherited.
+   *
+   * For example:
+   *  * {"ModelInference[NarwhalV8]": '1.1.1-rc1'}
+   *  * {"MyAttributionService": '1.1.0', "AttributionService": '5.5.5'}
+   *
+   * @return map from {@link #listConfiguredServices configured service} to the list of provided interfaces and their
+   *         versions.
+   */
+  listProvidedInterfacesVersions: function(): map<!string, map<!string, !string serialized SemanticVersion>> js-server
+
+  /**
+   * List parameters across all services listed by {@link #listServiceTypes}.
+   *
+   * @return all parameters required to configure {@link Microservice.Service services} in this {@link Pkg pkg}.
+   */
+  listParamGroups: private function(): [Microservice.Service.ParamGroup] js-server
+
+  /**
+   * Translate parameters returned by {@link #listParamGroups} to form understandable by Studio.
+   *
+   * Remix and override if customization of parameters order, parameters merging or dropping is needed.
+   *
+   * @return json-serialized {@link Microservice.Service.ParamGroup ParamGroups} from all {@link Microservice.Service services}.
+   *
+   * @see Microservice.Service.ParamGroup#toForm
+   * @see #validateParams
+   * @see #seedParams
+   */
+  listParams: function(): [json] js-server
+
+  /**
+   * Validates given parameters using {@link Microservice.Service#validateServiceParams} method.
+   *
+   * For performance reasons it runs validation only against last submitted form, assuming previous form are already
+   * validated.
+   *
+   * @param forms
+   *            json-serialized {@link Microservice.Service.ParamGroup ParamGroups}
+   * @return validation results aggregated across all services listed by {@link #listServiceTypes}.
+   *
+   * @see Microservice.Service.ParamGroup#fromForm
+   * @see #listParams
+   * @see #seedParams
+   */
+  validateParams: function(forms: [json]): !Microservice.Service.ParamsValidationResult js-server
+
+  /**
+   * Updates given Pkg with {@link Microservice.Service#seedServiceParams) for each service in {@link #listServiceTypes}.
+   *
+   * @param pkg
+   *            pkg that need to be updated
+   * @param forms
+   *            json-serialized {@link Microservice.Service.ParamGroup ParamGroups}
+   * @return configs that cannot be seeded. For example secrets.
+   *
+   * @see Microservice.Service.ParamGroup#fromForm
+   * @see #listParams
+   * @see #validateParams
+   */
+  seedParams: function(pkg: !Pkg, forms: [json]): Microservice.Service.Unseeded js-server
+}

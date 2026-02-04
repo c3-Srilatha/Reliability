@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Simple utility to repeat values or action calls
+ */
+type Repeat<E> mixes Spec {
+
+  /**
+   * Value to repeat
+   * ```
+   * Repeat.value(42).times(10)
+   * ```
+   */
+  value: function<T>(v: !?T): !mixing Repeat<T>
+
+  /**
+   * Lambda to invoke repeatedly
+   * ```
+   * Repeat.action(() => Rnd.inst().int()).times(10)
+   * ```
+   */
+  call: function<T>(action: !lambda(): T): !mixing Repeat<T>
+
+  /**
+   * Lambda to invoke repeatedly with initial context
+   * ```
+   * Repeat.action(0, last => last + 1).times(10)
+   * ```
+   */
+  call: function<T>(initial: !?T, action: !lambda(last: !?T): T): !mixing Repeat<T>
+
+  /**
+   * Lambda to invoke repeatedly with initial context and current index
+   * ```
+   * Repeat.action(1, (last, i) => i == 0 ? last : last + 1).times(10)
+   * ```
+   */
+  call: function<T>(initial: !?T, action: !lambda(last: !?T, index: !int): T): !mixing Repeat<T>
+
+  /**
+   * Produce stream of values or action call results
+   */
+  times: member function(count: !int): stream<E>
+
+  _valueOrInitial: private E
+  _action:         private (lambda(): E) | (lambda(current: E): E) | (lambda(current: E, index: int): E)
+}

@@ -1,0 +1,67 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Contains the APIs to interface with the Meta information of the {@Feature.Store}.
+ * @see Feature.Store.Block
+ * @see FeatureEvaluatable
+ * @see FeatureEvaluatable.Bin
+ */
+private type Feature.MetaStore mixes Singleton {
+
+  /**
+   * @return the **Feature.Evaluatable.Bin**s associated with the {@link FeatureEvaluatable.Bin.Strategy strategy} and subjectIds.
+   * Please note that this is useful when we only want to identify the bins for a specific strategy potentially for more efficient "write" (materialization) or "read" (training / prediction).
+   */
+  fetchBins: member function(strategyId: !string, subjectIds: !set<string>): [FeatureEvaluatable.Bin]
+
+  /**
+   * @return the bins associated with the minimal number of {@link Feature.Store.Block}s, necessary and sufficient to satisfy the request.
+   */
+  fetchBins: member function(subjectIds: !set<string>,
+                             feature: !FeatureBase,
+                             spec: EvalFeatureSpecBase): Feature.MetaStore.Bins
+
+  /**
+   * @return the minimal number of {@link Feature.Store.Block}s, along with the associated bin information, necessary and sufficient to satisfy the request.
+   */
+  fetchBlocks: member function(subjectIds: !set<string>,
+                               feature: !FeatureBase,
+                               spec: EvalFeatureSpecBase): Feature.MetaStore.Blocks
+
+  /**
+   * @return the **Feature.Store.Blocks** associated the strategyId and bins, which encapsulates the {@link Feature.Store.Block}s, along with the associated bin information.
+   * This is useful when you already know the specific strategyId and the bins to read the data from.
+   */
+  fetchBlocks: member function(strategyId: !string,
+                               bins: ![int],
+                               feature: !FeatureBase,
+                               spec: EvalFeatureSpecBase): Feature.MetaStore.Blocks
+
+  /**
+   * This function fetches the {@link Feature.Store.Block blocks} containing the materialized data for the given subjects and spec for the given feature.
+   * The fetched blocks are preprocessed and converted to a list of {@link Feature.Chunk.DfBldr.Block metaBlocks} that contain only the minimum amount information
+   * to be used in later operations, such as feature evaluation, packing, {@link #missingData}, {@link #available}. Note that this function does not invoke the actual
+   * read and write of the block data.
+   */
+  fetchMetaBlocks: member function(subjectIds: !set<string>,
+                                   feature: !FeatureBase,
+                                   spec: EvalFeatureSpecBase): [Feature.Chunk.DfBldr.Block]
+
+  /**
+   * API to determine the distribution of the materialized data in certain timeRange and batch of subjects that are defined in the
+   * input {@link Feature.Store.QuerySpec}.
+   */
+  available: member function(spec: Feature.Store.QuerySpec): !Data
+
+  /**
+   * API to determine the missing materialized data in certain timeRange and batch of subjects that are defined in the
+   * input {@link Feature.Store.QuerySpec}.
+   */
+  missing: member function(spec: Feature.Store.QuerySpec): !Data
+}

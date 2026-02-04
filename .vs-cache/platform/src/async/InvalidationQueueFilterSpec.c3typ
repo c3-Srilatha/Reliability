@@ -1,0 +1,133 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Used for specifying filter criteria for count/find functions.  All conditions will be "AND"ed.  Any that are null will be ignored.
+ */
+type InvalidationQueueFilterSpec mixes Spec {
+
+  /**
+   * Target type id to return.
+   */
+  targetTypeId: int
+
+  /**
+   * Target obj ids to return.
+   */
+  targetObjIds: [string]
+
+  /**
+   * Source action id that invalidated the entry to return entries for.
+   */
+  srcActionId: string
+
+  /**
+   * Value of entryType field to return values for.
+   */
+  entryType: string
+
+  /**
+   * Status value to return values for.
+   */
+  status: string
+
+  /**
+   * Context value to return values for.
+   */
+  context: string
+
+  /**
+   * Filter values for individual context fields when the context value type is an included type.
+   */
+  contextFields: map<string, any>
+
+  /**
+   * Error code to return values for.  Only valid for finding/reporting errors
+   */
+  errorCode: string
+
+  /**
+   * Review to return
+   */
+  review: string
+
+  /**
+   * Node pool to return values for.
+   */
+  nodePool: string
+
+  /**
+   * Key for rescheduleByType operation to return values for.
+   */
+  rescheduleKey: string
+
+  /**
+   * Priority to return values for.
+   */
+  priority: int
+
+  /**
+   * Node that invalidated the entry.
+   */
+  invalidatedNodeId: string
+
+  /**
+   * Fields to search for null values on.
+   */
+  nullFields: [string]
+
+  /**
+   * Custom filter expression following normal conventions for {@link FetchSpec#filter}.
+   */
+  customFilter: string
+
+  /**
+   * Constructs a filter expression based on the spec.  This is not a member function so that it can be called on
+   * null specs.
+   *
+   * @param spec
+   *           Spec to build filter expression for.
+   *
+   * @return a filter expression based on the filter spec.
+   */
+  filterExpr: function(spec: InvalidationQueueFilterSpec): string
+
+  /**
+   * Constructs a filter expression for getting errors based on the spec.  This is not a member function so that it
+   * can be called on null specs.
+   *
+   * @param queueType
+   *           Queue type to filter errors for.
+   * @param spec
+   *           Spec to build filter expression for.
+   *
+   * @return a filter expression based on the filter spec.
+   */
+  errorFilterExpr: function(queueType: Type, spec: InvalidationQueueFilterSpec): string
+
+  /**
+   * Appends a filter clause to an existing filter expression (returned from {@link filterExpr}).
+   *
+   * @param fieldName
+   *           Name of field the new clause is for.
+   * @param value
+   *           Value to filter on.
+   * @param filterExpr
+   *           Filter expression to add clause to.
+   * @param includeNullFilter
+   *           True if null check should be made for null value, otherwise null values will be ignored.
+   *
+   * @return original filter expression appended with the new filter clause.
+   */
+  appendFilterClause: function(fieldName: !string, value: any, filterExpr: string, includeNullFilter: boolean): string
+
+  /**
+   * Constructs a spec from a group key returned in a row from a queue report or queue error report.
+   */
+  fromReportGroupKey: function(groupKey: !string): !InvalidationQueueFilterSpec
+}

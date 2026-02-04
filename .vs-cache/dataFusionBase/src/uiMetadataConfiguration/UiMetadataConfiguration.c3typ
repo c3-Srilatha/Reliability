@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to build a npmSrcModule for exposing configuration specific {@link Metadata} instances to
+ * UI Application. Types that mix this type will be included in the generated npmSrcModule and ordered
+ * by their respective {@link FetchFilterSpec} as applicable.
+ */
+@typeScript
+@restful(endpoint='ui-metadata-configuration')
+abstract type UiMetadataConfiguration mixes Metadata, Named {
+
+  /**
+   * The spec that will be utilized to fetch instances of UiMetadataConfiguration
+   * when generating the srcModule
+   * @return a spec for retrieving the appropriate {@link UiMetadataConfiguration} instances for {@link UiMetadataConfiguration#generateSourceFiles}.
+   */
+  fetchSpec: function(): FetchSpec js-server
+
+  /**
+   * Generates source files for the NpmModule
+   * The generated content will be a valid typescript map of {@link UiMetadataConfiguration} subTypes.
+   * @return file names mapped to their content representing the generated typescript map
+   */
+  generateSourceFiles: private function(): map<string, ContentValue> js-server
+
+  /**
+   * Returns an npm module containing the file with the configuration map
+   * @return an npm with the content of {@link UiMetadataConfiguration#generateSourceFiles}
+   */
+  @restful(subPath='npm-modules/ui-metadata-configuration.tgz')
+  produceNpmModule: function(): !ContentValue js-server
+
+  /**
+   * Utility method for obtaining one of the results of the produced npmSrcModule
+   * for use in application client-side logic.
+   * @param configurationKey
+   *         The subType name of the {@link UiMetadataConfiguration} to retrieve
+   * @param instanceName
+   *         When provided, a single instance that matches the instance name will be returned
+   * @return the {@link UiMetadataConfiguration}(s) associated with the configurationKey
+   */
+  getConfigurationForKey: function(configurationKey: !string,
+                                   instanceName: string): [UiMetadataConfiguration] | UiMetadataConfiguration ts-client
+}

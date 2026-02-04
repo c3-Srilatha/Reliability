@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents the App Identity of an App
+ */
+// TODO: PLAT-85369 Remove AppIdentity.c3typ
+@cache(dependencies=['App'])
+type AppIdentity mixes Config, Identified {
+
+  /**
+   * If an AppIdentity with AppIdentity.DEFAULT as id is upserted by the app admin, ALL APPS in the cluster are granted
+   * access to the current app via provided roles. This is mainly a use case for Microservices so set it with caution.
+   */
+  DEFAULT: const string = 'DEFAULT'
+
+  /**
+   * The public key of the app
+   */
+  // TODO: PLAT-72459 Remove deprecated fields on AppIdentity.c3typ
+  @deprecated
+  publicKey: string
+
+  /**
+   * The algorithm used for verifying jwt tokens from the app
+   */
+  // TODO: PLAT-53483 Remove deprecated fields on AppIdentity.c3typ
+  @deprecated
+  jwtAlgorithm: string enum JwsAlgorithmKind = RSA512
+
+  /**
+   * The roles assigned to the app identity for the app.
+   */
+  roles: [string]
+
+  forId:                          ~
+  setConfig:                      ~
+  setSecret:                      ~
+  setConfigValue:                 ~
+  setSecretValue:                 ~
+  setConfigValueTemplate:         ~
+  setSecretValueTemplate:         ~
+  setConfigOrSecretValue:         ~
+  setConfigOrSecretValueTemplate: ~
+}

@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A specialized {@link Workflow.Vertex} that represents a field or value access on an object or map, respectively.
+ * This is often done to "split" a single {@link Workflow.Action} data output into multiple outputs.
+ * The input of this vertex is split into one or more named outputs. The name of each output on this vertex
+ * represents a C3 path into the input value. In other words, if the value is a {@link Map}, then the path
+ * represents access by key, and if the value is an {@link Obj}, then the path represents field traversal.
+ * NOTE: this type is symmetrical with {@link Workflow.Make} which combines multiple inputs.
+ * NOTE: if the value is not an {@link Obj} or {@link Map}, then there will be an error raised.
+ * ```
+ *                                        ----------------------                     -------------------
+ *                                        |                    | a -------------> in | Workflow.Action |
+ * -------------------                    |                    |                     -------------------
+ * | Workflow.Action | out ----------> in |   Workflow.Field   |
+ * -------------------                    |                    |                     -------------------
+ *                                        |                    | b -------------> in | Workflow.Action |
+ *                                        ----------------------                     -------------------
+ * ```
+ * As an example of the field access operation, assume the {@link Workflow.Field} instance visually depicted above with
+ * outputs `a` and `b`.
+ * If the output of the initial action is an {@link Obj}.
+ * ```
+ * // inputType = MyObj.myType()
+ * type MyObj {
+ *   a: !string
+ *   b: !int
+ * }
+ * // out = MyObj(a="hello", b=42)
+ * // a = "hello", b = 42
+ * ```
+ * If the output of the initial action is a {@link Map}.
+ * ```
+ * // out = {"a": "hello", "b": 42}
+ * // a = "hello", b = 42
+ * ```
+ */
+type Workflow.Field mixes Workflow.Vertex {
+
+  /**
+   * Outputs will be split from a single input object or map of type specified here.
+   * See typedoc for examples.
+   */
+  inputType: !ValueType
+
+  /**
+   * @param inputType
+   *         value to set for {@link inputType}.
+   * @param outTypes
+   *         type information for expected outputs on the vertex.
+   * @param name
+   *         optional name for the constructed vertex.
+   * @return constructed vertex with the given input type.
+   */
+  fromInputType: function(inputType: !ValueType,
+                          outTypes: !map<string, ValueType>,
+                          name: string): !mixing Workflow.Field
+}

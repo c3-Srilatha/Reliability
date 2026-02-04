@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract base Type, defining an generator interface to generate sets of hyperparameters from the hyperparameter
+ * search space.
+ */
+abstract type Hpo.Algorithm {
+
+  /**
+   * Name of algorithm to use. As example "Grid", "Bayes" concrete algorithm list should be described in concrete
+   * implementation of this type.
+   */
+  algorithm: !string
+
+  /**
+   * Algorithm-specific parameters for hyper-parameter search.
+   */
+  searchAlgorithmParameters: map<string, any>
+
+  /**
+   * The {@link Hp.SearchSpace} associated with the {@link Hpo.Algorithm}
+   */
+  currentSearchSpace: private Hp.SearchSpace
+
+  /**
+   * @param hpSearchSpace
+   *          A search space {@link Hp.SearchSpace} containing hyperparameters and their corresponding parameter spaces.
+   * @param direction
+   *          The optimization direction for the search technique.
+   * @return A search technique that is ready to generate hyperparameter combinations.
+   */
+  initialize: private abstract member function(hpSearchSpace: !Hp.SearchSpace,
+                                               direction: !string): !mixing Hpo.Algorithm
+
+  /**
+   * Return true if this algorithm is serial (as example Bayesian optimization).
+   *
+   * @return true if this algorithm is serial and false otherwise.
+   */
+  isSerial: abstract member function(): !boolean
+
+  /**
+   * Generate a new set of hyperparameter combinations
+   *
+   * @param numberOfNextPoints
+   *           Number of points to generate.
+   * @param completedTrials
+   *           List of pairs of newly completed {@link Hpo.GeneratedHps} and validation scores, relative to the
+   *           last time {@link #generate} was called.
+   * @return list of HpoGenerateResult, where each set of hyperparameters is represented by a Map. The length of
+   *         this list is equal to the numberOfNextPoints.
+   */
+  generate: abstract member function(numberOfNextPoints: !int,
+                                     completedTrials: [Pair<Obj, double>]): [Hpo.GeneratedHps]
+}

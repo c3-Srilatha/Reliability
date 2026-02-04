@@ -1,0 +1,54 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Specifies config parameters for Canonical.process
+ */
+type SourceFileNameFormat mixes StringSerializable, Config {
+
+  /**
+   * The format string with keywords in <>. Field names of CanonicalFieldInfo can be specified as keywords.
+   * Specific value type of the keyword can be specified using a colon (:). The keywords are picked up automatically
+   * from CanonicalFileNameInfo. There is special keyword 'customerFilePrefix' which can be defined on the canonical
+   * and be used to determine the value of the field 'canonical'.
+   * For e.g. C3_<customer>_Canonical_<canonical>_<timestamp:yyyyMMddHHmmssZ>_<locale>_<sequence>_<hash:md5>
+   * timestamp
+   *    supports Joda DateTimeFormat (http://joda-time.sourceforge.net/apidocs/org/joda/time/format/DateTimeFormat.html)
+   *    default format is ISODateTimeFormat of yyyy-MM-dd'T'HH:mm:ss.SSSZZ
+   * hash
+   *    supports md5, sha1, cksum
+   *    default is md5
+   * separator in this example is underscore
+   *
+   * P.S. It is better to have a separator between keywords else file names might become unparseable.
+   * Using special characters like '<', '-', '>' for separators will break the parsing. Having '/' in timestamp
+   * will also break the parsing because '/' is used to distinguish file name from the file path.
+   * Also, '<' and '>' are special characters, using them in the text or as separators will break the format parsing.
+   */
+  format: !string
+
+  /**
+   * make and return a SourceFileNameFormat object
+   */
+  fromString: ~
+
+  /**
+   * returns the file name format string
+   */
+  toString: member function(): string js
+
+  /**
+   * parses and returns SourceFileInfo with each component
+   */
+  parseFileName: member function(fileName: !string): SourceFileInfo
+
+  /**
+   * validates the format; throws exception if it doesn't validate
+   */
+  validate: ~
+}

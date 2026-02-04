@@ -1,0 +1,200 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A UI component type that represents a side panel.
+ */
+@typeScript
+@uiComponentCategorizer(name='Side panel', category='Components')
+type UiSdlSidePanel mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * The header section to show at the top of the side panel.
+   */
+  header: UiSdlSidePanelHeader
+
+  /**
+   * The footer section to show at the bottom of the side panel.
+   */
+  footer: UiSdlComponentRef<UiSdlSidePanelSection>
+
+  /**
+   * Whether or not the side panel is open.
+   */
+  open: boolean = false
+
+  /**
+   * The sections in the side panel.
+   */
+  sections: [UiSdlComponentRef<UiSdlSidePanelSection>]
+
+  /**
+   * Render attached to the left or right side of the {@link #parent}.
+   */
+  alignment: string enum UiSdlHorizontalAlignment = LEFT
+
+  /**
+   * The position to render the side panel in.
+   */
+  position: string enum UiSdlSidePanelPosition = OVERLAY
+
+  /**
+   * The behavior of the side panel when it is closed.
+   */
+  closeBehavior: string enum UiSdlSidePanelCloseBehavior = COLLAPSE
+
+  /**
+   * Triggered when the action group is clicked in the side panel header.
+   *
+   * @param id
+   *            Id of the component.
+   * @param actionSuffix
+   *            The suffix of the action that should be triggered.
+   *
+   * @returns A `SIDE_PANEL_ACTION_BUTTON_CLICK_${actionSuffix}` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SIDE_PANEL_ACTION_BUTTON_CLICK_${actionSuffix}')
+  clickSidePanelActionButton: function(id: !string,
+                                       actionSuffix: !string): UiSdlSidePanelActionButtonClickAction ts-client
+
+  /**
+   * Triggers an action that opens or closes the side panel.
+   *
+   * @param id
+   *           Id of the component.
+   * @param shouldOpen
+   *           Whether the SidePanel should open or not.
+   *
+   * @returns A `SIDE_PANEL_(OPEN|CLOSE)` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SIDE_PANEL_(OPEN|CLOSE)')
+  openCloseSidePanelAction: function(id: string, shouldOpen: boolean): UiSdlSidePanelOpenCloseAction
+
+  /**
+   * Triggers an action that opens or closes the side panel section.
+   *
+   * @param id
+   *           Id of the component.
+   * @param open
+   *           Whether the SidePanelSection should open or not.
+   * @param sectionId
+   *           The Id of the {@link UiSdlSidePanelSection} to open or close.
+   *
+   * @returns A `SIDE_PANEL_SECTION_(OPEN|CLOSE)` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SIDE_PANEL_SECTION_(OPEN|CLOSE)')
+  openCloseSidePanelSectionAction: function(id: string, open: boolean, sectionId: string): UiSdlSidePanelOpenCloseAction
+
+  /**
+   * Triggers an action that updates the header of the side panel.
+   *
+   * @param id
+   *           Id of the component.
+   * @param header
+   *           The new header object.  The existing header will be merged  with the new header information. To remove
+   *           parts of the header set the field to remove to `null`.
+   *
+   * @returns A `HEADER_UPDATE` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='HEADER_UPDATE')
+  updateHeaderAction: function(id: string, header: UiSdlSidePanelHeader): UiSdlHeaderUpdateAction
+
+  /**
+   * Triggers an action that updates the close behavior of the side panel.
+   *
+   * @param id
+   *            Id of the component.
+   * @param closeBehavior
+   *            The new close behavior of the side panel.
+   * @returns A `SIDE_PANEL_UPDATE_CLOSE_BEHAVIOR` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='SIDE_PANEL_UPDATE_CLOSE_BEHAVIOR')
+  updateCloseBehaviorAction: function(id: string,
+                                      closeBehavior: UiSdlSidePanelCloseBehavior)
+                               : UiSdlSidePanelUpdateCloseBehaviorAction
+
+  /**
+   * Listens for actions of type 'SIDE_PANEL_OPEN' and updates {@link collapsed} field.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SIDE_PANEL_OPEN')
+  sidePanelOpenReducer: private function(state: !UiSdlReduxState, action: !UiSdlSidePanelOpenCloseAction): !UiSdlReduxState
+
+  /**
+   * Listens for actions of type 'SIDE_PANEL_CLOSE' and updates {@link collapsed} field.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SIDE_PANEL_CLOSE')
+  sidePanelCloseReducer: private function(state: !UiSdlReduxState, action: !UiSdlSidePanelOpenCloseAction): !UiSdlReduxState
+
+  /**
+   * Listens for actions of type 'SIDE_PANEL_SECTION_OPEN' and updates the open field of the {@link UiSdlSidePanelSection}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SIDE_PANEL_SECTION_OPEN')
+  sidePanelSectionOpenReducer: private function(state: !UiSdlReduxState, action: !UiSdlSidePanelOpenCloseAction): !UiSdlReduxState
+
+  /**
+   * Listens for actions of type 'SIDE_PANEL_CLOSE' and updates the open field of the {@link UiSdlSidePanelSection}.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SIDE_PANEL_SECTION_CLOSE')
+  sidePanelSectionCloseReducer: private function(state: !UiSdlReduxState, action: !UiSdlSidePanelOpenCloseAction): !UiSdlReduxState
+
+  /**
+   * Listens for actions of type 'HEADER_UPDATE' and updates {@link header} field. The existing header will be merged
+   * with the new header information.  To remove parts of the header set the field to remove to `null`.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='HEADER_UPDATE')
+  headerUpdateReducer: private function(state: !UiSdlReduxState, action: !UiSdlHeaderUpdateAction): !UiSdlReduxState
+
+  /**
+   * Listens for actions of type 'SIDE_PANEL_UPDATE_CLOSE_BEHAVIOR' and updates {@link closeBehavior} field.
+   *
+   * @param state
+   *           Redux state.
+   * @param action
+   *           Redux action.
+   *
+   * @returns A new Redux state.
+   */
+  @uiSdlReducer(actionType='SIDE_PANEL_UPDATE_CLOSE_BEHAVIOR')
+  sidePanelCloseBehaviorReducer: private function(state: !UiSdlReduxState,
+                                          action: !UiSdlSidePanelUpdateCloseBehaviorAction): !UiSdlReduxState
+}

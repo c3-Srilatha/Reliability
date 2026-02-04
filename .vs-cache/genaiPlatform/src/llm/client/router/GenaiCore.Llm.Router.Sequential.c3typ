@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Sequential routing helper for implementations of {GenaiCore.Llm.Router}.
+ * @see GenaiCore.Llm.Router.LinearFallback#route
+ * @see GenaiCore.Llm.Router.Random#route
+ */
+type GenaiCore.Llm.Router.Sequential {
+    /**
+     * This helper function processes models in the order they are provided. It calls the specified task on each model
+     * and returns the first successful response.
+     *
+     * If no model succeeds, it returns a list of errors encountered for each model.
+     * If the specified router's timeoutSeconds is reached, it raises a TimeoutException.
+     *
+     * @param router
+     *          The router instance using this helper
+     * @param client
+     *          The LLM client to use for model interactions
+     * @param models
+     *          The list of models to try in sequence
+     * @param task
+     *          The task to perform on each model (passed by name as string)
+     * @param args
+     *          Additional arguments to pass to the task
+     * @return the first successful response from a model. If none succeeds, returns a list of errors encountered
+     */
+    route: private inline function(router: !GenaiCore.Llm.Router, client: GenaiCore.Llm.Client, models: !native, task: !string, args: map<string, any>): native py
+}

@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Generates bundles from a webpack configuration.
+ *
+ * Any files under `ui/src` of the metadata store will be available
+ * and the compilation output will be written to `ui/content/`.
+ */
+type Webpack {
+  /**
+   * Used to execute all the Webpack methods from a single installation directory.
+   *
+   * This is a performance optimization to minimize the number of times dependencies are installed,
+   * as all methods in this type use the same ImplLanguage.Runtime and can reuse the files.
+   */
+  @nodejs(typeSystem=true, async=true)
+  sharedRuntimeExecutor: function(step: !string, stepSpec: !json): any js-webpack-node
+
+  /**
+   * Retrieve bundler configuration options.
+   */
+  @nodejs(typeSystem=true, async=false)
+  getConfigsCountBundlerOptions: private function(): json js-webpack-node
+
+  /**
+   * Generate bundler configuration options for specific configs.
+   */
+  @nodejs(typeSystem=true, async=false)
+  runConfigAtIndexBundlerOptions: private function(namespace: !string, outputDir: !string, configNames: ![string], workDir: !string): json js-webpack-node
+
+  /**
+   * Create directory of the output.
+   */
+  @nodejs(typeSystem=true, async=false)
+  createOutputDirectory: private function(namespace: !string): string js-webpack-node
+
+}

@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the value emitted during the map phase of a foreign key validation job.
+ */
+private type DataValidation.Rule.ForeignKey.MapReduceOptions mixes MapReduceOptions {
+
+  /**
+   * Defines the number of reducers over which map output keys are distributed.
+   *
+   * This controls the fan-out size from the map phase to the reduce phase in the
+   * MapReduce job. Keys are typically hashed into this number of buckets to ensure
+   * parallel processing during reduction.
+   *
+   * Example: if set to 128, all (fieldName, fieldValue) pairs emitted from the map phase will
+   * be hashed into 128 reduce buckets using their hash code modulo this value.
+   */
+  numReducers: int = 10
+
+  /**
+   * Controls how null/empty foreign key values are handled during validation.
+   *
+   * When set to true, null/empty foreign key values will cause the validation
+   * to fail with FAILED_CRITICAL status and show the failed instances.
+   *
+   * When set to false (default), null/empty foreign key values will be ignored during validation,
+   * allowing the rule to pass if only null values are present.
+   */
+  doNotIgnoreEmptyValues: boolean
+}

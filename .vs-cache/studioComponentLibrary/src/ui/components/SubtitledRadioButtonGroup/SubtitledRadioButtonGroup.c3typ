@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A radio button group component that displays radio options with titles and optional subtitles.
+ * Supports proper label association and radio button grouping for accessibility and UX.
+ */
+@typeScript
+type SubtitledRadioButtonGroup mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Name attribute for radio button grouping.
+   * All radio buttons with the same name form a group where only one can be selected.
+   * Essential for proper radio button mutual exclusivity behavior.
+   */
+  name: !string
+
+  /**
+   * Optional label for the entire radio button group.
+   */
+  label: string
+
+  /**
+   * The array of radio button configurations.
+   * Each radio button should have its value, title, and optional subtitle.
+   */
+  radioButtons: ![SubtitledRadioButtonOption]
+
+  /**
+   * The currently selected value in the radio button group.
+   */
+  selectedValue: string
+
+  /**
+   * Whether the entire radio button group is enabled (true) or disabled (false).
+   * Defaults to true if not specified.
+   */
+  enabled: boolean
+
+  /**
+   * Action triggered when a radio button selection changes
+   */
+  @uiSdlActionCreator(actionType='ON_CHANGE')
+  onChange: function(componentId: !string, selectedValue: !string): !UiSdlReduxAction ts-client
+}

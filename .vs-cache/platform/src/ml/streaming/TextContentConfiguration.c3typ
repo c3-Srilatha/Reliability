@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+entity type TextContentConfiguration schema name 'STREAMING_TXTCCFG' {
+
+  /**
+   * The entity type that is contained in TextContent
+   */
+  typeref: !Type
+
+  /**
+   * The list of fields in type that each column in the file corresponds to.
+   */
+  headerFields: ![string] schema name 'HDF'
+
+  /**
+   * The (optional) regular expression to apply to fields to transform them. Note that the column number is specified in
+   *
+   * RegularExpressionReplace.columnNumber and does not correspond to the array index
+   */
+  dataTransformRegExps: [RegularExpressionReplace] schema name 'DTRE'
+
+  /**
+   * Controls whether we transform (apply headerFields and dataParseRegExps) to the stream as it arrives
+   *
+   * If true, the original stream is discarded and the transformed and serialized Objs will be persisted. This means
+   */
+  eagerTransform: boolean = false
+
+  numLinesPerBlock:                 int = 500
+  format:                           string enum('CSV', 'TDF') not persistable
+  eventBroadcastFrequencyNumBlocks: !int = 1
+}

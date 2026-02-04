@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Dependencies for various things that require them (e.g. specifying metrics for types that mixin AnalyticsListener and MetricsListener).
+ */
+@annotation(appliesTo=['type', 'function'])
+type Ann.Dependency mixes Annotation {
+
+  /**
+   * Source type name for the specified metrics.
+   */
+  srcTypeName: string
+
+  /**
+   * Names of the metrics.
+   */
+  metricNames: [string]
+
+  /**
+   * Names of types
+   */
+  typeNames: [string]
+
+  /**
+   * When specified on member methods of Persistable type dispatcher will ensure that all fields from this include spec
+   * are present in the `this` instance. This avoids need for the member method implementation to hit the database.
+   *
+   * Can also be specified on the before/after callback functions on Persistable types.  This will indicate that
+   * those fields are the only required fields for calling those callbacks.  This can improve performance as the
+   * default is to include the entire obj, as fetched from the db, with the input updates applied to it.  This allows
+   * that fetch to be minimized.
+   *
+   * When specified on persistable type, it applies to all of the type's member functions and fields (useful when used
+   * in other types method as function params)
+   */
+  include: string
+}

@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AWS Target Group.
+ * Each target group is used to route requests to one or more registered targets. When you create each listener rule, you specify a target group and conditions. When a rule condition is met, traffic is forwarded to the corresponding target group. You can create different target groups for different types of requests. For example, create one target group for general requests and other target groups for requests to the microservices for your application.
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='awslbtg')
+type AwsElbTargetGroup mixes AwsResource, AwsVpcMember {
+
+  healthCheckIntervalSeconds: int
+  healthCheckPath:            string
+  healthCheckPort:            string
+  healthCheckProtocol:        string
+  healthCheckTimeoutSeconds:  int
+  healthyThresholdCount:      int
+  loadBalancerArns:           [string]
+  port:                       int
+  protocol:                   string
+  targetType:                 string
+  unhealthyThresholdCount:    int
+  registerTargets:            member function(targetDescriptions: [AwsTargetDescription])
+  deRegisterTargets:          member function(targetDescriptions: [AwsTargetDescription])
+  targetHealth:               member function(): [AwsTargetHealthDescription]
+}

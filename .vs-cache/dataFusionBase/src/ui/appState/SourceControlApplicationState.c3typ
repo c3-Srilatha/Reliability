@@ -1,0 +1,443 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state for storing data fusion base related information
+ */
+@typeScript
+type SourceControlApplicationState mixes UiSdlSingletonApplicationState {
+
+  id: ~
+
+  // -------------- CLEAR APP STATE --------------
+
+  /**
+   * Clear the entire app state
+   */
+  @uiSdlActionCreator(actionType='CLEAR_APP_STATE')
+  clearAppStateAction: private function(): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `CLEAR_APP_STATE` and clears the state.
+   */
+  @uiSdlReducer(actionType='CLEAR_APP_STATE')
+  clearAppStateReducer: private function(state: !UiSdlReduxState,
+                                         action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * -------------- STORE GITHUB FORM FIELD VALUES --------------
+   */
+
+  /**
+   * Stores the github form field values
+   */
+  githubFormFieldValues: json
+
+  /**
+   * An action to set `githubFormFieldValues`
+   */
+  @uiSdlActionCreator(actionType='SET_GIT_FORM_FIELD_VALUES')
+  setGitHubFormFieldValuesAction: private function(githubFormFieldValues: json): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_GIT_FORM_FIELD_VALUES` and sets `githubFormFieldValues`
+   */
+  @uiSdlReducer(actionType='SET_GIT_FORM_FIELD_VALUES')
+  setGitHubFormFieldValuesReducer: private function(state: !UiSdlReduxState,
+                                                    action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the {@link #githubFormFieldValues} from the state.
+   */
+  getGitHubFormFieldValues: function(state: !UiSdlReduxState): json ts-client
+
+  /**
+   * -------------- STORE PKG STORE INSTANCE --------------
+   */
+
+  /**
+   * Stores the pkg store instance which is needed to call the apis in the package store
+   */
+  pkgStoreInstance: Pkg.Store
+
+  /**
+   * An action to set `pkgStoreInstance`
+   */
+  @uiSdlActionCreator(actionType='SET_PKG_STORE_INSTANCE')
+  setPkgStoreInstanceAction: private function(pkgStoreInstance: Pkg.Store): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_PKG_STORE_INSTANCE` and sets `pkgStoreInstance`
+   */
+  @uiSdlReducer(actionType='SET_PKG_STORE_INSTANCE')
+  setPkgStoreInstanceReducer: private function(state: !UiSdlReduxState,
+                                               action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the {@link #pkgStoreInstance} from the state.
+   */
+  getPkgStoreInstance: function(state: !UiSdlReduxState): Pkg.Store ts-client
+
+  /**
+   * -------------- STORE GIT INSTANCE --------------
+   */
+
+  /**
+   * Stores the git instance to call the pkg store apis
+   */
+  gitInstance: Git
+
+  /**
+   * An action to set `gitInstance`
+   */
+  @uiSdlActionCreator(actionType='SET_GIT_INSTANCE')
+  setGitInstanceAction: private function(gitInstance: Git): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_GIT_INSTANCE` and sets `gitInstance`
+   */
+  @uiSdlReducer(actionType='SET_GIT_INSTANCE')
+  setGitInstanceReducer: private function(state: !UiSdlReduxState,
+                                          action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the {@link #gitInstance} from the state.
+   */
+  getGitInstance: function(state: !UiSdlReduxState): Git ts-client
+
+  /**
+   * -------------- STORE GIT CONNECTION STATUS --------------
+   */
+
+  /**
+   * Stores the git connection status
+   */
+  gitConnectionStatus: boolean
+
+  /**
+   * An action to set `gitConnectionStatus`
+   */
+  @uiSdlActionCreator(actionType='SET_GIT_CONNECTION_STATUS')
+  setGitConnectionStatusAction: private function(gitConnectionStatus: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_GIT_CONNECTION_STATUS` and sets `gitConnectionStatus`
+   */
+  @uiSdlReducer(actionType='SET_GIT_CONNECTION_STATUS')
+  setGitConnectionStatusReducer: private function(state: !UiSdlReduxState,
+                                                  action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the {@link #gitConnectionStatus} from the state.
+   */
+  getGitConnectionStatus: function(state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * -------------- STORE GIT BRANCH CONFIG --------------
+   */
+
+  /**
+   * Stores the configured git branch
+   */
+  gitBranchConfig: Pkg.Store.Git.Branch
+
+  /**
+   * An action to set `gitBranchConfig`
+   */
+  @uiSdlActionCreator(actionType='SET_GIT_BRANCH_CONFIG')
+  setGitBranchConfigAction: private function(gitBranchConfig: Pkg.Store.Git.Branch): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_GIT_BRANCH_CONFIG` and sets `gitBranchConfig`
+   */
+  @uiSdlReducer(actionType='SET_GIT_BRANCH_CONFIG')
+  setGitBranchConfigReducer: private function(state: !UiSdlReduxState,
+                                              action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the {@link #gitBranchConfig} from the state.
+   */
+  getGitBranchConfig: function(state: !UiSdlReduxState): Pkg.Store.Git.Branch ts-client
+
+  /**
+   * -------------- LIST OF FILES CHANGED --------------
+   */
+
+  /**
+   * Stores the the list of files changed in current version
+   */
+  fileChangeList: Git.Changes
+
+  /**
+   * An action to set `fileChangeList`
+   */
+  @uiSdlActionCreator(actionType='FETCH_FILE_CHANGE_LIST')
+  setFileChangeListAction: private function(fileChangeList: Git.Changes): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_GIT_INSTANCE` and sets `fileChangeList`
+   */
+  @uiSdlReducer(actionType='FETCH_FILE_CHANGE_LIST')
+  setFileChangeListReducer: private function(state: !UiSdlReduxState,
+                                             action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the {@link #fileChangeList} from the state.
+   */
+  getFileChangeList: function(state: !UiSdlReduxState): Git.Changes ts-client
+
+  /**
+   * -------------- STORE COMMIT LIST --------------
+   */
+
+  /**
+   * Stores the list of commits to render version history
+   */
+  commitList: [Git.CommitInfo]
+
+  /**
+   * An action to set `commitList`
+   */
+  @uiSdlActionCreator(actionType='SET_COMMIT_LIST')
+  setCommitListAction: private function(commitList: [Git.CommitInfo]): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_COMMIT_LIST` and sets `commitsList`
+   */
+  @uiSdlReducer(actionType='SET_COMMIT_LIST')
+  setCommitListReducer: private function(state: !UiSdlReduxState,
+                                         action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * -------------- STORE ENV ID --------------
+   */
+
+  /**
+   * Stores the EnvId of the current app
+   */
+  envId: string
+
+  /**
+   * An action to set `envId`
+   * payload contains the map with list of values for keys "repositoryList" and "branchesList"
+   */
+  @uiSdlActionCreator(actionType='SET_ENV_ID')
+  setEnvIdAction: private function(envId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_ENV_ID` and sets `envId`
+   */
+  @uiSdlReducer(actionType='SET_ENV_ID')
+  setEnvIdReducer: private function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the Env Id of the current app
+   */
+  getEnvId: function(state: !UiSdlReduxState): string ts-client
+
+  /**
+   * -------------- STORE FILE CHANGES API STATUS --------------
+   */
+
+  /**
+   * Stores the file changes api call status
+   */
+  fileChangesApiCallStatus: boolean
+
+  /**
+   * An action to set `fileChangesApiCallStatus`
+   * payload contains the map with list of values for keys "repositoryList" and "branchesList"
+   */
+  @uiSdlActionCreator(actionType='SET_FILE_CHANGES_API_CALL_STATE')
+  setFileChangesApiCallStatusAction: private function(fileChangesApiCallStatus: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_FILE_CHANGES_API_CALL_STATE` and sets `fileChangesApiCallStatus`
+   */
+  @uiSdlReducer(actionType='SET_FILE_CHANGES_API_CALL_STATE')
+  setFileChangesApiCallStatusReducer: private function(state: !UiSdlReduxState,
+                                                       action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the status of the file changes api call
+   */
+  getFileChangesApiCallStatus: function(state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * -------------- RESET APP STATE FOR SELFSERVICE AND DATAFUSIONBASE --------------
+   */
+
+  /**
+   * Action creator for resetting selfService app state
+   */
+  @uiSdlActionCreator(actionType='RESET_APP_STATE')
+  refreshApplicationState: private function(applicationId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * -------------- STORE RESOLVE CONFLICT FLOW --------------
+   */
+
+  /**
+   * Indicates the type of action (push or pull) during which the conflict was detected
+   */
+  conflictDetectedOn: GitActions
+
+  /**
+   * An action to set `conflictDetectedOn`
+   * payload contains the map with list of values for keys "repositoryList" and "branchesList"
+   */
+  @uiSdlActionCreator(actionType='SET_CONFLICT_DETECTED_ON')
+  setConflictDetectedOnAction: private function(conflictDetectedOn: GitActions): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_CONFLICT_DETECTED_ON` and sets `conflictDetectedOn`
+   */
+  @uiSdlReducer(actionType='SET_CONFLICT_DETECTED_ON')
+  setConflictDetectedOnReducer: private function(state: !UiSdlReduxState,
+                                                 action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the type of action (push or pull) during which the conflict was detected
+   */
+  getConflictDetectedOn: function(state: !UiSdlReduxState): GitActions ts-client
+
+  /**
+   * -------------- MERGE CONFLICT STATUS --------------
+   */
+
+  /**
+   * Indicates whether merge conflicts have been resolved or not
+   */
+  conflictsResolved: boolean
+
+  /**
+   * An action to set `conflictsResolved`
+   * payload contains the map with list of values for keys "repositoryList" and "branchesList"
+   */
+  @uiSdlActionCreator(actionType='SET_CONFLICTS_RESOLVED')
+  setConflictsResolvedAction: private function(conflictsResolved: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_CONFLICTS_RESOLVED` and sets `conflictsResolved`
+   */
+  @uiSdlReducer(actionType='SET_CONFLICTS_RESOLVED')
+  setConflictsResolvedReducer: private function(state: !UiSdlReduxState,
+                                                action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the merge conflict status based on whether conflicts have been resolved
+   */
+  areConflictsResolved: function(state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * -------------- COMMIT MESSAGE --------------
+   */
+
+  /**
+   * Stores user commit message
+   */
+  commitMessage: string
+
+  /**
+   * An action to set `commitMessage`
+   * payload contains the map with list of values for keys "repositoryList" and "branchesList"
+   */
+  @uiSdlActionCreator(actionType='SET_COMMIT_MESSAGE')
+  setCommitMessageAction: private function(commitMessage: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_COMMIT_MESSAGE` and sets `commitMessage`
+   */
+  @uiSdlReducer(actionType='SET_COMMIT_MESSAGE')
+  setCommitMessageReducer: private function(state: !UiSdlReduxState,
+                                            action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the user commit message
+   */
+  getCommitMessage: function(state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * -------------- RECONFIGURE STATUS IN RUNNING APP --------------
+   */
+
+  /**
+   * Indicates whether reconfiguration was initiated in a running app
+   */
+  reConfigureInRunningApp: boolean
+
+  /**
+   * An action to set `reConfigureInRunningApp`
+   * payload contains the map with list of values for keys "repositoryList" and "branchesList"
+   */
+  @uiSdlActionCreator(actionType='SET_RECONFIGURE_IN_RUNNING_APP')
+  setReConfigureInRunningAppAction: private function(reConfigureInRunningApp: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_RECONFIGURE_IN_RUNNING_APP` and sets `reConfigureInRunningApp`
+   */
+  @uiSdlReducer(actionType='SET_RECONFIGURE_IN_RUNNING_APP')
+  setReConfigureInRunningAppReducer: private function(state: !UiSdlReduxState,
+                                                      action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Returns the status of the reConfigureInRunningApp
+   */
+  isReConfigureInRunningApp: function(state: !UiSdlReduxState): boolean ts-client
+
+  /**
+   * -------------- UPDATE MODAL BUTTON TEXT --------------
+   */
+
+  /**
+   * An action to update button text for the modal
+   */
+  @uiSdlActionCreator(actionType='MODAL_BUTTON_TEXT_UPDATE')
+  updateModalButtonTextAction: function(modalId: string, buttonType: !string, buttonText: string): UiSdlReduxAction
+
+  /**
+   * Listens for actions of type `MODAL_BUTTON_TEXT_UPDATE` and sets `modalButtonText`
+   */
+  @uiSdlReducer(actionType='MODAL_BUTTON_TEXT_UPDATE')
+  updateModalButtonTextReducer: private function(state: !UiSdlReduxState,
+                                                 action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * -------------- UPDATE SUBTITLED RADIO BUTTON --------------
+   */
+
+  /**
+   * An action to update radion button option
+   */
+  @uiSdlActionCreator(actionType='UPDATE_SUBTITLED_RADIO_BUTTON')
+  updateSubtitledRadioButtonAction: function(componentId: string, selectedValue: string): UiSdlReduxAction
+
+  /**
+   * Listens for actions of type `UPDATE_SUBTITLED_RADIO_BUTTON` and sets `selectedValue` for conflict form
+   */
+  @uiSdlReducer(actionType='UPDATE_SUBTITLED_RADIO_BUTTON')
+  updateSubtitledRadioButtonReducer: private function(state: !UiSdlReduxState,
+                                                      action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * -------------- DISABLE SUBTITLED RADIO BUTTON --------------
+   */
+
+  /**
+   * An action to enable/disable radion button option
+   */
+  @uiSdlActionCreator(actionType='DISABLE_SUBTITLED_RADIO_BUTTON')
+  disableSubtitledRadioButtonAction: function(componentId: string, enabled: boolean): UiSdlReduxAction
+
+  /**
+   * Listens for actions of type `DISABLE_SUBTITLED_RADIO_BUTTON` and sets `enabled` for conflict form
+   */
+  @uiSdlReducer(actionType='DISABLE_SUBTITLED_RADIO_BUTTON')
+  disableSubtitledRadioButtonReducer: private function(state: !UiSdlReduxState,
+                                                       action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

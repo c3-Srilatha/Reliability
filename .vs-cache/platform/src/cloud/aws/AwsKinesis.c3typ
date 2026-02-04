@@ -1,0 +1,242 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AWS Kinesis Stream.
+ */
+@cloud(hasResourceArn=true,
+       hasResourceId=false,
+       hasResourceName=true,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='kinesis')
+@action(group+='app-admin')
+type AwsKinesis mixes AwsResource, CloudStream<CloudStreamMessage> {
+
+  /**
+   * The total number of OPEN shards inside the stream.
+   */
+  shardCount: int = 1
+
+  /**
+   * The current status of the stream
+   */
+  state: string enum CloudResourceState
+
+  /**
+   * The shards that comprise the stream.
+   */
+  shards: [AwsKinesisShard]
+
+  /**
+   * Message retention period in hours
+   */
+  messageRetentionPeriodInHours: int
+
+  /**
+   * Puts (writes) a single data record from a producer into an Amazon Kinesis
+   * stream. Call PutRecord to send data from the producer into the Amazon
+   * Kinesis stream for real-time ingestion and subsequent processing, one
+   * record at a time. Each shard can support up to 1000 records written per
+   * second, up to a maximum total of 1 MB data written per second.
+   * <p>
+   * You must specify the name of the stream that captures, stores, and
+   * transports the data; a partition key; and the data blob itself.
+   * <p>
+   * The data blob can be any type of data; for example, a segment from a log
+   * file, geographic/location data, website clickstream data, and so on.
+   * <p>
+   * The partition key is used by Amazon Kinesis to distribute data across
+   * shards. Amazon Kinesis segregates the data records that belong to a data
+   * stream into multiple shards, using the partition key associated with each
+   * data record to determine which shard a given data record belongs to.
+   * <p>
+   * Partition keys are Unicode strings, with a maximum length limit of 256
+   * bytes. An MD5 hash function is used to map partition keys to 128-bit
+   * integer values and to map associated data records to shards using the
+   * hash key ranges of the shards. You can override hashing the partition key
+   * to determine the shard by explicitly specifying a hash value using the
+   * ExplicitHashKey parameter. For more information, see Partition Key in the
+   * Amazon Kinesis Developer Guide .
+   * <p>
+   * PutRecord returns the shard ID of where the data record was placed and
+   * the sequence number that was assigned to the data record.
+   * <p>
+   * Sequence numbers generally increase over time. To guarantee strictly
+   * increasing ordering, use the SequenceNumberForOrdering parameter. For
+   * more information, see Sequence Number in the Amazon Kinesis Developer
+   * Guide .
+   * <p>
+   * If a PutRecord request cannot be processed because of insufficient
+   * provisioned throughput on the shard involved in the request, PutRecord
+   * throws ProvisionedThroughputExceededException .
+   * <p>
+   * Data records are accessible for only 24 hours from the time that they are
+   * added to an Amazon Kinesis stream or as specified by {@link Ann.Queue#messageRetentionPeriodInHours}.
+   */
+  @deprecated(finalVersion='7.9', details='use sendMessages')
+  putRecord: member function(record: !AwsKinesisRecord): AwsKinesisPutRecordResult
+
+  /**
+   * Puts (writes) multiple data records from a producer into an Amazon
+   * Kinesis stream in a single call (also referred to as a PutRecords
+   * request). Use this operation to send data from a data producer into the
+   * Amazon Kinesis stream for real-time ingestion and processing. Each shard
+   * can support up to 1000 records written per second, up to a maximum total
+   * of 1 MB data written per second.
+   * <p>
+   * You must specify the name of the stream that captures, stores, and
+   * transports the data; and an array of request Records , with each record
+   * in the array requiring a partition key and data blob.
+   * <p>
+   * The data blob can be any type of data; for example, a segment from a log
+   * file, geographic/location data, website clickstream data, and so on.
+   * <p>
+   * The partition key is used by Amazon Kinesis as input to a hash function
+   * that maps the partition key and associated data to a specific shard. An
+   * MD5 hash function is used to map partition keys to 128-bit integer values
+   * and to map associated data records to shards. As a result of this hashing
+   * mechanism, all data records with the same partition key map to the same
+   * shard within the stream. For more information, see Partition Key in the
+   * Amazon Kinesis Developer Guide .
+   * <p>
+   * Each record in the Records array may include an optional parameter,
+   * ExplicitHashKey , which overrides the partition key to shard mapping.
+   * This parameter allows a data producer to determine explicitly the shard
+   * where the record is stored. For more information, see Adding Multiple
+   * Records with PutRecords in the Amazon Kinesis Developer Guide .
+   * <p>
+   * The PutRecords response includes an array of response Records . Each
+   * record in the response array directly correlates with a record in the
+   * request array using natural ordering, from the top to the bottom of the
+   * request and response. The response Records array always includes the same
+   * number of records as the request array.
+   * <p>
+   * The response Records array includes both successfully and unsuccessfully
+   * processed records. Amazon Kinesis attempts to process all records in each
+   * PutRecords request. A single record failure does not stop the processing
+   * of subsequent records.
+   * <p>
+   * A successfully-processed record includes ShardId and SequenceNumber
+   * values. The ShardId parameter identifies the shard in the stream where
+   * the record is stored. The SequenceNumber parameter is an identifier
+   * assigned to the put record, unique to all records in the stream.
+   * <p>
+   * An unsuccessfully-processed record includes ErrorCode and ErrorMessage
+   * values. ErrorCode reflects the type of error and can be one of the
+   * following values: ProvisionedThroughputExceededException or
+   * InternalFailure . ErrorMessage provides more detailed information about
+   * the ProvisionedThroughputExceededException exception including the
+   * account ID, stream name, and shard ID of the record that was throttled.
+   */
+  @deprecated(finalVersion='7.9', details='use sendMessages')
+  putRecords: member function(records: ![AwsKinesisRecord]): [AwsKinesisPutRecordResult]
+
+  /**
+   * Gets a shard iterator. A shard iterator expires five minutes after it is
+   * returned to the requester.
+   * <p>
+   * A shard iterator specifies the position in the shard from which to start
+   * reading data records sequentially. A shard iterator specifies this
+   * position using the sequence number of a data record in a shard. A
+   * sequence number is the identifier associated with every record ingested
+   * in the Amazon Kinesis stream. The sequence number is assigned when a
+   * record is put into the stream.
+   * <p>
+   * You must specify the shard iterator type. For example, you can set the
+   * ShardIteratorType parameter to read exactly from the position denoted by
+   * a specific sequence number by using the AT_SEQUENCE_NUMBER shard iterator
+   * type, or right after the sequence number by using the
+   * AFTER_SEQUENCE_NUMBER shard iterator type, using sequence numbers
+   * returned by earlier calls to PutRecord, PutRecords, GetRecords, or
+   * DescribeStream. You can specify the shard iterator type TRIM_HORIZON in
+   * the request to cause ShardIterator to point to the last untrimmed record
+   * in the shard in the system, which is the oldest data record in the shard.
+   * Or you can point to just after the most recent record in the shard, by
+   * using the shard iterator type LATEST, so that you always read the most
+   * recent data in the shard.
+   * <p>
+   * When you repeatedly read from an Amazon Kinesis stream use a
+   * GetShardIterator request to get the first shard iterator to to use in
+   * your first GetRecords request and then use the shard iterator returned by
+   * the GetRecords request in NextShardIterator for subsequent reads. A new
+   * shard iterator is returned by every GetRecords request in
+   * NextShardIterator, which you use in the ShardIterator parameter of the
+   * next GetRecords request.
+   * <p>
+   * If a GetShardIterator request is made too often, you receive a
+   * ProvisionedThroughputExceededException. For more information about
+   * throughput limits, see GetRecords.
+   * <p>
+   * If the shard is closed, the iterator can't return more data, and
+   * GetShardIterator returns null for its ShardIterator. A shard can be
+   * closed using SplitShard or MergeShards.
+   * <p>
+   * GetShardIterator has a limit of 5 transactions per second per account per
+   * open shard.
+   *
+   * @return The position in the shard from which to start reading data records sequentially. A shard iterator specifies this position using the sequence number of a data record in a shard.
+   */
+  @deprecated(finalVersion='7.9', details='use receiveMessages')
+  shardIterator: member function(shardIterator: !AwsKinesisShardIterator): AwsKinesisShardIterator
+
+  /**
+   * Gets data records from a shard.
+   * <p>
+   * Specify a shard iterator using the ShardIterator parameter. The shard
+   * iterator specifies the position in the shard from which you want to start
+   * reading data records sequentially. If there are no records available in
+   * the portion of the shard that the iterator points to, GetRecords returns
+   * an empty list. Note that it might take multiple calls to get to a portion
+   * of the shard that contains records.
+   * <p>
+   * You can scale by provisioning multiple shards. Your application should
+   * have one thread per shard, each reading continuously from its stream. To
+   * read from a stream continually, call GetRecords in a loop. Use
+   * GetShardIterator to get the shard iterator to specify in the first
+   * GetRecords call. GetRecords returns a new shard iterator in
+   * NextShardIterator. Specify the shard iterator returned in
+   * NextShardIterator in subsequent calls to GetRecords. Note that if the
+   * shard has been closed, the shard iterator can't return more data and
+   * GetRecords returns null in NextShardIterator. You can terminate the loop
+   * when the shard is closed, or when the shard iterator reaches the record
+   * with the sequence number or other attribute that marks it as the last
+   * record to process.
+   * <p>
+   * Each data record can be up to 50 KB in size, and each shard can read up
+   * to 2 MB per second. You can ensure that your calls don't exceed the
+   * maximum supported size or throughput by using the Limit parameter to
+   * specify the maximum number of records that GetRecords can return.
+   * Consider your average record size when determining this limit. For
+   * example, if your average record size is 40 KB, you can limit the data
+   * returned to about 1 MB per call by specifying 25 as the limit.
+   * <p>
+   * The size of the data returned by GetRecords will vary depending on the
+   * utilization of the shard. The maximum size of data that GetRecords can
+   * return is 10 MB. If a call returns 10 MB of data, subsequent calls made
+   * within the next 5 seconds throw ProvisionedThroughputExceededException .
+   * If there is insufficient provisioned throughput on the shard, subsequent
+   * calls made within the next 1 second throw
+   * ProvisionedThroughputExceededException. Note that GetRecords won't return
+   * any data when it throws an exception. For this reason, we recommend that
+   * you wait one second between calls to GetRecords; however, it's possible
+   * that the application will get exceptions for longer than 1 second.
+   * <p>
+   * To detect whether the application is falling behind in processing, add a
+   * timestamp to your records and note how long it takes to process them. You
+   * can also monitor how much data is in a stream using the CloudWatch
+   * metrics for write operations ( PutRecord and PutRecords ). For more
+   * information, see Monitoring Amazon Kinesis with Amazon CloudWatch in the
+   * Amazon Kinesis Developer Guide.
+   */
+  @deprecated(finalVersion='7.9', details='use receiveMessages')
+  records: member function(shardIterator: !AwsKinesisShardIterator, limit: int): AwsKinesisRecords
+
+  isGone:    ~
+  processor: ~
+}

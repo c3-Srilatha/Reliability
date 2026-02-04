@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test entity type
+ */
+entity type TestApiEntityType schema name 'TAET' {
+
+  /**
+   * Int field for testing sorting.
+   */
+  intField: int
+
+  /**
+   * Reference field for testing sample data generation.
+   */
+  referenceField: DataApiEntityType
+
+  /**
+   * Fetch-like method for this type.
+   */
+  fetchThisType: function(spec: !FetchSpec): FetchResult<TestApiEntityType>
+
+  /**
+   * Fetch-like method for another type.
+   */
+  fetchOtherType: function(spec: !FetchSpec): FetchResult<TestApiOtherEntityType> js-server
+
+  /**
+   * Fetch-like method that returns just the objects instead of a {@link FetchResult}.
+   */
+  fetchOtherTypeAsArray: function(spec: !FetchSpec): [TestApiOtherEntityType] js-server
+}

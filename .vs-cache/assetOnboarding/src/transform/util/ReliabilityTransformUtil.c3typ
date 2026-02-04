@@ -1,0 +1,174 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Helper functions for UI transforms in Reliability.
+ */
+@typeScript
+type ReliabilityTransformUtil  {
+
+  /**
+   * Sets a placeholder value in given `obj` at `fieldPaths` if undefined. Defaults to '-' as a placeholder unless `overrideEmptyString` is provided.
+   */
+  setPlaceholderString: function(obj: !Obj, fieldPaths: ![string], overrideEmptyString: string): !Obj ts-client
+
+  /**
+   * Returns a human readable string indicating how much time has elapsed since the given datetime, e.g. '2 days ago'.
+   */
+  getTimeElapsedString: function(timestamp: !DateTime): !string ts-client
+
+  /**
+   * Returns an Integer value corresponding to {@link ReliabilityAsset#assetImportanceLevel} `importanceLevel` field value.
+   * This value is assigned to a `numericalIndicator` field in a {@link UiSdlCardList}
+   *
+   * @param importanceLevel - The importance level of the asset, which is an integer value from 1 to n.
+   */
+  getImportanceLevelNumericalIndicator: function(importanceLevel: int): !int ts-client
+
+  /**
+   * Calculates the number of seconds in the given {@link Interval}.
+   *
+   * @param interval
+   *   The time {@link Interval} to convert to seconds.
+   *
+   * @returns
+   *   The number of seconds contained in the specified interval.
+   */
+  getIntervalMinutes: inline function(interval: Interval): !int ts-client
+
+  /**
+   * Determines whether the number of {@link TimedDataPoint}s within a given date range
+   * and {@link Interval} exceeds the default threshold, which could impact performance when plotting.
+   *
+   * @param dateRangeConfig
+   * The {@link TimeInfo} specifying a date range ({@link TimeInfo#start} to {@link TimeInfo#end}) and the
+   * {@link TimeInfo#interval} used to calculate the number of data points.
+   *
+   * @returns
+   *   A boolean indicating whether the number of {@link TimedDataPoint}s exceeds the allowed limit.
+   */
+  isDataPointLimitExceeded: function(dateRangeConfig: TimeInfo): !boolean ts-client
+
+  /**
+   * Counts the number of `Comments` and `Files Uploaded` from the related open alert of the current alert.
+   * Displays these values in the Related Open Alerts grid.
+   *
+   * Sets `obj.mostRecentFeedbackCaegory` to '--' if not defined.
+   *
+   * @param obj - The current alert for which comments, files, and feedback will be retrieved.
+   */
+  getCommentsAndFiles: function(obj: !ReliabilityAssetAlert) ts-client
+
+  /**
+   * Takes a string that represents a date and formats it.
+   * If the dateString param is not a date, it is returned unchanged.
+   * The `formatOptions` parameter is an optional string that defines the date format. See {@link UiSdlDateTime#parse} for formatting options available.
+   */
+  formatDate: function(dateString: string, formatOptions: string): !string ts-client
+
+  /**
+   * Transform the duration into a numerical value according to the provided format.
+   * @param duration
+   *        The duration in milliseconds to format.
+   * @param format
+   *        The format to use to transform the duration into a string.
+   * @returns The numeric representation of the duration based on the specified format.
+   */
+  convertDuration: function(duration: !int, format: string enum('d', 'h', 'm', 's')): !int ts-client
+
+  /**
+   * Helper method that applies a {@link Period} substraction to a given date.
+   *
+   * Currently this method supports
+   *  - `SECOND`: `'s'`
+   *  - `MINUTE`: `'m'`
+   *  - `DAY`: `'d'`
+   *  - `MONTH`: `'mo'`
+   *  - `YEAR`: `'y'`
+   *
+   * Examples:
+   * ```
+   * dateMinusPeriod(new Date(2024, 1, 10), '1d')
+   * > Date(2024, 1, 9)
+   *
+   * dateMinusPeriod(new Date(2024, 1, 10), '1y')
+   * > Date(2023, 1, 10)
+   * ```
+   *
+   * @param date
+   *        The date to subtract the period from.
+   *        **NOTE**: This method expects a native javascript `Date` object.
+   * @param period
+   *        The period to subtract from the date, it should be a string representation of a {@link Period}.
+   *        For example: `7d`, `1y`, `3mo`, `5m`, `10s`.
+   * @return The native date object minus the period.
+   */
+  dateMinusPeriod: function(date: !native, period: !string serialized Period): !native ts-client
+
+  /**
+   * Helper method that retrieves the {@link Translation} key that corresponds
+   * to the value.
+   *
+   * The format of the key is as follows: `Reliability.TranslationValue`, where:
+   * - `Reliability`: is the fixed package name.
+   * - `value`: is the value to be converted to camel case, excluding spaces and underscore.
+   *
+   * **Note** that the key must be already defined in the translation files for "es", "en" and "pt"
+   * {@link Locale}s.
+   *
+   * Examples:
+   * ```js
+   * getDynamicTranslationKey('CANDIDATE')
+   * > 'Reliability.Candidate'
+   *
+   * getDynamicTranslationKey('FIVE_MINUTE')
+   * > 'Reliability.FiveMinute'
+   *
+   * getDynamicTranslationKey('Five Minute')
+   * > 'Reliability.FiveMinute'
+   * ```
+   *
+   * @param value
+   *   The value to match with an existing key in the translation files.
+   *
+   * @returns
+   *   The {@link Translation} key associated with the value.
+   */
+  getDynamicTranslationKey: inline function(value: !string): !string ts-client
+
+  /**
+   * Helper method that converts a given {@link Period} into an equivalent number
+   * of {@link Interval}s.
+   * **Note** that if the {@link Period#unit} is equal to the {@link Interval} the conversion
+   * will not be performed.
+   *
+   * Examples:
+   * ```js
+   * var period = { unit: 'DAY', count: 2 }
+   * var interval = 'DAY';
+   * convertPeriodToIntervalCount(period, interval)
+   * > { unit: 'DAY', count: 2 }
+   * ```
+   *
+   * ```js
+   * var period = { unit: 'SECOND', count: 2592000 }
+   * var interval = 'QUARTER_HOUR';
+   * convertPeriodToIntervalCount(period, interval)
+   * > { unit: 'QUARTER_HOUR', count: 288 }
+   * ```
+   *
+   * @param period
+   *   The {@link Period} to be converted.
+   * @param interval
+   *   The target {@link Interval} unit to convert the period into.
+   * @returns
+   *    An object with `unit` as the target {@link Interval} and `count` as the number of intervals.
+   */
+  convertPeriodToIntervalCount: inline function(period: !Period, interval: !Interval): !json ts-client
+}

@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@beta
+private type K8sPodSpec mixes K8sResourceSpecBase {
+
+  activeDeadlineSeconds:         int
+  affinity:                      K8sAffinity
+  automountServiceAccountToken:  boolean
+  containers:                    [K8sContainer]
+  dnsConfig:                     [K8sPodDnsConfig]
+  dnsPolicy:                     string
+  enableServiceLinks:            boolean
+  hostAliases:                   [K8sHostAlias]
+  hostIPC:                       boolean = false
+  hostNetwork:                   boolean = false
+  hostPID:                       boolean = false
+  hostname:                      string
+  imagePullSecrets:              [K8sLocalObjectReference]
+  initContainers:                [K8sContainer]
+  nodeName:                      string
+  nodeSelector:                  map<string, string>
+  priority:                      int
+  priorityClassName:             string
+  readinessGates:                [K8sPodReadinessGate]
+  restartPolicy:                 string
+  runtimeClassName:              string
+  schedulerName:                 string
+  securityContext:               K8sPodSecurityContext
+  serviceAccount:                string
+  serviceAccountName:            string
+  shareProcessNamespace:         boolean = false
+  subdomain:                     string
+  terminationGracePeriodSeconds: int = 30
+  tolerations:                   [K8sToleration]
+  volumes:                       [K8sVolume]
+
+  /**
+   * Due to limitations in freemarker, we need to remove certain invalid jsonValues from the podSpec as there are
+   * certain jsonValues which are on only conditionally filled. Therefore, this function inspects the podSpec for
+   * specifics and removes the following:
+   * - individual resource requests that have an empty key
+   * - nodeSelectors having that have an empty key
+   * - tolerations having an empty key
+   * - nodeAffinities having an empty key within their matchExpression or matchField
+   */
+  removeInvalidBindings: member function(): !K8sPodSpec
+
+  /**
+   * Validates the volumes present on the pod spec.
+   * @return an {@link BatchError} if there are any validation errors, null otherwise.
+   */
+  validateVolumes: member function(): !BatchError
+
+  /**
+   * Validates the volume mounts present on the containers against the volumes on the pod.
+   * @return an {@link BatchError} if there are any validation errors, null otherwise.
+   */
+  validateVolumeMounts: member function(): !BatchError
+}

@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type providing utility functions for engines.
+ */
+type GenaiCore.EngineUtil {
+
+  /**
+   * Helper function to wait until the Engine is running and its threadpool is "HEALTHY".
+   * This is not a member function to ensure that it does not have to use its dedicated threadpool.
+   * @param engine
+   *        The engine to wait for
+   * @param spec
+   *        The spec controlling how long to wait for the engine to be running
+   *
+   * Throws an error if
+   *    * the engine is not running after the specified maximum time
+   *    * there are any engine thread errors at the time of any of the engine health polls. These generally indicate
+   *      problems that are not automatically recoverable
+   */
+  waitForEngineRunning: function(engine: !Engine, spec: GenaiCore.EngineUtil.WaitSpec) js
+
+  /**
+   * Helper function to get the error messages, if any, from the engine threads.
+   * @param engine
+   *        The engine for which to get error messages, if any
+   *
+   * @return an array of strings, each of which is a separate error message
+   */
+  engineThreadsErrors: function(engine: !Engine): [string] js
+
+  /**
+   * Updates the {@link App.Node.ThreadPool.Spec} for this Engine before calling Engine#update to apply the changes.
+   *
+   * Only values provided in the spec will be updated. If a value is not provided, the original value will continue to be used.
+   *
+   * **NOTE**: This function will Engine#restart the engine if it is currently running, so any in-flight actions
+   * (or newly dispatched ones) will fail until the engine is running again.
+   *
+   * @param engine
+   *          the engine to update the threadpool for.
+   * @param spec
+   *          customization for threadpool update.
+   */
+  updateThreadPool: function(engine: !Engine, spec: !GenaiCore.UpdateThreadPoolSpec) py
+}

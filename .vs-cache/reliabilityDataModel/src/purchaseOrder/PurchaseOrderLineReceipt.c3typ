@@ -1,0 +1,37 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A purchase order line receipt confirms the delivery of a given {@link PurchaseOrderLine} belonging to a {@link PurchaseOrder}.
+ */
+entity type PurchaseOrderLineReceipt {
+
+  /**
+   * A unique identifier of this purchase order line receipt. This should be used for display purposes in the UI.
+   * **NOTE**: This is different {#id} of this purchase order line receipt, which is system generated.
+   */
+  orderLineReceiptId: string
+
+  /**
+   * {@link PurchaseOrderLine} to which this purchase order receipt belongs to.
+   * Every purchase order line receipt must belong to one and only one parent purchase order line.
+   */
+  orderLine: !PurchaseOrderLine
+
+  /**
+   * The quantity of the `item` which was delivered as part of this receipt.
+   */
+  deliveredQuantity: !Dimension
+
+  /**
+   * The date and time when this order was delivered.
+   * Deduced from the parent {@link PurchaseOrder#purchaseDate}.
+   */
+  deliveredDate: !datetime
+}

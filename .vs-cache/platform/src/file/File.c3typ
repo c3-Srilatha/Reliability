@@ -1,0 +1,305 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The following type represents the file in a file-system.
+ */
+type File mixes Content, StringSerializable {
+
+  /**
+   * URL for this file that contains scheme (i.e. file-system) and fully qualified encoded path.
+   */
+  url: string serialized FileUrl
+
+  /**
+   * Retrieves file-system for this file.
+   */
+  @action(group+='read')
+  fs: inline member function(): !FileSystem
+
+  /**
+   * Retrieves corresponding cached {@link FileMeta}.
+   *
+   * If `refresh` parameter is set then will use current metadata of the file to refresh cached state. If this instance
+   * does not have metadata will read it from file-system.
+   *
+   * Note that this method will always return {@link FileMeta} even if file metadata is not cached in which case
+   * {@link FileMeta#isCached} method will return `false`.
+   */
+  fileMeta: inline member function(refresh: boolean): !FileMeta
+
+  /**
+   * Retrieves external URL for this file.
+   */
+  externalUrl: inline member function(): string
+
+  /**
+   * Creates a new file with given content and meta.
+   */
+  @action(group+='write')
+  createFile: function(urlOrEncodedPath: !string,
+                       content: binary,
+                       contentType: string,
+                       contentEncoding: string,
+                       spec: FileOperationSpec): !File
+
+  /**
+   * Check if file exists.
+   */
+  @action(group+='read')
+  exists: member function(spec: FileOperationSpec): boolean
+
+  /**
+   * Updates file access and modification times.
+   */
+  @action(group+='write')
+  touch: member function(spec: FileOperationSpec): !File
+
+  /**
+   * Deletes this file.
+   */
+  @action(group+='delete')
+  delete: member function(spec: DeleteFileOperationSpec)
+
+  /**
+   * Copies file to another destination.
+   *
+   * @param destUrlOrEncodedPath
+   *             complete path to destination file. Cannot be a directory path or same path as src file.
+   */
+  @action(group+='write')
+  copy: member function(destUrlOrEncodedPath: !string, spec: FileOperationSpec): !File
+
+  /**
+   * Moves/renames file.
+   *
+   * @param destUrlOrEncodedPath
+   *             complete path to destination file. Cannot be a directory path or same path as src file.
+   */
+  @action(group+='delete')
+  move: member function(destUrlOrEncodedPath: !string, spec: FileOperationSpec): !File
+
+  /**
+   * Truncates the given file and makes it empty.
+   */
+  @action(group+='write')
+  truncate: member function(): !File
+
+  /**
+   * Replaces the content type without modifying the content.
+   *
+   * @param contentType
+   *            new content type.
+   */
+  @action(group+='write')
+  replaceContentType: member function(contentType: !string, spec: FileOperationSpec): !File
+
+  /**
+   * Replaces the content encoding without modifying the content.
+   *
+   * @param contentEncoding
+   *            new content encoding.
+   */
+  @action(group+='write')
+  replaceContentEncoding: member function(contentEncoding: !string, spec: FileOperationSpec): !File
+
+  /**
+   * Replaces the content type and encoding without modifying the content.
+   *
+   * @param contentType
+   *            new content type.
+   * @param contentEncoding
+   *            new content encoding.
+   */
+  @action(group+='write')
+  replaceContentTypeAndEncoding: member function(contentType: !string,
+                                                 contentEncoding: !string,
+                                                 spec: FileOperationSpec): !File
+
+  /**
+   * Compresses the given file content. Compressed file will have a different extension.
+   *
+   * @param contentEncoding
+   *            compression content encoding; default is gzip.
+   */
+  @action(group+='write')
+  compress: ~
+
+  /**
+   * Uncompresses file. Removes compression specific extension.
+   */
+  @action(group+='write')
+  uncompress: ~
+
+  /**
+   * Rewrites existing content using the new content type. E.g. converts UTF-8 string to iso-8859-1.
+   *
+   * @param contentType
+   *            new content type.
+   * @param contentEncoding
+   *            new content encoding.
+   */
+  @action(group+='write')
+  transcode: ~
+
+  /**
+   * Creates a ZIP file from the given file content. Compressed file will have a .zip extension.
+   */
+  @action(group+='write')
+  zip: member function(spec: FileCompressSpec): !File
+
+  /**
+   * Uncompresses first entry in a ZIP file.
+   */
+  @action(group+='read')
+  unzipFirst: member function(rootUrlOrEncodedPath: string, spec: FileCompressSpec): File
+
+  /**
+   * Uncompresses all entries in a ZIP file.
+   */
+  @action(group+='read')
+  unzip: member function(rootUrlOrEncodedPath: string, spec: FileCompressSpec): [File]
+
+  /**
+   * @return cached copy i.e. local file with same metadata and content.
+   */
+  @action(group+='read')
+  cachedFile: member function(spec: FileOperationSpec): !File
+
+  /**
+   * @return the retry spec for a file operation. If a retry spec is present with the FileOperationSpec, that
+   * will take priority, otherwise it will default to using the FileSystemConfigChild corresponding to the scheme
+   */
+  getRetrySpec: function(spec: FileOperationSpec, scheme: string): !RetrySpec
+
+  /**
+   * @return list of parent directory names starting from root. If file doesn't have any parent directory i.e. located
+   *         immediately under file-system mount then returns empty.
+   */
+  parentDirectories: inline member function(): [string]
+
+  /**
+   * @return list of parent directory urls starting from mount URL.
+   */
+  parentDirectoryUrls: inline member function(): ![string]
+
+  /**
+   * Calls provided action by passing URL of each parent directory of this file starting from root.
+   *
+   * E.g. for `s3://data-load/mount/dir1/dir2/file` located under `s3://data-load/mount/` mount URL this method will
+   * call `action` 3 times with:
+   * - `s3://data-load/mount/`
+   * - `s3://data-load/mount/dir1/`
+   * - `s3://data-load/mount/dir1/dir2/`
+   */
+  eachParentDirectory: inline member function(action: !lambda(dirUrl: string)): !int
+
+  /**
+   * @return /file/ API endpoint for this file. It can be used to download (or upload) File content. By default it will
+   *        return the relative endpoint (to the running cluster) for GET operations. This is helpful for placing
+   *        download link in the UI.
+   */
+  apiEndpoint: member function(httpMethod: string, fullyQualified: boolean): !string
+
+  parseUrl:     ~: FileUrl
+  withFileName: ~
+  withFileExt:  ~
+
+  /**
+   * Constructor from string.
+   */
+  @action(group+='read')
+  fromString: ~
+
+  /**
+   * Print url.
+   */
+  toString: ~
+
+  /**
+   * @return `true` if the file is normally hidden, such as starting with a `.` in a UNIX file system.
+   */
+  isHidden: inline member function(): boolean java | js | py
+
+  /**
+   * @return true if this is an ZIP file.
+   */
+  isZipFile: inline member function(): boolean
+
+  /**
+   * @return instance of ZipFile or null if this is not ZipFile.
+   */
+  asZipFile: inline member function(): ZipFile
+
+  /**
+   * @return true if this is an S3File.
+   */
+  isS3File: inline member function(): boolean
+
+  /**
+   * @return instance of S3File or null if this is not S3File.
+   */
+  asS3File: inline member function(): S3File
+
+  /**
+   * @return true if this is an AzureFile.
+   */
+  isAzureFile: inline member function(): boolean
+
+  /**
+   * @return instance of AzureFile or null if this is not AzureFile.
+   */
+  asAzureFile: inline member function(): AzureFile
+
+  /**
+   * @return true if the file is locked/leased.
+   *
+   * Throws an exception if FileSystem does not provide file locking capabilities.
+   */
+  isLocked: inline member function(spec: FileOperationSpec): boolean
+
+  /**
+   * Breaks the lock/lease on the file (or its blob), if it is locked/leased.
+   *
+   * Throws an exception if FileSystem does not provide file locking capabilities.
+   */
+  breakLock: inline member function(spec: FileOperationSpec)
+
+  /**
+   * Generates pre-signed URL that can be used to upload/download files to/from object storage using HTTP.
+   *
+   *   1. Content-Type has to be specified for PUT operation.
+   *   2. Content-Length has to be specified for PUT operation.
+   *   3. x-ms-blob-type has to be specified for PUT operation on AzureFile. <BlockBlob | PageBlob | AppendBlob>
+   *
+   * @param httpMethod
+   *          Type of HTTP request, could be GET, PUT, POST, PATCH, or DELETE.
+   * @param duration
+   *          Specifies how long the presignedUrl is valid. See Duration.fromString for more details.
+   * @param spec
+   *          Provides options for various File actions.
+   */
+  generatePresignedUrl: optional member function(httpMethod: string serialized HttpMethod = 'GET',
+                                                 duration: string serialized Duration = '1h',
+                                                 spec: FileOperationSpec): !string
+
+  /**
+   * @return True if the current file is a child of the provided url.
+   */
+  isChildOf: inline member function(url: string serialized Url): boolean
+
+  // PLAT-64908 Cannot remote calls that are implemented in Java and return JavaNativeInputStreams
+  read: ~ java
+
+  readString: ~ java
+
+  /**
+   * Retry logic is dictated by {@link FileSystemConfig}
+   */
+  callWithRetry: ~
+}

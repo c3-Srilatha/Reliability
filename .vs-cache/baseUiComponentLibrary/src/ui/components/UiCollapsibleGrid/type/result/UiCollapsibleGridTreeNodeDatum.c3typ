@@ -1,0 +1,117 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a cell in a row in {@link UiCollapsibleGrid}.
+ */
+type UiCollapsibleGridTreeNodeDatum {
+  /**
+   * Display value for the cell.
+   */
+  value: string | int | decimal | double
+
+  /**
+   * Display sub value for the cell.
+   */
+  subValue: string | int | decimal | double
+
+  /**
+   * Option values for the dropdown cell.
+   * Should not be defined if isDropdown is false.
+   */
+  dropdownOptions: [json]
+
+  /**
+   * Whether or not this cell should render as a dropdown.
+   */
+  @constraint(condition="!isDropdown || exists(dropdownOptions)")
+  isDropdown: boolean
+
+  /**
+   * Field with the icon name to be rendered. This should be the icon suffix, e.g. for c3-icon-caret-up -> `caret-up`.
+   */
+  icon: string
+
+  /**
+   * Color to be used for the icon. Only used if #icon is specified as well.
+   */
+  iconColor: ThemedColor | string serialized Color
+
+  /**
+   * Optional action suffix for this data point.
+   */
+  actionSuffix: string
+
+  /**
+   * Any additional data values.
+   */
+  additionalData: json
+
+  /**
+   * Populated if this cell has a custom color. Can take {@link ThemedColor},
+   * simple colors in strings or even raw CSS expressions as strings. For example, 'var(--token)'
+   */
+  color: ThemedColor | string serialized Color
+
+  /**
+   * Whether the current data point is highlighted.
+   * For example, UI could do special treatment based on this info.
+   */
+  isHighlighted: boolean
+
+  /**
+   * Whether the current data point is editable.
+   * Header cells are not editable even if this field is set to true.
+   */
+  isEditable: boolean = false
+
+  /**
+   * Whether the current data point marks the ending of a section
+   * For example, UI could show a thick vertical line after this data point.
+   */
+  isSectionEnd: boolean
+
+  /**
+   * The configs for how to display the date and numerical values in the grid.
+   * If nothing is provided, it will look at {@link UiCollapsibleGridTreeNode row}
+   * and {@link UiCollapsibleGridTree column} format specs.
+   * To note, date formatting can only be provided at this level.
+   * If a date is provided as a value in milliseconds without specifying a format here,
+   * it will formatted as a number if either of {@link UiCollapsibleGridTreeNode row} or
+   * {@link UiCollapsibleGridTree column} format specs exist.
+   * Therefore, it's recommended to specify dates as either an ISO 8601 string or a localized string.
+   */
+  format: UiSdlDynamicValueSpecParamFormat<UiSdlDynamicValueSpecParamFormatSpec>
+
+  /**
+   * The list of cell-specific actions to be rendered using {@link UiSdlActionGroup}.
+   *
+   * This field should be used exclusively from the other fields on {@link UiCollapsibleGridTreeNodeDatum}.
+   * If other fields are specified along with the `cellActions` field, this field will take precedence
+   * and the others will be ignored.
+   *
+   * To emit a single action by clicking the blue text in the cell, use #actionSuffix instead.
+   */
+  cellActions: [UiSdlActionGroup]
+
+  /**
+   * The number of #cellActions to display in a cell. If there are more, an additional ellipsis
+   * action icon is displayed, and the extra cell actions are displayed under a dropdown
+   * triggered by clicking the ellipsis action button.
+   *
+   * The additional ellipsis cell action does not count towards the limit. Examples:
+   *
+   *   - If `cellActionsCollapseThreshold` is set to 3 and there are two cell actions, both of them are shown
+   *     in the cell, and there is no additional ellipsis action icon.
+   *   - If `cellActionsCollapseThreshold` is set to 2 and there are three actions - "A", "B", and "C" - the
+   *     cell will show action "A" and the additional ellipsis action icon. Clicking the ellipsis action icon
+   *     will show a dropdown menu containing actions "B" and "C".
+   */
+  cellActionsCollapseThreshold: int = 3
+}

@@ -1,0 +1,435 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is used for making REST API calls to Okta.
+ * Okta APIs allow for substituting <oktaUserId> with either <login> or <loginShortName> which is set to be the
+ * email of the user using {@UserFields#email}. Emails in Okta are case insensitive.
+ * @see Okta
+ */
+@action(group+='cluster-admin')
+@config(minOverride='CLUSTER', secretAuthz='cluster-admin')
+type OktaRestApi mixes REST<OktaRestApi.Config>, Singleton {
+
+  /**
+   * GET <okta-api-endpoint>/users/<oktaUserId>
+   */
+  @rest(uri='users', method='GET', oAuth2Scope=['okta.users.read'])
+  getUser: abstract function(@rest(partOfURI=true, uriPrefix='/') userId: !string): OktaUser
+
+  /**
+   * POST <okta-api-endpoint>/users
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  createUser: abstract function(profile: !OktaUserProfile,
+                                credentials: OktaUserCredentials,
+                                @rest(queryParameter=true)
+                                activate: boolean): OktaUser
+
+  /**
+   * GET <okta-api-endpoint>/groups/<oktaGroupId>
+   */
+  @rest(uri='groups', method='GET', oAuth2Scope=['okta.groups.read'])
+  getGroup: abstract function(@rest(partOfURI=true, uriPrefix='/') oktaGroupId: !string): OktaGroup
+
+  /**
+   * GET <okta-api-endpoint>/groups?q=<groupNamePrefix>
+   */
+  @rest(uri='groups?limit=200', method='GET', oAuth2Scope=['okta.groups.read'])
+  listGroups: abstract function(@rest(queryParameter=true, parameterName='q')
+                                groupNamePrefix: string,
+                                @rest(queryParameter=true, parameterName='after')
+                                cursor: string): [OktaGroup]
+
+  /**
+   * GET <okta-api-endpoint>/groups?filter=type+eq+=<groupNamePrefix>
+   */
+  @rest(uri='groups', method='GET', oAuth2Scope=['okta.groups.read'])
+  listGroupsWithType: abstract function(@rest(partOfURI=true,
+                                              uriPrefix='?filter=type+eq+%22',
+                                              uriSuffix='%22&limit=200')
+                                        groupType: !string,
+                                        @rest(partOfURI=true, uriPrefix='&after=')
+                                        cursor: string): [OktaGroup]
+
+  /**
+   * POST <okta-api-endpoint>/groups
+   */
+  @rest(uri='groups', method='POST', oAuth2Scope=['okta.groups.manage'])
+  createGroup: abstract function(profile: !OktaGroupProfile): OktaGroup
+
+  /**
+   * PUT <okta-api-endpoint>/groups/<oktaGroupId>
+   */
+  @rest(uri='groups', method='PUT', oAuth2Scope=['okta.groups.manage'])
+  updateGroup: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                 oktaGroupId: !string,
+                                 profile: !OktaGroupProfile): OktaGroup
+
+  /**
+   * DELETE <okta-api-endpoint>/groups/<oktaGroupId>
+   */
+  @rest(uri='groups', method='DELETE', oAuth2Scope=['okta.groups.manage'])
+  removeGroup: abstract function(@rest(partOfURI=true, uriPrefix='/') oktaGroupId: !string)
+
+  /**
+   * PUT <okta-api-endpoint>/groups/<oktaGroupId>/users/<oktaUserId>
+   */
+  @rest(uri='groups', method='PUT', oAuth2Scope=['okta.groups.manage'])
+  addUserToGroup: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                    oktaGroupId: !string,
+                                    @rest(partOfURI=true, uriPrefix='/users/')
+                                    oktaUserId: !string)
+
+  /**
+   * DELETE <okta-api-endpoint>/groups/<oktaGroupId>/users/<oktaUserId>
+   */
+  @rest(uri='groups', method='DELETE', oAuth2Scope=['okta.groups.manage'])
+  removeUserFromGroup: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                         oktaGroupId: !string,
+                                         @rest(partOfURI=true, uriPrefix='/users/')
+                                         oktaUserId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/groups/rules
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules', method='POST', oAuth2Scope=['okta.groups.manage'])
+  createGroupRule: abstract function(@rest(doNotUseParameterName=true) oktaGroupRule: !OktaGroupRule): OktaGroupRule
+
+  /**
+   * POST <okta-api-endpoint>/groups/rules/<oktaGroupRuleId>
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules', method='POST', oAuth2Scope=['okta.groups.manage'])
+  updateGroupRule: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                     oktaGroupRuleId: !string,
+                                     @rest(doNotUseParameterName=true)
+                                     oktaGroupRule: OktaGroupRule)
+
+  /**
+   * GET <okta-api-endpoint>/groups/rules
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules?limit=300', method='GET', oAuth2Scope=['okta.groups.manage'])
+  listGroupRules: abstract function(): [OktaGroupRule]
+
+  /**
+   * GET <okta-api-endpoint>/groups/rules/<oktaGroupRuleId>
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules', method='GET', oAuth2Scope=['okta.groups.manage'])
+  getGroupRule: abstract function(@rest(partOfURI=true, uriPrefix='/') oktaGroupRuleId: !string): OktaGroupRule
+
+  /**
+   * DELETE <okta-api-endpoint>/groups/rules/<oktaGroupRuleId>
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules', method='DELETE', oAuth2Scope=['okta.groups.manage'])
+  deleteGroupRule: abstract function(@rest(partOfURI=true, uriPrefix='/') oktaGroupRuleId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/groups/rules/<oktaGroupRuleId>/lifecycle/activate
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules', method='POST', oAuth2Scope=['okta.groups.manage'])
+  activateGroupRule: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/activate')
+                                       oktaGroupRuleId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/groups/rules/<oktaGroupRuleId>/lifecycle/activate
+   * https://developer.okta.com/docs/api/resources/groups#group-rule-operations
+   */
+  @rest(uri='groups/rules', method='POST', oAuth2Scope=['okta.groups.manage'])
+  deactivateGroupRule: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/deactivate')
+                                         oktaGroupRuleId: !string)
+
+  /**
+   * GET <okta-api-endpoint>/apps?limit=200&filter=status%20eq%20%22ACTIVE%22
+   */
+  // TODO: the maximum number of objects per fetch is 200, we will need to add pagination or fetch by id
+  @rest(uri='apps?limit=200&filter=status%20eq%20%22ACTIVE%22', method='GET', oAuth2Scope=['okta.apps.read'])
+  listApps: abstract function(@rest(queryParameter=true, parameterName='after')
+                              cursor: string,
+                              @rest(queryParameter=true, parameterName='q')
+                              appNamePrefix: string): [OktaApplication]
+
+  /**
+   * GET <okta-api-endpoint>/groups/<oktaGroupId>/apps
+   */
+  @rest(uri='groups', method='GET', oAuth2Scope=['okta.groups.read', 'okta.apps.read'])
+  listAppsForGroup: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/apps')
+                                      oktaGroupId: !string): [OktaApplication]
+
+  /**
+   * GET <okta-api-endpoint>/apps/<oktaAppId>
+   */
+  @rest(uri='apps', method='GET', oAuth2Scope=['okta.apps.read'])
+  getApp: abstract function(@rest(partOfURI=true, uriPrefix='/') oktaAppId: !string): OktaApplication
+
+  /**
+   * GET <okta-api-endpoint>/apps/filter=
+   */
+  @rest(uri='apps?limit=200', method='GET', oAuth2Scope=['okta.apps.read'])
+  listAppsWithFilter: abstract function(@rest(queryParameter=true, parameterName='filter')
+                                        filter: string): [OktaApplication]
+
+  /**
+   * POST <okta-api-endpoint>/apps
+   */
+  @rest(uri='apps', method='POST', oAuth2Scope=['okta.apps.manage'])
+  createApp: abstract function(label: !string,
+                               signOnMode: !string,
+                               settings: !OktaAppSettings,
+                               credentials: !OktaAppCredentials,
+                               visibility: !OktaAppVisibility,
+                               accessibility: OktaAppAccessibility,
+                               features: [string]): OktaApplication
+
+  /**
+   * POST <okta-api-endpoint>/apps/<oktaAppId>/lifecycle/activate
+   */
+  @rest(uri='apps', method='POST', oAuth2Scope=['okta.apps.manage'])
+  activateApp: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/activate')
+                                 oktaAppId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/apps/<oktaAppId>/lifecycle/deactivate
+   */
+  @rest(uri='apps', method='POST', oAuth2Scope=['okta.apps.manage'])
+  deactivateApp: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/deactivate')
+                                   oktaAppId: !string)
+
+  /**
+   * DELETE <okta-api-endpoint>/apps/<oktaAppId>
+   */
+  @rest(uri='apps', method='DELETE', oAuth2Scope=['okta.apps.manage'])
+  removeApp: abstract function(@rest(partOfURI=true, uriPrefix='/') oktaAppId: !string)
+
+  /**
+   * PUT <okta-api-endpoint>/apps/<oktaAppId>/users/<oktaUserId>
+   */
+  @rest(uri='apps', method='POST', oAuth2Scope=['okta.apps.manage'])
+  addUserToApp: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/users')
+                                  oktaAppId: !string,
+                                  @rest(parameterName='id')
+                                  oktaUserId: !string): OktaUser
+
+  /**
+   * DELETE <okta-api-endpoint>/apps/<oktaAppId>/users/<oktaUserId>
+   */
+  @rest(uri='apps', method='DELETE', oAuth2Scope=['okta.apps.manage'])
+  removeUserFromApp: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                       oktaAppId: !string,
+                                       @rest(partOfURI=true, uriPrefix='/users/')
+                                       oktaUserId: !string)
+
+  /**
+   * PUT <okta-api-endpoint>/apps/<oktaAppId>/groups/<oktaGroupId>
+   */
+  @rest(uri='apps', method='PUT', oAuth2Scope=['okta.apps.manage'])
+  addGroupToApp: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                   oktaAppId: !string,
+                                   @rest(partOfURI=true, uriPrefix='/groups/')
+                                   oktaGroupId: !string): OktaGroup
+
+  /**
+   * DELETE <okta-api-endpoint>/apps/<oktaAppId>/groups/<oktaGroupId>
+   */
+  @rest(uri='apps', method='DELETE', oAuth2Scope=['okta.apps.manage'])
+  removeGroupFromApp: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                        oktaAppId: !string,
+                                        @rest(partOfURI=true, uriPrefix='/groups/')
+                                        oktaGroupId: !string)
+
+  /**
+   * GET <okta-api-endpoint>/apps/<oktaAppId>/groups
+   */
+  @rest(uri='apps', method='GET', oAuth2Scope=['okta.apps.read'])
+  listGroupsForApp: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/groups?limit=200')
+                                      oktaAppId: !string,
+                                      @rest(queryParameter=true, parameterName='after')
+                                      cursor: string): [OktaGroup]
+
+  /**
+   * GET <okta-api-endpoint>/apps/<oktaAppId>/users
+   */
+  @rest(uri='apps', method='GET', oAuth2Scope=['okta.apps.read'])
+  listUsersInApp: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/users?limit=200')
+                                    oktaAppId: !string,
+                                    @rest(queryParameter=true, parameterName='after')
+                                    cursor: string): [OktaUser]
+
+  /**
+   * GET <okta-api-endpoint>/groups/<oktaGroupId>/users
+   */
+  @rest(uri='groups', method='GET', oAuth2Scope=['okta.groups.read'])
+  listUsersInGroup: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/users?limit=200')
+                                      oktaGroupId: !string,
+                                      @rest(queryParameter=true, parameterName='after')
+                                      cursor: string): [OktaUser]
+
+  /**
+   * GET <okta-api-endpoint>/users/<oktaUserId>/groups
+   */
+  @rest(uri='users', method='GET', oAuth2Scope=['okta.users.read'])
+  listGroupsForUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/groups?limit=200')
+                                       oktaUserId: !string,
+                                       @rest(queryParameter=true, parameterName='after')
+                                       cursor: string): [OktaGroup]
+
+  /**
+   * GET <okta-api-endpoint>/users
+   */
+  @rest(uri='users?limit=200', method='GET', oAuth2Scope=['okta.users.read'])
+  listUsers: abstract function(@rest(queryParameter=true, parameterName='q')
+                               userNamePrefix: string,
+                               @rest(queryParameter=true, parameterName='after')
+                               cursor: string): [OktaUser]
+
+  /**
+   * GET <okta-api-endpoint>/users/filter=
+   */
+  @rest(uri='users?limit=200', method='GET', oAuth2Scope=['okta.users.read'])
+  listUsersWithFilter: abstract function(@rest(queryParameter=true, parameterName='filter')
+                                         filter: string): [OktaUser]
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/lifecycle/unlock
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  unlockUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/unlock')
+                                oktaUserId: !string)
+
+  /**
+   * POST
+   * <okta-api-endpoint>/users/<oktaUserId>/lifecycle/reset_password?sendEmail=true
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  resetPassword: abstract function(@rest(partOfURI=true,
+                                         uriPrefix='/',
+                                         uriSuffix='/lifecycle/reset_password?sendEmail=true')
+                                   oktaUserId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/lifecycle/activate
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  activateUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/activate')
+                                  oktaUserId: !string,
+                                  @rest(queryParameter=true)
+                                  sendEmail: boolean = true): OktaActivationInfo
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/lifecycle/deactivate
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  deactivateUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/deactivate')
+                                    oktaUserId: !string,
+                                    @rest(queryParameter=true)
+                                    sendEmail: boolean)
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId> (POST is used for partial update)
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  setPasswordForUser: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                        oktaUserId: !string,
+                                        credentials: OktaUserCredentials): OktaUser
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId> (POST is used for partial
+   * update)
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  updateUser: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                oktaUserId: !string,
+                                profile: !OktaUserProfile,
+                                credentials: OktaUserCredentials): OktaUser
+
+  /**
+   * POST <okta-api-endpoint>/authn
+   */
+  @rest(uri='authn', method='POST', oAuth2Scope=['okta.users.read'])
+  authenticateUser: abstract function(username: !string, password: !string): OktaAuthn
+
+  /**
+   * GET <okta-api-endpoint>/users/<oktaUserId>/factors
+   */
+  @rest(uri='users', method='GET', oAuth2Scope=['okta.users.read'])
+  listFactorsForUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/factors')
+                                        oktaUserId: !string): [OktaFactor]
+
+  /**
+   * DELETE <okta-api-endpoint>/users/<oktaUserId>/factors/<oktaFactorId>
+   */
+  @rest(uri='users', method='DELETE', oAuth2Scope=['okta.users.manage'])
+  resetFactorForUser: abstract function(@rest(partOfURI=true, uriPrefix='/')
+                                        oktaUserId: !string,
+                                        @rest(partOfURI=true, uriPrefix='/factors/')
+                                        oktaFactorId: !string)
+
+  /**
+   * DELETE <okta-api-endpoint>/users/<oktaUserId>
+   */
+  @rest(uri='users', method='DELETE', oAuth2Scope=['okta.users.manage'])
+  deleteUser: abstract function(@rest(partOfURI=true, uriPrefix='/', oAuth2Scope=['okta.users.manage'])
+                                oktaUserId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/credentials/change_password
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  changePassword: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/credentials/change_password')
+                                    oktaUserId: !string,
+                                    oldPassword: OktaPassword,
+                                    newPassword: OktaPassword)
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/credentials/forgot_password
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  forgotPassword: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/credentials/forgot_password')
+                                    oktaUserId: !string,
+                                    @rest(queryParameter=true)
+                                    sendEmail: boolean): OktaResetPassword
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/lifecycle/suspend
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  suspendUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/suspend')
+                                 oktaUserId: !string)
+
+  /**
+   * POST <okta-api-endpoint>/users/<oktaUserId>/lifecycle/unsuspend
+   */
+  @rest(uri='users', method='POST', oAuth2Scope=['okta.users.manage'])
+  unsuspendUser: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/lifecycle/unsuspend')
+                                   oktaUserId: !string)
+
+  /**
+   * DELETE <okta-api-endpoint>/users/<userId>/sessions
+   */
+  @rest(uri='users', method='DELETE', oAuth2Scope=['okta.users.manage'])
+  clearUserSession: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/sessions') userId: !string)
+
+  /**
+   * GET <okta-api-endpoint>/apps/<oktaAppId>/sso/saml/metadata?kid=<keyId>
+   */
+  @rest(uri='apps',
+        method='GET',
+        contentType='text/xml',
+        acceptType='text/xml',
+        xmlRoot='request',
+        oAuth2Scope=['okta.apps.read'])
+  getSamlMetadata: abstract function(@rest(partOfURI=true, uriPrefix='/', uriSuffix='/sso/saml/metadata')
+                                     oktaAppId: !string,
+                                     @rest(partOfURI=true, uriPrefix='?kid=')
+                                     keyId: !string): HttpResponse
+}

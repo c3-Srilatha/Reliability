@@ -1,0 +1,302 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A logical grouping of nodes. Nodes for a given node pool are homogeneous to one another and an individual node does
+ * not change during its life cycle. A node pool should not need to be explicitly configured and started by a user, but
+ * can be automated by the C3 Platform by optionally annotating a given {@link Action} with a node pool.
+ *
+ * @see App.NodePool.Config
+ */
+@beta
+type App.NodePool mixes Configurable<App.NodePool.Config>, Named {
+
+  /**
+   * {@link App} this node pool is intended for.
+   */
+  app: !App
+
+  forName: ~
+
+  /**
+   * Gets the {@link App.NodePool.Config} of this App.NodePool.
+   * @param spec
+   *        Specifies {@link CloudClusterOpSpec} used for this operation.
+   *        If {@link CloudClusterOpSpec#doNotRemote} is false, then action is executed
+   *        on the {@link App.NodePool#app} (recommended), else the action is executed in the current {@link App.Node}
+   */
+  config: member function(secrets: boolean, spec: CloudClusterOpSpec): !App.NodePool.Config
+
+  /**
+   * Sets the provided {@link App.NodePool.Config} for this App.NodePool at the {@link ConfigOverride#APP} level
+   * @param config
+   *        Config to be set
+   * @param spec
+   *        Specifies {@link CloudClusterOpSpec} used for this operation.
+   *        If not provided, the action will remote to the corresponding {@link App.NodePool#app}.
+   *        If {@link CloudClusterOpSpec#doNotRemote} is false, then action is executed
+   *        on the {@link App.NodePool#app}, else the action is executed in the current {@link App.Node}.
+   *        It is recommended to set the value to true, only when the corresponding {@link App.NodePool#app} is unavailable.
+   */
+  updateNodePoolConfig: private member function(config: !App.NodePool.Config, spec: CloudClusterOpSpec)
+
+  /**
+   * Sets the provided {@link App.NodePool.Config} value for this App.NodePool at the {@link ConfigOverride#APP} level
+   * @param path
+   *        Field path to be updated in the corresponding {@link App.NodePool.Config}
+   * @param value
+   *        Value to be set on provided path
+   * @param spec
+   *        Specifies {@link CloudClusterOpSpec} used for this operation.
+   *        If not provided, the action will remote to the corresponding {@link App.NodePool#app}.
+   *        If {@link CloudClusterOpSpec#doNotRemote} is false, then action is executed
+   *        on the {@link App.NodePool#app}, else the action is executed in the current {@link App.Node}.
+   *        It is recommended to set the value to true, only when the corresponding {@link App.NodePool#app} is unavailable.
+   */
+  updateNodePoolConfigValue: private member function(path: !string, value: !?any, spec: CloudClusterOpSpec)
+
+  /**
+   * @return available / free running node in this pool or `null` or error if none available
+   */
+  availableNode: member function(failIfNone: boolean): Server
+
+  /**
+   * Sets the target node count, min node count, and max node count for this node pool. Note that the actual node count
+   * must be within the boundaries of the minimum and maximum node count that is set.
+   *
+   * @param targetNodeCount
+   *         Specifies the {@link App.NodePool.Config#targetNodeCount} for this node pool. If one is not specified, the
+   *         current target node count will be used.
+   * @param minNodeCount
+   *         Specifies the {@link App.NodePool.Config#minNodeCount} for this node pool. If one is not specified, the
+   *         current min node count will be used.
+   * @param maxNodeCount
+   *         Specifies the {@link App.NodePool.Config#maxNodeCount} for this node pool. If one is not specified, the
+   *         current max node count will be used.
+   * @return node pool object for which the node count was modified.
+   */
+  setNodeCount: member function(targetNodeCount: int32, minNodeCount: int32, maxNodeCount: int32): !App.NodePool
+
+  /**
+   * Sets the {@link HardwareProfile} for this node pool.
+   *
+   * @param cpu
+   *         Specifies the cpu count that nodes of this node pool should have.
+   * @param memoryMb
+   *         Specifies the memoryMb size that nodes of this node pool should have.
+   * @param gpu
+   *         Specifies the gpu count that nodes of this node pool should have.
+   * @param gpuVendor
+   *         Specifies the {@link HardwareRequirement#gpuVendor} that nodes of this node pool should have.
+   * @param gpuKind
+   *         Specifies the {@link HardwareRequirement#gpuKind} that nodes of this node pool should have.
+   * @return node pool object for which the hardware profile configuration was modified.
+   */
+  setHardwareProfile: member function(cpu: !int32,
+                                      memoryMb: !int32,
+                                      gpu: int32,
+                                      gpuVendor: string enum GpuVendor,
+                                      gpuKind: string): !App.NodePool
+
+  /**
+   * Sets the {@link App.NodePool.AutoScaleSpec} for this node pool.
+   * Note: The {@link App.NodePool.AutoScaleSpec#strategy} will be defaulted to
+   * {@link App.NodePool.AutoScaleStrategy.InvalidationQueues} if not set previously
+   *
+   * @param enable
+   *         Specifies whether to enable a node pool autoscaler.
+   * @return node pool object for which the autoscale behavior was modified.
+   */
+  setAutoScaleSpec: member function(enable: boolean): !App.NodePool
+
+  /**
+   * Sets the {@link App.NodePool.AutoScaleSpec} for this node pool.
+   *
+   * @param autoScale
+   *         Specifies the {@link App.NodePool.AutoScaleSpec} for this node pool.
+   * @return node pool object for which the autoscale behavior was modified.
+   */
+  setAutoScaleSpec: member function(autoScale: !App.NodePool.AutoScaleSpec): !App.NodePool
+
+  /**
+   * Sets the {@link App.NodePool.JvmSpec} for this node pool.
+   *
+   * @param jvmMaxMemoryPct
+   *         Specifies the {@link App.NodePool.JvmSpec#jvmMaxMemoryPct} that C3 server nodes will reserve.
+   * @param enableHeapDumpOnOomError
+   *         Specified a flat to dump JVM heap on out of memory error.
+   * @return node pool object for which the JVM specifications was modified.
+   */
+  setJvmSpec: member function(jvmMaxMemoryPct: !double, enableHeapDumpOnOomError: boolean): !App.NodePool
+
+  /**
+   * Enables heap dump on out of memory error.
+   * NOTE: Bigger heap dumps can take a long time to write and hence will need larger grace period
+   * @param enable
+   *        true to enable heap dump on OOM error, false to disable.
+   * @param heapDumpPath
+   *        Specifies the file path where the heap dump will be stored.
+   * @param terminationGracePeriodSeconds
+   *        Specifies the duration in seconds that the system will wait before forcefully terminating a node.
+   * @return node pool object for which the heap dump on OOM error was enabled.
+   */
+  setHeapDumpOnOomError: member function(enable: boolean,
+                                         heapDumpPath: string,
+                                         terminationGracePeriodSeconds: int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#maxCpu}.
+   */
+  setMaxCpu: member function(value: !int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#maxFullGcCount}.
+   */
+  setMaxFullGcCount: member function(value: !int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#MaxFullGcTimeMillis}.
+   */
+  setMaxFullGcTimeMillis: member function(value: !int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#maxDatastoreFragmentationPct}.
+   */
+  setMinFreeDatastoreDiskSpacePct: member function(value: !int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#maxDatastoreFragmentationPct}.
+   */
+  setMaxDatastoreFragmentationPct: member function(value: !int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#maxDatastoreQueuedTaskCount}.
+   */
+  setMaxDatastoreQueuedTaskCount: member function(value: !int): !App.NodePool
+
+  /**
+   * Set {@link QueuesResourceGovernorConfig#maxConcurrentComputes}.
+   */
+  setMaxConcurrentComputes: member function(value: !int): !App.NodePool
+
+  /**
+   * Returns {@link CloudId.role} for cloud resources created by this {@link App.NodePool.Membership}.
+   */
+  @deprecated(finalVersion="8.5", details="Use #cloudIdRole instead")
+  cloudRole: private final member function(): !string
+
+  /**
+   * Returns {@link CloudIdRole} for cloud resources created by this {@link App.NodePool}'s {@link App.NodePool.Membership}.
+   */
+  cloudIdRole: private final member function(): !string
+
+  /**
+   * Returns {@link CloudIdRole} for cloud resources created for an {@link App.NodePool} having the given nodePool name
+   */
+  cloudIdRole: private final function(nodePoolName: !string): !string
+
+  /**
+   * Returns whether the {@link Server.Role} is present in the list of roles supported by this node pool.
+   *
+   * @param role
+   *         Specifies the role to check for this node pool.
+   * @return true if role is present for the node pool.
+   */
+  hasRole: inline member function(role: !string enum Server.Role): boolean
+
+  /**
+   * Represents all nodes for this node pool. If this is an {@link App} running in a singlenode setting, fetch the node
+   * that is currently hosting the App.
+   *
+   * @param refresh
+   *         Refreshes the cache holding all nodes of this node pool.
+   * @return all nodes for this node pool.
+   */
+  nodes: member function(refresh: boolean): [Server]
+
+  /**
+   * Represents the state of all individual nodes belonging to this node pool and the {@link Server#lastMessage}
+   * reported by those nodes for why the nodes have reached that state.
+   *
+   * @param refresh
+   *         If `refresh` parameter is true, ensure the state of all nodes are up to date.
+   * @return mapping of all nodes to their corresponding state
+   */
+  nodeStates: member function(refresh: boolean): map<string, { state: !string, lastMessage: string }>
+
+  /**
+   * Start nodes in this node pool group. This will render the node pool to an active state. Note that an attempt to
+   * start new node pools in a singlenode setting is expected to fail as DDE is expected to run as a standalone node.
+   *
+   * @return server nodes that were started.
+   */
+  @action(group+='app-admin')
+  start: member function(): [Server]
+
+  /**
+   * Check if this node pool is ready
+   *
+   * @return true if all nodes for this node pool are ready
+   */
+  @action(group+='app-admin')
+  isReady: member function(opSpec: CloudClusterOpSpec): boolean
+
+  /**
+   * Update nodes for this node pool group.
+   */
+  @action(group+='app-admin')
+  update: member function()
+
+  /**
+   * Stop nodes for this node pool group.
+   */
+  @action(group+='app-admin')
+  stop: member function()
+
+  /**
+   * Terminate nodes for this node pool group.
+   */
+  @action(group+='app-admin')
+  terminate: member function()
+
+  /**
+   * Route to proper {@link App.NodePool.Membership}.
+   *
+   * @return proper {@link App.NodePool.Membership} for this node pool.
+   */
+  @cache(platPkg=true)
+  membership: private cached member function(): !App.NodePool.Membership
+
+  /**
+   * Update nodes for this node pool group.
+   */
+  @deprecated(finalVersion='8.4', details="Use `update` instead`")
+  @action(group+='app-admin')
+  updateNodes: member function()
+
+  /**
+   * Updates the target node count for this App.NodePool based on its {@link App.NodePool.AutoScaleStrategy}
+   * Only valid for App.NodePools who have their {@link App.NodePool.AutoScaleStrategy} be of
+   * type {@link App.NodePool.AutoScaleStrategy.CronJob}.
+   * Example: {@link App.NodePool.AutoScaleStrategy.InvalidationQueueStats}.
+   *
+   * @return updated target node count
+   */
+  scale: member function(): int32
+
+  /**
+   * Returns true if this node pool can satisfy the provided constraint.
+   */
+  satisfiesConstraint: member function(constraint: !HardwareConstraint): boolean
+
+  /**
+   * Returns the {@link CloudResource} object for the node represented by the given nodeId in this node pool.
+   */
+  @action(group+='cluster-admin')
+  cloudResourceForNodeId: member function(nodeId: !string serialized App.Node.Id): !CloudResource
+}

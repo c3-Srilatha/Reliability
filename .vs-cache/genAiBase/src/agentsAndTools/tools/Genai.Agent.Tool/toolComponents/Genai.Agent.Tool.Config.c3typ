@@ -1,0 +1,44 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configuration for a {@link Genai.Agent.Tool}
+ */
+type Genai.Agent.Tool.Config mixes Identified, Config, Genai.Agent.Tool.ConfigBase, Genai.ParentConfig {
+
+  /**
+   * If true, then the few-shot implementation of the tool will be used for spec generation. Currently only supported
+   * for EvalQueryTool.
+   */
+  useFewShotSpecGeneration: boolean
+
+  /**
+   * Prompt used for getting a natural language answer to the question from structured data.
+   */
+  textAnswerFromDataPrompt: !string
+
+  /**
+   * If set to true, we do not generate a textual answer from llm.
+   * The default is to generate a textual answer from llm using the prompt from #textAnswerFromDataPrompt.
+   */
+  doNotGenerateAnswerFromLlm: boolean
+
+  /**
+   * The number of rows that is passed to the LLM model for generating the natural language answer when #doNotGenerateAnswerFromLlm is enabled.
+   * This config is only used in EvalQueryTool.
+   */
+  numRowsForLlm: int = 1
+
+  /**
+   * Name of {@link Genai.UnstructuredQuery.Engine.ModelConfig} that should be used for getting a natural language answer from structured data.
+   */
+  textAnswerFromDataModelConfigName: string
+
+  childConfigFields: ~ js
+}

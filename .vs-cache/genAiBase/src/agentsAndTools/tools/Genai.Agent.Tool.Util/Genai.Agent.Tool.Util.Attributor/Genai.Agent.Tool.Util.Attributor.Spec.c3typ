@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The input spec for {@link Genai.Agent.Tool.Util.Attributor#attribute}.
+ */
+type Genai.Agent.Tool.Util.Attributor.Spec mixes Spec {
+
+  /**
+   * The response {@link Genai.Agent.Tool.Util.Attributor.Segmentation.Spec} that we are planning to generate attributions for.
+   */
+  responseSegmenterSpec: !Genai.Agent.Tool.Util.Attributor.Segmentation.Spec
+
+  /**
+   * The source {@link Genai.Agent.Tool.Util.Attributor.Segmentation.Spec} that we are planning to generate attributions for.
+   */
+  sourceSegmenterSpec: !Genai.Agent.Tool.Util.Attributor.Segmentation.Spec
+
+  /**
+   * The {@link Genai.Retriever.SimilaritySearchSpec} for the similarities matcher.
+   */
+  similarityMatcherSpec: !Genai.Retriever.SimilaritySearchSpec
+
+  /**
+   * Retriever's spec
+   */
+  retrieverSpec: Genai.Retriever.BaseSpec
+
+  /**
+   * The {@link Genai.Agent.Tool.Util.Corroborator.Spec} for corroboration model and params.
+   */
+  corroboratorSpec: Genai.Agent.Tool.Util.Corroborator.Spec
+
+  /**
+   * Setting this to false means using tags to limit the retrieved sources.
+   * Setting this to true means no tags restriction on the retrieved sources.
+   */
+  attributeOnAllTags: boolean
+
+  /**
+   * Whether to generate corroboration scores.
+   */
+  runCorroboration: boolean
+
+  /**
+   * Whether to generate rationale, which requires segmenting the sources.
+   */
+  generateRationale: boolean
+
+  /**
+   * This is a function that a user would provide to quantify credibility of a source from its attribution results.
+   */
+  credibilityLambda: lambda(attributionResult: !Genai.Agent.Tool.Util.Attributor.Output): !Genai.Agent.Tool.Util.Attributor.Output
+
+  /**
+   * The threshold used for determine similarity and credibility scores' indication "High", "Neutral", or "Low" for UI
+   * default is 0.4 and 0.85.
+   * The ranges for this threshold-indicator relationship:
+   *     High: 0.85-1 - lower bound exclusive, higher bound inclusive
+   *     Neutral: 0.4-0.85 - lower bound exclusive, higher bound inclusive
+   *     Low: 0-0.4 - lower bound inclusive, higher bound inclusive
+   */
+  scoreIndicatorThreshold: [float] = [0.4, 0.85]
+}

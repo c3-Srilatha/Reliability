@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ServerDirectorySize {
+
+  /**
+   * @param dir
+   *          Directory for which usage needs to be computed.
+   * @param timeoutSecs
+   *          After timeoutSecs, if the computation of directory usages is not completed, the computation of directory usages for that specific directory will timeout.
+   *          This timeout is applied on a per-directory basis, meaning each directory has its own independent timeoutSecs limit for the computation.
+   *          The default value is 10 seconds.
+   * Retrieves a directory size in bytes. -2 represents the calculation times out. -1 represents some unknown errors have occurred.
+   */
+  sizeForDir: function(dir: !string, timeoutSecs: double = 10.0): int
+
+  /**
+   * Retrieves the used size and available size for the mounted storage device which is backing the dir in bytes, and stores those in {@link StorageStats}.
+   * @param dir
+   *        Directory for which usage and availability need to be computed.
+   * @param timeoutSecs
+   *          After timeoutSecs, if the computation of directory usage and availability is not completed, the computation of directory usages for that specific directory will timeout.
+   *          This timeout is applied on a per-directory basis, meaning each directory has its own independent timeoutSecs limit for the computation.
+   *          The default value is 10 seconds.
+   * @return the used size and available size for the mounted storage device which is backing the dir in bytes, and stores those in {@link StorageStats}. -2 represents the calculation times out. -1 represents some unknown errors have occurred.
+   */
+  storageStatsForMountForDir: function(dir: !string, timeoutSecs: double = 10.0): StorageStats
+}

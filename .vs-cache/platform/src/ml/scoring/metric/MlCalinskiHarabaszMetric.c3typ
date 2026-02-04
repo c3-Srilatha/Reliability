@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The Calinski-Harabasz score, also known as Variance Ratio Criterion, is a clustering score defined as the ratio of
+ * inter-cluster dispersion to intra-cluster dispersion. See
+ * [sklearn reference](https://scikit-learn.org/stable/modules/clustering.html#calinski-harabasz-index) for a detailed
+ * formulation.
+ *
+ * This metric **requires** `modelInput` as `context`. `modelInput` is the feature matrix used in clustering and must
+ * have the same number of samples as the `modelOutput`.
+ *
+ * **NOTE**: The current implementation materializes entire dataset in memory as opposed to batch computation.
+ */
+@beta
+type MlCalinskiHarabaszMetric mixes MlScoringMetric<Data, Data, { modelInput: Data }>, SklearnClusterScoreMixin {
+
+  doScore:        ~ py
+  noTarget:       ~ py
+  contextNames:   ~ py
+  higherIsBetter: ~ py
+}

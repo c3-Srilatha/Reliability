@@ -1,0 +1,524 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A method is a function that is associated with a type and has a name and implementation as an "action".  Type
+ * actions can be called directly within any supported language and through the REST API.
+ *
+ * Method can be overloaded - in which case dispatcher will lookup implementation based on input parameter value types.
+ *
+ * Methods are declared on a type in the same way as {@link FieldType fields}, except that the value to the right of
+ * the colon is a {@link MethodType function}.
+ * ```
+ * type Cat {
+ *   purr:  member function()
+ *   meow:  member function(loudness: int)
+ *   stray: function(): Cat
+ * }
+ * ```
+ *
+ * The first two methods above are members, which means they are called on an instance of the Cat type. The last one is
+ * static, which means it is called on the Cat type itself.
+ * ```
+ * Cat.stray().meow(5)
+ * ```
+ *
+ * See {@link MethodType} for more information about function value types. See {@link methods.c3doc Method Declaration}
+ * for more information on method declaration and the rules around overriding and overloading methods.
+ *
+ * The implementation may be transportable to the client, in which case its (scripting language) implementation is
+ * carried along with the type, merging mixins and remixes.
+ *
+ * Methods may be marked with options:
+ *  - `abstract` assumed to be implemented by any sub-type (unless re-declared abstract)
+ *  - `optional` not implemented unless re-declared in a sub-type
+ *  - `final` may not be re-declared in sub-types
+ *  - `cached` result is expensive to compute and a pure function and the value may be cached
+ *  - `stateful` cannot be cached; for example cannot be invoked over HTTP via the GET method
+ *  - `private` method should not be used outside its declaring package
+ *  - `member` method is called on an instance, rather than the type itself ("static")
+ *
+ * @see MethodType
+ * @see Type
+ */
+type Method mixes FieldTypeAndMethodBase {
+
+  /**
+   * Name of the method.
+   */
+  name: !~
+
+  /**
+   * Corresponding mixin type methods if this is an override.
+   */
+  mixins: cached member function(): [Method]
+
+  /**
+   * The list of overload function signatures individually declared. These may come from the same or a mixin type.
+   * This list should be used for documentation and argument validation if the method `isOverloaded()`.
+   *
+   * ```type
+   * type Math {
+   *   min: function(values: int ...): int
+   *   min: function(values: double ...): double
+   * }
+   * ```
+   *
+   * The primary signature ({@link FunctionType#arguments} and {@link FunctionType#returnValueType}) will be a
+   * "net" signature that can accommodate all forms of the overload. For example, Math.min above would have a
+   * net signature of `(values: any ...): any`.
+   *
+   * However, when calling the function, the overload is picked based on the actual arguments passed, which means that
+   * validation will be performed and if there is no matching overload for the actuals, an error will be raised.
+   */
+  overloads: cached member function(): ![MethodType]
+
+  /**
+   * The list of overload function signatures individually declared with specified annotation. These may come from the
+   * same or a mixin type.
+   * This list should be used for documentation and argument validation if the method `isOverloaded()`.
+   *
+   * @see #overloads
+   */
+  overloadsWithAnn: cached member function(ann: !string): [MethodType]
+
+  /**
+   * If parent type is narrowed generic type then corresponding method from it - otherwise this.
+   */
+  prototype: member function(): !Method
+
+  /**
+   * Whether this is an overloaded method, which has multiple calling signatures.
+   */
+  isOverloaded: member function(): boolean java | js
+
+  /**
+   * Whether this method has implementations for every overload.
+   */
+  isImplemented: cached member function(): boolean
+
+  /**
+   * Whether this method must be called on an instance.
+   */
+  isMember: member function(): boolean
+
+  /**
+   * Whether this method should be called on a type instead of an instance.
+   */
+  isStatic: member function(): boolean
+
+  /**
+   * Whether this is a "property method," declared using the `property()` syntax.
+   *
+   * @see MethodType#property
+   */
+  isProperty: cached member function(): boolean
+
+  /**
+   * Whether this is a "HTTP handler method," i.e. has a single parameter of type {@link HttpRequest} and any return
+   */
+  isHttpHandler: cached member function(): boolean
+
+  /**
+   * Whether all overloads are marked `cached`.
+   */
+  hasAllCached: member function(): boolean
+
+  /**
+   * Whether any overloads are declared, but not implemented, on its type.
+   */
+  hasAnyAbstract: member function(): boolean
+
+  /**
+   * Whether any overloads in this method does not have to be implemented by non abstract sub-type.
+   */
+  hasAnyOptional: member function(): boolean
+
+  /**
+   * Whether some of the overloads can be re-declared on a type that mixes its type.
+   */
+  hasAnyFinal: member function(): boolean
+
+  /**
+   * Whether this method should execute inline when {@link #shouldStayInEngine staying in engine}.
+   * See {@link MethodType#inline} for documentation describing the semantics of inline.
+   * A `Method` is inline if any of its {@link #overloads} are {@link MethodType#inline inline} or its
+   * {@link #parentType} is {@link TypeMeta#isInline inline}.
+   */
+  isInline: member function(): boolean
+
+  /**
+   * Whether some overloads must be called on an instance.
+   */
+  hasAnyMember: member function(): boolean
+
+  /**
+   * Whether some overload should be called on a type instead of instance.
+   */
+  hasAnyStatic: member function(): boolean
+
+  /**
+   * Whether this method has any implementation for any of the overloads.
+   */
+  hasAnyImplementation: member function(): boolean
+
+  /**
+   * Whether this method has any Java implementation for any of the overloads.
+   */
+  hasAnyJavaImplementation: member function(): boolean
+
+  /**
+   * Whether this method can be invoked with keyword arguments.
+   */
+  hasKwargs: cached member function(): boolean
+
+  /**
+   * If this method can be invoked with keyword arguments then parameter declaration for those args.
+   */
+  kwargsParam: cached member function(): FunctionParam
+
+  /**
+   * If this method can be invoked with keyword arguments then parameter declaration for those args.
+   * @return index of the only kwargs parameter, typically a Spec.
+   */
+  kwargsParamIndex: private cached property(): int32
+
+  /**
+   * Get the type(s) on which this method (any overload) is declared and is not abstract nor optional. If only an
+   * unimplemented method is declared, return empty array.
+   *
+   * Note that if the method is overloaded then the return [Type] could have more then one element; otherwise it will only have
+   * one element.
+   *
+   * @see MethodType#implementedOn
+   */
+  implementedOn: member function(actionEngine: string serialized Action.Engine): [Type]
+
+  /**
+   * Get the type meta(s) on which this method (any overload) is declared and is not abstract nor optional. If only an
+   * unimplemented method is declared, return empty array.
+   *
+   * Note that if the method is overloaded then the return [Type] could have more then one element; otherwise it will only have
+   * one element.
+   *
+   * @see #implementedOn
+   */
+  implementedOnMeta: private cached member function(actionEngine: string serialized Action.Engine): [TypeMeta]
+
+  /**
+   * Get the nearest type on which this method (any overload) is declared and is not abstract nor optional. If only an
+   * unimplemented method is declared, return null. "Nearest" is this type itself then mixins in canonical order.
+   *
+   * @see #implementedOn
+   */
+  nearestImplementedOn: member function(engine: string serialized Action.Engine): Type
+
+  /**
+   * Get whether or not the method can be executed in the given engine based on the action claims. If only
+   * an unimplemented method is declared, return false.
+   *
+   * Note that this returns true only if all overloads are runnable in the specified engine.
+   *
+   * @see #implementedOn
+   * @see MethodType#shouldStayInEngine
+   * @see Ann.Call#stayInEngine
+   */
+  shouldStayInEngine: cached member function(actionEngine: !string serialized Action.Engine): boolean
+
+  /**
+   * Get whether or not the caller can safely cache the return value of this method. This is true if all overloads are
+   * explicitly marked with `cached` or none are marked `stateful`, and the method is not on a {@link Mutable} Obj.
+   *
+   * Note that if the method takes arguments, caching it requires comparing the argument values, including understanding
+   * multiple overloads.
+   *
+   * @see MethodType#cached
+   * @see MethodType#stateful
+   * @see MethodType#cachedKey
+   * @see MethodType#cachedFailIfMissing
+   * @see MethodType#cachedReturnNullIfNotCached
+   */
+  canCacheReturn: member function(): boolean
+
+  /**
+   * Whether this is a cached Method. Cached methods are only called once per instance and results cached on an
+   * instance. A Method is cached if it {@link canCacheReturn can cache} and all of its {@link overloads} are
+   * {@link MethodType#cached cached}.
+   */
+  isCached: member function(): boolean
+
+  /**
+   * If this is a cached method, on what is the value keyed. If this method returns null, this means the value is
+   * cached once per instance, otherwise it is cached on the specified value:
+   *  - `arg` the cache key is the first argument
+   *
+   * For the cache key, primitive values and Objs that mixin StringSerializable are converted to strings. Other Obj
+   * values must be identifiably keyed by strings (mixing in {@link WithCacheKey} or {@link WithKey}).
+   *
+   * @see #cached
+   */
+  @deprecated(finalVersion=8.4, reason="Use #precomputationKeys instead")
+  cachedKey: member function(): string enum('arg')
+
+  /**
+   * Determine if this cached method has a "failIfMissing" parameter which needs local support when generating code
+   * for a cached method.
+   *
+   * @see #cached
+   */
+  cachedFailIfMissing: cached member function(): boolean
+
+  /**
+   * Determine if this cached method has a "returnNullIfNotCached" parameter which needs local support when generating
+   * code for a cached method.
+   *
+   * @see #cached
+   */
+  cachedReturnNullIfNotCached: cached member function(): boolean
+
+  /**
+   * Find the overload that most closely matches the specified argument value types. If the argument types are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true or null otherwise.
+   *
+   * If multiple overloads match, the best match is returned. Best match is identified by scoring argument value type
+   * matches based on closeness of match as defined by this order:
+   * * ValueType#isSame
+   * * ValueType#isAssignableFrom
+   * * ValueType#isConvertibleFrom
+   *
+   * @param member if true, only match member methods; if false, only match static methods
+   * @param types actual argument value types to be passed; should not include implicit `this` argument type
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return overload signature or null
+   */
+  findOverloadForArgTypes: member function(member: !boolean,
+                                           types: [ValueType],
+                                           failIfNoMatch: boolean,
+                                           context: lambda(): string): MethodType
+
+  /**
+   * Find the overload that most closely matches the specified argument Java classes. If the argument types are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true or null otherwise.
+   *
+   * If multiple overloads match, the best match is returned. Best match is identified by scoring argument value type
+   * matches based on closeness of match as defined by this order:
+   * * ValueType#isSame
+   * * ValueType#isAssignableFrom
+   * * ValueType#isConvertibleFrom
+   *
+   * Uses ValueType#guessTypeFromJavaClass to convert Java classes to ValueTypes.
+   *
+   * @param member if true, only match member methods; if false, only match static methods
+   * @param classes actual argument Java classes; should not include implicit `this` argument type
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return overload signature or null
+   */
+  findOverloadForJavaClasses: member function(member: !boolean,
+                                              classes: [@java(class='java.lang.Class') native],
+                                              failIfNoMatch: boolean,
+                                              context: lambda(): string): MethodType
+
+  /**
+   * Returns a hash for the Java **classes** of the supplied args (i.e. not the args themselves).
+   * This can be used to cache a MethodType (and/or MethodThunk) overload so that one of the `findOverloadForArg*`
+   * methods does not have to be called before every invocation of a given Method if the args hash is the same.
+   *
+   * @param member whether this hash is for a member or static method
+   * @param args actual argument values whose classes will be hashed
+   *
+   * @return hash for the args
+   */
+  argsJavaClassesHash: private function(member: !boolean, args: any ...): !int
+
+  /**
+   * Call graph of various findOverloadForArgs* methods:
+   *
+   * | findOverloadFor                 | Params                                                                        | Handles logic                                                  | Calls                                                                |
+   * |---------------------------------|-------------------------------------------------------------------------------|----------------------------------------------------------------|----------------------------------------------------------------------|
+   * | findOverloadForArgs             | thsArg, args: [any]                                                           |                                                                | _findOverloadConvertArgs                                             |
+   * | findOverloadForArgsMap          | kwargs: map<string, any> with implicit `this`                                 |                                                                | argsMix                                                              |
+   * | findOverloadForArgsMix          | args: [any] and kwargs: map<string, any> with implicit `this`                 |                                                                | _popThsArg, _findOverloadConvertArgs                                 |
+   * | findOverloadForArgsJson         | JsonArray with `this` as first element **or** JsonObject with implicit `this` | pluck out `this` from JsonArray                                | _findOverloadAndConvertArgsJson (JsonArray) argsJsonMix (JsonObject) |
+   * | findOverloadForArgsJsonMix      | JsonArray and JsonObject with implicit `this`                                 |                                                                | _popThsArg, _findOverloadAndConvertArgsJson                          |
+   * | _findOverloadAndConvertArgs     | thsArg, args: [any], kwargs: map<string, any>, convertThsArg: boolean         | DefaultInstance, Spec, convert thsArg based on `convertThsArg` | /                                                                    |
+   * | _findOverloadAndConvertArgsJson | thsArg, args: [any], kwargs: map<string, any>                                 | WithType, WithRef, convert thsArg                              | _findOverloadAndConvertArgs                                          |
+   * | _popThsArg                      | map<string, any>                                                              | pluck out the implicit thsArg from map                         | /                                                                    |
+   * | _jsnToNativeArg                 | result of findOverload                                                        | convert args from json to native if parameter type is native   | /                                                                    |
+   */
+
+  /**
+   * Find the overload that most closely matches the specified argument values. If the argument values are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true and null returned otherwise.
+   *
+   * Unlike #findOverloadForArgsMap, this method requires the values to be in order as declared by at least one
+   * of the overloads.
+   *
+   * If multiple overloads match, the best match is returned. Best match is identified by scoring argument value type
+   * matches based on closeness of match as defined by this order:
+   * * ValueType#isAssignableValue
+   * * ValueType#isConvertibleValue
+   *
+   * If an argument is null, then match score for it is less then ValueType#isConvertibleValue.
+   *
+   * @param thsArg the `this` argument
+   * @param args actual argument values to be passed; should not include implicit `this` argument
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return Triple of (selected overload index, converted `this`, converted arguments) that match parameter types of
+   *         the matched overload; i.e. method can be invoked without additional value conversion
+   *
+   * @see findOverloadForArgsMap
+   */
+  findOverloadForArgs: member function(thsArg: any,
+                                       args: [native],
+                                       failIfNoMatch: boolean,
+                                       context: lambda(): string): Triple<MethodType, any, [native]>
+
+  /**
+   * Find the overload that most closely matches the specified argument names/values. If the arguments are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true and null returned otherwise.
+   *
+   * Unlike #findOverloadForArgs, this method allows the arguments to be specified in any order and null values are
+   * generally not specified at all.
+   *
+   * @param kwargs actual argument name-to-value map to be passed including possible implicit `this` argument.
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return Triple of (selected overload index, converted `this`, converted arguments) that match parameter types of
+   *         the matched overload; i.e. method can be invoked without additional value conversion
+   *
+   * @see findOverloadForArgs
+   */
+  findOverloadForArgsMap: member function(kwargs: map<string, native>,
+                                          failIfNoMatch: boolean,
+                                          context: lambda(): string): Triple<MethodType, any, [native]>
+
+  /**
+   * Find the overload that most closely matches the specified argument names/values. If the arguments are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true and null returned otherwise.
+   *
+   * @param thisArg explicit `this` argument
+   * @param args positional arguments to be passed; should not include implicit `this` argument
+   * @param kwargs keyword arguments to be passed; should not include implicit `this` argument.
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return Triple of (selected overload index, converted `this`, converted arguments) that match parameter types of
+   *         the matched overload; i.e. method can be invoked without additional value conversion
+   *
+   * @see findOverloadForArgs
+   * @see findOverloadForArgsMap
+   */
+  findOverloadForArgsMix: member function(thisArg: any,
+                                          args: [any],
+                                          kwargs: map<string, any>,
+                                          failIfNoMatch: boolean,
+                                          context: lambda(): string): Triple<MethodType, any, [any]>
+
+  /**
+   * Find the overload that most closely matches the specified argument names/values. If the arguments are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true and null returned otherwise.
+   *
+   * @param args can be only one of: null, json array or json object. If #args is an array then first element is `this`
+   *        for member methods or `null` for statics. If #args is json map, then it should contain name-values of args
+   *        including possible implicit `this` argument.
+   * @param missingArgs array of booleans to indicate if the corresponding argument is missing in the args.
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return Triple of (selected overload index, converted `this`, converted arguments) that match parameter types of
+   *         the matched overload; i.e. method can be invoked without additional value conversion
+   *
+   * @see findOverloadForArgs
+   * @see findOverloadForArgsMap
+   */
+  findOverloadForArgsJson: member function(args: json,
+                                           missingArgs: [boolean],
+                                           failIfNoMatch: boolean,
+                                           context: lambda(): string): Triple<MethodType, any, [any]>
+
+  /*
+   * Find the overload that most closely matches the specified argument names/values. If the arguments are not
+   * compatible with any overload, an error is thrown if failIfNoMatch is true and null returned otherwise.
+   *
+   * @param thisArg explicit `this` arg, `null` for statics
+   * @param positional arguments to be passed; should not include implicit `this` argument
+   * @param kwargs keyword arguments to be passed; should not include implicit `this` argument.
+   * @param failIfNoMatch if true, throw an exception if no match is found; if false, return null
+   * @return Triple of (selected overload index, converted `this`, converted arguments) that match parameter types of
+   *         the matched overload; i.e. method can be invoked without additional value conversion
+   *
+   * @see findOverloadForArgsMix
+   * @see findOverloadForArgsJson
+   */
+  findOverloadForArgsJsonMix: member function(thisArg: json,
+                                              args: json,
+                                              kwargs: json,
+                                              failIfNoMatch: boolean,
+                                              context: lambda(): string): Triple<MethodType, any, [any]>
+
+  /**
+   * Find the overload for overridden method type from a sub type.
+   */
+  findOverloadForOverride: member function(override: !MethodType, failIfNotOverridden: boolean): MethodType
+
+  /**
+   * Find the index of provided overload. Note that it needs to be match one of the overloads exactly not i.e. may not
+   * find any overloads of method type is coming from a sub-type i.e. is override.
+   *
+   * @see #findOverloadForOverride
+   */
+  findOverloadForSignature: member function(func: !string serialized MethodType,
+                                            failIfNotOverridden: boolean): MethodType
+
+  /**
+   * Merges overloads into a single "union signature", note this also handles translating {@link Spec} parameters to
+   * keyword only arguments
+   */
+  mergeOverloads: private cached member function(): !FunctionType
+
+  /**
+   * Produces a merged type for the return value across all overloads. This will accommodate any of the overload
+   * return value types.
+   */
+  mergedReturnType: member function(): ValueType
+
+  /**
+   * @return true if the method returns a stream of values
+   */
+  returnIsStreamable: member function(): boolean
+
+  /**
+   * @return true if the function has a streaming parameter; this is typically a last parameter that can stream values
+   */
+  hasStreamableParam: member function(): boolean
+
+  /**
+   * @return type system scope for building / binding declared fields and value types.
+   */
+  scope: private member function(): !TypesysScope
+
+  /**
+   * This field is not supported on **Method**, but is available on the individual {@link MethodType} instances
+   * accessible through #overloads. Merged documentation (all overloads) is available through the #docParsed and
+   * #docText methods.
+   *
+   * @see #overloadsWithDoc
+   */
+  doc: ~
+
+  /**
+   * @return true if this has at least one overload that has {@link MethodType#hasAnyTargetFunc}.
+   */
+  hasAnyTargetFunc: cached member function(): boolean
+
+  /**
+   * @return true if this method should be stay in the thread it was invoked in (i.e. not be dispatched to a different thread). It will return
+   *         false if the current thread does not satisfy the node pool and thread pool requirements.
+   */
+  shouldStayInThread: member function(thisArg: !?any, args: [native], kwargs: map<string, native>): boolean
+
+  docParsed:  ~: !(MergedDocumentation | MethodTypeDocumentation)
+  docText:    ~
+  parentType: ~ java | js | py
+  toString:   ~
+}

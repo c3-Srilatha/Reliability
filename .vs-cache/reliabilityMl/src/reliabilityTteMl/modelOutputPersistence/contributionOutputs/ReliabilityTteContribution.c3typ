@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a contribution value within the context of time-to-event (TTE) analysis for reliability modeling.
+ * This entity stores the contribution to the time-to-event prediction model, including upper and lower bounds
+ * for the contribution value, and tracks the contribution over time. For details on other information stored in this Type,
+ * refer to the documentation on each of the fields of this Type.
+ */
+@db(datastore='cassandra',
+    partitionKeyField='parent',
+    persistenceOrder='start',
+    persistDuplicates=false,
+    compactType=true,
+    shortIdReservationRange=100000,
+    columnarStorage=false)
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityTteContribution mixes TimedDataPoint<ReliabilityTteContributionHeader> schema name 'REL_TTEC' {
+  /**
+   * Represents the main contribution value for the time-to-event (TTE) model. This numerical value indicates the
+   * importance or influence of the contribution in predicting the time-to-event.
+   *
+   * `@ts(treatmentPath='parent.treatment')` - Specifies the path to retrieve the treatment value from the parent entity.
+   */
+  @ts(treatmentPath='parent.treatment')
+  contribution: !double
+  /**
+   * The upper bound for the contribution value.
+   * This defines the maximum allowed value for the contribution and is used to enforce boundaries or validation checks.
+   * It ensures that the contribution does not exceed a predefined threshold.
+   */
+  contributionUpperBound: double
+  /**
+   * The lower bound for the contribution value.
+   * This defines the minimum allowed value for the contribution and ensures that it does not fall below a certain threshold.
+   * It can be useful for validation checks or ensuring that contributions are within a meaningful range.
+   */
+  contributionLowerBound: double
+}

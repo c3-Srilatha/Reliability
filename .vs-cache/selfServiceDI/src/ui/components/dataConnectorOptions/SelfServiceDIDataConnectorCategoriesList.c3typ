@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A component that pulls the data connector categories and data connectors from the UI Configuration set in
+ * application state and renders them in a categorized list.
+ */
+@typeScript
+type SelfServiceDIDataConnectorCategoriesList mixes UiSdlComponent<UiSdlNoData>, WithNotifications {
+
+  /**
+   * The data connector categories from the UI Configuration set in application state
+   */
+  dataConnectorCategories: [SelfServiceDI.Ui.DataConnectorCategory]
+
+  /**
+   * The data connectors from the UI Configuration set in application state
+   */
+  dataConnectors: [SelfServiceDI.Ui.DataConnector]
+
+  /**
+   * The selected data connector name from application state
+   */
+  selectedDataConnector: SelfServiceDI.Ui.DataConnector
+
+  /**
+   * A string that can be used to filter the connectors by {@link SelfServiceDI.Ui.DataConnector#label} and/or
+   * {@link SelfServiceDI.Ui.DataConnector#provider}.
+   */
+  filterString: string
+
+  /**
+   * Whether the component should show the side panel with information about the selected card.
+   * If true, the side panel will be shown.
+   */
+  showInfoSidePanel: boolean
+
+  /**
+   * Whether to show the add new card to the categories list
+   */
+  showAddNewCard: boolean
+
+  // -------------- SET SELECTED DATA CONNECTOR --------------
+
+  /**
+   * An action emitted on click of a data connector card.
+   *
+   * @param componentId
+   *            Id of the component.
+   * @param selectedDataConnectorName
+   *            The name of the data connector that was selected.
+   */
+  @uiSdlActionCreator(actionType='CLICK_DATA_CONNECTOR_CARD')
+  clickDataConnectorCardAction: private function(componentId: string,
+                                                 selectedDataConnectorName: string): !UiSdlReduxAction ts-client
+
+  /**
+   * An action emitted on click of the button to clear the filter.
+   *
+   * @param componentId
+   *            Id of the component.
+   */
+  @uiSdlActionCreator(actionType='CLICK_CLEAR_FILTER')
+  clickClearFilterAction: private function(componentId: string): !UiSdlReduxAction ts-client
+}

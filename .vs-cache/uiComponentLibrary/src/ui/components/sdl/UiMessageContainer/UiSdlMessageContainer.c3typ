@@ -1,0 +1,199 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * An {@link UiSdlComponent} type for a container that can be used to display message banners.
+ * NOTE: In the Grid Layout, the message container component must be placed inside `detachedFields`.
+ */
+@typeScript
+@uiComponentCategorizer(name='Message container', category='Components')
+type UiSdlMessageContainer mixes UiSdlComponent<UiSdlNoData> {
+
+  /**
+   * Where to render the container/ where message banners will show up in relation to the containers parent.
+   */
+  renderPosition: string enum UiSdlMessageContainerRenderPosition
+
+  /**
+   * The maximum number of displayable messages at once.
+   */
+  maximumDisplayedMessages: int
+
+  /**
+   * The number of seconds that a message banner will remain on screen. It will disappear after this amount
+   * of time or if the user manually closes it beforehand. If this field isn't specified, the banner will
+   * persist on screen until manually closed by the user.
+   */
+  messageBannerDuration: int
+
+  /**
+   * The list of messages currently queued in the container's state. Only the first messages will be displayed.
+   * Up to {@link maximumDisplayedMessages} will be displayed at once.
+   * For internal use only. This field should not be set manually, and only be populated via triggers and effects.
+   */
+  messageBannerConfigs: [UiSdlMessageBannerConfig]
+
+  /**
+   * The preset width of message container.
+   */
+  width: string enum('SMALL', 'MEDIUM', 'LARGE', 'FULLSCREEN') = 'LARGE'
+
+  /**
+   * Triggered externally. This action is used when a new message needs to be displayed.
+   *
+   * @param id
+   *    Id of the component.
+   * @param payload
+   *    Describes the message banner to display.
+   *
+   * @returns A `BANNER_SHOW` action for this instance with properties for all of the fields on
+   * {@link UiSdlMessageBannerConfig}.
+   */
+  @uiSdlActionCreator(actionType='BANNER_SHOW')
+  showBannerAction: function(id: string, payload: UiSdlShowMessageActionPayload): UiSdlBannerShowAction ts-client
+
+  /**
+   * Listens for actions of type `BANNER_SHOW` and adds the payload to the {@link #messageBannerConfigs} queue.
+   *
+   * @param state
+   *    Redux state
+   * @param action
+   *    Redux action containing a payload with properties for all of the fields on {@link UiSdlMessageBannerConfig}.
+   *
+   * @returns A new Redux state with the updated {@link #messageBannerConfigs} queue.
+   */
+  @uiSdlReducer(actionType='BANNER_SHOW')
+  bannerShowReducer: private function(state: !UiSdlReduxState, action: !UiSdlBannerShowAction): !UiSdlReduxState ts-client
+
+  /**
+   * Triggered when a message banner's close button has been clicked.
+   *
+   * @param id
+   *    Id of the component.
+   * @param payload
+   *    Describes the message banner to close.
+   *
+   * @returns A `BANNER_CLOSE` action for this instance with properties for all of the fields on
+   * {@link UiSdlMessageBannerConfig}.
+   */
+  @uiSdlActionCreator(actionType='BANNER_CLOSE')
+  closeBannerAction: function(id: string, payload: UiSdlMessageBannerConfig): UiSdlBannerCloseAction ts-client
+
+  /**
+   * Listens for actions of type `BANNER_CLOSE` and updates the {@link UiSdlMessageBannerConfig#status} to
+   * {@link UiSdlMessageBannerStatus#CLOSED} of a message in {@link #messageBannerConfigs}.
+   * Uses {@link UiSdlMessageBannerConfig#messageId} to identify the correct message.
+   *
+   * @param state
+   *    Redux state
+   * @param action
+   *    Redux action containing a payload with properties for all of the fields on {@link UiSdlMessageBannerConfig}.
+   *
+   * @returns A new Redux state with the updated {@link #messageBannerConfigs} queue.
+   */
+  @uiSdlReducer(actionType='BANNER_CLOSE')
+  bannerCloseReducer: private function(state: UiSdlReduxState, action: UiSdlBannerCloseAction): UiSdlReduxState ts-client
+
+  /**
+   * Listens to 'BANNER_CLOSE' action, and triggers a 'BANNER_DELETE' to delete the banner
+   * @param id
+   *            Id of the component.
+   * @param payload
+   *            The payload of the closeBannerAction.
+   */
+  @uiSdlEpic(actionType='BANNER_CLOSE')
+  @typeScript(env='client')
+  bannerCloseEpic: private function(actionStream: UiSdlActionsObservable,
+                                          stateStream: UiSdlStatesObservable): UiSdlActionsObservable
+
+  /**
+   * Triggered when the animation for initially displaying a message banner is finished.
+   *
+   * @param id
+   *    Id of the component.
+   * @param payload
+   *    Describes the message banner that has finished animating.
+   *
+   * @returns A `BANNER_VISIBLE_SET` action for this instance with properties for all of the fields on
+   * {@link UiSdlMessageBannerConfig}.
+   */
+  @uiSdlActionCreator(actionType='BANNER_VISIBLE_SET')
+  setBannerVisibleAction: function(id: string,
+                                           payload: UiSdlMessageBannerConfig): UiSdlBannerVisibleSetAction ts-client
+
+  /**
+   * Listens for actions of type `BANNER_VISIBLE_SET` and updates the {@link UiSdlMessageBannerConfig#status} to
+   * {@link UiSdlMessageBannerStatus#VISIBLE} of a message in {@link #messageBannerConfigs}.
+   * Uses {@link UiSdlMessageBannerConfig#messageId} to identify the correct message.
+   *
+   * @param state
+   *    Redux state.
+   * @param action
+   *    Redux action containing a payload with properties for all of the fields on {@link UiSdlMessageBannerConfig}.
+   *
+   * @returns A new Redux state with the updated {@link #messageBannerConfigs} queue.
+   */
+  @uiSdlReducer(actionType='BANNER_VISIBLE_SET')
+  bannerVisibleSetReducer: private function(state: UiSdlReduxState,
+                                            action: UiSdlBannerVisibleSetAction): UiSdlReduxState ts-client
+
+  /**
+   * Triggered when the animation for closing a message banner is finished.
+   *
+   * @param id
+   *    Id of the component.
+   * @param payload
+   *    Describes the message banner that been closed.
+   *
+   * @returns A `BANNER_DELETE` action for this instance with properties for all of the fields on
+   * {@link UiSdlMessageBannerConfig}.
+   */
+  @uiSdlActionCreator(actionType='BANNER_DELETE')
+  deleteBannerAction: function(id: string,
+                                       payload: UiSdlMessageBannerConfig): UiSdlDeleteBannerAction ts-client
+
+  /**
+   * Listens for actions of type `BANNER_DELETE` and removes the payload from the {@link #messageBannerConfigs} queue.
+   * Uses {@link UiSdlMessageBannerConfig#messageId} to identify the correct message.
+   *
+   * @param state
+   *    Redux state.
+   * @param action
+   *    Redux action containing a payload with properties for all of the fields on {@link UiSdlMessageBannerConfig}.
+   *
+   * @returns A new Redux state with the updated {@link #messageBannerConfigs} queue.
+   */
+  @uiSdlReducer(actionType='BANNER_DELETE')
+  bannerDeleteReducer: private function(state: UiSdlReduxState,
+                                        action: UiSdlDeleteBannerAction): UiSdlReduxState ts-client
+
+  /**
+   * Triggered externally. This action is used when all existing messages need to be cleared.
+   *
+   * @param id
+   *    Id of the component.
+   *
+   * @returns A `BANNER_CLEAR_ALL` action for this instance.
+   */
+  @uiSdlActionCreator(actionType='BANNER_CLEAR_ALL')
+  clearAllBannerAction: function(id: string): UiSdlBannerClearAllAction ts-client
+
+  /**
+   * Listens for actions of type `BANNER_CLEAR_ALL` and removes all messages from the {@link #messageBannerConfigs} queue.
+   *
+   * @param state
+   *    Redux state.
+   * @param action
+   *    Redux action containing a payload with properties for all of the fields on {@link UiSdlMessageBannerConfig}.
+   *
+   * @returns A new Redux state with the updated {@link #messageBannerConfigs} queue.
+   */
+  @uiSdlReducer(actionType='BANNER_CLEAR_ALL')
+  bannerClearAllReducer: private function(state: UiSdlReduxState,
+                                  action: UiSdlBannerClearAllAction): UiSdlReduxState ts-client
+}

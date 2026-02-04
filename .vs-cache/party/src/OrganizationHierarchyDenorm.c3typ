@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Denormalized hierarchy structure for {@link Organization}s to enable efficient querying
+ * of organizational relationships and hierarchies.
+ *
+ * This type flattens hierarchical relationships from multiple sources including
+ * {@link OrganizationRollup} and {@link CustomerRelation} into a single denormalized structure
+ * for improved query performance.
+ *
+ */
+@db(index+=['relationship, to', 'relationship, from, to', 'relationship, isRoot'])
+@denorm(
+  sources=[
+    {
+      type: 'DenormSource',
+      source: 'OrganizationRollup',
+      parentFieldName: 'orgRollupParents',
+      childFieldName: 'orgRollupChildren'
+    },
+    {
+      type: 'DenormSource',
+      source: 'CustomerRelation',
+      parentFieldName: 'customerRelationParents',
+      childFieldName: 'customerRelationChildren'
+    }
+  ],
+  strictHierarchy=false
+)
+entity type OrganizationHierarchyDenorm mixes HierarchyDenorm<Organization> schema name 'STRUCT_ORGHDNRM' {
+
+  /**
+   * Name field inherited from base type, not persisted in denormalized structure
+   */
+  name: ~ not persistable
+
+  /**
+   * Version field inherited from base type, not persisted in denormalized structure
+   */
+  version: ~ not persistable
+
+  /**
+   * Metadata field inherited from base type, not persisted in denormalized structure
+   */
+  meta: ~ not persistable
+
+  /**
+   * Version edits field inherited from base type, not persisted in denormalized structure
+   */
+  versionEdits: ~ not persistable
+}

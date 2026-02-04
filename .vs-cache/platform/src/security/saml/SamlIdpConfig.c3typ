@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@config(maxOverride=CLUSTER, minOverride=APP, secretAuthz='cluster-admin')
+@action(group+='app-admin')
+type SamlIdpConfig mixes IdpConfig, Identified {
+
+  id: ~
+  requestUri: string
+  sp:         SamlServiceProvider
+  ssoUrl:     string
+  sloUrl:     string
+  logOutUrl:  string
+  issuer:     string
+  cert:       string
+  certFormat: string
+  settings:   SamlSettings
+
+  emailSuffix:    string
+
+  /**
+   * c3auth token expiration in minutes
+   */
+  c3AuthValidMinutes: int
+
+  /**
+   * The {@link CryptoPrivateKey CryptoPrivateKey} used for decrypting incoming Saml encrypted assertion.
+   */
+  cryptoPrivateKey: string
+
+  // The relaying party public key used for configuring the authn request
+  relayingPublicKey: string
+
+  // The relaying party private key used for configuring the authn request
+  relayingPrivateKey: string
+
+  userIdFormat: ~ = IDP_ID
+}

@@ -1,0 +1,45 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Provides token management for protected modules.
+ *
+ * Component package authors that need to protect their package have to populate a UiSdlProtectedModule record in the
+ * implementation of this type.
+ *
+ * This type is final and can only be changed with direct access to its parent repository.
+ */
+final type UiSdlModuleProtection {
+
+    /**
+     * Uses the metadata defined inside this type's implementation to ensure tokens are valid for all dependencies.
+     */
+    validateTokens: function () : boolean js-server
+
+    /**
+     * Generates a token for a protected package's modules.
+     *
+     * Note: The private key is only available for UI Team Managers.
+     */
+    generateToken: private function(protectedPkgName: !string, rootPkgName: !string, privateKey: !string) : string js-server
+
+    /**
+     * (Internal. Used for testing) Validates a token inside a UiSdlComponentPackageAccess record.
+     */
+    isValidToken: private function(componentPackageAccess: UiSdlComponentPackageAccess, dependencyProtections: UiSdlProtectedModule, rootPkgName: string): boolean js-server
+
+    /**
+     * (Internal. Used for testing) Finds which dependencies have invalid tokens
+     */
+    detectInvalidPackages: private function(dependencyTokens: !map<string, UiSdlComponentPackageAccess>, protectedModules: !map<string, UiSdlProtectedModule>, rootPkgName: !string): [string] js-server
+
+    /**
+     * (Internal) Returns the UiSdlProtectedModule metadata describing all protected packages and its modules
+     */
+    protectedModules: private function() : map<string, UiSdlProtectedModule> js-server
+}

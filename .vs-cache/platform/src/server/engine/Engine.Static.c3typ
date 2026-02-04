@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2026 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Engine specialized in running actions periodically.
+ *
+ * {@link #inst Default instance} taken for each {@link Engine.Static} and {@link #runAndReturnDuration} method called.
+ * If method completed it will be immediately called again.
+ */
+abstract private type Engine.Static mixes Engine.Deprecated, DefaultInstance {
+
+  /**
+   * Eternal and immortal thread / action; i.e. if thread dies {@link Engine.Static engine} will immediately restarts it.
+   */
+  runAndReturnDuration: private abstract member function(): !Duration
+
+  /**
+   * Optional callback that will be invoked before first call to {@link Engine.Periodic#run}.
+   *
+   * If any error occurs during this callback it will be logged and suppressed.
+   */
+  onStart: optional member function()
+
+  /**
+   * Optional callback that will be invoked on engine thread after the {@link Engine.Periodic#stop stop} method is called.
+   */
+  onStop: optional member function()
+
+  /**
+   * Start all Engine.Static subtype instances for the current app.
+   * Called by App#startEngines() during app startup.
+   */
+  startAll: private final function()
+
+  /**
+   * Stop and shutdown all Engine.Static subtype instances for the current app.
+   * Called by App#stopEngines() during app hibernation or termination.
+   * @returns Array of errors encountered while stopping individual engines
+   */
+  stopAll: private final function(): [Error]
+
+  inst:     ~
+  start:    ~
+  stop:     ~
+  shutdown: ~
+}

@@ -1,0 +1,187 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The base type for UI component data specs. All data specs require a data type and specify how that type will be used
+ * by their respective {@link UiSdlComponent}s. Types that mixin {@link UiSdlComponentDataSpec} can include fields whose
+ * value type is a type that mixes in {@link UiSdlComponentDataSpecSetting}.
+ *
+ * @see UiSdlComponentDataSpecSetting
+ */
+@typeScript
+abstract type UiSdlComponentDataSpec mixes WithContextVars, WithTunnelConfiguration, WithDataTransforms {
+
+  /**
+   * If the developer needs to define a specific API outside of the basic functionality provided by a components
+   * dataSpec type.  Define the {@link UiSdlComponentAdvancedDataSpec#actionName}, and optionally
+   * {@link UiSdlComponentAdvancedDataSpec#actionArgs} required for the API.
+   */
+  advancedDataSpec: UiSdlComponentAdvancedDataSpec
+
+  /**
+   * The type used to populate the data for {@link UiSdlComponent}.
+   * Note that v8 will be last version to support a type here. We want to migrate to using only
+   * string for type name. Using our own typeRef type allows for backwards compatibility, so both
+   * forms "MyDataType" and { typeName: "MyDataType "} are supported.
+   */
+  dataType: !string serialized UiSdlTypeRef
+
+  /**
+   * The action to call.
+   */
+  actionName: string
+
+  /**
+   * Spec for using {@link Evaluatable#eval}.
+   */
+  evalSpec: EvalSpec
+
+  /**
+   * Disable if you want to avoid sending the request for this dataSpec on the first render.
+   * Other data requests for the same component will still be sent.
+   */
+  disableDataRequestOnFirstRender: boolean = false
+
+  /**
+   * Disable if you want to avoid sending the request for this dataSpec after the first contextVar resolves.
+   * Other data requests for the same component will still be sent.
+   */
+  ignoreFirstContextVarResolution: boolean
+
+  /**
+   * Disable if you want to avoid sending the request for this dataSpec after any contextVar resolves.
+   * Other data requests for the same component will still be sent.
+   */
+  ignoreAllContextVarResolution: boolean
+
+  /**
+   * Any fields that are used in toPartiallyAppliedActions to request data
+   * but are not defined inside sub types of {@link UiSdlComponentDataSpec}
+   */
+  dataSpecDependence: [UiSdlCrossTypeDataSpecDependence]
+
+  /**
+   * Mapping between fields that depend on each other. See {@link UiSdlFieldsDependenceMapping} for more.
+   */
+  fieldsDependenceMapping:  [UiSdlFieldsDependenceMapping]
+
+  /**
+   * When provided this will override the {@link UiSdlSite#tunnelConfiguration}.  To completely ignore any tunnel
+   * configuration this should be explicitly set to empty object
+   */
+  tunnelConfiguration: ~
+
+  /**
+   * Extracts the data type name from {@link dataType}, if it exists.
+   *
+   * @param dataSpec
+   *           The data spec from which to extract a data type name.
+   * @returns The name of the data type, or undefined if none exists.
+   */
+  getDataTypeName: function(dataSpec: mixing UiSdlComponentDataSpec): string ts-client
+
+  /**
+   * Given a dataSpec object, and a target field key, traverse the object and return the value
+   * of the target field, or an empty array.
+   *
+   * @param baseObject
+   *           A base object to be search against. Most likely a dataSpec or component config.
+   * @param targetField
+   *           A field in the base object that user wants to retrieve.
+   * @returns The value of target field, or an empty array if none exists.
+   */
+  recursivelyGetField: function(baseObject: json, targetField: string): [json] ts-client
+
+  /**
+   * Converts the data spec to an array of partially applied actions.
+   * If the returned array length is greater than 1, a unique `actionId` must be specified in all returned {@link UiSdlPartiallyAppliedActionInfo}
+   *
+   * @param config
+   *          Field config
+   * @param component
+   *          Component config
+   */
+  toPartiallyAppliedActions: private abstract member function(config: map<string, any>,
+                                                              component: map<string, any>)
+                                                       : [UiSdlPartiallyAppliedActionInfo]
+
+  /**
+   * Converts the advanced data spec to an array of 1 partially applied action.
+   *
+   * @param config
+   *          Advanced data spec config
+   */
+  toPartiallyAppliedAdvancedActions: private function(config: map<string, any>): [UiSdlPartiallyAppliedActionInfo] ts-client
+
+  /**
+   * A helper function to generate a filter from the component's context vars, adding on to an existing filter string if provided.
+   *
+   * @param filter
+   *          An existing filter string
+   * @param contextVars
+   *          The context vars
+   */
+  generateFilterFromContextVars: private function(filter: Filter, contextVars: map<string, any>, disableContextVarsFilter: boolean = false): Filter ts-client
+
+  /**
+   * A helper function to generate a filter from the component's dataSpec dataPath and contextVars.
+   *
+   * @param filter
+   *          An existing Filter
+   * @param componentId
+   *          The component id
+   * @param state
+   *          Redux State
+   * @param dataPath
+   *          The path to the filter or actionArgs filter
+   * @param disableContextVarsFilter
+   *          Whether to not generate filter from context vars. By default this is false
+   *
+   * @returns Filter
+   */
+  generateFilterFromDataPathAndContextVars: private function(filter: Filter,
+                                                             componentId: string,
+                                                             state: !UiSdlReduxState,
+                                                             dataPath: [string],
+                                                             disableContextVarsFilter: boolean = false,
+                                                             specField: string = 'dataSpec'): Filter ts-client
+
+  /**
+   * Controls whether context variables (`contextVars`) are automatically appended to the `filter` in the API call.
+   *
+   * By default, `contextVars` are automatically added to the `filter` of the API call. This behavior can be disabled
+   * by setting `disableContextVarsFilter` to `true`. When disabled, the developer has full control over how and where
+   * the `contextVars` are used.
+   *
+   * **Note**
+   *    When `disableContextVarsFilter` is `true`, `contextVars` can still be explicitly referenced in the `filter` or
+   *    other parts of the `dataSpec`. For example:
+   *
+   *   "dataSpec": {
+   *     "disableContextVarsFilter": true,
+   *     "contextVars": {
+   *       "countryId": {
+   *         "type": "UiSdlComponentStateParam",
+   *         "componentType": "component",
+   *         "id": "SDLDemo.FilterPanelWithContextVars",
+   *         "path": "formFieldValues.country.value"
+   *       }
+   *     },
+   *     "dataType": "SDLDemoRegion",
+   *     "actionName": "fetch",
+   *     "args": {
+   *       "spec": {
+   *         "include": "id",
+   *         "filter": "1 == 1 && country.id == '${countryId}'"
+   *       }
+   *     }
+   *   }
+   */
+  disableContextVarsFilter: boolean
+
+}

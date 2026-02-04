@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type standardises various functions that are used frequently among various tests.
+ * The functions provided target the implementation of various components. When the design or implementation changes,
+ * the tools provided by the toolbox should change as well.
+ */
+abstract type Tester.Toolbox mixes Value {
+
+  /**
+   * Wrapper to facilitate retrying an action multiple times.
+   * @param action
+   *        A supplier denoting the action to continually retake and the T to eventually return.
+   * @param earlyExit
+   *        A predicate denoting the caller's expected result from the action, used to resolve early if expectations
+   *        from `action` are met.
+   * @param totalRetries
+   *        The amount of retries of `action` to take before giving up.
+   * @param timeBetween
+   *        The amount of time in milliseconds in between each retry.
+   * @return An awaitable Promise of the T supplied by `action` and accepted by `earlyExit`, OR the last thing `action`
+   *        was able to retrieve before exhausting all retries. The Promise will resolve and never reject.
+   */
+  retryAction: function<T>(action: !lambda(): T,
+                           earlyExit: !lambda(actionResult: T): boolean,
+                           totalRetries: int,
+                           timeBetween: int): Promise<T> js
+
+  /**
+   * Wrapper to capture all events sent from `eventStream` after taking an action.
+   * @param action
+   *        A lambda that puts something into motion, causing `eventStream` to send events.
+   * @param eventStream
+   *        The EventStream to listen to
+   * @param timeout
+   *        How long in milliseconds to listen for.
+   * @return {@link TestToolbox.ObservedEvents} all events captured from `eventStream` and the time taken for the last
+   *        captured event to arrive during the listening period specified by `timeout`.
+   */
+  observeEvents: function(action: !lambda(): any,
+                          eventStream: !EventStream<any>,
+                          timeout: int): Promise<Tester.Toolbox.ObservedEvents> js
+
+  /**
+   * Returns true if there exists an event E in `existsIn` such that the fields of `event` is a subset of E.
+   * This loose matching allows for omission of `sequenceNum` and `kind` in `event`, and `targetFiles` will be an
+   * unordered subarray check.
+   *
+   * Currently ignores any `targetFileFingerprints`.
+   */
+  eventExists: function(event: Pkg.File.Event, existsIn: [Pkg.File.Event]): boolean js
+
+  /**
+   * Returns a readable string of all {@link Pkg.File.Event}s of the following form:
+   *        "[{sequenceNum: nth, kind: INFO, targetFiles: [meta://mypackage/package.json]}, ...]"
+   */
+  readablePkgFileEvents: function(events: [Pkg.File.Event]): string js
+}

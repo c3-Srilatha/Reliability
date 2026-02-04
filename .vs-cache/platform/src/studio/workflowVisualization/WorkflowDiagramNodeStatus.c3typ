@@ -1,0 +1,64 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Statuses for nodes from workflow runs.
+ */
+enum type WorkflowDiagramNodeStatus {
+
+  /**
+   * The node is currently running.
+   */
+  RUNNING = 'running'
+
+  /**
+   * The node failed.
+   */
+  FAILED = 'failed'
+
+  /**
+   * The node completed successfully.
+   */
+  SUCCESS = 'success'
+
+  /**
+   * The node did not run because an upstream node failed.
+   */
+  UPSTREAM_FAILED = 'upstreamFailed'
+
+  /**
+   * The node has not run yet because an upstream node is running.
+   * UPSTREAM_FAILED has precedence over PENDING.
+   */
+  PENDING = 'pending'
+
+  /**
+   * The node was canceled.
+   */
+  CANCELED = 'canceled'
+
+  /**
+   * The node did not run because of some reason other than an upstream node failing.
+   * Barring additions to this list of statuses, the reason might be one of:
+   * - one of this node's ancestors was canceled
+   * - this node, or one of its ancestors, is an error handler for a node that didn't have errors
+   */
+  NOT_RUN = 'notRun'
+
+  /**
+   * There is no status for this node. This can be used when displaying a Workflow graph that
+   * is not associated to any particular run. (In this case, all nodes should have this status.)
+   */
+  NONE = 'none'
+
+  /**
+   * The node status has not yet been determined. This should only be used internally when
+   * calculating statuses.
+   */
+  UNKNOWN = 'unknown'
+}

@@ -1,0 +1,90 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type ErDiagramSpec mixes Spec {
+
+  /**
+   * whether or not to use fully qualified type names
+   */
+  qnames: boolean = false
+
+  /**
+   * whether or not to include fields
+   */
+  includeFields: boolean = true
+
+  /**
+   * whether or not to field value types
+   */
+  includeValueTypes: boolean = false
+
+  /**
+   * only valid if moduleName or typeName is specified and controls whether or not ER diagram
+   *
+   * include all relationships to indirect persistable (i.e. stored) types or not;
+   *
+   * indirect relationships to non-persistable or included types are always part of ER diagram.
+   */
+  recursive: boolean = false
+
+  /**
+   * if module and/or type is specified then ER diagram will be built around that type or module
+   */
+  moduleName: string
+
+  typeName: string
+
+  /**
+   * how to identify sides in the relationship; see http://www.graphviz.org/content/attrs#karrowType
+   */
+  zeroArrow: string = 'odot'
+
+  oneArrow:  string = 'dot'
+  manyArrow: string = 'crow'
+
+  /**
+   * whether or not to display edge labels
+   */
+  edgeLabels: boolean = false
+
+  /**
+   * size of the font
+   */
+  fontSize: int = 10
+
+  /**
+   * see http://www.graphviz.org/content/attrs for more details
+   *
+   * "neato", "fdp", "dot", etc.
+   */
+  layout: string = 'neato'
+
+  /**
+   * for neato: "major", "KK", "hier", "ipsep"
+   */
+  mode: string = 'major'
+
+  /**
+   * for neato: "shortpath", "circuit", "subset"
+   */
+  model: string = 'shortpath'
+
+  overlap: boolean = false
+
+  /**
+   * "line", "spline", "polyline"
+   */
+  splines: string = 'line'
+
+  /**
+   * additional options as space separated <option name>=<option value> list;
+   *
+   * see http://www.graphviz.org/content/attrs for more details
+   */
+  options: string
+}

@@ -1,0 +1,140 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents a rule condition that when met, will generate an {@link App.Alert} with capability to notify
+ * {@link User}s. Each {@link App.Alert.Rule} is generated from a {@link App.Alert.Template}.
+ */
+entity type App.Alert.Rule mixes App.Metric.WithGlobalVariables, App.Alert.Rule.Status, App.Metric.ValidateAndFillable {
+
+  /**
+   * Contains the variables to make the {@link App.Alert.Template}'s expression a concrete expression, including
+   * the variables that are required for {@link App.Alert.Template#kind}.
+   */
+  variables: ~
+
+  /**
+   * Name of a alert which contains only characters.
+   * Example, HighInvalidationQueue, HighMLPredictionLatency
+   */
+  name: !~
+
+  /**
+   * Template that generated this rule
+   */
+  @db(writeOnce=true)
+  template: App.Alert.Template
+
+  /**
+   * Duration to wait for before firing an alert from the first occurrence of expression criteria match.
+   * Only supports duration from https://prometheus.io/docs/prometheus/latest/querying/basics/#time-durations
+   */
+  delay: string serialized Duration = "0s"
+
+  /**
+   * Alert severity
+   */
+  severity: !int enum App.Alert.Severity
+
+  /**
+   * Internal tracker of whether or not this alert should be enabled.
+   * Do not set this directly, use the {@link #enable} API.
+   */
+  enabled: private boolean
+
+  /**
+   * The alerts associated with this rule. Only populated when retrieved through Notification.AlertManager APIs.
+   */
+  alerts: [App.Alert] not persistable
+
+  /**
+   * Only populated when retrieved through {@link Notification.AlertManager} APIs.
+   */
+  status: ~ not persistable
+
+  /**
+   * Only populated when retrieved through {@link Notification.AlertManager} APIs.
+   */
+  statusSince: ~ not persistable
+
+  /**
+   * The app this rule is defined in. Only populated when retrieved through {@link Notification.AlertManager} APIs.
+   */
+  appId: string serialized AppId not persistable
+
+  /**
+   * The concrete expression to set on the alert rule instance
+   */
+  @dependency(include='template.kind, template.expression, variables')
+  alertExpression: inline member function(): string
+
+  /**
+   * Unique identifier for a alert that is constructed based on package name, hash of cluster+env+app name and alert name
+   * For eg, platform_k83h7_HighInvalidationQueue
+   */
+  alertName: private cached inline property(): !string
+
+  /**
+   * Whether or not this alert will be triggered if conditions are met.
+   * Considers whether this alert is requested to be enabled and if {@link App.Monitoring.Config} indicates
+   * that this app has alerting enabled.
+   */
+  @dependency(include='enabled')
+  isEnabled: member function(): boolean
+
+  /**
+   * Convenience function for enabling this alert rule for backend engine.
+   * Note that the rule will not actually be applied if {@link App.Monitoring.Config} is not enabled for the application.
+   * However, it does mean that if/when {@link App.Monitoring.Config} DOES become enabled for the application, this rule
+   * will automatically be applied.
+   */
+  enable: member function(): App.Alert.Rule
+
+  /**
+   * Convenience function that disables this alert rule for backend engine.
+   * Note that if {@link App.Monitoring.Config} is not enabled for this application, this is basically a no-op.
+   * However, it does mean that if/when {@link App.Monitoring.Config} DOES become enabled for the application, this rule
+   * will not automatically be applied.
+   */
+  disable: member function(): App.Alert.Rule
+
+  /**
+   * Reflect this alert rule to the backend engine.
+   * If {#enabled} is true, this will create an alert rule from {@link K8sPrometheusRule}.
+   * If {#enabled} is false, this will remove an alert rule from {@link K8sPrometheusRule}.
+   */
+  @dependency(include='this, template.expression, template.kind, template.annotations')
+  apply: private member function(): App.Alert.Rule
+
+  /**
+   * Synchronize {@link K8sPrometheusAlertRule} if {@link App.Monitoring.Config} is enabled for an {@link App}.
+   * This either creates, update or deletes the alert rules based on the current state of alerts rules of the app.
+   * @param includeNotificationService
+   *          When true, will also push {@link App.Alert.Rule} updates to notificationService
+   */
+  synchronizeAll: function(includeNotificationService: boolean)
+
+  validateAndFillImpl: ~
+
+  /**
+   * Creates the rule for the backend engine, if the rule {@link #isEnabled}.
+   */
+  @dependency(include='this, template.this')
+  afterCreate: ~
+
+  /**
+   * Synchronize updated {@link K8sPrometheusAlertRule} if updated.
+   */
+  @dependency(include='this, template.this')
+  afterUpdate: ~
+
+  /**
+   * Removes the rule from the backend engine, if it was previously enabled
+   */
+  afterRemove: ~
+}

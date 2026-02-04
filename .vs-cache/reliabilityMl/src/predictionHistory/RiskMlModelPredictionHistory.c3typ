@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The type stores the historical information about the prediction status and error reasons
+ * for a {@link ReliabilityAssetToModelRelation}s.
+ */
+@db(timedValueHistoryPreventOverlaps=true, datastore='kv', partitionKeyField='parent')
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead. Note that some functionality will remain to be used by `reliabilityRiskWithResidualDiagnostics` project.')
+entity type RiskMlModelPredictionHistory mixes TimedIntervalValueHistory<ReliabilityAssetToRiskModelRelation> {
+
+  /**
+   * The timestamp in UTC zone of when the object instance was created via {#createWithOverlapsResolved}.
+   * Since {@link RiskMlModelPredictionHistory} objects created through {#createWithOverlapsResolved} can potentially lead to
+   * existing objects to be re-upserted without identity after resolution,
+   * this field is being used to retain the original timestamp at which it was created.
+   * This field should be preferred over meta.createdAt for the timestamp at which the object was created.
+   */
+  createdAt: private datetime
+
+  /**
+   * Status of the current predictions made.
+   */
+  isPredicting: int
+
+  /**
+   * Reason for empty predictions.
+   * If predictions are correctly made, then the value would be N/A
+   */
+  predictionFailureReason: string enum PredictionFailureReason
+
+  /**
+   * Any {@link RiskMlModelPredictionHistory} objects should be created using this function to ensure there
+   * are no overlaps between prediction histories belonging to a given parent ({@link ReliabilityAssetToRiskModelRelation}).
+   * The overlap resolution is mainly done in 3 steps:
+   * 1. Fetch all the overlapping prediction histories.
+   * 2. Resolve the overlaps depending on the type of ovelap:
+   *   2.1. If the end of a previously existing history lies between start and end of new history, aligns the end to start of new history being created.
+   *   2.2. If the start of previously existing history lies between start and end of new history, aligns the start to end of new history being created.
+   *   2.3. If the start and end of a previously existing history lie between start and end of new history, delete previously existing history.
+   *   2.4. If the start and end of a previously existing history subsume the new history, aligns both the start and end of previously existing history.
+   * 3. Create resolved histories (from step 2.) along with the new history with {#createdAt} populated.
+   */
+  createWithOverlapsResolved: member function() py
+}

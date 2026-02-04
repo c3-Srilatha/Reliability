@@ -1,0 +1,47 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type variable C represents the category this association applies to. To use this type, mix it in with a new
+ * association you are creating with C being the {@link PhysicalAssetCategory} this applies to.
+ */
+abstract entity type PhysicalAssetCategoryAssociation<C: PhysicalAssetCategory> mixes TimedIntervalRelation<PhysicalAsset, C> {
+
+  from: !~
+  to:   !~
+  beforeCreate: ~ js-rhino
+  beforeUpdate: ~ js-rhino
+
+  /**
+   * Helper function to create a filter for the beforeUpdate and beforeCreate methods - creates a filter that includes
+   * any {@link PhysicalAssetCategoryAssociation}s that have duplicate Asset -> Category associations with overlapping
+   * timestamps
+   *
+   * @param obj
+   *        The current object being validated and having a filter created for
+   * @param beforeUpdate
+   *        A boolean representing whether or not the `beforeUpdate` method called this method
+   *        (used to determine which filter to return)
+   * @return A string representing the filter
+   */
+  createFilter: private final function(obj: mixing PhysicalAssetCategoryAssociation,
+                                       beforeUpdate: boolean): string js-rhino
+
+  /**
+   * Helper function to validate incoming objects to prevent duplicates/overlaps
+   * @param objs
+   *        A collection of {@link PhysicalAssetCategoryAssociation} to be validated
+   * @param beforeUpdate
+   *        A boolean representing whether or not the `beforeUpdate` method called this method
+   *        (used to determine which filter to return)
+   * @return A {@link ObjList} of {@link PhysicalAssetCategoryAssociation} and {@link ObjError}
+   */
+  validateObjs: private final function(objs: [mixing PhysicalAssetCategoryAssociation],
+                                       beforeUpdate: boolean): ObjList<mixing PhysicalAssetCategoryAssociation> js-rhino
+}

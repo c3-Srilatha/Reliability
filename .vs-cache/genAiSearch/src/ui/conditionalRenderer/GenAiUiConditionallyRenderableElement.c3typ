@@ -1,0 +1,36 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represent an element that is conditionally renderable through {@link GenAiUiDynamicBaseElementsRenderer}
+ * It can be hidden through a condition, and can be restricted to a set of user groups
+ */
+type GenAiUiConditionallyRenderableElement<T> {
+
+  /**
+   * The element to render
+   */
+  element: T
+
+  /**
+   * The condition to hide the element
+   */
+  hide: boolean
+
+  /**
+   * The groups that can see the element
+   */
+  allowedGroups: [string]
+
+  /**
+   * The order of the element. We recommend to use 10, 20, etc for base elements and 100, 200, etc
+   * for package specific elements. The dynamic component will render the elements in ascending order
+   */
+  order: int
+}

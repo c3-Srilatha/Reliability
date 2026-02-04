@@ -1,0 +1,679 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract representation of content.
+ *
+ * @see ReadOnlyContent
+ * @see ContentValue
+ * @see ContentStream
+ * @see WriteOnlyContent
+ * @see ContentBuffer
+ * @see ContentPushStream
+ */
+abstract type Content mixes ContentMeta, HtmlRenderable {
+
+  /**
+   * Field to maintain state whether content metadata was read or not.
+   */
+  hasMetadata: boolean
+
+  /**
+   * @return true if this content can't be modified.
+   */
+  isReadOnly: abstract inline member function(): boolean
+
+  /**
+   * @return true if this content can't be read.
+   */
+  isWriteOnly: abstract inline member function(): boolean
+
+  /**
+   * @return true if this content is empty; i.e. contentLength <= 0.
+   */
+  isEmpty: inline member function(spec: FileOperationSpec): boolean java | js
+
+  /**
+   * Reads the content metadata if hasMetadata field is false otherwise simply returns current instance. If metadata
+   * or metadata handling is missing in the backing store then makes the best guess at it based on file extension from
+   * content location. Also sets hasMetadata flag so that consecutive calls are fast.
+   *
+   * If metadata can change after hasMetadata flag was set then make sure to first call clearMetadata.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @return abstract content with metadata.
+   */
+  readMetadata: abstract inline member function(spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Removes any existing metadata on the file and re-reads it. This will guarantee the metadata to update even if
+   * hasMetadata flag is set to true. This is used when content might have incomplete or outdated metadata and
+   * needs to be refreshed.
+   */
+  refreshMetadata: inline member function(spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Best guess at missing metadata attributes. E.g. gets content length by reading the content; contentType and
+   * encoding from contentLocation; etc. It's recommended to call readMetadata before calling guessMetadata to avoid
+   * extra IO.
+   *
+   * Also sets {@link Content#hasMetadata} to true.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @return abstract content with metadata.
+   */
+  guessMetadata: inline member function(spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Clears the content metadata; e.g. if it's known to be invalid.
+   */
+  @action(group+='write')
+  clearMetadata: inline member function(): !mixing Content
+
+  /**
+   * Clears the metadata related to encoded content; i.e.: contentLength, lastModified, lastModifiedBy, eTag,
+   * contentMD5 and contentSHA1 fields.
+   */
+  // @action(group+='write')
+  // clearContentMetadata: inline member function(): !mixing Content
+
+  /**
+   * Fields denoting metadata for the content
+   */
+  // contentMetadataFields: private inline cached function(): ![string]
+
+  /**
+   * @return clone of this content with metadata from provided input.
+   */
+  @action(group+='write')
+  withMetadata: inline member function(meta: ContentMeta): !mixing Content
+
+  // xxx
+  // @action(group='write')
+  // clearContentMetadata: inline member function(): !mixing Content
+
+  /**
+   * Supported fields from {@link ContentMeta} for thus content kind; e.g. contentLength, lastModified, etc
+   */
+  metadataFields: cached inline function(): ![string]
+
+  /**
+   * @return clone of this content with only encoded content related metadata from provided input; i.e. lastModified,
+   *         contentLength and encoded content related hash values; basically meta attributes that would change after
+   *         updating encoded content.
+   */
+  // @action(group+='write')
+  // withContentMetadata: inline member function(meta: ContentMeta): !mixing Content
+  // xxx
+  // @action(group='write')
+  // withMetadata: inline member function(meta: !?ContentMeta): !mixing Content
+
+  /**
+   * @return byte push stream to be used for writing raw encoded data into this content object. E.g. if
+   * contentEncoding is set expectation is that data is already encoded (compressed). It is highly recommended to use
+   * higher level apis instead.
+   */
+  @action(group+='write')
+  @java(returnWildcardVarBindings=true)
+  encodedPushStream: abstract member function(spec: FileOperationSpec): !Pair<mixing Content, BytePushStream>
+
+  /**
+   * @return byte push stream to be used for writing un-encoded data into this content object.
+   */
+  @action(group+='write')
+  @java(returnWildcardVarBindings=true)
+  pushStream: member function(spec: FileOperationSpec): !Pair<mixing Content, BytePushStream> java | js
+
+  /**
+   * @return character push stream to be used for writing un-encoded data into this content object.
+   */
+  @action(group+='write')
+  @java(returnWildcardVarBindings=true)
+  charPushStream: member function(spec: FileOperationSpec): !Pair<mixing Content, CharPushStream> java | js
+
+  /**
+   * Reads the raw (possibly compressed) content as byte stream. E.g. if contentEncoding is set then data is going
+   * to be encoded (compressed). It is highly recommended to use higher level apis instead.
+   *
+   * @return the content as byte stream.
+   */
+  @java(returnWildcardVarBindings=true)
+  encodedStream: abstract member function(spec: FileOperationSpec): Pair<mixing Content, ByteStream>
+
+  /**
+   * Reads the de-coded (uncompressed) content as byte stream.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @return the content as byte stream.
+   */
+  stream: member function(spec: FileOperationSpec): ByteStream java | js
+
+  /**
+   * Reads the de-coded (uncompressed) content as character stream.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @return the content as character stream.
+   */
+  charStream: member function(spec: FileOperationSpec): CharStream java | js
+
+  /**
+   * Reads the content. IMPORTANT to avoid using read with increasing offset to read content in blocks. It is strongly
+   * recommended to use stream based methods in such cases.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @param offset
+   *           offset in bytes; defaults to 0.
+   * @param len
+   *           number of bytes to read; defaults to entire file size.
+   * @return the content.
+   */
+  read: member function(offset: int, len: int, spec: FileOperationSpec): binary java | js
+
+  /**
+   * Reads the encoded content.
+   *
+   * @return the encoded content.
+   */
+  readEncoded: member function(spec: FileOperationSpec): binary java | js
+
+  /**
+   * Reads the content as ContentValue.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @param offset
+   *           offset in bytes defaults to 0
+   * @param len
+   *           number of bytes to read; defaults to entire file size.
+   * @return the content.
+   */
+  readContentValue: member function(offset: int = 0, len: int, spec: FileOperationSpec): !ContentValue java | js
+
+  /**
+   * Reads the content as string. IMPORTANT to avoid using readString with increasing offset to read full content in
+   * blocks. It is strongly recommended to use stream based methods in such cases.
+   *
+   * @see FileOperationSpec.peekForMetadata
+   *
+   * @param offset
+   *           offset in bytes defaults to 0
+   * @param len
+   *           maximum length of the string; defaults to entire file size.
+   * @return the content.
+   */
+  readString: member function(offset: int, len: int, spec: FileOperationSpec): string java | js
+
+  /**
+   * Deserializes content from file into a single C3 Type instance. Throws exception if file contains more then one
+   * instance.
+   *
+   * @see FileObjsOperSpec.targetType
+   *
+   * @return single object or null if file is empty
+   */
+  readObj: member function(spec: FileObjsOperSpec): Obj
+
+  /**
+   * Deserializes content from file into a list of C3 Type instances.
+   *
+   * @see FileObjsOperSpec.targetType
+   *
+   * @return stream of objects
+   */
+  readObjs: member function(spec: FileObjsOperSpec): stream<Obj>
+
+  /**
+   * Deserializes content from file into a json objects.
+   *
+   * @return a json object
+   */
+  readJson: member function(spec: FileObjsOperSpec): json
+
+  /**
+   * Deserializes content from file into a list of json objects.
+   *
+   * @return stream of json objects
+   */
+  readJsonLines: member function(spec: FileObjsOperSpec): stream<json>
+
+  /**
+   * Reads CSV file header if content contains it or retrieves header from file metadata or spec#csvHeader.
+   *
+   * @return CSV header
+   */
+  readCsvHeader: member function(spec: FileObjsOperSpec): [string]
+
+  /**
+   * Deserializes content from CSV content into a stream of row i.e. column values. Note that first element in the
+   * stream will be CSV header read either from content or from it's metadata or from spec#csvHeader.
+   *
+   * @return stream of parsed CSV rows
+   */
+  readCsvRows: member function(spec: FileObjsOperSpec): stream<[string]>
+
+  /**
+   * @return the first line of the text content.
+   */
+  readFirstLine: member function(): string
+
+  /**
+   * @returns text content lines.
+   */
+  readLines: member function(): stream<string>
+
+  /**
+   * Match regex patterns against content lines.
+   *
+   * @param patterns Array of compiled regex patterns to match
+   * @param spec Controls matching behavior (mode, limits, etc)
+   * @return Match results
+   */
+  grep: member function(patterns: ![RegexPattern], spec: Content.GrepSpec): !Content.GrepResult
+
+  /**
+   * Match a single regex pattern against content lines.
+   * Returns the first match found with captured groups.
+   *
+   * @param pattern Regex pattern string to match
+   * @return First match result (or no-match result with score=0 if not found)
+   */
+  grep: member function(pattern: !string serialized RegexPattern): !StringPatternMatch
+
+  /**
+   * Match a single regex pattern against content lines.
+   * Returns the first match found with captured groups.
+   *
+   * @param pattern Compiled regex pattern to match
+   * @return First match result (or no-match result with score=0 if not found)
+   */
+  grep: member function(pattern: !RegexPattern): !StringPatternMatch
+
+  /**
+   * Truncates file and replaces it's content with provided binary content.
+   *
+   * @param content
+   *           content that needs to be written
+   */
+  @action(group+='write')
+  writeStream: member function(content: !?ByteStream, spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces it's content with provided binary content.
+   */
+  @action(group+='write')
+  writeInputStream: member function(inputStream: @java(class='java.io.InputStream') !?native,
+                                    spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces its content with provided binary content from zipInputStream
+   */
+  @action(group+='write')
+  writeZipInputStream: member function(zipInputStream: @java(class='java.util.zip.ZipInputStream') !?native,
+                                       spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces it's encoded content with provided binary content.
+   *
+   * @param content
+   *           encoded content that needs to be written
+   */
+  @action(group+='write')
+  writeEncodedStream: member function(encodedContent: !?ByteStream, spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces it's encoded content with provided binary content.
+   */
+  @action(group+='write')
+  writeEncodedInputStream: member function(inputStream: @java(class='java.io.InputStream') !?native,
+                                           spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces it's content with provided binary content.
+   *
+   * @param content
+   *           content that needs to be written
+   */
+  @action(group+='write')
+  write: member function(content: !?binary, spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces it's encoded content with provided binary content.
+   *
+   * @param content
+   *           encoded content that needs to be written
+   */
+  @action(group+='write')
+  writeEncoded: member function(encodedContent: !?binary, spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Truncates file and replaces it's content with provided string.
+   *
+   * @param content
+   *           content that needs to be written
+   */
+  @action(group+='write')
+  writeString: member function(content: !?string, spec: FileOperationSpec): !mixing Content
+
+  /**
+   * Serializes content from a single c3 objects into a file.
+   *
+   * @param obj
+   *          obj that needs to be written
+   * @param spec
+   *          file operation spec giving more information about how obj should be written
+   */
+  @action(group+='write')
+  writeObj: member function(obj: !?Obj, spec: FileObjsOperSpec): !mixing Content
+
+  /**
+   * Serializes content from a list of c3 objects into a file.
+   *
+   * @param objs
+   *          objs that need to be written
+   * @param spec
+   *          file operation spec giving more information about how objs should be written
+   * @return pair of update instance of this content and number of objs written
+   */
+  @action(group+='write')
+  writeObjs: member function(objs: !?stream<Obj>, spec: FileObjsOperSpec): !Pair<Content, int>
+
+  /**
+   * Serializes content from a list of c3 objects into a file.
+   *
+   * @param objs
+   *          objs that need to be written
+   * @param spec
+   *          file operation spec giving more information about how objs should be written
+   * @return pair of update instance of this content and number of objs written
+   */
+  @action(group+='write')
+  @java(returnWildcardVarBindings=true)
+  startWriteObjs: member function(spec: FileObjsOperSpec): !Pair<mixing Content, PushStream<Obj>>
+
+  /**
+   * Serialization target type if this content is instance(s) of C3 type.
+   *
+   * @see FileObjsOperSpec.targetType
+   */
+  @action(group+='read')
+  serType: inline member function(spec: FileObjsOperSpec): Type
+
+  /**
+   * If this content target type is Source type then transform content into corresponding C3 Type instances.
+   * Source Type is determined from content itself (via #serType).
+   */
+  @action(group+='read')
+  transformSource: member function(transformSpec: SourceTransformSpec, spec: FileObjsOperSpec): SourceTransformResult
+
+  /**
+   * Checks if content type and encoding is matching the given values.
+   */
+  @action(group+='read')
+  contentTypeAndEncodingMatch: inline member function(contentType: string,
+                                                      contentEncoding: string,
+                                                      spec: FileOperationSpec): boolean
+
+  /**
+   * Compresses the given content.
+   *
+   * @param contentEncoding
+   *            compression content encoding; default is gzip.
+   */
+  @action(group+='write')
+  compress: member function(contentEncoding: string serialized ContentEncoding,
+                            spec: FileCompressSpec): !mixing Content
+
+  /**
+   * Uncompresses content.
+   */
+  @action(group+='write')
+  uncompress: member function(spec: FileCompressSpec): !mixing Content
+
+  /**
+   * Rewrites existing content using the new content type. E.g. converts UTF-8 string to iso-8859-1.
+   *
+   * @param contentType
+   *            new content type.
+   * @param contentEncoding
+   *            new content encoding.
+   */
+  @action(group+='write')
+  transcode: member function(contentType: !string serialized ContentType,
+                             contentEncoding: !string serialized ContentEncoding,
+                             spec: FileCompressSpec): !mixing Content
+
+  /**
+   * Copies content to a given target.
+   */
+  @action(group+='write')
+  copyContentTo: member function(target: !mixing Content, spec: FileOperationSpec)
+
+  /**
+   * Copies content to a given target.
+   */
+  @action(group+='write')
+  copyContentToStream: member function(target: !BytePushStream, doNotCloseTarget: boolean, spec: FileOperationSpec)
+
+  /**
+   * Computes the cksum of the file (same as unix utility cksum)
+   * @param userEncodedContent
+   *           If true, the cksum will skill the decoding of the file
+   * @return the checksum of the file
+   */
+  // TODO : remove this and replace with generic hash function!
+  @deprecated
+  @action(group+='read')
+  cksum: member function(useEncodedContent: boolean, spec: FileOperationSpec): !int
+
+  /**
+   * @return md5 from metadata if it exists otherwise compute from content and return.
+   */
+  @action(group+='read')
+  safeMd5: member function(spec: FileOperationSpec): !string
+
+  /**
+   * @return result of OS `grep` utility over this content.
+   */
+  @action(group+='read')
+  osGrep: member function(pattern: !string, args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `sed` utility over this content.
+   */
+  @action(group+='read')
+  osSed: member function(script: !string, args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `awk` utility over this content.
+   */
+  @action(group+='read')
+  osAwk: member function(program: !string, args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `sort` utility over this content.
+   */
+  @action(group+='read')
+  osSort: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `tsort` utility over this content.
+   */
+  @action(group+='read')
+  @beta
+  osTSort: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `uniq` utility over this content.
+   */
+  @action(group+='read')
+  osUniq: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `expand` utility over this content.
+   */
+  @action(group+='read')
+  osExpand: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `unexpand` utility over this content.
+   */
+  @action(group+='read')
+  osUnexpand: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `head` utility over this content.
+   */
+  @action(group+='read')
+  osHead: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `tail` utility over this content.
+   */
+  @action(group+='read')
+  osTail: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `wc` utility over this content.
+   */
+  @action(group+='read')
+  osWc: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS `fold` utility over this content.
+   */
+  @action(group+='read')
+  osFold: member function(args: [string], spec: FileOperationSpec): !CharStream
+
+  /**
+   * @return result of OS command pipeline over this content.
+   */
+  @action(group+='read')
+  osCommands: member function(commands: !?[string], spec: FileOperationSpec): !ByteStream
+
+  /**
+   * Reads this content as ContentValue.
+   */
+  toContentValue: inline member function(spec: FileOperationSpec): !ContentValue java | js
+
+  /**
+   * @return content that is always empty even if data is written to it.
+   */
+  nullContent: inline function(): !Content
+
+  /**
+   * Render content as HTML if possible.
+   */
+  @action(group+='read')
+  renderer: ~ java | js-client
+
+  /**
+   * Encodes given string into a binary based on contentType and contentEncoding.
+   */
+  encode: function(content: !string, contentType: string, contentEncoding: string): !binary
+
+  /**
+   * Decodes given binary into a string based on contentType and contentEncoding.
+   */
+  decode: function(content: !binary, contentType: string, contentEncoding: string): !string
+
+  safeUrl: abstract ~
+
+  /**
+   * Applied lambda action to filter content and return stream of lines
+   */
+  // TODO: Make it work once support for Lambda<function(line: string): string> is fixed
+  @action(group+='write')
+  filterContentLines: member function(action: lambda(line: string): string): CharStream
+
+  /**
+   * Infer serialization type from this content.
+   */
+  // TODO: Make it work once TypeInferrer and related types have been migrated
+  inferType: member function(spec: InferTypeSpec): !InferValueTypeResult
+
+  /**
+   * returns Avro and parquet in stringified json.
+   */
+  avroParquetSchema: member function(failIfMissing: boolean): string
+
+  /**
+   * Creates a new Content by merging the two contents
+   */
+  concat: abstract member function(other: !?Content): !mixing Content
+
+  /**
+   * Creates a new Content by merging the incoming binary data with current content
+   */
+  concat: abstract member function(other: !?binary): !mixing Content
+
+  hyperLogLogForCsv: member function(): !map<int32, HyperLogLog>
+
+  /**
+   * Creates the read once content from provided C3 stream
+   */
+  fromStream: inline function(stream: !?Stream, contentType: string, contentEncoding: string): !Content
+
+  /**
+   * Creates the read once content from provided C3 byte-stream
+   */
+  fromByteStream: inline function(encodedStream: !?ByteStream, contentType: string, contentEncoding: string): !Content
+
+  /**
+   * Creates the read once content from provided C3 byte-stream
+   */
+  fromCharStream: inline function(charStream: !?CharStream, contentType: string, contentEncoding: string): !Content
+
+  /**
+   * Creates the content value from a binary value.
+   */
+  fromBinary: inline function(encodedBinary: !binary,
+                              contentType: string,
+                              contentEncoding: string): !Content java | js
+
+  /**
+   * Creates the content value from a string value.
+   */
+  fromText: inline function(text: !?string, contentType: string, contentEncoding: string): !Content java | js | py
+
+  /**
+   * Creates the content from lambda
+   */
+  fromLambda: inline function(contentProducer: lambda(): binary): Content
+
+  /**
+   * Creates write once content from a Java OutputStream.
+   */
+  fromJavaOutputStream: function(outputStream: @java(class='java.io.OutputStream') native): !Content
+
+  /**
+   * Creates the content value from a Java resource.
+   */
+  fromJavaResource: function(javaResourcePath: !?string, failIfMissing: boolean): !Content
+
+  /**
+   * Creates a list of content values from files.
+   */
+  readLocalFiles: function(url: !string): ![Content] java | py | js
+
+  /**
+   * Retry logic for failed content operations
+   *
+   * @param supplier
+   *          The supplier to retry when an exception is thrown
+   * @param desc
+   *          The description of the function being retried
+   * @param spec
+   *          The file operation spec with retryable parameters
+   */
+  callWithRetry: private member function<T>(supplier: !lambda(): T, desc: !string, spec: FileOperationSpec): T
+}

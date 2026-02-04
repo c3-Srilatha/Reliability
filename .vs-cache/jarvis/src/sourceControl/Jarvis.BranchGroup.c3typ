@@ -1,0 +1,49 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A grouping of branches
+ */
+type Jarvis.BranchGroup mixes Identified, Nameable {
+
+  /**
+   * The name of the branch group. Must be unique by repository
+   */
+  name: !~
+
+  /**
+   * The repository this branch grouping belongs to
+   */
+  repository: !Jarvis.GitRepository
+
+  /**
+   * The regex that will group tests
+   */
+  regex: !string
+
+  /**
+   * The branch to compare diffs against
+   * TODO: TOOLS-13748 not all repos have concept of base branch on PR
+   */
+  baseBranch: string = 'develop'
+
+  /**
+   * Configuration for how to trigger builds
+   */
+  triggerOptions: !Jarvis.BranchGroup.TriggerOptions schema suffix 'TO'
+
+  /**
+   * The path to the packages to be built
+   */
+  packagesPath: string
+
+  /**
+   * Path to the jarvis file
+   */
+  jarvisFilePath: string
+}

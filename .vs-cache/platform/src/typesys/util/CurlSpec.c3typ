@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type is the base type for all specs related {@link Curl} to generate curl commands
+ */
+type CurlSpec mixes Spec {
+
+  /**
+   * {@link ContentType} of posted content
+   */
+  contentType: string
+
+  /**
+   * {@link ContentEncoding} of posted content
+   */
+  contentEncoding: string
+
+  /**
+   * userName for authentication
+   */
+  userName: string = '<userName>'
+
+  /**
+   * password for authentication
+   */
+  password: string = '<password>'
+
+  /**
+   * Other curlOptions such as --data-binary, --ssl, -v that customers wants to include in the command
+   */
+  customCurlOptions: string
+
+  /**
+   * HostUrl for the uploaded file, defaults to host url of the action.
+   */
+  hostUrl: string
+
+  /**
+   * Environment for the uploaded file, defaults to env of the action.
+   */
+  env: string
+
+  /**
+   * App for the uploaded file, defaults to app of the action.
+   */
+  app: string
+
+  /**
+   * The kind of authorization token such as OAuth, Basic, Bearer etc
+   */
+  authenticationKind: string enum AuthenticationKind
+
+  /**
+   * The token used to authenticate curl command
+   */
+  authenticationToken: string
+}

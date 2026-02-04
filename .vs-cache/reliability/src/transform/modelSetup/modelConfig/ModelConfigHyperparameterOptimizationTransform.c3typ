@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Receives a JSON Object which contains a `hyperparams` property (array of hyperparameter objects).
+ *
+ * Iterates over each hyperparameter object, looks for specific keys and performs the following transformations:
+ * - `hpoFeatureEnabled`: if the key is present, generates a new key `hpoEnabledLabel` with the corresponding translation.
+ *    - `true`: Reliability.On
+ *    - `false`: Reliability.Off
+ * - `hpoValues`: if the key is present, updates the `value` key to contain a string representation of all the
+ *    applicable values for the hyperparameter, if and only if the `hpoFeatureEnabled` key is set to `true`.
+ *
+ * Additionally, if the hyperparameter value is an object, this transforms the object into a string representation,
+ * using `JSON.stringify(value)`.
+ *
+ * returns the transformed JSON Object.
+ */
+@beta
+type ModelConfigHyperparameterOptimizationTransform mixes UiSdlDataTransform<json, json> {
+
+   transform: ~
+}

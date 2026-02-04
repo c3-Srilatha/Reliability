@@ -1,0 +1,335 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+  * General configurations for UI components.
+  */
+type GenAiUiConfig mixes Config, Singleton {
+
+  /**
+   * Display name to use to refer to the app the in the UI.
+   */
+  appDisplayName: !string = 'C3 Generative AI'
+
+  /**
+   * Banner title to display in the UI.
+   * Notice the banner will only render if an image is configured for it in {@link Genai.LogoImages.Config#banner}
+   */
+  bannerTitle: string
+
+  /**
+   * Subtitle to display in the UI.
+   * Notice the banner will only render if an image is configured for it in {@link Genai.LogoImages.Config#banner}
+   */
+  bannerSubTitle: string
+
+  /**
+   * How much of the rationale should be displayed in the summary card.
+   * GENAI-1989 Prefer this field to be boolean
+   */
+  rationaleVisibility: !string enum("hidden", "full") = "full"
+
+  /**
+   * Whether the {@link Genai.Query.Result}s should be lazily rendered in the UI.
+   * False if multi-hop is enabled, otherwise true.
+   * This is computed in the getUiConfig function.
+   */
+  lazyLoadResults: !boolean = false
+
+  /**
+   * Returns the config instance with the dynamic fields populated.
+   * Returns false if multi-hop is enabled, otherwise returns true.
+   */
+  getUiConfig: function(): !GenAiUiConfig js-rhino
+
+  /**
+   * How to render search query history, which appears in the UI as a list of suggestions under the search input.
+   * - By default ("user"), each user will only see their own search query history. Note: if a user enters a query that
+   *   was previously entered by another user, they will still see the cached result from the previous search.
+   * - If set to "all", admin users (with the "Genai.AdminUser" role) are able to see search history from all users.
+   *   Non-admin users, will still only be able to see their own search history, per `dataPermissions` on the
+   *   "Genai.Common" {@link Role}.
+   * - If set to "none", search query history will not be displayed for any users.
+   */
+  queryHistoryVisibility: !string enum("all", "none", "user") = "user"
+
+  /**
+   * Whether the button that allows query tool selection should be rendered next to the search input.
+   * - By default ("full"), the button will be rendered if and only if the list of
+   *   {@link Genai.Agent.Config#uiSelectableTools} has more than one option. If that list of tools is empty or only
+   *   has one option, the button will never be rendered. When rendered, an additional "All Search" option will be
+   *   prepended to that list, allowing all tools to be considered when running a query (e.g., the orchestrator will
+   *   take over).
+   * - If set to "hidden", the button will never be rendered.
+   * - If set to "hideAllOption", the button will be rendered, but the "All Search" option will not be prepended to the
+   *   list of tools. This is useful when the users should be making a conscious decision around which tool to use.
+   */
+  queryToolSelectorVisibility: !string enum("hidden", "full", "hideAllOption") = "hideAllOption"
+
+  /**
+   * The default option to select in the query tool selector.
+   * - By default (`"ALL"`), _and_ if and only if #queryToolSelectorVisibility is set to `"full"`, the default
+   *   option will be set to "All Search".
+   * - Alternatively, this can be set to a specific {@link Genai.Agent.Tool.Config#id} within the list of
+   *   {@link Genai.Agent.Config#uiSelectableTools} to set a different default.
+   * - If #queryToolSelectorVisibility is set to `"hidden"` _or_ if the list of
+   *   {@link Genai.Agent.Config#uiSelectableTools} is empty, this field will be ignored.
+   * - If #queryToolSelectorVisibility is set to "hideAllOption" and this field is set to "ALL", the UI will
+   *   default to the first tool in the list of {@link Genai.Agent.Config#uiSelectableTools}.
+   */
+  queryToolSelectorDefaultOption: !string = "ALL"
+
+  /**
+   * Whether the Filter Bar should be rendered in the Search Results page.
+   * - By default ("full"), the filter bar will be rendered.
+   * - If set to "hidden", the filter bar will not be rendered.
+   * - If set to "disabled", the filter bar will be rendered but will not be interactive. This is not recommended at
+   *   the config level (you probably just want to use "hidden" instead), but is technically supported and used within
+   *   {@link Genai.Agent.Tool.Config.UiOptions#featureFlags}.
+   */
+  searchFilterBarVisibility: !string enum("hidden", "full", "disabled") = "full"
+
+  /**
+   * Whether the relevance score should be rendered in the search results grid.
+   */
+  scoreVisibility: !string enum("hidden", "full") = "full"
+
+  /**
+   * Whether the metadata tags should be rendered in the search results grid.
+   */
+  tagsVisibility: !string enum("hidden", "full") = "hidden"
+
+  /**
+   * Whether the metadata tags tab panel should be rendered in the Documents admin page.
+   */
+  tagsPageVisibility: !string enum("hidden", "full") = "hidden"
+
+  /**
+   * Whether the Credentials and LLMs pages (Settings menu) should be rendered in the UI.
+   */
+  llmPageVisibility: !string enum("hidden", "full") = "hidden"
+
+  /**
+   * Whether the multi tool Response Container should be rendered in the UI.
+   * - By default ("combined"), the sources from each tool will be combined in the UI
+   * - If set to "tabs", the response from each tool will be rendered in separate tabs
+   */
+  multiToolResponseVisibility: string enum ("combined", "tabs") = "combined"
+
+  /**
+   * Whether the GenAiUi.Chatbox should be rendered in the UI.
+   */
+  hideChatBox: !boolean = false
+
+  /**
+   * File types that will not be clickable in the search results grid
+   */
+  suppressedFileTypes: !?[string] = ['ipynb', 'md']
+
+  /**
+   * Array of visualization modes to render in the UI. Possible values are:
+   * - `"grid"`: renders the results in a grid
+   * - `"defaultVisualization"`: renders the results in the default visualization (chart)
+   *
+   * The default mode rendered will be the first one in the array (ie: `["grid", "defaultVisualization"]` will render the grid by default)
+   * Notice that rendering only `"grid"` will always work, but rendering only `"defaultVisualization"` will only work if the data can be
+   * plotted in a chart. This is not always true, and therefore it is recommended to add `"grid"` as a fallback for users to access the data.
+   */
+  allowedVisualizationModes: [string] =  ["defaultVisualization", "grid"]
+
+  /**
+   * Determines whether to allow multiple tool selection in the dropdown
+   */
+  allowMultipleToolSelection: !boolean = false
+
+  /**
+   * Url to redirect to on the prompts to "Contact Sales". If no value is specified, then the button will not be rendered.
+   */
+  contactSalesUrl: string
+
+  /**
+   * Url to redirect to on the prompts to "Contact Customer Support". If no value is specified, then the button will not be rendered.
+   */
+  contactCustomerSupportUrl: string
+
+  /**
+   * Whether the UI should show access to the interactive onboarding tutorial (Pendo)
+   */
+  generalTutorialVisibility: !string enum("hidden", "full") = "hidden"
+
+  /**
+   * If defined, the Help modal will show a link to this video that will open in a new tab.
+   */
+  generalOnboardingVideoUrl: string
+
+  /**
+   * Whether lazy loading for interactive visualizations should be avoided. In that case, visualizations will load in memory regardless of their position with respect to the viewport.
+   */
+  interactiveVisualizationDoNotLazyLoad: !boolean = false
+
+  /**
+   * Scroll offset for the visualization to start loading. A value of 0 means the visualization will load only when it is visible on the screen; a value of X px means the
+   * visualization will load X px before it is visible on the screen.
+   */
+  interactiveVisualizationLoadingOffset: string = '300px'
+
+  /**
+   * Minimum height of the visualization container. This is used to prevent the visualization from collapsing when it is not visible on the screen.
+   */
+  interactiveVisualizationMinHeight: !string = '500px'
+
+  /**
+   * Defines the method the app will use to sync the UI with the changes in Data Sources to render the banner prompting the user to "Sync" the model.
+   * This is defined by {@link Genai.App.State#dataModelState}
+   * - If set to "client", the app will detect the change in Data Sources through SDL Redux actions. This approach is the recommended one, as it works
+   * both in MNEs and SNEs.
+   * - If set to "server", the app will trigger a package listener in the backend. This listener detects changes on the Data Sources and then the UI
+   * detects them through the polled data model state. This approach is recommended for development, but not recommended for MNEs.
+   */
+  appDataModelSyncStrategy: !string enum("client", "server") = "client"
+
+  /**
+   * Whether to show suggested queries after a search. If enabled, polling will continue after
+   * a query has completed generating an answer, and the suggested queries will be displayed.
+   * Notice that the polling that happens after the query result has an answer only fetches the
+   * suggestedFollowUpQueries, reducing workload.
+   */
+  suggestedFollowUpQueriesVisibility: !string enum("hidden", "full") = "hidden"
+
+  /**
+   * The default tool or agent to use to answer suggested follow up queries.
+   * - By default, the suggested queries will be routed to the default Dynamic Agent.
+   * - Alternatively, a different agent can be used by setting this config to the name of the agent. The agent must be active for the
+   *   query orchestrator used as a handler.
+   * - Also, this can be set to a specific {@link Genai.Agent.Tool.Config#toolName} within the list of
+   *   {@link Genai.Agent.Config#uiSelectableTools} to set a different default. If the tool is not available, the query will be routed to the one
+   *  selected in the query tool selector.
+   */
+  suggestedFollowUpQueryDefaultTool: !string = 'DynamicAgent_default'
+
+  /**
+   * Determines the formatting method the X axis on {@link GenAiUiChart} will follow.
+   * - By default ("default"), the axis will render normally and automatically hide labels as needed to accommodate for space.
+   * - All the other options will force all labels to be rendered regardless of space:
+   *    - If set to "all", the labels will be rendered side by side.
+   *    - If set to "staggered", the labels will be rendered in a staggered manner (alternating top and bottom).
+   *    - If set to "diagonal", the labels will be rendered at a diagonal.
+   */
+  visualizationXAxisLabelStrategy: !string enum("default", "all", "staggered", "diagonal") = "default"
+
+  /**
+   * Determines whether or not to use truncation on the labels of the X axis on {@link GenAiUiChart}.
+   */
+  visualizationXAxisLabelTruncation: !boolean = false
+
+  /**
+   * Only works when #visualizationXAxisLabelTruncation is true.
+   * Determines the width at which the labels of the X axis on {@link GenAiUiChart} will be truncated.
+   */
+  visualizationXAxisLabelMaxWidth: int = 60
+
+  /**
+   * Determines the possible page sizes for the grid in the {@link GenAiUiVisualizationContainer}.
+   */
+  visualizationGridPageSizes: [int] = [5, 10, 20, 30, 40]
+
+  /**
+   * Whether the corroboration components should be rendered in the {@link GenAiUiSummaryCard}}.
+   */
+  attributionVisibility: !string enum ("full", "hidden") = "hidden"
+
+  /**
+   * Returns the value of the attribution visibility
+   */
+  getAttributionVisibility: member function(): !string js-rhino
+
+  /**
+   * Whether to use the feed interface for search results.
+   */
+  viewMode: !string enum("chat", "feed") = "feed"
+
+  /**
+   * Whether to show the planners in the query tool options.
+   */
+  showPlanners: !boolean = true
+
+  /**
+   * Whether to render the query result output with markdown for dynamic agent.
+   */
+  renderStringOutputWithMarkdown: !boolean = true
+
+  /**
+   * Whether to remove cited sources (like [#1]) when copying the answer text to clipboard with copy button.
+   */
+  removeCitationsFromCopiedAnswer: !boolean = false
+
+  /**
+   * Target to use for the anchors in the Summary AI Card.
+   * - By default ("_blank"), the anchor will open in a new tab.
+   */
+  anchorTarget: string enum ('_self', '_top', '_parent', '_blank') = '_blank'
+
+  /**
+   * Whether the Theme Toggle should be rendered in the NavMenu.
+   */
+  themeToggleVisibility: !string enum("hidden", "full") = "full"
+
+  /**
+   * Number of seeded queries that should be shown as suggestions in the home page.
+   * If set to 0, no seeded queries will be shown.
+   */
+  seededQueriesLimit: int = 9
+
+  /**
+   * Category of the seeded queries that should be shown as suggestions in the home page.
+   */
+  seededQueriesCategory: string
+
+  /**
+   * Whether the Help button should be rendered in the side navigation bar.
+   */
+  helpButtonVisibility: !string enum("hidden", "full") = "hidden"
+
+  /**
+   * Url to redirect to when users click on the Help button on the side navigation bar.
+   */
+  helpGuideUrl: string
+
+  /**
+   * Whether the feed results should not be loaded in a lazy way. If set to true, results
+   * will be loaded at all times, even if they are not visible in the viewport.
+   */
+  feedResultsDoNotLazyLoad: boolean
+
+  /**
+   * Scroll offset for the feed results to start loading. A value of 0 means the results will load only when
+   * they are visible on the screen; a value of X px means the
+   * results will load X px before they are visible on the screen.
+   */
+  feedResultsLoadingOffset: !string = '100%'
+
+  /**
+   * Minimum height of the feed results container. This is used to prevent the feed results from collapsing
+   * when they are not visible on the screen.
+   */
+  feedResultsMinHeight: !string = '150px'
+
+  /**
+   * Maximum number of results for which resources and visualization data should be persisted in the
+   * application state. This is used to limit the memory usage of the application and the cleanup follows
+   * a LRU strategy.
+   */
+  feedMaxResultsInState: !int = 10
+
+  /**
+   * Dynamic Agent shows the plan and solution step on UI. This config controls whether the execute or the
+   * code summary step should be shown as part of the response.
+   */
+  showExecuteSummaryStep: !boolean = false
+}

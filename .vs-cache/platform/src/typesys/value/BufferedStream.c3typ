@@ -1,0 +1,27 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The specialized BatchStream type is used to transform a stream of <V> into a buffered stream that can be used to
+ * peek ahead at the stream contents or maintain a rolling window of stream contents already read or looking ahead.
+ */
+private type BufferedStream<E> mixes Stream<E>, Value {
+
+  /**
+   * Returns the current window of retained elements that have already been read and those that were pre-read for
+   * look ahead.
+   */
+  window: member function(): [E]
+
+  /**
+   * Returns the current index in the current window buffer.  The current index is the index of the stream element
+   * that will be returned when next is called on the stream.  If stream is exhausted, or the window was specified
+   * to be generated only once and the buffer is exhausted, this will return the size of the window.
+   */
+  currentIndexInWindow: member function(): !int
+}

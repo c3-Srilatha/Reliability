@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an authenticated user login event.
+ */
+@db(datastore="fs", partitionKeyField='userId', persistenceOrder='date')
+entity type User.Event.Login mixes User.Event, Partitionable<string>, Configurable<User.Event.Login.Config> {
+
+  /**
+   * Removes all User.Event.Login entries that are older than the given duration.
+   *
+   * @param duration:
+   *            The duration of User.Event.Login to persist.
+   *
+   * @return the number of User.Event.Login entries removed
+   */
+  // TODO: PLAT-77198 Implement DB TTL (time to live)
+  // TODO: PLAT-97811 Removed deprecated User.Event.Login#cleanup
+  // remove this
+  @deprecated(finalVersion="8.5", description="use User#cleanupLoginEvents instead")
+  cleanup: private function(duration: !string serialized Duration, confirm: boolean): int
+}

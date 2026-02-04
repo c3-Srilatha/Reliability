@@ -1,0 +1,321 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This component is a wrapper around the `Cesium` library to provide a C3 style component.
+ *
+ * Information about `Cesium` can be found at {@link https://cesium.com/learn/ion-sdk/ref-doc}
+ *
+ * **Expected Data Format**
+ *
+ * The component uses `CZML` format to load data on the map, this format from `Cesium` allows custom `properties`.
+ * these properties is used to customize the behavior of the map.
+ *
+ * - `featureType`: Property that defines if this component should stylize the entity with C3 styles.
+ *                  useful if the user is loading data that doesn't require styling, supported types:
+ *   - `marker`: Will apply the configuration set in {@link UiGeospatialAssetsMapMarkerStyleSpec}
+ *   - `relation`: Will make the line clamp to ground and be a specific color/width.
+ *
+ * **NOTE**: All the "field" paths should be defined under `properties` object on each entity.
+ *
+ * **Component Redux Actions**
+ *
+ * - `ENTITY_SELECTED` - When an entity is clicked on the map, the payload contains a `entityId` field with the id of
+ *                       the entity.
+ *
+ * **Example Data**
+ * ```json
+ * {
+ *   "id": "1___RWC-01GearboxMechanical___1",
+ *   "name": "Gearbox Mechanical",
+ *   "position": {
+ *     "cartographicDegrees": [-122.2324125849293, 37.51339491742296, 0.0]
+ *   },
+ *   "properties": {
+ *     "featureType": "marker",
+ *     "assetClass": "Transmission Tower",
+ *     "classIcon": "tower-cell",
+ *     "openAlerts": 10,
+ *     "plannedMaintenance": true,
+ *     "pastMaintenance": false,
+ *     "criticality": "High"
+ *   }
+ * }
+ * ```
+ *
+ * Using this component from above data:
+ * ```json
+ * "markerStyleConfig": {
+ *   "iconField": "classIcon",
+ *   "overlayColorMappingConfig": {
+ *     "valueField": "criticality",
+ *     "fieldValueToColorMap": {
+ *       "High": "#FF5271",
+ *       "Medium": "#F2950A",
+ *       "Low": "#49BFA9"
+ *     }
+ *   }
+ * },
+ * "legendsConfig": {
+ *   "showOverlayColorMappingLegends": true,
+ *   "overlayColorMappingLegendTitle": "Reliability.CurrentCriticality",
+ *   "showMarkerIconLegends": true,
+ *   "markersIconLegendTitle": "Reliability.AssetClass",
+ *   "markersIconLegendField": "assetClass"
+ * },
+ * "tooltipConfig": {
+ *   "fields": [
+ *     {
+ *       "fieldName": "criticality",
+ *       "label": "Reliability.AssetCriticality"
+ *     },
+ *     {
+ *       "fieldName": "openAlerts",
+ *       "label": "Reliability.ActiveAlerts"
+ *     },
+ *     {
+ *       "fieldName": "openCases",
+ *       "label": "Reliability.OpenCases"
+ *     }
+ *   ]
+ * }
+ * ```
+ */
+@typeScript
+type UiGeospatialAssetsMap mixes UiSdlComponent<UiGeospatialAssetsMapDataSpec> {
+
+  /**
+   * The data spec to configure/retrieve data for the map.
+   *
+   * Result data is stored in `data` prop for the React component.
+   */
+  @uiSdlDataSpec(dataDestinationField='data')
+  dataSpec: ~
+
+  /**
+   * Visualization of the map.
+   */
+  mapVisualization: string serialized UiGeospatialAssetsMapVisualizationType = "3d"
+
+  /**
+   * Show the Cesium Timeline component.
+   */
+  showTimeline: boolean = false
+
+  /**
+   * Show fullscreen button.
+   *
+   * This button only makes the "page" to be fullscreen but not the whole map.
+   */
+  showFullScreenButton: boolean = false
+
+  /**
+   * Whenever the map in 3D mode should include "terrain" height or not.
+   *
+   * **Note**: This uses Cesium's terrain provider, so it requires a token with valid access.
+   */
+  enableTerrain: boolean = false
+
+  /**
+   * Enables the Google Photorealistic Tile Set.
+   * {@link https://cesium.com/learn/cesiumjs/ref-doc/global.html?#createGooglePhotorealistic3DTileset createGooglePhotorealistic3DTileset}
+   *
+   * Needs a valid token to access the Google Photorealistic Tile Set.
+   */
+  enableGooglePhotorealisticTileSet: boolean = false
+
+  /**
+   * Enables {@link UiGeospatialAssetsMapBadgesPositionType#TOP_LEFT top-left} badges.
+   *
+   * @see UiGeospatialAssetsMapMarkerStyleSpec#badgesConfig
+   */
+  enableTopLeftBadges: private boolean = true
+
+  /**
+   * Enables {@link UiGeospatialAssetsMapBadgesPositionType#TOP_RIGHT top-right} badges.
+   *
+   * @see UiGeospatialAssetsMapMarkerStyleSpec#badgesConfig
+   */
+  enableTopRightBadges: private boolean = true
+
+  /**
+   * Enables {@link UiGeospatialAssetsMapBadgesPositionType#BOTTOM_LEFT bottom-left} badges.
+   *
+   * @see UiGeospatialAssetsMapMarkerStyleSpec#badgesConfig
+   */
+  enableBottomLeftBadges: private boolean = true
+
+  /**
+   * Enables {@link UiGeospatialAssetsMapBadgesPositionType#BOTTOM_RIGHT bottom-right} badges.
+   *
+   * @see UiGeospatialAssetsMapMarkerStyleSpec#badgesConfig
+   */
+  enableBottomRightBadges: private boolean = true
+
+  /**
+   * Private property that enables the UiSpinner when the data is loading.
+   *
+   * Due to how Cesium works, we cannot use set this property after a change in the data.
+   * Since Cesium blocks the UI thread, we need to set this property before the data is loaded.
+   * And then release it when the data is loaded.
+   */
+  isDataLoading: private boolean = true
+
+  /**
+   * The entity id of the entity that is zoomed in the map.
+   *
+   * The map only reacts to this property when it changes.
+   */
+  zoomedEntity: string
+
+  /**
+   * Action creator to set the [visualization mode](#mapVisualization) of the map.
+   *
+   * @param componentId
+   *        The {@link UiGeospatialAssetsMap} component id.
+   * @param visualizationMode
+   *        The visualization mode to set.
+   * @returns The action to set the visualization mode.
+   */
+  @uiSdlActionCreator(actionType='SET_VISUALIZATION_MODE')
+  setVisualizationModeAction: function(
+    componentId: !string,
+    visualizationMode: string serialized UiGeospatialAssetsMapVisualizationType): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer to set the [visualization mode](#mapVisualization) of the map.
+   *
+   * @param state
+   *        The current Redux State.
+   * @param action
+   *        The action to set the visualization mode.
+   * @returns The new Redux State with the visualization mode set.
+   */
+  @uiSdlReducer(actionType='SET_VISUALIZATION_MODE')
+  visualizationModeSetEffect: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action creator to enable or disable the badges on the map.
+   *
+   * @param componentId
+   *        The {@link UiGeospatialAssetsMap} component id.
+   * @param position
+   *        The position of the badge to enable or disable.
+   *        (e.g. [top left](UiGeospatialAssetsMapBadgesPositionType#TOP_LEFT))
+   * @param enable
+   *        Boolean to enable or disable the badge.
+   * @returns The action to enable or disable the badge.
+   */
+  @uiSdlActionCreator(actionType='(ENABLE|DISABLE)_(TOP|BOTTOM)_(LEFT|RIGHT)_BADGE')
+  disableEnableBadgeAction: function(
+    componentId: !string,
+    position: !string serialized UiGeospatialAssetsMapBadgesPositionType,
+    enable: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer to enable or disable the badges on the map.
+   * Sets: `enableTopLeftBadges`, `enableTopRightBadges`, `enableBottomLeftBadges`, `enableBottomRightBadges` fields
+   * by the action type.
+   *
+   * @param state
+   *        The current Redux State.
+   * @param action
+   *        The action to set the badge visibility.
+   * @returns The new Redux State with the badge visibility set.
+   */
+  @uiSdlReducer(actionType=[
+    'ENABLE_TOP_LEFT_BADGE',
+    'ENABLE_TOP_RIGHT_BADGE',
+    'ENABLE_BOTTOM_LEFT_BADGE',
+    'ENABLE_BOTTOM_RIGHT_BADGE',
+    'DISABLE_TOP_LEFT_BADGE',
+    'DISABLE_TOP_RIGHT_BADGE',
+    'DISABLE_BOTTOM_LEFT_BADGE',
+    'DISABLE_BOTTOM_RIGHT_BADGE',
+  ])
+  disableDisableBadgeSetEffect: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action creator to enable or disable multiple badges on the map.
+   *
+   * **NOTE**: Helpful when you want to enable multiple badges at once.
+   *
+   * @param componentId
+   *        The {@link UiGeospatialAssetsMap} component id.
+   * @param positions
+   *        The list of positions to enable.
+   *        (e.g. [top left](UiGeospatialAssetsMapBadgesPositionType#TOP_LEFT))
+   * @returns The action to set the badges visibilities.
+   */
+  @uiSdlActionCreator(actionType='SET_MULTIPLE_BADGES_VISIBILITY')
+  disableEnableMultipleBadgesAction: function(
+    componentId: !string,
+    positions: !string serialized UiGeospatialAssetsMapBadgesPositionType): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer to enable or disable multiple badges on the map.
+   * This reducer disables all badges and keeps enabled the ones provided by the action.
+   *
+   * @param state
+   *        The current Redux State.
+   * @param action
+   *        The action to set badge configs.
+   * @returns The new Redux State with the badge config set.
+   */
+  @uiSdlReducer(actionType='SET_MULTIPLE_BADGES_VISIBILITY')
+  disableEnableMultipleBadgesSetEffect: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action creator to enable or disable the [map spinner](UiSdlSpinner).
+   *
+   * @param componentId
+   *        The {@link UiGeospatialAssetsMap} component id.
+   * @param isDataLoading
+   *        Boolean to enable or disable the spinner.
+   * @returns The action to enable or disable the spinner.
+   */
+  @uiSdlActionCreator(actionType='DATA_LOADING_SET')
+  dataLoadingSetAction: function(componentId: !string, isDataLoading: boolean): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer effect for setting the data loading state.
+   *
+   * @param state
+   *        The current state of the {@link UiSdlReduxState}.
+   * @param action
+   *        The action to enable/disable the data loading spinner. (contains `isDataLoading` field)
+   * @returns The updated {@link UiSdlReduxState}.
+   */
+  @uiSdlReducer(actionType='DATA_LOADING_SET')
+  dataLoadingSetEffect: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Action creator to zoom into a specific marker on the map.
+   *
+   * @param componentId
+   *        The {@link UiGeospatialAssetsMap} component id.
+   * @param entityId
+   *        The entity id to zoom into.
+   * @returns The action to zoom into a marker.
+   */
+  @uiSdlActionCreator(actionType='ZOOM_INTO_ENTITY')
+  zoomIntoEntityAction: function(componentId: string, entityId: string): !UiSdlReduxAction ts-client
+
+  /**
+   * Reducer effect to zoom into a specific marker on the map.
+   *
+   * @param state
+   *        The current state of the {@link UiSdlReduxState}.
+   * @param action
+   *        The action to zoom into a specific marker. (contains `entityId` field)
+   * @returns The updated {@link UiSdlReduxState}.
+   */
+  @uiSdlReducer(actionType='ZOOM_INTO_ENTITY')
+  zoomIntoEntityEffect: function(state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+}

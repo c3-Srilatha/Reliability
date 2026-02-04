@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Batch job for compacting invalidation queue entries.  Only valid for queues that support
+ * merging of entries
+ */
+entity type InvalidationQueueCompactor extends BatchJob<InvalidationQueueCompactor, InvalidationQueueCompactorOptions, ObjBatch> mixes Value type key 'INVQCOMP' {
+
+  /**
+   * Compacts a queue.
+   *
+   * @param queueTypeName
+   *           Name of the queue type to compact.  If the queue type doesn't support compaction, an error will be
+   *           returned
+   * @param targetTypeId
+   *           Target typeId to compact for.  If null, entries with all targetTypeIds will be compacted/merged.
+   * @param batchSize
+   *           Batch size to use for mapReduce compacting jobs.
+   *
+   * @return arry of mapReduce jobs necessary to complete the request.
+   */
+  compact: function(queueTypeName: !string, targetTypeId: int, batchSize: int = 1000): [InvalidationQueueCompactor]
+}

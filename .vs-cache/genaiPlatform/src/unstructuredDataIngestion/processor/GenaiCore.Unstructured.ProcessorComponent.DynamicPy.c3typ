@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A processor component that is implemented by a 'native' Python file. The Python source **must** have a function
+ * `process` that takes a single argument `input` and returns a single value. When used in series in a
+ * {@link GenaiCore.Unstructured.Processor}, the output of one component should be in a format that can be handled
+ * as input by the next component.
+ */
+extendable entity type GenaiCore.Unstructured.ProcessorComponent.DynamicPy mixes GenaiCore.Unstructured.ProcessorComponent, GenaiCore.NativePyUtil, SeedData {
+
+  process: ~ py
+
+  /**
+   * The spec used to construct this component. See {@link #createFromPySrc} and {@link #createFromPyFile}.
+   * Contains options for the tool execution.
+   */
+  spec: GenaiCore.Unstructured.ProcessorComponent.DynamicPy.Spec
+
+  /**
+   * Create a new component from the string of a Python function.
+   * @param pySrc
+   *          The python source code.
+   * @param spec
+   *          A spec to control options for the component creation
+   *
+   * @return A new GenaiCore.Unstructured.ProcessorComponent.DynamicPy instance
+   */
+  createFromPySrc: function(pySrc: !string, spec: GenaiCore.Unstructured.ProcessorComponent.DynamicPy.Spec): !mixing GenaiCore.Unstructured.ProcessorComponent.DynamicPy py
+
+  /**
+   * Create a new component from a Python file at the given path, which can be either
+   * a local path (on Jupyter) or a file elsewhere in the C3 File System. If the file is not local,
+   * a **NEW** copy will be created for the new tool instance.
+   *
+   * @param filePath
+   *          The path to the python file. This can be either a local path or the path to a file in the C3 File System.
+   *          The function must be documented with docstring and use `typing.Annotated` parameters.
+   * @param spec
+   *          A spec to control options for the component creation
+   *
+   * @return A new GenaiCore.Unstructured.ProcessorComponent.DynamicPy instance
+   */
+  createFromPyFile: function(filePath: !string, spec: GenaiCore.Unstructured.ProcessorComponent.DynamicPy.Spec): !mixing GenaiCore.Unstructured.ProcessorComponent.DynamicPy py
+}

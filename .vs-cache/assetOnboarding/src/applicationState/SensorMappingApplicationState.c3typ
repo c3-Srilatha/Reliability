@@ -1,0 +1,240 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Application state for sensor mapping. Acts as a singleton; there is only one instance of this application state
+ * with a set ID "Reliability.SensorMappingApplicationState".
+ */
+@typeScript
+type SensorMappingApplicationState mixes SettableApplicationState {
+
+  /**
+   * The {@link Facility} the {@link ReliabilityAsset} belongs to.
+   */
+  facility: Facility
+
+  /**
+   * The {@link AssetClass} the {@link ReliabilityAsset} belongs to.
+   */
+  assetClass: AssetClass
+
+  /**
+   * The new {@link Sensor}s that the {@link ReliabilityAsset} will be associated to. This field is initially empty.
+   */
+  newSensorMap: map<string serialized Sensor, Sensor>
+
+  /**
+   * The custom {@link ExpectedSensor}s added by the user. This field is initially empty.
+   */
+  potentialNewExpectedSensors: [ExpectedSensor]
+
+  /**
+   * Map of {@link ReliabilityAssetSensorRelation} ids to {@link ExpectedSensor}s from the currently existing
+   * {@link ReliabilityAssetSensorRelation}s on this asset.
+   *
+   * Used to evaluate whether an existing sensor relation has been deleted, or if it has been modified.
+   */
+  existingSensorRelationToExpectedSensor: map<string serialized ReliabilityAssetSensorRelation, string serialized ExpectedSensor>
+
+  /**
+   * Map of {@link ReliabilityAssetSensorRelation}s which corresponds to the current mapping of the page.
+   * This is initially set from {@link ReliabilityAsset#currentSensorRelations}.
+   *
+   * Stored as an Immutable.js OrderedMap to preserve order in grid when adding elements. If changing this field,
+   * always use Immutable.js OrderedMap methods to ensure order is preserved.
+   */
+  sensorRelationMap: map<string serialized ReliabilityAssetSensorRelation, ReliabilityAssetSensorRelation>
+
+  /**
+   * Map of the available {@link ExpectedSensor}s to be linked.
+   */
+  availableExpectedSensors: map<string serialized ExpectedSensor, ExpectedSensor>
+
+
+  /**
+   * Map of the LLM suggested {@link ExpectedSensor}s for each {@link Sensor}.
+   * Maps sensor ID to an array of matched expected sensor names.
+   */
+  llmSuggestedExpectedSensors: map<string, [string]>
+
+  /**
+   * A flag that indicates whether the user has modified an existing sensor relation.
+   *
+   * It is only set when trying to save the sensor mappings, and is used to know which
+   * warning message to display to the user.
+   */
+  modifiedExistingSensorRelation: boolean
+
+  /**
+   * A flag that indicates that there are some expected sensors that are not mapped.
+   *
+   * It is only set when trying to save the sensor mappings, and is used to know which
+   * warning message to display to the user.
+   */
+  existsUnmappedSensors: boolean
+
+  /**
+   * A flag that indicates that the sensor mapping status should be set to complete on clicking the "Proceed Anyway"
+   * button in the Save Sensor Mapping Warning Modal. It is only set and used when the warning modal is shown.
+   */
+  shouldMarkAsComplete: boolean
+
+  /**
+   * The name of the asset that the sensor mapping is for.
+   */
+  assetName: string
+
+  /**
+   * The collection of {@link ParsableDiagram}s associated with Asset {@link ReliabilityAsset} .
+   */
+  parsableDiagrams: [ParsableDiagram]
+
+  /**
+   * Stores the displaySensorMappingStatus of the asset, if the asset class is updated while on the Sensor Mapping page.
+   */
+  displaySensorMappingStatus: string
+
+  /**
+   * Sets the LLM suggested expected sensors
+   *
+   * @param llmSuggestedExpectedSensors
+   *        The json object containing sensor id and list of suggested expected sensors to set
+   * @returns a Redux action of type `SET_LLM_SUGGESTIONS`
+   */
+  @uiSdlActionCreator(actionType='SET_LLM_SUGGESTIONS')
+  setLlmSuggestionsAction: function(llmSuggestedExpectedSensors: !json): !UiSdlReduxAction ts-client
+
+  /**
+   * Listens for actions of type `SET_LLM_SUGGESTIONS` and sets the llm suggested expected sensors
+   *
+   * @param state
+   *         Redux state
+   * @param action
+   *         Redux action
+   * @returns a new Redux state
+   */
+  @uiSdlReducer(actionType='SET_LLM_SUGGESTIONS')
+  setLlmSuggestionsReducer: function (state: !UiSdlReduxState, action: !UiSdlReduxAction): !UiSdlReduxState ts-client
+
+  /**
+   * Sets the fields of application state based on the given {@link ReliabilityAsset}.
+   * action.payload is the {@link ReliabilityAsset} to set the fields from.
+   */
+  @uiSdlReducer(actionType='SET_DATA')
+  setDataReducer: inline function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * Dispatches an action to BulkAddSensorMapping to application state based
+   * on the selected {@link MasterSensor}s
+   * @param stateId
+   *        The Id of the application state
+   * @param masterSensors
+   *        {@link MasterSensor}s selected
+   */
+  @uiSdlActionCreator(actionType='ADD_SENSOR_MAPPING')
+  addSensorMappingAction: function(
+   stateId: !string, masterSensors: [MasterSensor]): !UiSdlReduxAction ts-client
+
+  /**
+   * Adds one or multiple sensor mappings to application state based on the given {@link MasterSensor}s.
+   *
+   * The sensor mapping represents a {@link ReliabilityAssetSensorRelation} that
+   * will be persisted when the user saves the changes.
+   */
+  @uiSdlReducer(actionType='ADD_SENSOR_MAPPING')
+  addSensorMappingReducer: inline function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * Modifies a sensor mapping in application state by updating its expected sensor.
+   *
+   * The sensor mapping represents a {@link ReliabilityAssetSensorRelation} that
+   * will be persisted when the user saves the changes.
+   * @param rasrId
+   *        The id of the {@link ReliabilityAssetSensorRelation} to modify in application state.
+   * @param newExpectedSensor
+   *        The new {@link ExpectedSensor} to set for the {@link ReliabilityAssetSensorRelation}.
+   *        This is expected to contain the id and name of the expected sensor.
+   */
+  @uiSdlActionCreator(actionType='MODIFY_SENSOR_MAPPING')
+  modifySensorMappingAction: function(rasrId: string, newExpectedSensor: ExpectedSensor): !UiSdlReduxAction ts-client
+
+  /**
+   * Modifies a sensor mapping to application state based on the given {@link #modifySensorMappingAction}.
+   *
+   * The sensor mapping represents a {@link ReliabilityAssetSensorRelation} that
+   * will be persisted when the user saves the changes.
+   */
+  @uiSdlReducer(actionType='MODIFY_SENSOR_MAPPING')
+  modifySensorMappingReducer: inline function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * Removes a sensor mapping to application state based on the given `rasrId` within the `action.payload`.
+   * The payload should contain one key, `rasrId`.
+   *
+   * The sensor mapping represents a {@link ReliabilityAssetSensorRelation} that
+   * will be persisted when the user saves the changes.
+   */
+  @uiSdlReducer(actionType='REMOVE_SENSOR_MAPPING')
+  removeSensorMappingReducer: inline function(
+    state: !UiSdlReduxState,
+    action: !UiSdlReduxAction
+  ): !UiSdlReduxState ts-client
+
+  /**
+   * Adds a custom {@link ExpectedSensor} to the application state. This will be persisted only if a
+   * sensor mapping is created with this custom expected sensor.
+   *
+   * @param newExpectedSensor
+   *        The new {@link ExpectedSensor} to set for the {@link ReliabilityAssetSensorRelation}.
+   *        This is expected to contain the id and name of the expected sensor.
+   */
+  @uiSdlActionCreator(actionType='ADD_CUSTOM_EXPECTED_SENSOR')
+  addCustomExpectedSensorAction: function(newExpectedSensor: ExpectedSensor): !UiSdlReduxAction ts-client
+
+  /**
+   * Adds a custom {@link ExpectedSensor} to the application state. This will be persisted only if a
+   * sensor mapping is created with this custom expected sensor. The payload will contain a key `newExpectedSensor`,
+   * with value of a new {@link ExpectedSensor} to add.
+   *
+   * The sensor mapping represents a {@link ReliabilityAssetSensorRelation} that
+   * will be persisted when the user saves the changes.
+   */
+  @uiSdlEpic(actionType='ADD_CUSTOM_EXPECTED_SENSOR')
+  addCustomExpectedSensorEpic: inline function(
+    actionStream: UiSdlActionsObservable,
+    stateStream: UiSdlStatesObservable
+  ): UiSdlActionsObservable ts-client
+
+  /**
+   * Saves the sensor mappings as specified by application state. This will persist the sensor mapping changes.
+   *
+   * If there are any warnings, the user will be prompted to confirm the save.
+   *
+   * The action payload should contain the following
+   *   - markAsComplete: boolean
+   *     - If true, the {@link ReliabilityAsset}'s sensorMappingStatus will be marked as complete after saving
+   *       the sensor mappings.
+   *   - force: boolean
+   *     - If true, any warnings will be ignored and the save will proceed.
+   */
+  @uiSdlEpic(actionType='SAVE_SENSOR_MAPPINGS')
+  saveSensorMappingsEpic: inline function(
+    actionStream: UiSdlActionsObservable,
+    stateStream: UiSdlStatesObservable
+  ): UiSdlActionsObservable ts-client
+}

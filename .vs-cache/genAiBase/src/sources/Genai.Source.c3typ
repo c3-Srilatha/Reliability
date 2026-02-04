@@ -1,0 +1,136 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Genai.Source represents a single source containing the {@link Genai.SourcePassage}s.
+ */
+abstract extendable entity type Genai.Source mixes Genai.Source.WithPassages, AclEnabled {
+  /**
+   * If set, a {@link Genai.Query.ResultToUrlSourceRelation} will be created for {@link Genai.Query.Result} that cites this source.
+   */
+  sourceUrl: Genai.Query.Result.Source.Url
+
+  /**
+   * The content size of the source.
+   * If the content length is not known, we use {@link File#guessMetadata} to estimate the content size.
+   */
+  contentSize: int
+
+  /**
+   * The content size of the source as estimated by {@link File#guessMetadata}.
+   * @param file
+   *           The {@link File} to get the content size for.
+   * @return the content length
+   */
+  guessedContentSize: function(file: !File): int js-rhino
+
+  /**
+   * The {@link Genai.SourceFile.Metadata} associated with a source. Used to filter out sources during similarity search.
+   */
+  metadata: Genai.SourceFile.Metadata
+
+  /**
+   * The etag from the last time that the source pointed to by this source's #sourceUrl was processed. Used to check
+   * whether the source has been updated since it was last processed.
+   *
+   */
+   // TODO: PLAT-62668 once all FS support etags, we should remove modifiedTimeWhenLastProcessed and make eTag required
+  eTagWhenLastProcessed: string
+
+  /**
+   * The lastModified timestamp from the last time that the source pointed to by this source's #sourceUrl was processed.
+   * Used to check whether the source has been updated since it was last processed for file systems that do
+   * not (yet) have etag support
+   *
+   */
+   // TODO: PLAT-62668 once all FS support etags, we should remove modifiedTimeWhenLastProcessed and make eTag required
+  modifiedTimeWhenLastProcessed: datetime with millis
+
+  /**
+   * The file where all passages from original source get stored. A representation of the Genai.SourcePassages for the
+   * original source.
+   */
+  passagesFile: File
+
+  /**
+   * Write SourcePassages to #passagesFile
+   * @param passages
+   *           The passages.
+   * @return the passagesFile
+   */
+  writePassages: member function(passages: ![Genai.SourcePassage]): !File js-rhino
+
+  readPassages: abstract ~
+
+  /**
+   * Adds a {@link Genai.SourceFile.Metadata.Tag} to this source's #metadata.
+   * Returns the {@link Genai.SourceFile.Metadata.Tag} object for this label, creating it first if it does not exist already.
+   */
+  addTag: member function(tagLabel: !string serialized Genai.SourceFile.Metadata.Tag): !Genai.SourceFile.Metadata.Tag js-rhino
+
+  /**
+   * Removes a {@link Genai.SourceFile.Metadata.Tag} from this source's #metadata.
+   * Returns a boolean indicating if the tag was successfully removed.
+   */
+  removeTag: member function(tagLabel: !string serialized Genai.SourceFile.Metadata.Tag): boolean js-rhino
+
+  /**
+   * Returns a list of filterable fields in {@link Genai.SourceFile.Metadata} that satisfy the optional predicate.
+   * @param predicate
+   *          An optional lambda returning true if a metadata field satisfies the given predicate.
+   */
+  getMetadataFields: function(predicate: ?lambda(field: DeclaredFieldType): boolean): [DeclaredFieldType] js-rhino
+
+  /**
+   * Maps filterable metadata fields to all metadata values currently associated with a field.
+   * Only looks through metadata fields that satisfy the optional predicate.
+   * @param predicate
+   *          An optional lambda returning true if a metadata field satisfies the given predicate.
+   */
+  getAllMetadataValues: function(predicate: ?lambda(field: DeclaredFieldType): boolean): !map<string, set<string>> js-rhino
+
+  /**
+   * Retrieve passages for this source.
+   *
+   * This will just return the existing `passagesFile` unless:
+   *    1. The `passagesFile` does not yet exist
+   *    2. `forceRefresh` is true
+   *
+   * If the passagesFile is written out, Source.passagesFile will also be updated.
+   *
+   * @param forceRefresh
+   *           If true, will refresh the passagesFile
+   */
+  mergedPassages: member function(forceRefresh: boolean): !File js-rhino
+
+  /**
+   * Returns the {@link Genai.SourcePassage}s created using generated documents for this source.
+   *
+   *  @param source
+   *           {@link Genai.Source} to create the passages for
+   *  @param documents
+   *           native python list of documents to create passages for. Each passage contains page_content and metadata generated by the python module.
+   * Returns the list of SourcePassages generated using the documents.
+   */
+  generatePassages: inline function(source: !Genai.Source, documents: ![native]): ![Genai.SourcePassage] py
+
+  /**
+   * Filters the sources based on the file types.
+   *
+   * @param sources
+   *           The filtered sources
+   * Returns the list of sources that have the file types.
+   */
+  filterSourcesForFileTypes: inline function(sources: [File]): [File] js-rhino
+
+  /**
+   * The groups with access to this source.
+   */
+  groups: [Role] = ['Genai.Common', 'C3.ClusterAdmin', 'C3.EnvAdmin', 'C3.AppAdmin']
+}

@@ -1,0 +1,38 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Db.Domain.Config mixes ConfigNamed {
+
+  /**
+   * Name of the domain
+   */
+  name: !~
+
+  /**
+   * Optional mapping of the datastore configurations
+   */
+  datastores: map<string enum Datastore.Kind, string>
+
+  /**
+   * Optional Data Lake C3 App / Microservice where this domain is hosted
+   */
+  app: string serialized AppId
+
+  /**
+   * If true, operations on types in this domain will be executed in the consumer process
+   * using callInLocalJvmApp instead of being remoted to the target app.
+   * This is useful when the consumer needs to avoid network overhead while still executing in the target app's context
+   *
+   * Note: this is not completely risk free as the metadata of the target app and the consumer app may be different and
+   * the loading of the metadata may fail
+   *
+   * @see Db.Domain#app
+   */
+  @beta
+  callAppInLocalJvm: boolean
+}

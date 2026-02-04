@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Utility type for Base64 encoding/decoding binary data to/from a string
+ *
+ * @see https://en.wikipedia.org/wiki/Base64
+ */
+type Base64 {
+
+  /**
+   * Convert from bytes to base64 string
+   */
+  encode: inline function(value: !binary): !string java | js | py
+
+  /**
+   * Convert from bytes to base64url string, using the "URL and filename safe" character set.
+   */
+  encodeUrlSafe: inline function(value: !binary): !string java | js | py
+
+  /**
+   * Convert from base64 string to bytes
+   */
+  decode: inline function(value: !string, failIfInvalid: boolean, for: string): binary java | js | py
+
+  /**
+   * Convert from base64url string to bytes, using the "URL and filename safe" character set.
+   */
+  decodeUrlSafe: inline function(value: !string, failIfInvalid: boolean, for: string): binary java | js | py
+
+  /**
+   * Encodes string into a base64 string using the named charset
+   */
+  encodeString: inline function(value: !string, charset: string): !string
+
+  /**
+   * decodes a base string using named charset into a string
+   */
+  decodeString: inline function(value: !string, charset: string, failIfInvalid: boolean, for: string): string
+
+  /**
+   * Encodes an integer into a base64-encoded byte values
+   */
+  encodeInt: inline function(value: !int): !string
+
+  /**
+   * decodes base64-encoded byte values into an integer
+   */
+  decodeInt: inline function(value: !string, failIfInvalid: boolean, for: string): int
+}

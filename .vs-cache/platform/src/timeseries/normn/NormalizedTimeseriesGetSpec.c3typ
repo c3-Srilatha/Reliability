@@ -1,0 +1,35 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Indicates how to get normalized timeseries values
+ */
+type NormalizedTimeseriesGetSpec mixes NormalizedTimeseriesSpecBase {
+
+  /**
+   * Fields on {@link NormalizedTimeseries} that need to be included. e.g. ['state', 'valid', 'values', 'gaps', 'counts']. If not set, then ALL the fields will be returned on the type
+   */
+  includeFields: [string]
+
+  /**
+   * Time range for which information needs to be retrieved for time dependent fields
+   */
+  timeRange: NormalizedTimeseriesRange
+
+  /**
+   * ONLY for time range dependent columns. If set, will include data from pre-agg columns
+   */
+  includePreAggIntervals: boolean
+
+  /**
+   * INTERNAL USE ONLY
+   * If set, then only retrieves data for the hot buckets and does not embed data from cold. This could return a
+   * NormalizedTimeseries object that does not comply with the range specified in the object
+   */
+  onlyHotBuckets: private boolean
+}

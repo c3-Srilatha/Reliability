@@ -1,0 +1,104 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Test type for Observability - Single span per action
+ * Test invokes `parent()` which has the following functions called internally
+ *   parent ----- child1 ------ grandChild
+ *     |
+ *     |
+ *     ------------ child2 ------- grandChild
+ */
+type ObservabilityTestType {
+
+  /**
+   * Entry point for test.
+   */
+  parent: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parent}.
+   */
+  child1: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parent}.
+   */
+  child2: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #child1} and {@link #child2}.
+   */
+  grandChild: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Entry point for test with error.
+   */
+  parentWithError: member function(childHasNoError: boolean, spanSpec: Observability.SpanSpec): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parentWithError}. This action also throws and error.
+   */
+  childWithError: private member function(refActions: !ObservabilityTestRefActions, childHasNoError: boolean, spanSpec: Observability.SpanSpec): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Entry point for test with Lambda attributes.
+   */
+  parentWithLambdaAttributes: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parentWithLambdaAttributes}. This action also sets Lambda attributes on span
+   */
+  childWithLambdaAttributes: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Entry point for test for `set_attributes_lambda`, whose arguments are of incorrect type
+   */
+  parentWithIncorrectLambdaAttributes: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Entry point for test with Lambda attributes.
+   */
+  parentWithLambdaFuncAttributes: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Parent action without any user attributes recorded
+   */
+  parentWithoutAttributes: member function(): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #parentWithoutAttributes}. This also does not record any user attributes
+   */
+  childWithoutAttributes: private member function(refActions: !ObservabilityTestRefActions): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+  * Entry point for test having multiple children.
+  * @param childCount
+  *    Number of children to create
+  */
+  dynamicParent: member function(childCount: !int): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #dynamicParent}.
+   @param refActions
+   *    Reference actions to be used for asserting correctness of automatically captured action IDs
+   * @param index
+   *    Index of the child span
+  */
+  dynamicChild: private member function(refActions: !ObservabilityTestRefActions, index: !int): !ObservabilityTestRefActions py-opentelemetry
+
+  /**
+   * Action invoked by {@link #dynamicChild}.
+   @param refActions
+    *    Reference actions to be used for asserting correctness of automatically captured action IDs
+    * @param index
+    *    Index of the grandchild span
+  */
+  dynamicGrandChild: private member function(refActions: !ObservabilityTestRefActions, index: !int): !ObservabilityTestRefActions py-opentelemetry
+}

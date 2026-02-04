@@ -1,0 +1,107 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents a process-only {@link MlPipe} that appends (row-wise) data across different states.
+ */
+@beta
+entity type Reconstruction.Post.AppendDataByStatePipe<DX, DO> extends MlTemplate.AtomicPipe<DX, void, DO> mixes Reconstruction.Post.Postprocessor type key 'DAPPDP' {
+  /**
+   * The names of the different states that need to be appended. These will determine the names of the input {@link Data}.
+   */
+  states: ![string]
+
+  /**
+   * An empty data indicator keyword in the `Subject` column.
+   * If this keyword exists in the `Subject` column, it indicates that there is no data for that state,
+   * and the rows will be dropped when appending data across states. The default value is 'null'.
+   */
+  emptyDataSubjectIndicator: string = 'null'
+
+   /**
+   * This method constructs a new {@link MlPipeline} that appends this append data by state pipe to either a single {@link MlPipe} or a map of <state, {@link MlPipe}> with by-state output.
+   *
+   * When `pipe` is a single {@link MlPipe}, this method connects the append data by state pipe `this` to `pipe` directly. The `pipe` should have all the states as output.
+   *
+   * When `pipe` is a map of <state, {@link MlPipe}>, this method constructs a `center_pipe` using the {@link MlPipe} of each state and connects the append data by state pipe `this` to the `center_pipe`.
+   * Output of each {@link MlPipe} in the `pipe` should have the same set of outputs.
+   *
+   * The returned {@link MlPipeline} will have appended data across states as its output.
+   *
+   * This method accepts the following keyword argument (see more on {@link Reconstruction.Pre.Preprocessor#precede}):
+   * - `outputNames`: If the `pipe` has multiple outputs, you can specify the output names for which you want to append data across states.
+   *   Provide a list of `outputNames`, and for each outputName in `outputNames`, return a {@link Data}.
+   *
+   * Example usage:
+   * __Example 1: When the `pipe` is a map of <state, {@link MlPipe}>__
+   * ```py
+   * # Create a map of states to models:
+   * from sklearn.preprocessing import StandardScaler
+   * scaler = StandardScaler()
+   * scaler_pipe = c3.SklearnPipe.convert(scaler, spec=c3.SklearnLikeConvertSpec(keepInputColumnIndices=True))
+   * by_state_scaler ={'state1': scaler_pipe, 'state2':scaler_pipe}
+   *
+   * # Create an append data by state pipe:
+   * data_appending_pipe = c3.Reconstruction.Post.AppendDataByStatePipe(states = ['state1','state2'])
+   *
+   * # To directly connect the `data_appending_pipe` to the `by_state_scaler` and create a new pipeline, invoke `succeed()` without any arguments
+   * new_pipeline = data_appending_pipe.succeed(by_state_scaler)
+   * ```
+   *
+   * __Example 2: When the `pipe` is just a single pipe__
+   * ```py
+   * # Create an append data by state pipe:
+   * data_appending_pipe = c3.Reconstruction.Post.AppendDataByStatePipe(states = ['state1','state2'])
+   *
+   * # Create a partition data by state pipe:
+   * data_partition_pipe = c3.Reconstruction.Pre.PartitionDataByStatePipe(states=['state1','state2'],stateToValues={'state1':[1], 'state2':[2]})
+   *
+   * # To directly connect the `data_appending_pipe` to the `data_partition_pipe` and create a new pipeline, invoke `succeed()` without any arguments
+   * new_pipeline2 = data_appending_pipe.succeed(data_partition_pipe)
+   * ```
+   *
+   * __Example 3: When the `pipe` is a map of <state, {@link MlPipe}> and has multiple `outputNames`__
+   * ```py
+   * # Create a map of states to c3.Reconstruction.Algorithm.VirtualSensingPipelines (c3.Reconstruction.Algorithm.VirtualSensingPipeline has two outputs: `residuals` and `reconstructions`):
+   * from sklearn.linear_model import LinearRegression
+   * from sklearn.ensemble import RandomForestRegressor
+   * lr = LinearRegression()
+   * lr_pipe = c3.SklearnPipe.convert(lr).create()
+   * rf = RandomForestRegressor(n_estimators=10, random_state=0)
+   * rf_pipe = c3.SklearnPipe.convert(rf).create()
+   *
+   * vs_pipeline_1 = c3.Reconstruction.Algorithm.VirtualSensingPipeline(targets=<list of targets>, regressor=lr_pipe).create()
+   * vs_pipeline_2 = c3.Reconstruction.Algorithm.VirtualSensingPipeline(targets=<list of targets>, regressor=rf_pipe).create()
+   * by_state_vs ={'state1': vs_pipeline_1, 'state2':vs_pipeline_2}
+   *
+   * # Create an append data by state pipe:
+   * data_appending_pipe = c3.Reconstruction.Post.AppendDataByStatePipe(states = ['state1','state2'])
+   *
+   * # To directly connect the `data_appending_pipe` to the `by_state_vs` and create a new pipeline, invoke `succeed()`.
+   * # If the `pipe` has a list of `outputNames` , specify `outputNames`.
+   * new_pipeline3 = data_appending_pipe.succeed(by_state_vs, ,kwargs={"outputNames":['residuals','reconstructions']})
+   * ```
+   */
+  succeed: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  doProcess: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  generateTypeBindings: ~ py
+
+  /**
+   * @inheritdoc
+   */
+  generatePipe: ~ py
+}

@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents the default agent config which the user will use in the side panel within the application.
+*/
+type ReliabilityDynamicAgentConfig mixes Singleton, Config {
+  /**
+   * The ID of the agent prompt used in the dynamic agent.
+   */
+  agentPromptId: string = 'test_prompt'
+
+  /**
+   * A map from a targetPageName of a route in the application to a context string which will be passed to the agent prompt when the user uses the side panel from that page.
+   * The context string will be passed to agent prompt and will be set in the 'UI_CONTEXT' parameter of the prompt.
+   * Example: {
+    "AlertDetailConditionalRender": "User is on the alert detail page viewing content for the alert with id"
+   }
+   * Make sure to use the 'pageParamName' in the context string so that it can be replaced with the actual values stored in the page params in the application state by regex matching.
+   * In the example above, the 'id' is the page param name for the alert detail page route. These names can be inferred from the route csv file.
+  */
+  uiContextMap: map<string, string> = {
+    "ModelExperimentPreview": "User is viewing a preview of the model configuration with ID ##configId##",
+    "AssetClassDetail": "User is viewing asset class details during onboarding with ID ##assetClassId##",
+    "ModelScenarioDetails": "User is viewing a specific scenario with ID ##scenarioId## for model configuration ##configId##",
+    "RunModelScenario": "User is creating a new scenario for model configuration with ID ##configId##",
+    "SensorMappingSpinner": "User is viewing sensor mapping for asset hierarchy item with ID ##id##",
+    "ModelSetupAssetProjectDetail": "User is viewing projects for model setup with asset ID ##id## and project ID ##projectId##",
+    "ModelSetupAssetDetailConditionalRenderer": "User is viewing model setup configuration for asset with ID ##id##",
+    "CloningModel": "User is cloning a model with configuration ID ##configId##",
+    "AssetModelConfigurationConditionalRenderer": "User is configuring a model for asset ID ##id## and project ID ##projectId##",
+    "CorrelationModelSetupAssetDetail": "User is setting up a correlation model for asset with ID ##id##",
+    "DiagramDetail": "User is viewing diagram parsing during asset onboarding for diagram with ID ##id##",
+    "CaseDetailConditionalRenderer": "User is viewing detailed information for case with ID ##id##",
+    "AssetDataValidationConditionalRenderer": "User is performing data validation for model setup with asset ID ##id## and page key ##pageKey##",
+    "AssetDataPreparationDetailConditionalRenderer": "User is viewing dataset with ID ##datasetId## for model setup with asset ID ##id##",
+    "AlertDetailConditionalRenderer": "User is viewing detailed information for alert with ID ##id##",
+    "AssetDetailConditionalRenderer": "User is viewing details for asset with ID ##id##",
+    "ModelDetailsConditionalRenderer": "User is viewing model operations for model configuration with ID ##configId##",
+    "AssetDataPreparationConditionalRenderer": "User is preparing datasets for model setup with asset ID ##id## and project ID ##projectId##",
+    "SensorAlertDetailConditionalRenderer": "User is viewing sensor alerts for sensor with ID ##id##",
+    "WorkOrderDetail": "User is viewing work order details for work order with ID ##id##"
+}
+
+  /**
+   * The name of the agent that the user can interact with on the side panel within the application.
+   */
+  agentConfigName: string = 'Rel_Agent'
+}

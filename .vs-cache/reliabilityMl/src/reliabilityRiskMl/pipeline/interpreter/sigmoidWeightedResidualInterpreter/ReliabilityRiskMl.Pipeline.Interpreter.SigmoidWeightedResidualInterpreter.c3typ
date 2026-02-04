@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents an {@link MlInterpreter} that interprets the outputs of machine learning models using
+ * the Sigmoid Weighted Residual (SWRI) method. This method applies a sigmoid transformation to the weighted residuals
+ * for better interpretation of risk scores or predictions. It helps in generating human-readable explanations
+ * for the model’s output, especially in the context of reliability and risk assessment models.
+ *
+ * The SWRI is useful in cases where risk scores need to be smoothed or transformed in a way that their relationship
+ * with features can be better understood. It can provide insights into how much each feature contributes to the
+ * final risk prediction after applying a weighted residual approach.
+ */
+@beta
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead.')
+extendable entity type ReliabilityRiskMl.Pipeline.Interpreter.SigmoidWeightedResidualInterpreter<DX, DO> mixes MlInterpreter<DX, DO> type key 'SWRI' {
+
+  /**
+   * The explainer used for interpreting the results of the model. This reference points to the method or
+   * technique employed to provide human-readable explanations of the model’s outputs.
+   * In this case, the explainer is related to the Sigmoid Weighted Residual method.
+   */
+  explainer: ~ = 'SigmoidWeightedResidual'
+
+  /**
+   * This function generates an explainer that prepares the necessary explanation mechanisms for interpreting the
+   * machine learning model's output. The explainer could use Python-based libraries or custom logic to generate
+   * meaningful visualizations or descriptions of the model's decision-making process.
+   * It aids in making complex model outputs more understandable to stakeholders.
+   */
+  makeExplainer: ~ py-data
+
+  /**
+   * This function performs the actual interpretation of the model's results, providing insights into the behavior
+   * of the model. It analyzes how features interact with each other and contributes to the final risk prediction
+   * using the Sigmoid Weighted Residuals. The output could include explanations such as which features are most
+   * influential or how adjustments in certain variables lead to different predictions or risk scores.
+   */
+  doInterpret: ~ py-data
+
+  /**
+   * @inheritdoc
+   */
+  fromExplainer: abstract ~
+}

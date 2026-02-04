@@ -1,0 +1,478 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * All the metadata (Types and source code, Seed Config, Metadata, SeedData …) for an application is available through
+ * {@link Pkg} instance. To access all available {@link Pkg} instances, we are defining a store called 'Pkg.Store`.
+ *
+ * The purpose of Pkg.Store is to allow editing of root package in a Single Node Environment or serving production app
+ * deployment.
+ *
+ * When the store is configured with more than one nested store, Pkg.Store will process each store in the listed order
+ * of {@link Pkg.Store.Config.stores}. If a pkg appears in more than one store, the first one will win.
+ */
+type Pkg.Store mixes Pkg.StoreIface, Configurable<Pkg.Store.Config>, DefaultInstance, Named {
+
+  DEFAULT: const string = 'DEFAULT'
+
+  /**
+   * @return root pkg instance for given name.
+   */
+  pkg: final member function(name: !string, appMode: string enum AppMode, failIfMissing: boolean): Pkg
+
+  /**
+   * @return an instance of pkg which is declared as dependency for another pkg. For an updatable pkg in store,
+   *         the instance returned will be different from root pkg instance returned by {@link pkg} call.
+   */
+  depPkg: private final member function(name: !string,
+                                        appMode: string enum AppMode,
+                                        version: string serialized SemanticVersion,
+                                        failIfMissing: boolean): Pkg
+
+  /**
+   *  If this store is configured with a Pkg.Store.Nested that is writable (i.e Pkg.Store.Db, Pkg.Store.Local),
+   * Pkg.Files in that store are editable.
+   *
+   * @return pkg names that are updatable.
+   */
+  updatablePkgNames: final member function(): [string]
+
+  /**
+   * Returns true, if the given pkg exists and is updatable in Pkg.Store.
+   */
+  isPkgUpdatable: member function(pkgName: !string): boolean
+
+  /**
+   * Returns all deep dependency packages for given package, ordered from deep to shallow
+   */
+  dependencyPkgDecls: member function(pkgName: !string): @indexed map<string, Pkg.Decl>
+
+  /**
+   * returns list of all packages that depend on the given package that are available in this Pkg.Store.
+   */
+  dependentPkgNames: member function(pkgName: !string): [string]
+
+  /**
+   * return nested store serving the given pkg.
+   */
+  nestedForPkg: private member function(name: !string, failIfMissing: boolean): Pkg.Store.Nested
+
+  /**
+   * return nested store serving the given pkgPath.
+   */
+  nestedForPath: private member function(pkgPath: !string, failIfMissing: boolean): Pkg.Store.Nested
+
+  /**
+   * call provided action for each configured Pkg.Store.Nested. see @Pkg.Store.Config.
+   */
+  eachNested: member function(action: lambda(store: Pkg.Store.Nested))
+
+  /**
+   * returns writable store from configured stores, null if none exist.
+   */
+  @java(codeGenSetCached=true)
+  writable: cached member function(): Pkg.Store.Nested
+
+  /**
+   * returns existing instances of nested stores from configured stores.
+   * This prevents creating new instances each time stores are accessed, avoiding cache misses and duplicated operations.
+   */
+  storeInsts: property(): [Pkg.Store.Nested]
+
+  /**
+   * returns the event notifier that keeps track push streams and notifies those an on new event.
+   */
+  eventNotifier: private member function(): Pkg.Store.EventNotifier
+
+  /**
+   * Listen to {@link Pkg.File.Event} produced by this Pkg Store changes.
+   * @return a handle to EventStream and current {@link Pkg.Store.State} for the Pkg Store.
+   */
+  listen: member function(): Pkg.Store.ListenResult
+
+  /**
+   * To listen to current app's env default Pkg.Store
+   */
+  listenInEnv: function(): Pkg.Store.ListenResult
+
+  /**
+   * @return the current state of the Pkg.Store, including list of all existing {@link Pkg.Issue} in this store,
+   * and the next expected sequence number for {@link Pkg.File.Event#sequenceNum}.
+   */
+  state: member function(): Pkg.Store.State
+
+  /**
+   * Fire the given event. This api is for testing purpose only.
+   */
+  @beta
+  fireFileEvent: private member function(e: !Pkg.File.Event)
+
+  /**
+   * run validation of provided paths. Any issues will be written to store and events will be generated.
+   */
+  validatePaths: member function(pkgPaths: ![string serialized Pkg.Path], synchronous: boolean)
+
+  /**
+   * Run validation of the provided pkg synchronously.
+   */
+  validatePkg: member function(pkgName: !string)
+
+  /**
+   * run validation of provided updatable pkgs.  Any issues will be written to store and events will be generated.
+   */
+  validatePkgs: member function(pkgNames: ![string], synchronous: boolean)
+
+  /**
+   * run validation of all updatablePkgs. Any issues will be written to store and events will be generated.
+   */
+  validateAll: member function()
+
+  /**
+   * Run ui bundler for given pkg. Pkg is expected to be updatable.
+   * @param pkgName - name of the package to bundle ui
+   * @param spec - spec to control ui bundling behavior
+   * @param isCliTester - true if running in a standalone cli tester mode, false otherwise
+   */
+  bundleUiFor: member function(pkgName: !string, spec: Pkg.Store.BundleUiSpec, isCliTester: boolean)
+
+  /**
+   * Runs migrations for a given package from all the depending packages that have not been run yet. Expectation is that
+   * given package is writable and that user has permission to start a new single node app.
+   *
+   * @return number of migrations migrations run successfully; 0 if there was no migration to run; throws error and
+   *         aborts the run if there was a migration to run but it failed.
+   *
+   * @see {@link Pkg.Category#MIGRATION}
+   * @see {@link Pkg.Store#appyPkgMigration}
+   */
+  migratePkg: member function(targetPkg: !string): !int
+
+  /**
+   * Runs a specific migration from one of the depending packages in the provided package if have not been run yet.
+   * Expectation is that root package of the app where this action is running contains given migration and that target
+   * package is writable and has a dependency to migration source package.
+   *
+   * @return true if provided migration was not run before and run successfully; false if there was no migration to run;
+   *         and throws error and aborts the run on failure.
+   *
+   * @see {@link Pkg.Category#MIGRATION}
+   * @see {@link Pkg.Store#migratePkg}
+   */
+  applyPkgMigration: member function(targetPkg: !string, migration: !string serialized Pkg.Path): boolean
+
+  /**
+   * synchronously validates the given Pkg. If pkg is updatable.
+   */
+  doValidatePkg: private member function(pkgName: !string)
+
+  /**
+   * synchronously validates the given Pkg.Paths.
+   */
+  doValidatePaths: private member function(pkgPaths: ![string serialized Pkg.Path])
+
+  /**
+   * Return true if there are no validation actions running.
+   */
+  isValidationComplete: private member function(): boolean
+
+  /**
+   * Return pending validation requests currently queued inside this store.
+   * keys: 'pkgs' and 'paths'
+   */
+  pendingValidations: member function(): map<string, [string]>
+
+  /**
+   * return all issues for all available files in store.
+   */
+  issues: member function(): map<string serialized Pkg.File, [Pkg.Issue]>
+
+  /**
+   * return all issues for the given file
+   */
+  issuesForFile: member function(file: !string serialized Pkg.File): [Pkg.Issue]
+
+  /**
+   * return all issues for the given pkgName
+   */
+  issuesForPkg: member function(pkgName: !string): map<string serialized Pkg.File, [Pkg.Issue]>
+
+  /**
+   * return  pkg path of any issues to be written for a given pkg.path.
+   *        e.g for `meta://pkgA/seed/Feature/testR%23id.json` this returns
+   *                `meta://pkgA/gen/cache/Pkg.Issue/pkgA%2Fseed%2FFeature%2FtestR%2523id.json`
+   */
+  @deprecated(finalVersion="8.9", details="use Pkg#issuePathForFile")
+  issuePathForFile: private inline function(pkgPath: string serialized Pkg.Path): !string serialized Pkg.Path
+
+  /**
+   * Utility function to help gauge what files are present in Pkg.Store but not the `reportOn` Pkg.
+   * Ignores generated files.
+   * A Pkg can be correct even if there's a path in the store. For example, meta://zoo/garbage/pkgfile.abc won't be
+   * recognized by the Pkg API, but Pkg.Store will still have the path.
+   *
+   * @param reportOn
+   *        The Pkg object to report on. Useful Pkgs to check can be from Pkg.Store#pkg or C3#pkg.
+   * @param pathPrefixOrGlob
+   *        If empty Pkg.Store will check all files it has associated for a Pkg against the `reportOn` Pkg.
+   * @return Map: Pkg#name -> [{@link Pkg.Path}s present in Pkg.Store but not Pkg#paths].
+   *        If there are no missing paths then there will not be an entry in the Map.
+   */
+  pathsNotPresentInPkg: member function(reportOn: !Pkg, pathPrefixOrGlob: string): Map<string, [Pkg.Path]>
+
+  /**
+   * return path of .c3pkg.json file for given package. eg. "meta://foundation/foundation.c3pkg.json".
+   */
+  @deprecated(finalVersion="8.9", details="use Pkg#declUrlFor instead")
+  pkgDeclPath: inline function(name: !string): !string serialized Pkg.Path
+
+  /**
+   * clear existing config and setup config for this store with given stores
+   * and include Pkg.Store.Java, if not present.
+   *
+   * @see Pkg.Store.Config
+   */
+  configureWithNested: member function(stores: Pkg.Store.Nested ...)
+
+  /**
+   * Will append given nested stores to existing config, will include Pkg.Store.Java, if not present.
+   */
+  addNestedToConfig: member function(store: Pkg.Store.Nested ...)
+
+  /**
+   * removes the given nested stores from this store's config.
+   */
+  removeNestedFromConfig: member function(stores: Pkg.Store.Nested ...)
+
+  /**
+   * Remove unused versions of nested zip stores stating with given pkgName.
+   * Store name starting with rootPkg +"." + rootPkgVersion of current env's apps will not be removed.
+   */
+  removeUnusedZipStoresForPkg: member function(pkgName: !string)
+
+  /**
+   * Write given Pkg.Decl as an updatable pkg. If there is no writable store, Pkg.Store will be configured
+   * to have Pkg.Store.Db as writable.
+   *
+   * Will throw error, if the pkg already exists
+   */
+  createPkg: member function(pkgDecl: !Pkg.Decl, spec: Pkg.Store.WriteSpec)
+
+  /**
+   * get the Git workspace configured for this Pkg.Store.
+   * @see configureWithGit.
+   */
+  git: member function(failIfNotConfigured: boolean): Pkg.Store.Git
+
+  /**
+   * Return true if this store is configured to sync with Git branch.
+   */
+  isGitConfigured: member function(): boolean
+
+  /**
+   * Will configure given Git branch with Pkg.Store to sync changes.
+   *
+   *  If provided branch does not exist, create using base branch in repoUrl, if base branch is not available, throws error.
+   */
+  configureGit: member function(gitBranch: !Pkg.Store.Git.Branch, spec: Pkg.Store.Git.ConfigureSpec): Pkg.Store.Git
+
+  /**
+   * Configures a {@link Pkg.Store.Nested} (nested {@link Pkg.Store}) with the provided root pkg so that it can be used to create
+   * {@link Pkg} instance. The specific subtype of the **nested Pkg.Store** may vary and is left to the {@link Pkg.Store}
+   * to decide.
+   * Please note that this configuration is different from the connect spec which may be needed to interact securely
+   * with {@Artifact.Hub} and is specific to configs which will be needed that Pkg.Store is only concerned about the
+   * the root pkgs and its dependencies when interacting with **Artifact.Hub**.
+   * If cleanupUnused is true, will remove any pkg versions of this pkg that are not used by any app as rootPkg.
+   */
+  configureNestedFromArtifactHub: private member function(pkgName: !string,
+                                                          version: !string serialized SemanticVersion,
+                                                          cleanupUnused: boolean)
+
+  /**
+   * Configures a {@link Pkg.Store.Nested} for all of the dependencies needed by all writable {@link Pkg.Store.Nested}.
+   * It performs the following operations:
+   * - Creates a flattened list of all dependencies needed by all writable {@link Pkg}
+   * - Resolves the best version of each dependency using {@link ArtifactHub#resolveDependencies}
+   * - Configures the appropriate {@link Pkg.Store.Nested} for each dependency using root pkg artifacts in
+   * {@link ArtifactHub}
+   *
+   * @param force
+   *           If true, re-resolve all dependencies from {@link ArtifactHub} even if they have already been resolved.
+   * @param ignoreLocks
+   *           If true, locks will be ignored during resolution and regenerated once complete.
+   */
+  configureNestedFromArtifactHub: private member function(force: boolean, ignoreLocks: boolean)
+
+  /**
+   * Validates that all configured Pkg.Store.Zip artifacts still exist in Artifact Hub.
+   * This is useful for detecting when artifacts have been deleted from Artifact Hub between syncs.
+   * Writes Pkg.Issues for any missing artifacts to all writable packages.
+   * If failIfMissing is true, will throw error if any configured artifacts are missing.
+   */
+  validateConfiguredArtifactsExist: member function(failIfMissing: boolean)
+
+  /**
+   * Setup PkgStore with given zip artifact file. If pkgNameWithVersion is not provided, will use zip fileName.
+   */
+  configureWithZip: member function(zipUrl: !string serialized Url, pkgNameWithVersion: string)
+
+  /**
+   * setup config for default store with nested stores Pkg.Store.Db and Pkg.Store.Java and return the store.
+   * If `doNotClearExisting` is true, existing nested stores will not be removed from config.
+   */
+  configureDevStore: function(doNotClearExisting: boolean): Pkg.Store
+
+  /**
+   * clear all caches on Pkg.Store.
+   */
+  clearCaches: private member function()
+
+  /**
+   * Replace cached Pkg instance for given pkgName.
+   */
+  replaceCachedPkg: private member function(pkgName: !string)
+
+  /**
+   * Remove the pkg instance from Pkg.Store.
+   */
+  evictPkg: private member function(pkgName: !string, mode: !string)
+
+  /**
+   * Copy a readonly pkg to writable store.
+   */
+  copyPkgToWritable: private member function(pkgName: !string)
+
+  /**
+   * Copies a set of readonly Pkgs to writable store.
+   */
+  copyPkgsToWritable: private member function(pkgNames: string ...)
+
+  /**
+   * Copies a set of packages to writable store from zip file.
+   *
+   * @param url
+   *          url for accessing zip content
+   * @param skipValidation
+   *          if true, validation of pkgs will not done.
+   * return list of pkg names that are copied.
+   */
+  copyPkgsToWritableFromZip: member function(url: !string, skipValidation: boolean): [string]
+
+  /**
+   * Copies updatable packages from writable store to local directory.
+   *
+   * @param localPkgsRoot
+   *          local directory path. ( ex: /tmp/repo/)
+   * @param pathSelector
+   *          test function to select the files of the package to copy.
+   */
+  copyUpdatablePkgsToLocal: private member function(localPkgsRoot: !string,
+                                                    pathFilter: lambda(path: Pkg.Path): boolean)
+
+  /**
+   * Copies updatable packages from writable store to local directory.
+   *
+   * @param localPkgsRoot
+   *           local directory path. ( ex: /tmp/repo/)
+   * @param skipGenerated
+   *          if true, generated files will not be copied.
+   */
+  copyUpdatablePkgsToLocal: private member function(localPkgsRoot: !string, skipGenerated: boolean)
+
+  /**
+   * Copies a set of packages to writable store from local filesystem.
+   *
+   * @param localRoot
+   *          local filessystem path to pkgs
+   * @param skipValidation
+   *          if true, validation of pkgs will not done.
+   * return list of pkg names that are copied.
+   */
+  copyPkgsToWritableFromLocal: member function(url: !string, skipValidation: boolean): [string]
+
+  /**
+   * Copies a set of packages to writable store from {@link ArtifactHub.Artifact}s determined by the given package versions.
+   *
+   * @param pkgVersions
+   *           map of pkg to semanticVersion, to fetch from {@link ArtifactHub}
+   * @param writeBatchSize
+   *           The number of files each parallel chunk being uploaded to the {@link Pkg.Store} should contain.
+   *           Each set of artifacts will have a different optimal value.
+   */
+  copyPkgsToWritableFromArtifactHub: member function(pkgVersions: map<string, string>, writeBatchSize: int)
+
+  /**
+   * Writes {@link ArtifactHub.Artifact}s to writable store.
+   *
+   * @param artifacts
+   *          {@link ArtifactHub.Artifact}s to write to writable.
+   * @param writeBatchSize
+   *           The number of files each parallel chunk being uploaded to the {@link Pkg.Store} should contain.
+   *           Each set of artifacts will have a different optimal value.
+   */
+  writeArtifactsToWritable: member function(artifacts: ![ArtifactHub.Artifact], writeBatchSize: int)
+
+  /**
+   * If true, Pkg.Store can be used to instantiate Pkg. use configureWithNested to configure store and enable.
+   * @see Pkg.Store.Config
+   */
+  enabled: function(): boolean
+
+  /**
+   * If multi-node Pkg.Store is enabled to be updatable {@link Pkg.Stor.Config.multiNodeUpdateEnabled},
+   * each node will call this action to process the cache message.
+   *
+   * @param msg
+   *           CacheMessage to be broadcasted to Env/App nodes.
+   * @param force
+   *           If true, eviction message will be processed, irrespective of Env being SingleNode or Pkg.Store.Config.multiNodeUpdateDisabled.
+   */
+  evictLocalOnly: private function(msg: !CacheMessage, force: boolean)
+
+  /**
+   * If multi-node Pkg.Store is enabled to be updatable {@link Pkg.Stor.Config.multiNodeUpdateEnabled},
+   * returns the sequence number of last received event.
+   */
+  lastReceivedEventNum: private member function(): int
+
+  /**
+   * Retrieves the last received event of an env with Pkg.Store enabled
+   */
+  lastReceivedEventNumInEnv: private function(): int
+
+  /**
+   * return all pkgs and depPkgs in store.
+   */
+  cachedPkgs: private function(): set<Pkg>
+
+  /**
+   * Upload a {@link Pkg} to {@link ArtifactHub}
+   *
+   * @return the uploaded {@link ArtifactHub.Artifact}
+   */
+  @action(group+='artifact-hub-admin')
+  uploadPkgToArtifactHub: member function(pkgName: !string,
+                                          spec: Pkg.Store.ArtifactHubRegisterSpec): !ArtifactHub.Artifact
+
+  /**
+   * Return a list of generated {@link Pkg.File.Event.Verbose} from oldest to latest. These events are kept in-memory
+   * and will only be recorded up to a certain capacity. If at capacity, events are removed FIFO, where the oldest
+   * events are removed to make way for the newest events coming in.
+   * @param forFiles
+   *        If empty, include all events. Otherwise filter on events whose #targetFiles contain any file present.
+   * @param limit
+   *        If positive, limit the length of the returned array. It includes the latest events and limits any earlier
+   *        events that fall outside.
+   * @returns Return a list of generated {@link Pkg.File.Event.Verbose} ordered from oldest to latest.
+   */
+  previousEvents: member function(forFiles: [string], limit: int): [Pkg.File.Event.Verbose]
+
+  pkgs:        ~
+  pkgVersions: ~
+  fromString:  cached ~
+}

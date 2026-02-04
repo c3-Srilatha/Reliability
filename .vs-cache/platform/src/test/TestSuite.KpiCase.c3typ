@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * In KPI tests, each test is composed of up to three blocks:
+ *  - `setup` initializes variables and other pre-testing state
+ *  - `measure` is the code actually measured
+ *  - `assert` includes assertions to verify what was measured
+ *
+ * The "setup" and "assert" blocks are optional and only apply to the immediately following/preceding "measure"
+ * block.
+ *
+ * The inherited #script is the "measure" block, and the setup and assert blocks are additional fields.
+ * The measure block is allowed to return a value whose size will be measured for the **retainedMem** metric.
+ */
+abstract type TestSuite.KpiCase<S> mixes TestSuite.Case {
+
+  /**
+   * The setup portion of this case for KPI tests. This may initialize variables used in the #measure block, but
+   * its time and memory usage is not itself measured.
+   *
+   * If the setup block returns anything, it must be a {@link MicrobenchSpec spec} used for the measurements. Note
+   * that the usage of {@link MicrobenchSpec#numIterations numIterations} is not allowed in the setup block because
+   * the value of #times will be used as numIterations.
+   */
+  setup: S
+
+  /**
+   * Within KPI cases, the inherited script is the measure portion of the test. This is the only required block.
+   */
+  measure: abstract property(): !S
+
+  /**
+   * The assert portion of this case for KPI tests. This may use variables set in the setup block, and a special
+   * result variable (`$result` for Java/JS, and `_result` for Python), which is the value returned from
+   * the measure block.
+   */
+  assert: S
+
+  /**
+   * The number of times the measure block is executed (tight loop). This can be specified in the measure block
+   * info (opening fenced code block line) and will be converted to {@link MicrobenchSpec#numIterations}. For example:
+   *
+   *     ```measure 1M times, x: py-client PLAT-12345
+   *     Str.concat("a", "b")
+   *     ```
+   *
+   * Would run the statement a million times and measure the total. This is necessary if the operation being tested
+   * executes too fast and its time would be swamped by the measurement overhead. Ideally, the code being measured
+   * should run for a second or more.
+   *
+   * Custom setup of the spec should be done using the return value from the #setup block, which should be a made
+   * {@link MicrobenchSpec} instance or an object initializer.
+   *
+   * @see Num.parseCount
+   */
+  times: int = 1
+}

@@ -1,0 +1,151 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Fields common to every Cloud Resource.
+ */
+abstract type CloudResourceFields mixes CloudId, CloudResourceKeyFields {
+
+  /**
+   * This flag indicates that this cloud resource managed by third party, C3 will not create or destroy this resource
+   * implicitly.
+   */
+  external: boolean
+
+  /**
+   * Cloud Credentials for this resource.
+   */
+  credentials: CloudCredentials
+
+  /**
+   * `true` if resourceName was set via #generateResourceName.
+   */
+  hasGeneratedResourceName: private boolean
+
+  /**
+   * `true` if resourceName was set via #generateResourceSecondaryId.
+   */
+  hasGeneratedResourceSecondaryId: private boolean
+
+  safeCredentials: ~
+  toString:        ~ java
+
+  /**
+   * @return all config template jsons by cloud template key and override.
+   *        e.g. {'instance': {'TAG': ... , 'POD': ...}
+   *              'instance-jupyter': {'TAG': ... , 'POD': ...}}
+   */
+  allCloudConfigOverrides: member function(): map<string, map<string, json>>
+
+  /**
+   * @return map of pair of config and secret files by override and by cloud template key;
+   *         note that will always return instance of File even if physical file doesn't exist.
+   */
+  allCloudConfigAndSecretFiles: member function(): map<string, map<string, Pair<File, File>>>
+
+  /**
+   * @return @resourceName if set or result of #generateResourceName method call
+   */
+  safeResourceName: inline member function(): !string
+
+  /**
+   * @return @resourceSecondaryId if set or result of #generateResourceSecondaryId method call
+   */
+  safeResourceSecondaryId: inline member function(): !string
+
+  /**
+   * @return instance of CloudRef for this resource; will fail if `failIfInvalid` is `true` and missing all ref fields.
+   */
+  toCloudRef: inline member function(failIfInvalid: boolean): CloudRef
+
+  /**
+   * Constructs Cloud Resource instance with reference fields and credentials based on provided Cloud Reference string.
+   *
+   * @see CloudRef
+   * @see #toString
+   */
+  fromString: ~ java
+
+  /**
+   * Constructs Cloud Resource instance with reference fields and credentials based on provided C3 identifier string.
+   *
+   * Note that if `id.func` is not for this Cloud Resource type then construct instance of this type that is a
+   * dependency or a parent of provided Cloud Resource.
+   */
+  fromId: inline function(id: !string, failIfInvalid: boolean): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance with reference fields and credentials based on provided Cloud Identifier.
+   *
+   * Note that if `id.func` is not for this Cloud Resource type then construct instance of this type that is a
+   * dependency or a parent of provided Cloud Resource.
+   */
+  fromCloudId: inline function(id: !CloudId, failIfInvalid: boolean): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance with reference fields and credentials based on provided Cloud Reference.
+   */
+  fromCloudRef: inline function(ref: !CloudRef, failIfInvalid: boolean): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance based on provided Cloud Func component and optional role.
+   */
+  fromCloudFunc: inline function(func: !string, role: string, seq: string): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance based on provided Cloud Resource Id.
+   */
+  fromResourceId: inline function(resourceId: !?string): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance based on provided Cloud Resource Secondary Id and available Cloud Configuration.
+   */
+  fromResourceSecondaryId: inline function(resourceSecondaryId: !?string): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance based on provided Cloud Resource Name and available Cloud Configuration.
+   */
+  fromResourceName: inline function(name: !?string): !mixing CloudResourceFields
+
+  /**
+   * Constructs Cloud Resource instance based on provided Cloud Reference field value and available Cloud Configuration.
+   *
+   * @see CloudRef
+   */
+  fromReferenceField: inline function(fieldName: !string enum CloudRefField,
+                                      value: !?string,
+                                      failIfInvalid: boolean): !mixing CloudResourceFields
+
+  /**
+   * Constructs config based defaults and artifacts for all configurable fields
+   *
+   * @see CloudRef
+   */
+  fromConfigTemplate: inline member function(spec: CloudResourceOperationSpec): !mixing CloudResourceFields
+
+  /**
+   * Populate default values for all uninitialized configurable fields in this Cloud Resource.
+   */
+  withDefaultConfig: inline member function(spec: CloudResourceOperationSpec): !mixing CloudResourceFields
+
+  /**
+   * @return default #resourceName. Uses C3 #id by default.
+   */
+  generateResourceName: private member function(): string
+
+  /**
+   * Optional override to generate #resourceSecondaryId from available fields. e.g AwsS3Bucket does it based on
+   * #resourceName (bucket name)
+   */
+  generateResourceSecondaryId: private member function(): string
+
+  /**
+   * @returns #resourceNamespace. Checks CloudDeploymentConfig to determine if cluster or env name
+   */
+  generateResourceNamespace: private member function(): string
+}

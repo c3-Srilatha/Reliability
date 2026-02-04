@@ -1,0 +1,32 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Data available in Splunk searches that group "exception" log events. Specifically, Search (most likely) starts with "search Exception ...".
+ * Note that any particular result row is expected to be populated with only subset of fields, based on the fields in search.
+ */
+type SplunkSearchResultExceptionRow mixes SplunkSearchResultRow {
+
+  /**
+   * The exception class
+   * Search sample:  "search Exception level="ERROR" | rex "(?<exceptionClass>\S*Exception):" | stats count as e_count by exceptionClass | sort - e_count"
+   */
+  exceptionClass: string
+
+  /**
+   * The error message of the exception
+   * Search sample:  "search Exception | rex "Exception: (?<errorMessage>.*)" | stats count as e_count by errorMessage | sort - e_count"
+   */
+  errorMessage: string
+
+  /**
+   * The count of exception event logs
+   * Search sample:  "search Exception level="ERROR" host="prod-*" | rex "(?<exceptionClass>\S*Exception):" | rex "Exception: (?<errorMessage>.*)" | stats count as e_count by exceptionClass, errorMessage | sort - e_count"
+   */
+  e_count: int
+}

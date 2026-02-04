@@ -1,0 +1,240 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * The engine that drives Luke in the browser.
+ * This engine runs in a web worker.
+ */
+@beta
+type BrowserEngine mixes MutableObj {
+
+  /**
+   * mapping of message id to handler functions
+   */
+  callbackMapping: private map<string, any>
+
+  /**
+   * Initialize the browser engine.
+   *
+   * @return An instance of the initialized browser engine
+   */
+  init: inline function(): BrowserEngine js-client
+
+  /**
+   * Runs a script at the browser runtime of the UI
+   * @param func
+   *           The function to run
+   * @param args
+   *           The arguments to be passed to the function
+   * @param timeout
+   *           The timeout in seconds for running the function
+   * @return A promise that will be resolved or rejected with the result
+   */
+  runScript: inline member function(func: !any, args: [any], timeout: int): Promise<json> js-client
+
+  /**
+   * Runs an async script at the browser runtime of the UI.
+   * The function should return a promise. The engine will wait until the promise resolves and rejects
+   * @param func
+   *           The function to run. It must return a promise
+   * @param args
+   *           The arguments to be passed to the function
+   * @param timeout
+   *           The timeout in seconds for running the function
+   * @return A promise that will be resolved or rejected with the result
+   */
+  runAsyncScript: inline member function(func: !any, args: [any], timeout: int): Promise<json> js-client
+
+  /**
+   * Internal helper for running scripts
+   * @param type
+   *           The type of script to run, i.e. 'run_async_script' or 'run_sync_script'
+   * @param func
+   *           The function to run
+   * @param timeout
+   *           The timeout in seconds for running the function
+   * @return A promise that will be resolved or rejected with the result
+   */
+  runScriptHelper: private inline member function(type: !string,
+                                                  func: !any,
+                                                  args: [any],
+                                                  timeout: int): Promise<json> js-client
+
+  /**
+   * Goes to a page
+   * @param url
+   *          The url of the page
+   * @param responseTimeout
+   *          The allowed time in seconds for a page to respond after opening
+   * @param windowSpec
+   *          The specifications for the window.
+   * @return A promise that will be resolved or rejected with the result
+   */
+  goto: inline member function(url: !string,
+                               responseTimeout: int,
+                               windowSpec: LukeWindowSpec): Promise<json> js-client
+
+  /**
+   * Gets accessibility score of the active page.
+   * @param timeout
+   *             The timeout in seconds for the request.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  accessibilityScore: inline member function(timeout: int): Promise<json> js-client
+
+  /**
+   * Gets accessibility report of the active page.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  accessibilityReport: inline member function(): Promise<json> js-client
+
+  /**
+   * Sets a cookie
+   *
+   * @param cookie
+   *           the cookie to be set
+   * @return A promise that will be resolved when the cookie is set
+   */
+  setCookie: inline member function(cookie: !LukeCookie): Promise<json> js-client
+
+  /**
+   * Gets a cookie
+   *
+   * @param cookie
+   *           the cookie to get
+   * @return A promise that will be resolved with the cookie
+   */
+  getCookie: inline member function(cookie: !LukeGetOrRemoveCookieSpec): Promise<json> js-client
+
+  /**
+   * Removes a cookie
+   *
+   * @param cookie
+   *           the cookie to be removed
+   * @return A promise that will be resolved when the cookie is removed
+   */
+  removeCookie: inline member function(cookie: !LukeGetOrRemoveCookieSpec): Promise<json> js-client
+
+  /**
+   * Makes a request to the main thread via posting message from the WebWorker thread
+   *
+   * @param payload
+   *             The request payload
+   * @param timeout
+   *             The timeout for the request
+   * @return A promise that will be resolved or rejected with the result
+   */
+  request: inline member function(payload: !json, timeout: int): Promise<json> js-client
+
+  /**
+   * Pushes notification event to the control panel
+   * @param type
+   *           the message type
+   * @param payload
+   *           the message to be pushed
+   */
+  push: inline member function(type: !string, payload: !json) js-client
+
+  /**
+   * Maximizes the current top-level browsing content controlled by the {@link BrowserEngine}
+   */
+  maximizeWindow: member function(): Promise<json> js-client
+
+  /**
+   * Resizes the current top-level browsing content controlled by the {@link BrowserEngine} with the provided dimensions
+   *
+   * @param rect
+   *          A {@link LukeWindowRect} objet that
+   */
+  resizeWindow: member function(rect: !LukeWindowRect): Promise<json> js-client
+
+  /**
+   * Invokes the window manager-specific "getWindowRect" operation, if any, on the window containing the current top-level
+   * browsing context.
+   */
+  getWindowSize: member function(): Promise<json> js-client
+
+  /**
+   * Makes a request to the main thread to get the performance measurements.
+   *
+   * @param spec
+   *          Specification including the page that needs at least a polling interval and selectors.
+   * @param timeout
+   *          The max time in seconds we allow for our performance timing.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  measurePageLoadTime: inline member function(spec: !UiPerformanceTimingSpec, timeout: !int): Promise<json> js-client
+
+  /**
+   * Makes a request to the main thread to get the time it takes for the page to become "quiet" after
+   * this method's invocation.
+   * @param metricName
+   *          The name to give to this metric measurement. Defaults to 'timeToQuiet'.
+   * @param timeout
+   *          The max time in seconds we allow for our performance timing. Defaults to 60 seconds.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  timeToQuiet: inline member function(metricName: string, timeout: int): Promise<json> js-client
+
+  /**
+   * Moves the mouse to the specified coordinates to simulate a hover event.
+   * This uses the Chrome DevTools Protocol to move the mouse to the specified coordinates, which is treated as a trusted event.
+   * This is particularly useful for performing hover actions in elements such as canvas.
+   * @param clientX
+   *          The x-coordinate of the mouse in the viewport.
+   * @param clientY
+   *          The y-coordinate of the mouse in the viewport.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  realHover: member function(clientX: !int, clientY: !int): Promise<json> js-client
+
+  /**
+   * Simulates a native click event at the specified coordinates.
+   * This uses the Chrome DevTools Protocol to click the specified coordinates, which is treated as a trusted event.
+   * @param clientX
+   *          The x-coordinate of the mouse in the viewport.
+   * @param clientY
+   *          The y-coordinate of the mouse in the viewport.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  realClick: member function(clientX: !int, clientY: !int): Promise<json> js-client
+
+  /**
+   * Simulates a drag event by clicking and moving the mouse from the start coordinates to the end coordinates and releasing.
+   * This uses the Chrome DevTools Protocol, which is treated as a trusted event.
+   * This is particularly useful for performing drag and drop actions in elements such as canvas.
+   * @param startClientX
+   *          The x-coordinate of the start of the drag in the viewport.
+   * @param startClientY
+   *          The y-coordinate of the start of the drag in the viewport.
+   * @param endClientX
+   *          The x-coordinate of the end of the drag in the viewport.
+   * @param endClientY
+   *          The y-coordinate of the end of the drag in the viewport.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  realDrag: member function(startClientX: !int,
+                            startClientY: !int,
+                            endClientX: !int,
+                            endClientY: !int): Promise<json> js-client
+
+  /**
+   * Utilizes Chrome DevTool Protocols to trigger actions on the active browser.
+   * Chrome DevTool Protocol actions are treated as trusted events on the browser, which
+   * may simulate user interactions more accurately.
+   * NOTE: This method is intended for advanced users who are familiar with Chrome DevTool Protocols.
+   * To see all available Chrome DevTool Protocol methods, please refer to the official documentation:
+   * https://chromedevtools.github.io/devtools-protocol/
+   * @param method
+   *          The Chrome DevTool Protocol method to be invoked.
+   * @param commandParams
+   *          The parameters to be passed to the Chrome DevTool Protocol method.
+   * @return A promise that will be resolved or rejected with the result.
+   */
+  chromeProtocolLambda: member function(method: !string, commandParams: !json): Promise<json> js-client
+}

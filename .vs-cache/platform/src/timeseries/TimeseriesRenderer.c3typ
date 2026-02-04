@@ -1,0 +1,61 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Render one or more {@link TimeseriesBase} objects as to an SVG chart. Also, using ECharts into HTML for the client.
+ * This only works for timeseries with numeric points.
+ */
+type TimeseriesRenderer mixes HtmlRenderer {
+
+  /**
+   * Each timeseries to be rendered on a single chart.
+   */
+  series: [!TimeseriesBase]
+
+  /**
+   * The earliest start point of any time series.
+   */
+  start: cached member function(): datetime java | js
+
+  /**
+   * The latest end point of any time series.
+   */
+  end: cached member function(): datetime java | js
+
+  /**
+   * The finest interval of any time series. Only applicable to {@link Timeseries} series.
+   */
+  interval: cached member function(): string enum Interval java | js
+
+  /**
+   * The label for the Y axis on the timeseries chart. If there is a single unit used across all series, its symbol
+   * is used. Otherwise there will be no label.
+   */
+  unitLabel: cached member function(): string java | js
+
+  /**
+   * Iterate over {@link Timeseries} and generate a chartOptions object for ECharts.
+   */
+  chartOptions: private member function(): any js
+
+  /**
+   * Create a renderer for a single timeseries.
+   */
+  create: function(series: !Timeseries): TimeseriesRenderer java | js
+
+  /**
+   * Create a renderer for one or more time series.
+   */
+  create: function(ts: [!Timeseries]): !mixing TimeseriesRenderer java | js
+
+  menuTitle: inline ~ java | js
+  title:     ~ java | js
+  render:    ~ js-client
+  dispose:   ~ js-client
+  toImage:   ~ java
+}

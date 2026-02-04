@@ -1,0 +1,57 @@
+/*
+ * Copyright 2009-2023 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A type that wraps the browser WebWorker thread and provides convenient asynchronous request-response handling
+ * interface based on Promises. One wrapper instance manages one active WebWorker thread.
+ * @see ui-web-worker.c3doc
+ */
+@typeScript
+@uiSdlPluggable(namespace='webWorker')
+type UiSdlWebWorker {
+
+  /**
+   * Id of the web worker
+   */
+  id: string
+
+  /**
+   * The WebWorker thread the wrapper instance is managing. The script for this worker should import
+   * script defined in `uiInfrastructureReact/ui/c3/src/webWorkerBase.worker.js`
+   */
+  worker: any
+
+  /**
+   * The status of the wrapper instance
+   */
+  status: string enum UiSdlWebWorkerStatus
+
+  /**
+   * Starts a new WebWorker thread if there is no running one
+   * @return the Wrapper instance
+   */
+  start: member function(): UiSdlWebWorker ts-client
+
+  /**
+   * Terminates an existing WebWorker thread
+   * @return the Wrapper instance
+   */
+  terminate: member function(): UiSdlWebWorker ts-client
+
+  /**
+   * Posts a request message to the WebWorker thread and asynchronously receives the response message
+   *
+   * @param message
+   *             The message content
+   * @param timeout
+   *             Timeout in milliseconds. If specified, the request will timeout after the given period of time
+   * @return A promise of the asynchronous action.
+   *         The response message received from the WebWorker will be passed down the promise chain
+   */
+  postMessage: member function(message: !UiSdlWebWorkerMessage, timeout: int): Promise<any> ts-client
+}

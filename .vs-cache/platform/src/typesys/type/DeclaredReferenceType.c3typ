@@ -1,0 +1,60 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type DeclaredReferenceType mixes ReferenceType {
+
+  /**
+   * The list of type variable bindings associated with the named type if it is parametric.
+   * Reference bindings are expected to be in the same order as the variables declared on the parametric type.
+   */
+  @dsl(suppress=true)
+  refVarBindings: [ValueType]
+
+  /**
+   * If the variable reference has a restriction, that will limit the types that can be bound.
+   * For example: `type Foo<X: Mammal>` can only be bound to a type that `isA(Mammal)`.
+   *
+   * @see VarReferenceType#restriction
+   */
+  restriction: ValueType
+
+  /**
+   * If the reference has a _meta_ restriction, that will limit the type of values to which it can be set.
+   * Note that this sort of restriction is on the type of the value itself, not on its generic bindings.
+   * For example: `Type<<Mammal>>` reference instances can only be sub types of `Mammal`.
+   *
+   * @see TypeMeta#metaRestriction
+   */
+  metaRestriction: ValueType
+
+  /**
+   * Whether this reference has generic variable bindings. This may not make the reference type fully bound if some of
+   * the bindings are to variables.
+   */
+  hasRefVarBindings: member function(): boolean
+
+  /**
+   * Look up the referenced C3 type and return it. For unbound variables or invalid type references, null is returned.
+   *
+   * @return loaded type
+   */
+  dereferenceMeta: member function(scope: !TypesysScope,
+                                   bindAll: !boolean,
+                                   failIfMissing: !boolean): TypeMeta java | js
+
+  dereferenceMeta:       ~ java | js
+  dereference:           ~ java | js | py
+  build:                 ~
+  isBuilt:               ~
+  buildReferenceType:    ~
+  buildVarReferenceType: ~
+  prototypeName:         ~
+  cacheKey:              ~
+  fromTypeMeta:          ~
+  fromString:            ~
+}

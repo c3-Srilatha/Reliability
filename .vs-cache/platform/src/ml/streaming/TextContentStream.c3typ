@@ -1,0 +1,78 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A content store that is optimized for loading of textual data.
+ *
+ * Optionally, the header and data can be transformed to c3 canonical csv using the rules specified in TextContentMetadata.
+ *
+ * Unlike Content which chunks strictly based on number of bytes, TextContent chunks based on lines.
+ */
+type TextContentStream {
+
+  metadata: !TextContentConfiguration
+
+  @db(createOnly=true)
+  contentType: !string
+
+  context: string
+
+  /**
+   * This overrides metadata.format. If a TextContentStream was created using writeBlock(), we serialize
+   *
+   * to CSV format. When we read, we need to know which format the file was saved in.
+   */
+  format: string enum('CSV', 'TDF') not persistable
+
+  name:      string
+  size:      decimal = 0
+  numLines:  decimal = 0
+  numBlocks: decimal = 0
+  complete:  boolean = false
+
+  /**
+   * event that gets fired when a set of blocks are uploaded
+   */
+  blockCreated: function(txn: Transaction)
+
+  contentCreated: function(txn: Transaction)
+
+  /**
+   * Reads and returns raw blocks without transforming them.
+   *
+   * Blocks can be read in arbitrary order (storage optimized for that)
+   */
+  readBlockString: function(obj: TextContentStream, blockNumber: int): [string]
+
+  /**
+   * Reads raw blocks from file store, applies rules in metadata and returns Transformed Objs
+   *
+   * Blocks can be read in arbitrary order (storage optimized for that)
+   */
+  readBlock: function(obj: TextContentStream, blockNumber: int): [Obj]
+
+  /**
+   * Writes the block without applying any transformations.
+   *
+   * Blocks can arrive in arbitrary order.
+   *
+   * returns the number of lines written (in this block).
+   */
+  writeBlockString: function(obj: TextContentStream, contents: [string], blockNumber: int): int
+
+  /**
+   * Writes the block after applying any transformations in TextContentConfiguration.csvHeader.
+   *
+   * Blocks can arrive in arbitrary order.
+   *
+   * returns the number of lines written (in this block).
+   */
+  writeBlock: function(obj: TextContentStream, contents: [Obj], blockNumber: int): int
+
+  removeContents: function(obj: TextContentStream): boolean
+}

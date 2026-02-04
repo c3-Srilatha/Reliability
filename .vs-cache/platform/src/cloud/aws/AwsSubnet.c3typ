@@ -1,0 +1,70 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * AWS Subnet.
+ */
+@cloud(hasResourceArn=false,
+       hasResourceId=true,
+       hasResourceName=false,
+       hasResourceGroupName=false,
+       identityRoleOptions='OPTIONAL',
+       cloudFunc='sn')
+type AwsSubnet mixes AwsResource, AwsVpcMember, AwsRouteTableMember {
+
+  /**
+   * The Availability Zone of the subnet.
+   */
+  availabilityZone: string
+
+  /**
+   * The CIDR block assigned to the subnet.
+   */
+  cidrBlock: string
+
+  /**
+   * Indicates whether this is the default subnet for the Availability Zone.
+   */
+  isDefaultForAZ: boolean
+
+  /**
+   * The number of unused IP addresses in the subnet.
+   */
+  availableIpAddressCount: int
+
+  /**
+   * If true then instances launched in this subnet receive a public IP address.
+   */
+  mapPublicIpOnLaunch: boolean
+
+  /**
+   * The current state of the subnet.
+   */
+  state: string enum CloudResourceState
+
+  /**
+   * @return subnet for the given role.
+   */
+  forRole: function(role: !string, failIfMissing: boolean): AwsSubnet
+
+  /**
+   * @return subnet ids for the given role.
+   */
+  resourceIdsForRole: function(role: !string, failIfMissing: boolean): [string]
+
+  /**
+   * Find an available cidrblock that 1) do not overlap with cidrblocks of all subnets in the same VPC;
+   * and 2) have 24-bit route mask
+   */
+  freeCidrBlock: member function(): string
+
+  /**
+   * get the routetable associated with the subnet
+   */
+  safeRouteTable: ~
+}

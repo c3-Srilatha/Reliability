@@ -1,0 +1,42 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Metrics used to evaluate each run of a {@link Workflow}.
+ */
+type WorkflowRunProfileResult {
+
+  // PLB (Parallel Lower Bound): The sum of max latency of a workflow run.
+  plb: float
+
+  // SLB (Serial Lower Bound): The sum of all latencies of the workflow steps.
+  slb: float
+
+  // WRL (WorkflowRun Latency): Actual latency of the workflow run.
+  wrl: float
+
+  // SO (Scheduling Overhead): WRL - PLB for the whole workflow.
+  so: float
+
+  /**
+   * MaxPF (Maximum Parallelization Factor):  The theoretical maximum number of actions
+   * that can happen in parallel at any time of the run.
+   */
+  maxPf: int
+
+  /**
+   * PF (Actual Parallelization Factor): Maximum number of actions that executed in parallel during the run.
+   */
+  apf: int
+
+  /**
+   * MinPF (Minimum Parallelization Factor): An approximation of the smallest number of processors that suffice to execute a workflow
+   * with the same latency as its PLB metric.
+   */
+  minPf: int
+}

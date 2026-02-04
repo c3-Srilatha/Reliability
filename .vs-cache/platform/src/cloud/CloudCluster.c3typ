@@ -1,0 +1,65 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Represents Cluster of Nodes typically used for computation or data persistence.
+ */
+abstract type CloudCluster<N: CloudCluster.Node> mixes Identified {
+
+  /**
+   * id of this cluster
+   */
+  id: ~
+
+  /**
+   * Metadata of the CloudCluster; when started, started by who, etc
+   */
+  meta: CloudCluster.Meta
+
+  /**
+   * @return cluster for a given id
+   */
+  forId: abstract ~
+
+  /**
+   * @return current state of this cluster
+   */
+  state: abstract member function(): !CloudCluster.State
+
+  /**
+   * @return nodes comprising this cluster; if `refresh` parameter is set then ensures that cluster membership is
+   *         up to date.
+   */
+  nodes: abstract member function(refresh: boolean, spec: CloudClusterOpSpec): [N]
+
+  /**
+   * @return specified node belonging to this cluster. If `failIfMissing` is true and node does not exist, throw an error.
+   */
+  node: abstract member function(nodeId: !string, failIfMissing: boolean): !N
+
+  /**
+   * Represents the state of all individual nodes in this cloud cluster and the last known message reported by those
+   * nodes for why the nodes have reached that state.
+   *
+   * @param refresh
+   *         If `refresh` parameter is true, ensure the state of all nodes are up to date.
+   * @return mapping of all nodes to their corresponding state
+   */
+  nodeStates: abstract optional member function(refresh: boolean,
+                                                spec: CloudClusterOpSpec)
+                                         : map<string, { state: !string, lastMessage: string }>
+
+  /**
+   * Function to execute logic on all nodes in this cluster.
+   *
+   * @param action
+   *         Lambda expression used to execute logic on each {@link CloudCluster.Node}
+   * @return map of node id to action result for that node
+   */
+  mapNodeToAny: member function<T>(action: !lambda(n: N): T): !map<string, T>
+}

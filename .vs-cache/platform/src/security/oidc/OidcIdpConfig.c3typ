@@ -1,0 +1,228 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@config(maxOverride=CLUSTER, minOverride=APP, secretAuthz='cluster-admin')
+@action(group+='app-admin')
+type OidcIdpConfig mixes IdpConfig, Identified {
+
+  id: ~
+
+  /**
+   * Idp OIDC endpoint for authorize request
+   */
+  authorizationEndPoint: !string
+
+  /**
+   * The principal that issued the id token
+   */
+  issuer: !string
+
+  // Idp OIDC endpoint for token request. Used for the Authorization Code flow
+  tokenEndPoint: string
+
+  /**
+   * userinfo end point (/oidc/userinfo)
+   */
+  userInfoEndPoint: string
+
+  /**
+   * log out end point (/oauth2/logout)
+   */
+  logoutEndPoint: string
+
+  /**
+   * Url to download certificates from idp server
+   */
+  keysUrl: string
+
+  /**
+   * If true, then the certificates are automatically imported from the configured keysUrl every time during authentication.
+   * Otherwise, the certificates are imported only once during the creation of the OidcIdpConfig, and must be
+   * refreshed manually
+   */
+  autoImportCertificates: boolean
+
+  /**
+   * Signing algorithms to generate id tokens
+   */
+  idTokenSigningAlgorithms: [string]
+
+  /**
+   * Response types (e.g. code, id_token etc.) supported by idp server
+   */
+  responseTypes: [string]
+
+  /**
+   * Response modes(e.g. form_post, query, fragment) supported by idp server
+   */
+  responseModes: [string]
+
+  /**
+   * Default response mode (e.g. form_post, query, fragment) to contact idp server
+   */
+  defaultResponseMode: !string
+
+  /**
+   * Scopes (openid, profile, email etc.) supported by idp server
+   */
+  scopes: [string]
+
+  /**
+   * Claims supported by idp server
+   */
+  claims: [string]
+
+  /**
+   * Certificates used to validate id tokens issued by idp server
+   */
+  certificates: [OidcIdpServerCertificate]
+
+  /**
+   * For Authorization Code Flow. Client Secret used to authenticate with the idp server when access token endpoint
+   */
+  @config(secret=true)
+  clientSecret: string
+
+  /**
+   * registered client with idp server
+   */
+  client: !OidcIdpClient
+
+  /**
+   * audiences that are trusted to accept id tokens
+   */
+  audiences: [string]
+
+  /**
+   * see {@link OidcAuthFlowKind}
+   */
+  flowKind: string enum OidcAuthFlowKind = IMPLICIT
+
+  /**
+   * Enable Just In Time user creation
+   */
+  jitUserCreation: boolean
+
+  /**
+   * state JWT encoded expiration in minutes
+   */
+  stateJwtExpiration: string serialized Duration = '15m'
+
+  /**
+   * Timeout, in seconds for accessing the token endpoint
+   */
+  tokenEndPointTimeout: double = 30.0
+
+  /**
+   * Idp name (e.g. '@microsoft') used as username suffix for all the users that belong to this identity provider.
+   */
+  idpUserNameSuffix: string
+
+  /**
+   * How long the cookie is valid for the user sessions with idp
+   */
+  cookieDuration: string serialized Duration = '24h'
+
+  /**
+   * Ignores processing user groups sent by IdP present in the token if set to true.
+   */
+  ignoreGroupsClaim: boolean
+
+  /**
+   * If true, allows direct authentication using access tokens issued by an OIDC-compliant IDP.
+   */
+  directLogin: boolean
+
+  /**
+   * Delimiter to split the Idp Token group claim.
+   *    If not empty, Idp Token group claim is sent as a string instead of default array.
+   */
+  idpGroupClaimDelimiter: string
+
+  /**
+   * The discovery URL used to import the OIDC configuration.
+   */
+  discoveryUrl: string
+
+  /**
+   * Prepares OidcIdpConfig automatically from a discovery end point
+   * This api is the recommended way to configure OIDC Idp, as opposed to manually setting the configuration.
+   *
+   * @param vanityUrlId
+   *           vanity url identifier
+   * @param discoveryUrl
+   *           openid configuration endpoint
+   * @param client
+   *           openid client
+   * @param responseMode
+   *           oidc response mode (form_post, fragment, query). Defaults to form_post if not specified.
+   *
+   * @return OidcIdpConfig if success; fails otherwise
+   */
+  importFromDiscoveryUrl: function(vanityUrlId: !string,
+                                   discoveryUrl: !string,
+                                   client: !OidcIdpClient,
+                                   responseMode: string = "form_post",
+                                   autoImportCertificates: boolean,
+                                   override: string enum ConfigOverride = APP,
+                                   failIfInvalid: boolean): !OidcIdpConfig
+
+  /**
+   * Reads the OIDC configuration from the discovery URL, but does not set the fields on the OidcIdpConfig.
+   *
+   * @param discoveryUrl
+   *        openid configuration endpoint
+   * @param failIfInvalid
+   *        If true, will throw an error if the discovery document is invalid or cannot be fetched
+   */
+  fetchFromDiscoveryUrl: inline function(discoveryUrl: !string, failIfInvalid: boolean): json
+
+  /**
+   * add audience to the list of audiences
+   */
+  addAudience: member function(audience: !string)
+
+  /**
+   * remove audience from the list of audiences
+   */
+  removeAudience: member function(audience: !string)
+
+  /**
+   * Refresh the certificates by contacting the configured keys url
+   */
+  importCertificates: inline member function()
+
+  /**
+   * Refresh the certificates by contacting the configured keys url for all the OidcIdpConfigs in the cluster
+   */
+  @action(inline=true)
+  importCertificatesForAll: inline function()
+
+  /**
+   * Sets default group id for OIDC idp based users. Sets only if given group id is not a platform group.
+   *
+   * @param groupId
+   *        non platform group id
+   */
+  setDefaultGroupId: member function(groupId: !string, configOverride: string enum ConfigOverride = APP)
+
+  /**
+   * Fetches the certificates that's configured for the specific url.
+   *
+   * @param keyUrl
+   *        Url to obtain certificates
+   */
+  fetchCertificates: function(keyUrl: string): [OidcIdpServerCertificate]
+
+  userIdFormat: ~ = IDP_HASHED_ID
+
+  /**
+   * The claim names that are present in the OIDC ID token.
+   */
+  claimNames: OidcIdToken.ClaimNames
+}

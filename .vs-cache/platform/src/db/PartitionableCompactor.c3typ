@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Map Reduce job to compact the {@link Partitionable} types. {@see DataPartition#compact}
+ */
+@beta
+private entity type PartitionableCompactor extends MapReduce<Obj, int, int, int> type key 'PRTCMPTR' {
+
+  /**
+   * Low priority to not interfere with user jobs
+   */
+  priority: ~ = '3000'
+
+  /**
+   * The strategy to use in order to compact the partitions. If not set, then will use the strategy from @db(defaultPartitionStrategy)
+   */
+  spec: PartitionBucketStrategy
+
+  /**
+   * Type for which this batch job is going run compaction
+   */
+  typeRef: !Type
+
+  /**
+   * Flag indicating if the operation is a compaction or fillBuckets
+   */
+  compact: boolean
+
+  /**
+   * Starts the compaction job
+   * @param targetType
+   *            Specific type for which compaction needs to be kicked off
+   * @param spec
+   *            Override the spec to be used for compaction. If not set, then will use the strategy from @db(defaultPartitionStrategy)
+   * @return compactor job instance
+   */
+  startCompaction: function(targetType: !Type, spec: PartitionBucketStrategy): !PartitionableCompactor
+
+  /**
+   * Starts the fillBuckets job. Calls {@link Partitionable#fillBuckets}
+   * @param targetType
+   *            Specific type for which fillBuckets needs to be kicked off
+   * @param spec
+   *            Override the spec to be used for fillBuckets. If not set, then will use the strategy from @db(defaultPartitionStrategy)
+   * @return job instance
+   */
+  startFillBuckets: function(targetType: !Type, spec: PartitionBucketStrategy): !PartitionableCompactor
+
+  /**
+   * Upserts all seed data [ cron jobs ] for {@link Partitionable} types
+   */
+  upsertAllSeed: function(): [SeedData.Issue]
+}

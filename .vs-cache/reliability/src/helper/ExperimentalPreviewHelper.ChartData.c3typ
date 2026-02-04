@@ -1,0 +1,59 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Return type for {@link ExperimentalPreviewHelper#getData} method.
+ */
+type ExperimentalPreviewHelper.ChartData {
+
+  /**
+   * The {@link ReliabilityMlModelExperiment#experimentalModel} that was used to generate the data.
+   */
+  experimentalModel: ReliabilityMlModel
+
+  /**
+   * Contains all the {@link Timeseries} build from the primary model outputs inference.
+   *
+   * @see MlModel#process
+   */
+  seriesData: EvalMetricsResult
+
+  /**
+   * Map where the key represents the name of the output and the value is a list of alerts build from the experiment model outputs.
+   * This field should only contain the outputs that are used to generate alerts.
+   * ({@link ReliabilityMl.Project#alertOutputs})
+   *
+   * @see MlModel#process
+   * @see ReliabilityMl.Project#alertOutputs
+   */
+  alertsData: FetchResultWithTotalCount<ReliabilityMlModelExperiment.AlertData>
+
+  /**
+   * Map where the key represents the name of the output and the value is a list of alerts build from the base model outputs.
+   * This field is structured the same way as {@link #alertsData}, but contains alerts from the base model.
+   */
+  baseModelAlertsData: FetchResultWithTotalCount<ReliabilityMlModelExperiment.AlertData>
+
+  /**
+   * The time range of #seriesData
+   */
+  timeRange: TimeRange
+
+  /**
+   * The hyperparameter overrides used for the experiment model.
+   * This is needed to display the hyperparameters in the Update Model Parameters Form,
+   * when multiple models are being tuned.
+   */
+  hyperparameterOverrides: json
+
+  /**
+   * Stores the original training and validation periods for the given base modelId.
+   */
+  originalTrainingValidationPeriods: json
+}

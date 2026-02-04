@@ -1,0 +1,63 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+// c3-analysis-disable c3-excessive-method-params -- functions must be refactored to use specs where possible
+
+/**
+ * The model to generate the answer given the query and table.
+ */
+type Genai.Agent.Tool.Util.TableAnsweringModel {
+
+  /**
+   * The main function to generate the answer given the query and table.
+   * @param input
+   *           {@link Genai.Agent.Tool.Util.TableAnsweringModel.Input} including the table, data model graph, structured query spec and the input query
+   * @param spec
+   *           {@link Genai.Agent.Tool.Util.TableAnsweringModel.Spec} from {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor}
+   *
+   * @return containing output string that is the text answer to the query based on the table
+   */
+  textAnswer: member function(input: !Genai.Agent.Tool.Util.TableAnsweringModel.Input,
+                              spec: !Genai.Agent.Tool.Util.TableAnsweringModel.Spec
+                            ): !Genai.Agent.Tool.Util.Output py-query_orchestrator
+
+  /**
+   * The function summarizes the output table from the {@link Genai.Agent.Tool.EvalQuery} pipeline
+   * @param table
+   *           a `pandas.DataFrame` table to be summarized
+   * @param spec
+   *           a {@link Genai.Agent.Tool.Util.TableAnsweringModel.Spec} to pass the arguments
+   *
+   * @return output containing
+   *   `tuple`: the dimension / shape of the original table, i.e., (row count, column count)
+   *   `pandas.DataFrame`: summary table that has summary statistics of the original table
+   */
+  summarizeTable: member function(table: !native, spec: !Genai.Agent.Tool.Util.TableAnsweringModel.Spec): Genai.Agent.Tool.Util.TableAnsweringModel.IntermediateOutput py-query_orchestrator
+
+  /**
+   * The function to verbalize the table after #summarizeTable.
+   * @param input
+   *           {@link Genai.Agent.Tool.Util.TableAnsweringModel.Input} including the table, data model graph, structured query spec and the input query
+   * @param spec
+   *           {@link Genai.Agent.Tool.Util.TableAnsweringModel.Spec} from {@link Genai.Agent.Tool.Util.EvalQuery.SpecProcessor}
+   * @param tableDimension
+   *           the dimension / shape of the original table before processing, i.e., (row count, column count)
+   * @param summaryTable
+   *           a (pandas.DataFrame) table that has summary statistics of the original table from #summarizeTable
+   *
+   * @return a two-element string array
+   *   string: (rule-based answer) verbalized string of the table summary and dimension
+   *   string: the filled prompt for the answer LLM
+   */
+  verbalizeTable: member function(input: !Genai.Agent.Tool.Util.TableAnsweringModel.Input,
+                                  spec: !Genai.Agent.Tool.Util.TableAnsweringModel.Spec,
+                                  tableDimension: !native,
+                                  summaryTable: !native
+                                ): [string] py-query_orchestrator
+}

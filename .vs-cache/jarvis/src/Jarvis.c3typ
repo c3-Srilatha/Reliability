@@ -1,0 +1,46 @@
+/*
+ * Copyright 2009-2022 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type Jarvis mixes JarvisIface, Microservice.Proxy {
+
+  @reClaim(inherit=true)
+  @typesys(todo="PLAT-130528 - Remove Microservice.Proxy#proxyApp overrides from proxy types")
+  proxyApp: ~
+
+  /**
+   * Creates a {@link Cluster.StartEnvSpec} by taking the current {@link Cluster.StartEnvSpec} and applying the fields
+   * from the provided partial spec to it.
+   */
+  @reClaim(inherit=true)
+  startEnvSpecFromPartial: function(partial: string serialized Cluster.StartEnvSpec): Cluster.StartEnvSpec
+
+  /**
+   * Creates a {@link Cluster.StartAppSpec} by taking the current {@link Cluster.StartAppSpec} and applying the fields
+   * from the provided partial spec to it.
+   */
+  @reClaim(inherit=true)
+  startAppSpecFromPartial: function(partial: string serialized Env.StartAppSpec): Env.StartAppSpec
+
+  /**
+   * Visualize activity within the service for a given time range.
+   * If no time range is given, defaults to the last 24 hours.
+   */
+  visualizeActivity: function(timeRange: TimeRange) js-client
+
+  /**
+   * Visualize activity for a specific build.
+   */
+  visualizeActivity: function(buildId: !Jarvis.Build) js-client
+
+  /**
+   * Put this in node js without the typesystem since this was LLM generated and C3 collections do not have same support as
+   * native JS.
+   */
+  @nodejs(typeSystem=false, async=false)
+  generateTimelineHTML: function(data: json, timeRange: TimeRange): string js-node
+}

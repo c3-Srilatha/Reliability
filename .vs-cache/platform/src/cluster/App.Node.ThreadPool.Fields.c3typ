@@ -1,0 +1,66 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Common fields for {@link App.Node.ThreadPool.Config} and {@link App.Node.ThreadPool.Spec}.
+ */
+private type App.Node.ThreadPool.Fields {
+
+  /**
+   * Minimal number of threads always running in this thread-pool
+   */
+  minThreads: int32
+
+  /**
+   * Number of threads started when the thread-pool is started
+   */
+  initialThreads: int32
+
+  /**
+   * Maximum number of threads allowed in this thread-pool
+   */
+  maxThreads: int32
+
+  /**
+   * Maximum time for idle threads to wait before termination.
+   *
+   * Timeout applied for threads only if current number of running threads greater than {@link #minThreads}.
+   * Default is 1 minute.
+   *
+   * @see #minThreads
+   */
+  threadKeepAliveTime: string serialized Duration
+
+  /**
+   * Capacity of the queue to hold tasks in if the thread-pool does not have any available threads
+   *
+   * Keep value empty to have queue of infinite capacity.
+   * Running tasks are not part of the queue.
+   *
+   * @see Err.actionQueueFull
+   */
+  actionQueueCapacity: int
+
+  /**
+   * Max time action will spend in the queue before failing with {@link Err.Unavailable#threadInThreadPool}
+   */
+  defaultQueueTimeout: string serialized Duration
+
+  /**
+   * Configurations for managing Python interpreters within this thread pool
+   */
+  py: App.Node.ThreadPool.Config.Py
+
+  /**
+   * Retry specification {@link RetrySpec} for thread initialization {@link Engine#onEngineThreadStart}.
+   * Will use the default RetrySpec if not specified. Please note that the default RetrySpec will not retry
+   * on any error thrown in thread initialization and you have to manually set {@link RetrySpec#retryAllErrors}
+   * to enable retrying.
+   */
+  onThreadStartRetrySpec: RetrySpec
+}

@@ -1,0 +1,29 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Base type for vertices used in {@link Data.Flow}
+ */
+@beta
+abstract private type Data.Flow.Vertex mixes FlowGraph.Vertex {
+
+  /**
+   * Creates new {@link Data.Flow.Vertex} from provided {@link DataImpl}. If provided DataImpl is concrete OR if it is
+   * a lazy, {@link DataImpl.Lazy#isCached} == true, and {@link DataToFlowSpec#useCachedData} == true, then the
+   * resulting vertex will be a {@link Data.Flow.Cached}. Otherwise, the created vertex will be a
+   * {@link Data.Flow.Action}.
+   */
+  fromData: function(data: !DataImpl, spec: DataToFlowSpec): !mixing Data.Flow.Vertex
+
+  /**
+   * Re-creates and returns a copy of the {@link DataImpl} used to create this vertex. A {@link Data.Flow.Cached} will
+   * return a concrete Data type such as {@link DataImpl.Pandas}. A {@link Data.Flow.Action} will return an instance of
+   * {@link DataImpl.Lazy}.
+   */
+  toData_: abstract member function(dataFlow: !Data.Flow): !DataImpl
+}

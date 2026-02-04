@@ -1,0 +1,58 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+type AceConfig mixes Config, Singleton {
+
+  /**
+   * Config to limit the analytics considered for execution. List of analytic type names.
+   * Empty list is considered as all analytics.
+   */
+  analyticWhitelist: [string]
+
+  /**
+   * Config to set the reference start time for period construction.
+   * Value can be a date or a integer as number of days (+/-) from now.
+   */
+  startOfTime: datetime | int
+
+  /**
+   * Config to set the reference end time for period construction.
+   * Value can be a date or a integer as number of days (+/-) from now.
+   */
+  endOfTime: datetime | int
+
+  /**
+   * Config to limit max number of days for period construction.
+   */
+  maxInvalDays: int32
+
+  /**
+   * Config to define the grouped analytic mapping as json value.
+   */
+  analyticGroups: map<string, [string]>
+
+  /**
+   * Config to enable dynamic priorities in analytics/metrics queue invalidation {@link MetricPriority}
+   */
+  enableMetricPriority: boolean
+
+  /**
+   * The finest grain that will use DFE evaluation history for making decisions on when to evaluate DFEs..
+   */
+  evalHistoryInterval: Interval
+
+  /**
+   * the maximum number of bytes allowed for a DFE metric data hash.
+   */
+  maxHashLen: int32 = 512
+
+  /**
+   * Source file information is tracked during analytic invalidation.
+   */
+  timeseriesTimeRangeSourceInfoTrackingEnabled: boolean
+}

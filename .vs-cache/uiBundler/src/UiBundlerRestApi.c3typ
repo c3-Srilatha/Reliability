@@ -1,0 +1,28 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@restful(endpoint='bundler')
+type UiBundlerRestApi {
+
+  _latestVersion: private const string = '2.9.7'
+
+  /**
+   * bundler.tgz is generated from repo/c3ui/uiBundler/resource/bundler.
+   * To generate this file, see instructions in repo/c3ui/uiBundler/resource/bundler/README.md.
+   * The version field is passed in but not used due to backwards compatibility with older versions
+   * of the server that do use the retrieveBundler function with the version field.
+   */
+  @restful(subPath='npm-modules/bundler.tgz')
+  retrieveBundler: function(@restful(paramsArg='version') version: string serialized SemanticVersion): !ContentValue js-server
+
+  /**
+   * Provides the latest version number of the bundler library.
+   */
+  @restful(subPath='version')
+  retrieveLatestBundlerVersion: function(): !string serialized SemanticVersion js-server
+}

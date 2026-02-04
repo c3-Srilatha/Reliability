@@ -1,0 +1,365 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A "field path" is a simple expression for referencing a field from an Obj. The field can either be on the Obj
+ * itself, in which case the path is just the name, or it can be a field on a child Obj or within a collection field.
+ * A child field is represented by separating the names with periods (`address.city`).
+ *
+ * The "root" is the Obj from which the field path is valid. The "referenced" field is the last component of the path.
+ *
+ * The field path need not be valid in the sense that not all fields need to exist. If the #parse method is called
+ * without failIfInvalid, it will be structurally complete, but the parts which don't exist will not have a
+ * #fieldPath and children down the path will not have a #parentType.
+ *
+ * Path components may include collections and individual elements of the collection may be specified. In addition,
+ * for collections whose elements are Objs the path may continue through them into fields of those Objs. An element
+ * in a collection is specified using traditional array notation: `[` _elt_ `]`. For
+ * {@link CollectionType#isIndexed indexable collections}, notably {@link Array} and {@link Set}, the _elt_ may be a
+ * zero-based integer index (`[0]`). For {@link Map} and Set, and it may be the string serialized version of the key
+ * plain (`[x]`) or quoted as a string (`["x"]`). If the key looks like an integer or contains a bracket, it must be
+ * a quoted string. Quotes within the string must be escaped as usual, and either single- (`'`) or double-quotes (`"`)
+ * may be used.
+ *
+ * For example, from the *Animal* type, the path "friends[0].name" will reference through the `friends` array field and
+ * will have the value type `string` (since Animal.name is a string). When used with {@link Obj#fieldValueAtPath}, this
+ * will get the name of the first friend. From *Octopus*, "hearts[systemic].active" will determine if the systemic
+ * heart is active.
+ */
+type FieldPath mixes StringSerializable, Value {
+
+  /**
+   * Get the actual type information for the root type referenced by name.
+   */
+  rootType: inline member function(failIfInvalid: boolean): Type java | js
+
+  /**
+   * Get the actual type information for the root type referenced by name.
+   */
+  rootTypeMeta: inline member function(failIfInvalid: boolean): TypeMeta java | js
+
+  /**
+   * The root of the field path
+   */
+  root: inline member function(): !FieldPath java | js
+
+  /**
+   * Get the actual type information for the immediate type of the referenced field.
+   */
+  parentType: inline member function(failIfInvalid: boolean): Type java | js
+
+  /**
+   * Get the actual type information for the immediate type of the referenced field.
+   */
+  parentTypeMeta: inline member function(failIfInvalid: boolean): TypeMeta java | js
+
+  /**
+   * If the path ends with a reference field or a collection of references, return the type of the reference.
+   */
+  dereference: inline member function(failIfInvalid: boolean): Type java | js
+
+  /**
+   * If the path ends with a reference field or a collection of references, return the type of the reference.
+   */
+  dereferenceMeta: inline member function(failIfInvalid: boolean): TypeMeta java | js
+
+  /**
+   * Get the name of the referenced field (last component of the path).
+   */
+  leafName: inline member function(failIfInvalid: boolean): string java | js
+
+  /**
+   * Get the declaration of the referenced field (last component of the path).
+   */
+  leafFieldType: inline member function(failIfInvalid: boolean): FieldType java | js
+
+  /**
+   * Parse the path on the given type
+   */
+  parse: inline function(type: !Type, path: !string, failIfInvalid: boolean): FieldPath java | js
+
+  /**
+   * Parse the path with the parent FieldPath on the given type for the given field type
+   */
+  parseChild: inline function(parent: !FieldPath, type: !Type, ft: !FieldType): FieldPath
+
+  /**
+   * Immediate parent field in the path.
+   */
+  parent: inline member function(): FieldPath java | js
+
+  /**
+   * If this element of the path is a collection index, the index value. An `int` index is used for indexable
+   * collections, such as arrays and sets (and maps if indexed). A `string` index is used for unique collections
+   * such as sets (elements) and maps (keys).
+   */
+  index: inline member function(): int | string java | js
+
+  /**
+   * Whether this element of the path includes a collection index.
+   *
+   * @see #index
+   */
+  isIndexed: inline member function(): boolean java | js
+
+  /**
+   * Dot separated path of this field from the root to the first deepest ancestor type.
+   * Null if root type is including stored type.
+   */
+  pathToIncludingStoredType: inline member function(): FieldPath
+
+  /**
+   * First ancestor field path that is a map.
+   */
+  includingMapField: inline member function(): FieldPath
+
+  /**
+   * Collection type of first ancestor field path that is a collection.
+   */
+  includingMapType: inline member function(): CollectionType
+
+  /**
+   * Fully qualified dot separated path of this field including root type name.
+   */
+  qualifiedPath: inline member function(): string java | js
+
+  /**
+   * Reference type of this field if it's a reference or collection of reference.
+   */
+  referenceType: inline member function(): ReferenceType java | js
+
+  /**
+   * Dot separated path of this field in the root type.
+   */
+  pathInRootType: inline member function(): string java | js
+
+  /**
+   * @return if field is persistable
+   */
+  isPersistable: inline member function(): boolean
+
+  /**
+   * @return true if field is a collection
+   */
+  isCollection: inline member function(): boolean java | js
+
+  /**
+   * Dot separated path of this field in the first persistable ancestor type.
+   */
+  pathInIncludingStoredType: inline member function(): string
+
+  /**
+   * Dot separated path of this field in the specified type. This type should be in the parent chain of this field otherwise
+   * path in the root type will be returned.
+   */
+  pathInIncludingType: inline member function(type: !Type): string
+
+  /**
+   * Dot separated path of this field in the first persistable ancestor type or first ancestor collection.
+   */
+  pathInIncludingStoredTypeOrCollection: member function(): string
+
+  /**
+   * First ancestor type that is persistable.
+   */
+  includingStoredType: inline member function(): Type
+
+  /**
+   * Field type of this field.
+   */
+  fieldType: inline member function(): FieldType java | js
+
+  /**
+   * Leaf field type by traversing from given Obj instance.
+   */
+  fieldTypeFromObj: inline member function(inst: !Obj): FieldType java | js
+
+  /**
+   * Name of this field.
+   */
+  name: inline member function(): string java | js
+
+  /**
+   * Name of this field, including the collection index if any.
+   */
+  nameAndIndex: inline member function(serialized: boolean): string java | js
+
+  /**
+   * Value type of this field.
+   */
+  valueType: inline member function(): ValueType java | js
+
+  /**
+   * For paths which go through collection fields column type is array of valueType otherwise valueType.
+   */
+  columnType: member function(): ValueType
+
+  /**
+   * First collection field from the parent chain where this field is persisted. Generally speaking field is persisted
+   * either in the parent persistable type, or in the first ancestor persistable type or in a first ancestor collection.
+   */
+  includingCollection: inline member function(): FieldPath
+
+  /**
+   * First non-included reference field from the parent chain where this field is persisted.
+   */
+  includingStoredField: inline member function(): FieldPath
+
+  /**
+   * Walk the path by calling action for each field starting from root
+   */
+  each: member function(action: !lambda(fp: !FieldPath)) java | js
+
+  /**
+   * Walk the path by calling action for each field starting from root
+   */
+  each: member function(action: !lambda(fp: !FieldPath, index: !int, isLeaf: !boolean)) java | js
+
+  /**
+   * Walk the path by calling action and accumulating result into a single value
+   */
+  fold: member function<T>(folder: !lambda(fp: !FieldPath, accumulator: T): T): T java | js
+
+  /**
+   * Walk the path by calling action and accumulating result into a single value
+   */
+  fold: member function<T>(initial: T,
+                           folder: !lambda(fp: !FieldPath, index: !int, isLeaf: !boolean, accumulator: T): T): T java | js
+
+  /**
+   * Creates a new field path as a copy of this one, replacing the field type
+   * with the requested field type
+   *
+   * @param fieldType
+   *        requested new field type
+   * @return new field type based on this one with the new requested field type
+   */
+  withFieldType: member function(fieldType: !FieldType): !FieldPath java | js
+
+  /**
+   * True if this field has an annotation `hasUnique` set
+   */
+  isUnique: member function(): boolean java | js
+
+  /**
+   * Traverses this reference or reference collection by adding a new child
+   * field based on fieldName and returns new FieldPath.
+   * <p>
+   * If verify argument is set to true then will throw an exception if fieldName is invalid
+   */
+  traverse: member function(fieldName: !string, failIfInvalid: boolean): FieldPath java | js
+
+  /**
+   * Traverses this reference or reference collection by adding a new child
+   * field based on fieldName and returns new FieldPath.
+   * <p>
+   * If verify argument is set to true then will throw an exception if fieldName is invalid
+   */
+  traverse: member function(fieldParentType: !Type, fieldName: !string, failIfInvalid: boolean): FieldPath java | js
+
+  /**
+   * Adds a field path to the end of this field path for a ref type and field type. The ref type may be different than
+   * the ref type for this field path as this is used to create field paths for calc expressions that reference
+   * extension fields not defined in the base reference type
+   */
+  append: member function(refType: !Type, ft: !FieldType): !FieldPath java | js
+
+  /**
+   * Adds a field path to the end of this field path for a ref type and field type. The ref type may be different than
+   * the ref type for this field path as this is used to create field paths for calc expressions that reference
+   * extension fields not defined in the base reference type
+   */
+  append: member function(refType: !TypeMeta, ft: !FieldType): !FieldPath java | js
+
+  /**
+   * First field in the original path.
+   */
+  first: member function(): !FieldPath java | js
+
+  /**
+   * @return true if this field is any kind of fkey ref (one-2-one or one-2-many or many-2-many)
+   */
+  isFkeyRef: member function(): boolean java | js
+
+  /**
+   * @return whether this value type is an fkey reference arry field.
+   */
+  isFkeyRefArray: member function(): boolean java | js
+
+  /**
+   * @return field path that is a key in the source type for a read only one to many relationship.
+   */
+  fkeyRefKey: member function(): string java | js
+
+  /**
+   * @return field path that is a key in the source type for a read only one to many relationship.
+   */
+  fkeyRefKeyField: member function(): FieldPath java | js
+
+  /**
+   * @return field path that is a foreign key in the reference type for a read only one to many
+   *         relationship.
+   */
+  fkeyRefFkey: member function(): string java | js
+
+  /**
+   * @return field path that is a foreign key in the reference type for a read only one to many
+   *         relationship.
+   */
+  fkeyRefFkeyField: member function(): FieldPath java | js
+
+  /**
+   * @return order spec to be used for a read only one to many relationship.
+   */
+  fkeyRefOrder: member function(): string java | js
+
+  /**
+   * @return A new field path constructed by appending the input field path to this field path from this field path's root
+   *          type.
+   */
+  traverseFieldPath: member function(fieldPath: !string): FieldPath
+
+  /**
+   * @return A new field path constructed by traversing this field or serialized field from this field path's root type
+   */
+  traverseSer: member function(fieldName: !string, failIfMissing: boolean): FieldPath
+
+  /**
+   * @return Array of field paths of the reference type of this field. If this field is not a ref or ref array
+   *         or map returns empty array.
+   */
+  children: member function(): [FieldPath]
+
+  /**
+   * @return The physical table name to use in relational queries for the collection.
+   */
+  collectionTableName: member function(doNotFailOnError: boolean): string
+
+  /**
+   * @return The CollectionType for the field if the field is a collection field and null otherwise.
+   */
+  collectionType: member function(): CollectionType
+
+  /**
+   * @return the list of all fields that the calc expression that this field depends on if it is calculated.
+   */
+  calcExprDepFields: cached member function(): [FieldPath]
+
+  /**
+   * Serialization name of this field.
+   */
+  serName: member function(): string
+
+  /**
+   * Fully serialized path of this field.
+   */
+  fullSerPath: member function(): string
+
+  toString:   ~ java | js
+  fromString: ~ java | js
+}

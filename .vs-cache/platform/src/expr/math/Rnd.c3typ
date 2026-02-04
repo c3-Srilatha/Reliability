@@ -1,0 +1,356 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Pseudo-random value generation utility. Note that it allows generation of stable sequences of a pseudo-random values
+ * by maintaining and adjusting seed value as a mutable instance field or by taking and returning both the result and
+ * the seed in static methods.
+ *
+ * Member methods of this type maintain the seed on the instance, so they can be used naturally to produce repeatable
+ * sequences of pseudo-random values. If a different sequence is desired, special care needs to be taken to ensure that
+ * seed is sufficiently random. See {@link #inst} and {@link #fromSeed}
+ *
+ * It is important to keep in mind that this type is really meant for pseudo-random value generation  e.g. for test data.
+ * It is not meant for for generating globally unique ids, please use {@link Uuid} for that purpose; for cryptography
+ * concerns please use {@link CryptoCipher}, {@link CryptoSignature}, {@link Pgp} etc; for data anonymization, please
+ * use {@link Sanitizer}
+ *
+ * Another consideration is multi-threading. `Rnd` mutable instance is NOT thread safe; if same instance is used from
+ * multiple threads then usage has to be synchronized. Note however `Rnd.inst()` will return thread local instance so
+ * it is safe to use from multiple threads.
+ *
+ * Normal values will use the full range of the designated type. For example, #int will generate values in [-2⁶³..2⁶³).
+ * Many of these methods takes an optional `example` param, in which case they will return a simpler value more natural
+ * for use in sample code or as example values. These values will cover less of the range, but be more readable.
+ *
+ * @see #inst
+ * @see #fromSeed
+ */
+inline type Rnd mixes DefaultInstance, Mutable, Obj {
+
+  /**
+   * @return thread local and cached instance of the `Rnd` seeded by default with sufficiently random seed; note however
+   *         that this random seed may not be globally unique, so under extremely rare cases may produce duplicates. For
+   *         globally unique random values it is strongly recommended to use {@link Uuid}
+   */
+  inst: ~
+
+  /**
+   * @return instance for a given seed; this is useful to produce consistent pseudo-random sequence; note that seed
+   *         value is not serializable so this API only makes sense if instance is used from server code; calls from
+   *         client SDKs like calls from Browser or VS Code Console or Jupyter Notebook will effectively ignore this
+   *         seed
+   */
+  fromSeed: function(seed: !int): !Rnd
+
+  /**
+   * @return next pseudo-random integer value
+   */
+  int: member function(example: boolean): !int
+
+  /**
+   * @return next pseudo-random integer value in the range
+   */
+  int: member function(min: !int, max: !int, maxInclusive: boolean): !int
+
+  /**
+   * @return next pseudo-random integer value in the range and target mean value
+   */
+  int: member function(min: !int, max: !int, mean: !int): !int
+
+  /**
+   * @return next pseudo-random integer value in the range
+   */
+  int: member function(range: !Range<int>): !int
+
+  /**
+   * @return next pseudo-random 16 bit integer value
+   */
+  int16: member function(): !int16
+
+  /**
+   * @return next pseudo-random 32 bit integer value
+   */
+  int32: member function(): !int32
+
+  /**
+   * @return next pseudo-random 32 bit integer value in the range
+   */
+  int32: member function(min: !int32, max: !int32, maxInclusive: boolean): !int32
+
+  /**
+   * @return next pseudo-random 32 bit integer value in the range and target mean value
+   */
+  int32: member function(min: !int32, max: !int32, mean: !int32): !int32
+
+  /**
+   * @return next pseudo-random 32 bit integer value in the range
+   */
+  int32: member function(range: !Range<int32>): !int32
+
+  /**
+   * @return next pseudo-random 64 bit integer value
+   */
+  bigint: member function(): !bigint
+
+  /**
+   * @return next pseudo-random double value
+   */
+  double: member function(example: boolean): !double
+
+  /**
+   * @return next n pseudo-random double values
+   */
+  doubles: member function(n: !int): [!double]
+
+  /**
+   * @return next pseudo-random double value in the range
+   */
+  double: member function(min: !double, max: !double, maxInclusive: boolean): !double
+
+  /**
+   * @return next n pseudo-random double values in the range
+   */
+  doubles: member function(n: !int, min: !double, max: !double, maxInclusive: boolean): [!double]
+
+  /**
+   * @return next pseudo-random double value in the range and target mean value
+   */
+  double: member function(min: !double, max: !double, mean: !double): !double
+
+  /**
+   * @return next pseudo-random double value in the range
+   */
+  double: member function(range: !Range<double>): !double
+
+  /**
+   * @return next n pseudo-random double value in the range
+   */
+  doubles: member function(n: !int, range: !Range<double>): [!double]
+
+  /**
+   * @return next pseudo-random double value in the gaussian distribution
+   */
+  gaussian: member function(mean: !double, stdev: !double): !double
+
+  /**
+   * @return next n pseudo-random double values in the gaussian distribution
+   */
+  gaussians: member function(n: !int, mean: !double, stdev: !double): [!double]
+
+  /**
+   * @return next pseudo-random string that is typically used as id value in the generated test data; note however that
+   *         this method should not be used if globally unique id value is desired; please use {@link Uuid}
+   */
+  id: member function(len: int32): !string
+
+  /**
+   * @return next pseudo-random string that is typically used as name value in the generated test data
+   */
+  name: member function(example: boolean): !string
+
+  /**
+   * @return next pseudo-random string that is typically used an email address in the generated test data
+   */
+  email: member function(example: boolean): !string
+
+  /**
+   * @return next pseudo-random string that is typically used a URL in the generated test data
+   */
+  url: member function(example: boolean): !string
+
+  /**
+   * @return next pseudo-random string that is typically used a domain name in the generated test data
+   */
+  domain: member function(example: boolean): !string
+
+  /**
+   * @return next pseudo-random string that is typically used as summary field value in the generated test data
+   */
+  summary: member function(example: boolean): !string
+
+  /**
+   * @return next pseudo-random string that is typically used as description field value in the generated test data
+   */
+  description: member function(example: boolean): !string
+
+  /**
+   * @return next pseudo-random string
+   */
+  str: member function(kind: string enum RndStrKind, example: boolean): !string
+
+  /**
+   * @return next pseudo-random string of a target length
+   */
+  str: member function(len: !int32, kind: string enum RndStrKind, example: boolean): !string
+
+  /**
+   * @return next pseudo-random string of a length in a standard distribution
+   */
+  str: member function(lenMean: !int32, lenStdev: !double, kind: !string enum RndStrKind, example: boolean): !string
+
+  /**
+   * @return next pseudo-random string of a length in the given range
+   */
+  str: member function(lenMin: !int32,
+                       lenMax: !int32,
+                       lenMaxInclusive: !boolean,
+                       kind: !string enum RndStrKind,
+                       example: boolean): !string
+
+  /**
+   * @return random string that is guaranteed to not match provides #s param value
+   */
+  strNot: member function(s: !?string, kind: string enum RndStrKind, example: boolean): !string
+
+  /**
+   * Build a string that replaces characters in the template with random characters of that class:
+   *  - 'A' an ASCII upper-case letter ('A' - 'Z')
+   *  - 'a' an ASCII lower-case letter ('a' - 'z')
+   *  - '0' a digit ('0' - '9')
+   *  - '1' a non-zero digit ('1' - '9')
+   *  - 'X' an upper-case hexadecimal digit ('0' - 'F')
+   *  - 'x' a lower-case hexadecimal digit ('0' - 'f')
+   *  - "[]" specifies a list or range of characters ("[12345678]", "[1-8]")
+   *  - "'" (single quote) preserves literal characters ("'0'.0")
+   *  - "''" escapes a single quote
+   *
+   * Other characters will appear as-is in the resulting string.
+   */
+  strTemplate: member function(template: !string): !string
+
+  /**
+   * @return next pseudo-random boolean value
+   */
+  bool: member function(): boolean
+
+  /**
+   * @return next pseudo-random boolean value with given true probability
+   */
+  bool: member function(trueProbability: double): !boolean
+
+  /**
+   * @return next pseudo-random binary value
+   */
+  binary: member function(): !binary
+
+  /**
+   * @return next pseudo-random byte value
+   */
+  byte: member function(): !byte
+
+  /**
+   * @return next pseudo-random datetime value
+   */
+  dateTime: member function(): !datetime
+
+  /**
+   * @return next pseudo-random datetime value
+   */
+  decimal: member function(): !decimal
+
+  /**
+   * @return next pseudo-random float value
+   */
+  float: member function(): !float
+
+  /**
+   * @return next pseudo-random json value
+   */
+  json: member function(): !json
+
+  /**
+   * @return next pseudo-random value of a given value type
+   */
+  value: member function<T>(vt: !ValueType, maxDepth: int = 2): T
+
+  /**
+   * @return next pseudo-random value of a given primitive type
+   */
+  primitive: member function<T>(pt: !PrimitiveType): T
+
+  /**
+   * @return next pseudo-random value of a given collection type and size
+   */
+  collection: member function<E>(ct: !CollectionType, size: int, maxDepth: int = 2): Collection<E>
+
+  /**
+   * @return next pseudo-random value of a given reference type
+   */
+  reference: member function<O: Obj>(rt: !ReferenceType): O
+
+  /**
+   * @return next pseudo-random value of a given Obj sub-type
+   */
+  obj: member function<O: Obj>(t: !Type): O
+
+  /**
+   * @return a random sample value for a collection
+   */
+  sample: member function<T>(c: !?Collection<T>): T
+
+  /**
+   * @return a value of a randomly selected field of a given Obj
+   */
+  sampleField: member function<T>(o: !?Obj): Pair<string, T>
+
+  /**
+   * @return a key / element pair of a randomly selected key from the given map
+   */
+  sampleEntry: member function<K, E>(m: !?map<K, E>): Pair<K, E>
+
+  /**
+   * @return random valid value type
+   */
+  valueType: member function(): !ValueType
+
+  /**
+   * @return random primitive type
+   */
+  primitiveType: member function(): !ValueType
+
+  /**
+   * @return random collection type
+   */
+  collectionType: member function(): !ValueType
+
+  /**
+   * @return random and typical size value for a given value type
+   */
+  size: member function(vt: !ValueType): !int
+
+  /**
+   * @return random alphabetic string
+   */
+  alpha: member function(len: !int32): !string
+
+  /**
+   * @return random alpha numeric string
+   */
+  alphanumeric: member function(len: !int32): !string
+
+  /**
+   * seed value to be used for generated next random value; care should be taken if setting this value
+   */
+  seed: private @java(class='Long') native
+
+  /**
+   * Perturb the current seed and return the updated value.
+   */
+  nextSeed: private function(): !int
+
+  /**
+   * Perturb the specified seed and return the updated value.
+   */
+  nextSeed: private function(seed: !int): !int
+
+  /**
+   * Perturb the specified seed and return the updated value.
+   */
+  scrambleSeed: private function(seed: !int): !int
+}

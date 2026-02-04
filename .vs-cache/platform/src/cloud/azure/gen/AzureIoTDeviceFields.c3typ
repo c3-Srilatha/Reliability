@@ -1,0 +1,43 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+@java(runtimeClassName='com.microsoft.azure.sdk.iot.service.Device',
+      runtimeFieldMapper='JavaGetAndStaticFactorySetMapper')
+type AzureIoTDeviceFields {
+
+  generationId:               @java(runtimeClassName='java.lang.String') string
+  secondaryKey:               @java(runtimeClassName='java.lang.String') string
+  connectionState:            @java(runtimeClassName='com.microsoft.azure.sdk.iot.service.DeviceConnectionState') string enum AzureIoTDeviceConnectionState
+  primaryThumbprint:          @java(runtimeClassName='java.lang.String') string
+  statusReason:               @java(runtimeClassName='java.lang.String') string
+  cloudToDeviceMessageCount:  @java(runtimeClassName='long') int
+  connectionStateUpdatedTime: @java(runtimeClassName='java.lang.String') string
+  secondaryThumbprint:        @java(runtimeClassName='java.lang.String') string
+  eTag:                       @java(runtimeClassName='java.lang.String') string
+  statusUpdatedTime:          @java(runtimeClassName='java.lang.String') string
+  lastActivityTime:           @java(runtimeClassName='java.lang.String') string
+  primaryKey:                 @java(runtimeClassName='java.lang.String') string
+  authenticationType:         @java(runtimeClassName='com.microsoft.azure.sdk.iot.service.auth.AuthenticationType', constructorParamPos=[1, 1]) string enum AzureIoTAuthenticationType
+  deviceId:                   @java(runtimeClassName='java.lang.String', constructorParamPos=[0, 0, 1, 0]) string
+  symmetricKey:               @java(runtimeClassName='com.microsoft.azure.sdk.iot.service.auth.SymmetricKey', constructorParamPos=[0, 2]) AzureIoTSymmetricKey
+  status:                     @java(runtimeClassName='com.microsoft.azure.sdk.iot.service.DeviceStatus', constructorParamPos=[0, 1]) string enum AzureIoTDeviceStatus
+
+  createFromId: function(deviceId: !?string,
+                         status: !?string enum AzureIoTDeviceStatus,
+                         symmetricKey: !?AzureIoTSymmetricKey): AzureIoTDeviceFields
+
+  geteTag: member function(): string
+
+  createDevice: function(deviceId: !?string,
+                         authenticationType: !?string enum AzureIoTAuthenticationType): AzureIoTDeviceFields
+
+  setThumbprint:  member function(primaryThumbprint: !?string, secondaryThumbprint: !?string)
+  setForceUpdate: member function(forceUpdate: !?boolean)
+  fromJava:       function(javaObj: @java(class="java.lang.Object") !?native): AzureIoTDeviceFields
+  toJava:         member function(): native
+}

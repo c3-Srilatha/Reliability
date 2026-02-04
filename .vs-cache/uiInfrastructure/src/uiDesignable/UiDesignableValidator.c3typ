@@ -1,0 +1,112 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A set of methods for validating a component type's compatibility with
+ * UI Designer.
+ */
+type UiDesignableValidator {
+
+  /**
+   * Returns a list of translations that are missing from {@link Translation}
+   * metadata for the given component type name and list of locales.
+   *
+   * UI Designer renders an editor interface for all of the component type's
+   * non-`private` fields, as well as the {@link UiSdlComponentDataSpecSetting}
+   * fields of its data specs.
+   *
+   * For each missing translation, there are two options to resolve the issue:
+   * - Make the field `private` if it is a field type translation.
+   * - Add {@link Translation} metadata to your package for the requested `key`
+   *   and `locale`.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @param locales
+   *           The list of locales that you intend to support in UI Designer.
+   * @returns a map of missing translations, indexed by the designable field
+   *          that requires the translation.
+   */
+  getMissingTranslationsForType: function(componentType: !Type,
+                                          locales: ![Locale]): map<string, Translation> js-server
+
+  /**
+   * Validates that the given component type has valid data spec fields.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @returns any issues with the current type metadata.
+   */
+  validateDataSpecForType: function(componentType: !Type): [Pkg.Issue] js-server
+
+  /**
+   * Validates that the given component type is a {@link UiSdlComponent}.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @returns any issues with the current type metadata.
+   */
+  validateBaseType: function(componentType: !Type): [Pkg.Issue] js-server
+
+  /**
+   * Validates that the given component type has @uiSdlDesginerComponent annotation and category name and display name.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @returns any issues with the current type metadata.
+   */
+  validateUiSdlDesignerComponentAnnotationAndNameFields: function(component: !Type): [Pkg.Issue] js-server
+
+  /**
+   * Returns a list of translations that are missing from {@link Translation}
+   * metadata for the given component type name and list of locales.
+   *
+   * Translations are required for the name of the component and
+   * the category of components that it belongs to. See `name` and `category`
+   * for {@link Ann#UiSdlDesignerComponent}.
+   *
+   * For each missing translation, add {@link Translation} metadata to your package for the requested `key`
+   * and `locale`.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @param locales
+   *           The list of locales that you intend to support in UI Designer.
+   * @returns a map of missing translations, indexed by the designable field
+   *          that requires the translation.
+   */
+  getMissingTranslationsForAnnotation: function(componentType: !Type,
+                                                locales: ![Locale]): map<string, Translation> js-server
+
+  /**
+   * Validates that there's no public unsupported value types for the given component type name.
+   * List of unsupported types:
+   * - {@link CollectionType collections} such as array, map, set, stream.
+   * - {@link UiSdlDynamicValueSpec}.
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @returns any issues with the current type metadata.
+   */
+  validatePublicUnsupportedValueTypes: function(componentType: !Type): [Pkg.Issue] js-server
+
+  /**
+   * Validates data spec setting types match data spec type.
+   *
+   * UI Designable component data spec must mix either {@link UiSdlFieldBasedDataSpec} or {@link UiSdlMetricBasedDataSpec}.
+   * All the fields within the data spec must match the data spec type, i.e:
+   * - Mixed type {@link UiSdlFieldBasedDataSpec} can only have  UiSdlFieldBasedDataSpecSetting or [UiSdlFieldBasedDataSpecSetting].
+   * - Mixed type {@link UiSdlMetricBasedDataSpec} can only have  UiSdlMetricBasedDataSpecSetting or [UiSdlMetricBasedDataSpecSetting].
+   *
+   * @param componentType
+   *           The component type to validate.
+   * @returns any issues with the current type metadata.
+   */
+  validateDataSpecSettingTypes: function(componentType: !Type): [Pkg.Issue] js-server
+
+}

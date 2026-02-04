@@ -1,0 +1,211 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * This type represents the functionality related to Reliability Risk in a Machine Learning project.
+ * It contains methods for retrieving risk scores, feature contributions, sensors, and other related components.
+ * These methods allow for interacting with reliability risk models, fetching timeseries data, constructing feature names,
+ * and processing model parameters for predictions and contributions.
+ */
+@deprecated(
+  finalVersion='21.0.0',
+  details='The `reliabilityRisk` MlProject, ReliabilityRiskMlModel and associated types are deprecated and will be removed in version 22.0.0 and beyond. Use the `reliabilityRiskWithResidualDiagnostics` project instead. Note that some functionality will remain to be used by `reliabilityRiskWithResidualDiagnostics` project.')
+type MlProject.ReliabilityRisk {
+
+  /**
+   * Gets a single persisted risk score using the provided {@link RiskScoreSpec}.
+   * This method retrieves the risk score from a previously computed prediction based on a specified risk score specification.
+   *
+   * @param spec - The specification containing the parameters for the risk score request.
+   * @returns The calculated risk score prediction.
+   */
+  getRiskScore: function(spec: !RiskScoreSpec): ReliabilityRiskScoreMlPrediction js-rhino
+
+  /**
+   * Gets a collection of feature contribution headers using the provided {@link RiskScoreSpec}.
+   * This method retrieves headers for feature contributions, which help to understand the impact of each feature on the risk score.
+   *
+   * @param spec - The specification for fetching the features.
+   * @param riskScoreSpec - The risk score specification that defines the risk score for which contributions are being fetched.
+   * @returns A collection of headers for the feature contributions.
+   */
+  fetchFeatureContributionHeaders: function(spec: FetchSpec,
+                                            riskScoreSpec: !RiskScoreSpec)
+                                     : FetchResult<ReliabilityRiskScoreMlContributionHeader | ReliabilityRiskScoreMlValidationContributionHeader> js-rhino
+
+  /**
+   * Gets a collection of feature reconstruction headers using the provided {@link RiskScoreSpec}.
+   * This method retrieves headers for the feature reconstruction, which helps to understand the predicted value for each feature.
+   *
+   * @param spec - The specification for fetching the features.
+   * @param riskScoreSpec - The risk score specification that defines the risk score for which reconstructions are being fetched.
+   * @returns A collection of headers for the feature reconstructions.
+   */
+  fetchFeatureReconstructionHeaders: function(spec: FetchSpec,
+                                            riskScoreSpec: !RiskScoreSpec)
+                                     : FetchResult<ReliabilityRiskScoreMlPredictionHeader> js-rhino
+
+  /**
+   * Gets a collection of feature contributions using the provided {@link RiskScoreSpec}.
+   * This method maps feature names to their contribution values, which indicate the impact each feature had on the risk score.
+   *
+   * This method also normalizes the feature contribution values using either the `ModelRiskScoreContributorsRatio`, `ModelValidationRiskScoreContributorsRatio` or `RiskScoreContributorsRatio`.
+   * The normalized feature contribution values sum up to 1.
+   * The method fetches all the feature contribution headers for an alert and constructs a metric name depending on the {@link RiskScoreSpec}.
+   * The metric is then evaluated on the {@link ReliabilityAsset} to compute the normalized value of the feature contribution.
+   * For normalization, the metrics compute a sum of the feature contribution value and divide it by the sum of all the feature contribution associated with the alert.
+   *
+   * @param spec - The specification for fetching the features.
+   * @returns A map where the keys are feature names and the values are their corresponding normalized contribution values.
+   */
+  getFeatureContributions: function(spec: !RiskScoreSpec): map<string, double> js-rhino
+
+  /**
+   * Gets a collection of feature reconstructions using the provided {@link RiskScoreSpec}.
+   * This method maps feature names to their reconstructed values, which indicate the predicted values for each feature.
+   *
+   * @param spec - The specification for fetching the features.
+   * @returns A map where the keys are feature names and the values are their corresponding reconstructed values.
+   */
+  getFeatureReconstructions: function(spec: !RiskScoreSpec): map<string, double> js-rhino
+
+  /**
+   * Returns the appropriate {@link RiskScoreSpec} for a given {@link ReliabilityRiskScoreMlPrediction}.
+   * This function generates the risk score specification based on the provided risk score, which is used for obtaining risk score details.
+   *
+   * @param riskScore - The risk score prediction for which the spec is needed.
+   * @param includeModel - Whether to include model-related information in the specification.
+   * @returns The generated RiskScoreSpec for the provided risk score.
+   */
+  getSpecForRiskScore: function(riskScore: !ReliabilityRiskScoreMlPrediction,
+                                              includeModel: boolean): !RiskScoreSpec js-rhino
+
+  /**
+   * Returns the name of the persisted series header from the provided mapper and column name.
+   * This method helps to retrieve or persist timeseries predictions by using the given column name and mapper.
+   *
+   * @param mapper - A map of string keys and values representing the column mapping.
+   * @param column - The name of the column for which to retrieve the series name.
+   * @returns The name of the persisted timeseries series header.
+   */
+  getSeriesName: inline function(mapper: map<string, string>, column: string): string js-rhino
+
+  /**
+   * Retrieves the appropriate header name for risk score timeseries, depending on whether raw or normalized risk scores
+   * are being requested.
+   *
+   * @returns The header name for the risk score timeseries.
+   */
+  getRiskScoreHeaderName: inline function(): !string js-rhino
+
+  /**
+   * Retrieves the alert timeseries header name corresponding to reliability risk alerts.
+   * This header identifies timeseries data associated with risk alerts.
+   *
+   * @returns The header name for the risk alert timeseries.
+   */
+  getAlertHeaderName: inline function(): !string js-rhino
+
+  /**
+   * Retrieves the header name for the sum of feature contributions.
+   * This header provides the total contribution of all features for the risk score.
+   *
+   * @returns The header name for the feature contributions sum.
+   */
+  getFeatureContributionsSumHeaderName: inline function(): !string js-rhino
+
+  /**
+   * Constructs the column name for the feature which represents the given {@link Sensor} in the context of the given {@link ReliabilityAsset}.
+   * This helps to determine how a sensor is represented in the model, based on the asset and sensor context.
+   *
+   * @param sensor - The sensor whose feature name is to be generated.
+   * @param asset - The reliability asset for which the feature name is being generated.
+   * @returns The generated feature name for the sensor.
+   */
+  getFeatureName: function(sensor: !Sensor, asset: ReliabilityAsset): string js-rhino
+
+  /**
+   * Returns the metric name corresponding to the given feature name.
+   * This is useful for converting between feature names and their corresponding metric names.
+   *
+   * @param featureName - The feature name whose metric name is to be returned.
+   * @returns The corresponding metric name for the given feature.
+   */
+  getMetricNameFromFeatureName: inline function(featureName: !string): string js-rhino
+
+  /**
+   * Extracts the feature name from the given contribution column name.
+   * This method helps to map a given column name back to its associated feature name.
+   *
+   * @param headerName - The column name for which the feature name is needed.
+   * @param suffixConfigKey - An optional parameter to define the suffix configuration key (defaults to 'residualColumnNameSuffix').
+   * @returns The extracted feature name.
+   */
+  getFeatureNameFromHeaderName: inline function(headerName: !string, suffixConfigKey: string = 'residualColumnNameSuffix'): string js-rhino
+
+  /**
+   * Constructs the contribution column name for the given metric or feature name.
+   * This method creates a column name based on the provided metric or feature name.
+   *
+   * @param metricOrFeatureName - The metric or feature name for which the contribution column name is created.
+   * @param isFeatureName - A flag indicating whether the provided name is a feature name.
+   * @returns The generated contribution column name.
+   */
+  getContributionHeaderNameFromMetricName: inline function(metricOrFeatureName: !string, isFeatureName: boolean): string js-rhino
+
+  /**
+   * Constructs the contribution column name for the given asset-sensor pair.
+   * This method creates the column name based on the sensor and asset provided.
+   *
+   * @param sensor - The sensor whose contribution column name is to be constructed.
+   * @param asset - The reliability asset for which the contribution column name is needed.
+   * @returns The generated contribution column name.
+   */
+  getContributionHeaderName: function(sensor: !Sensor, asset: ReliabilityAsset): string js-rhino
+
+  /**
+   * Constructs the reconstruction column name for the given metric or feature name.
+   * This method creates the column name used for feature reconstruction based on the metric or feature name.
+   *
+   * @param metricOrFeatureName - The metric or feature name for which the reconstruction column name is created.
+   * @param isFeatureName - A flag indicating whether the provided name is a feature name.
+   * @returns The generated reconstruction column name.
+   */
+  getReconstructionHeaderNameFromMetricName: inline function(metricOrFeatureName: !string, isFeatureName: boolean): string js-rhino
+
+  /**
+   * Constructs the residual column name for the given metric or feature name.
+   * This method creates the column name used for residual analysis based on the metric or feature name.
+   *
+   * @param metricOrFeatureName - The metric or feature name for which the residual column name is created.
+   * @param isFeatureName - A flag indicating whether the provided name is a feature name.
+   * @returns The generated residual column name.
+   */
+  getResidualHeaderNameFromMetricName: inline function(metricOrFeatureName: !string, isFeatureName: boolean): string js-rhino
+
+  /**
+   * Constructs the reconstruction column name for the given asset-sensor pair.
+   * This method creates the column name for feature reconstruction based on the sensor and asset context.
+   *
+   * @param sensor - The sensor for which the reconstruction column name is to be created.
+   * @param asset - The reliability asset for which the reconstruction column name is needed.
+   * @returns The generated reconstruction column name.
+   */
+  getReconstructionHeaderName: function(sensor: !Sensor, asset: ReliabilityAsset): string js-rhino
+
+  /**
+   * Constructs the residual column name for the given asset-sensor pair.
+   * This method creates the column name for residual analysis based on the sensor and asset context.
+   *
+   * @param sensor - The sensor for which the residual column name is to be created.
+   * @param asset - The reliability asset for which the residual column name is needed.
+   * @returns The generated residual column name.
+   */
+  getResidualHeaderName: function(sensor: !Sensor, asset: ReliabilityAsset): string js-rhino
+}

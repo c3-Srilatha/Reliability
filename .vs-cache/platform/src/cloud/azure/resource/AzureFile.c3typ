@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * C3 Azure File contains the metadata and content of a Azure Blob
+ */
+type AzureFile mixes BlobFile<AzureFileSystem> {
+
+  /**
+   * Type of the Azure Blob
+   */
+  blobType: string enum AzureBlobType
+
+  /**
+   * Full Azure file url with SAS authentication token. If set, this field overrides the container and AzureConfig storage settings for this blob
+   */
+  sasUrl: string
+
+  /**
+   * Converts this file to AzureBlob
+   * @return the converted AzureBlob
+   */
+  toAzureBlob: member function(): AzureBlob
+
+  /**
+   * Whether the given file url is a SAS url.
+   */
+  isSasUrl: member function(url: string,
+                            client: @java(class="c3.platform.cloud.azure.client.AzureBlobContainerClient") native)
+                     : boolean
+
+  /**
+   * Whether the given file url is a SAS url with HTTP/HTTPS scheme.
+   */
+  isHttpSchemeSasUrl: member function(url: string): boolean
+
+  /**
+   * Whether the given file url contains SAS token.
+   */
+  hasSasToken: member function(url: string,
+                               client: @java(class="c3.platform.cloud.azure.client.AzureBlobContainerClient") native)
+                        : boolean
+
+  fs:                   ~
+  generatePresignedUrl: ~
+}

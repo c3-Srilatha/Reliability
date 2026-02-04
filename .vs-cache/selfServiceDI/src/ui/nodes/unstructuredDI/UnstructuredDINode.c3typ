@@ -1,0 +1,53 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Node that renders the node for the unstructured DI graph
+ */
+type UnstructuredDINode mixes NodeDiagramNodeData {
+
+  /**
+   * The header of this node
+   */
+  header: UnstructuredDINodeHeader
+
+  /**
+   * The subheader of this node
+   */
+  subHeader: UnstructuredDINodeHeader
+
+  /**
+   * The package of this node
+   */
+  packageName: string
+
+  /**
+   * Whether the node has been configured or not
+   */
+  configured: !boolean
+
+  /**
+   * The kind of node
+   */
+  kind: !string enum('data_source', 'data_selector', 'metadata_extractor', 'document_parser', 'vector_store', 'integration_schedule')
+
+  /**
+   * The color associated with this node.
+   */
+  color: string
+
+  /**
+   * The status of the node as well as the message and icon
+   */
+  status: UnstructuredDINodeStatus
+
+  /**
+   * Whether the node should be clickable or not
+   */
+  disabled: boolean = false
+}

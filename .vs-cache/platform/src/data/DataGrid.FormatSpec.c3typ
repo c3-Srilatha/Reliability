@@ -1,0 +1,323 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Options for rendering the grid as a textual table using spaces to align columns.
+ *
+ * @see DataGrid#toString
+ */
+type DataGrid.FormatSpec mixes Spec {
+
+  /**
+   * Maximum length of any column's content.
+   */
+  maxColWidth: int
+
+  /**
+   * Maximum length of each formatted row, including the grid and column separators. If the content would be too long,
+   * columns are narrowed. It may not be possible to maintain this maximum for grids with many columns and too-short
+   * a maximum length.
+   */
+  maxRowWidth: int
+
+  /**
+   * If specified, no more than the specified number of data rows will be displayed. By default the first rows are
+   * shown, but see #splitRows.
+   */
+  maxRows: int
+
+  /**
+   * If specified and the grid has more rows than the #maxRows value, instead of printing only the first rows, half
+   * of the limit will be printed from the beginning and half from the end. This will add a "..." row to the table,
+   * unless #noHeader is specified.
+   */
+  splitRows: boolean
+
+  /**
+   * If specified, no more than the specified number of data columns will be displayed. By default the first ones are
+   * shown, but see #splitCols.
+   */
+  maxCols: int
+
+  /**
+   * If specified and the grid has more data columns than the #maxCols value, instead of printing only the first
+   * columns, half of the limit will be printed from the beginning and half from the end. This will add a "..." column
+   * to the table, unless #noHeader is specified.
+   */
+  splitCols: boolean
+
+  /**
+   * If specified, the header row will be suppressed, as well as the "..." row if #splitRows is used.
+   *
+   * @see DataGrid.Col#label
+   */
+  noHeader: boolean
+
+  /**
+   * If specified, the row labels will be omitted. These are usually the index, but may also be a key in some cases,
+   * for example a grid of a map will have the map keys as the labels.
+   *
+   * @see DataGrid.Row#label
+   */
+  noLabels: boolean
+
+  /**
+   * By default, a separator will be printed between the header row and the columns. If this field is specified, there
+   * will be no separation between the header and the data rows and the columns will be separated by a single space.
+   */
+  noGrid: boolean
+
+  /**
+   * If specified, Unicode box-drawing characters will be used for the grid instead of ASCII characters.
+   *
+   * @see https://en.wikipedia.org/wiki/Box-drawing_character
+   */
+  unicodeGrid: boolean
+
+  /**
+   * If specified, an outer boxes will be drawn around the table. With #unicodeGrid:
+   * ```
+   * ┌───┬────────┐
+   * │   │ name   │
+   * ┝━━━┿━━━━━━━━┥
+   * │ 0 │ Fred   │
+   * │ 1 │ Barney │
+   * └───┴────────┘
+   * ```
+   * Note that this will be the same as the regular text view except four columns wider and 2 lines taller.
+   */
+  outerBox: boolean
+
+  /**
+   * If specified, a Markdown-style grid will be used. This will generate pipes on the left and right side of the table
+   * and right-alignment markers (':') in the separator row.
+   *
+   * @see DataGrid#toMarkdown
+   * @see MarkdownTable
+   */
+  markdownGrid: boolean
+
+  /**
+   * If true, generate a caption with the data source name and number of rows and columns.
+   */
+  caption: boolean
+
+  /**
+   * The length after shortening strings that exceed #maxStrHard.
+   */
+  maxStrSoft: !int32 = 100
+
+  /**
+   * Strings that exceed this length will be shortened to #maxStrSoft.
+   */
+  maxStrHard: !int32 = 120
+
+  /**
+   * The number of significant/fraction digits to format decimal numbers. This must be at least 1 for SIGNIFICANT
+   * and EXPONENTIAL, but may be 0 for FIXED style (NATURAL ignores this).
+   *
+   * @see #numberStyle
+   */
+  numberDigits: !int32 = 6
+
+  /**
+   * The style of number formatting.
+   *
+   * @see #numberDigits
+   */
+  numberStyle: !string enum DataGrid.NumberStyle = SIGNIFICANT
+
+  /**
+   * When producing rows, filter rows that don't match all these criteria. This is only applicable when using the
+   * {@link DataGrid#rows rows} method.
+   *
+   * Map keys are the column indecies (0 based). Map values are matches as specified by {@link DataGrid.Col#filter}.
+   * The special value `-1` can be used to filter on the row labels (indices or map keys).
+   *
+   * If any column match returns false, the whole row will be filtered out. (Multiple criteria are "and"ed.)
+   *
+   * @see DataGrid#rows
+   * @see DataGrid.Col#filter
+   */
+  filterColumns: map<!int32, ?string>
+
+  /**
+   * When producing rows, sort by these columns. This is only applicable when using the {@link DataGrid#rows rows}
+   * method.
+   *
+   * The order in the array determines the priority of the column in the result. Later columns are only used if the
+   * values compare equal on prior columns.
+   *
+   * Sorting is stable so if only a partial ordering is defined, it will be completed using the row labels
+   * (indices or map keys).
+   *
+   * @see DataGrid#rows
+   * @see DataGrid.Col#compare
+   */
+  sortColumns: [!DataGrid.SortCol]
+
+  /**
+   * header row separator column separator, ASCII
+   */
+  CROSS_ASCII: const string = '+'
+
+  /**
+   * header row separator column separator, UNICODE
+   */
+  CROSS_UNICODE: const string = '┿'
+
+  /**
+   * column separator, ASCII
+   */
+  VERT_ASCII: const string = '|'
+
+  /**
+   * column separator, UNICODE
+   */
+  VERT_UNICODE: const string = '│'
+
+  /**
+   * header row separator, ASCII
+   */
+  HORIZ_ASCII: const string = '-'
+
+  /**
+   * header row separator, UNICODE
+   */
+  HORIZ_UNICODE: const string = '━'
+
+  /**
+   * hidden rows column value, ASCII
+   */
+  DOTS_ASCII: const string = '...'
+
+  /**
+   * hidden rows column value, UNICODE
+   */
+  DOTS_UNICODE: const string = '⋯'
+
+  /**
+   * outer box top-left corner, ASCII
+   */
+  BOX_TL_ASCII: const string = '+'
+
+  /**
+   * outer box top-left corner, UNICODE
+   */
+  BOX_TL_UNICODE: const string = '┌'
+
+  /**
+   * outer box top-right corner, ASCII
+   */
+  BOX_TR_ASCII: const string = '+'
+
+  /**
+   * outer box top-right corner, UNICODE
+   */
+  BOX_TR_UNICODE: const string = '┐'
+
+  /**
+   * outer box top side, ASCII
+   */
+  BOX_T_ASCII: const string = '-'
+
+  /**
+   * outer box top side, UNICODE
+   */
+  BOX_T_UNICODE: const string = '─'
+
+  /**
+   * outer box top column seprator, ASCII
+   */
+  BOX_TC_ASCII: const string = '-'
+
+  /**
+   * outer box top column seprator, UNICODE
+   */
+  BOX_TC_UNICODE: const string = '┬'
+
+  /**
+   * outer box left side, ASCII
+   */
+  BOX_L_ASCII: const string = '|'
+
+  /**
+   * outer box left side, UNICODE
+   */
+  BOX_L_UNICODE: const string = '│'
+
+  /**
+   * outer box left header separator, ASCII
+   */
+  BOX_LC_ASCII: const string = '|'
+
+  /**
+   * outer box left header separator, UNICODE
+   */
+  BOX_LC_UNICODE: const string = '┝'
+
+  /**
+   * outer box bottom-left corner, ASCII
+   */
+  BOX_BL_ASCII: const string = '+'
+
+  /**
+   * outer box bottom-left corner, UNICODE
+   */
+  BOX_BL_UNICODE: const string = '└'
+
+  /**
+   * outer box bottom side, ASCII
+   */
+  BOX_B_ASCII: const string = '-'
+
+  /**
+   * outer box bottom side, UNICODE
+   */
+  BOX_B_UNICODE: const string = '─'
+
+  /**
+   * outer box bottom column separator, ASCII
+   */
+  BOX_BC_ASCII: const string = '-'
+
+  /**
+   * outer box bottom column separator, UNICODE
+   */
+  BOX_BC_UNICODE: const string = '┴'
+
+  /**
+   * outer box bottom-right corner, ASCII
+   */
+  BOX_BR_ASCII: const string = '+'
+
+  /**
+   * outer box bottom-right corner, UNICODE
+   */
+  BOX_BR_UNICODE: const string = '┘'
+
+  /**
+   * outer box right side, ASCII
+   */
+  BOX_R_ASCII: const string = '|'
+
+  /**
+   * outer box right side, UNICODE
+   */
+  BOX_R_UNICODE: const string = '│'
+
+  /**
+   * outer box right header separator, ASCII
+   */
+  BOX_RC_ASCII: const string = '|'
+
+  /**
+   * outer box right header separator, UNICODE
+   */
+  BOX_RC_UNICODE: const string = '┥'
+}

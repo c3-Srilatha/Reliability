@@ -1,0 +1,51 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Configurations for the Diagram Parsing module.
+ */
+type DiagramParsingConfig mixes Singleton, Config {
+
+  /**
+   * Specific type name for connected assets. Type referenced must be/extend {@link PhysicalAsset}.
+   */
+  assetTypeName: string = 'PhysicalAsset'
+
+  /**
+   * An ordered list used to determine inclusive upper bounds for match confidence scores for {DiagramParsingConfig#matchConfidenceLevels}.
+   * For example, by default, a match confidence score of 0.6 implies Medium match confidence and that of 0.9 implies High match confidence.
+   *
+   * Note: *order matters* the match confidence score at index 0 corresponds to lowest possible score for match confidence.
+   * [0.5, 0.75, 1]
+   * ['Low', 'Medium', 'High']
+   */
+  matchConfidenceScoreUpperBounds: [double] = [0.5, 0.75, 1]
+
+  /**
+   * An ordered list used to determine all strings match confidence can qualitatively be set to depending on {DiagramParsingConfig#matchConfidenceScoreUpperBounds}.
+   * For example, the default Medium match confidence corresponds to a match confidence score less than or equal to 0.75 but greater than 0.5.
+   *
+   * **IMPORTANT: If you modify this list, you must also modify the match confidence column on DiagramDetailSensorMatchVerificationGrid to match.**
+   *
+   * Note: *order matters* the match confidence score at index 0 corresponds to lowest possible match confidence level.
+   *
+   * Note: *case sensitive*.
+   */
+  matchConfidenceLevels: [string] = ['Low', 'Medium', 'High']
+
+  /**
+   * An ordered list used to map each match confidence level to a color on the UI.
+   * See {DiagramParsingConfig#matchConfidenceLevels} for more information.
+   *
+   * Note: If an opaque color is provided, the alpha value will be set to 0.5 on the Diagram Viewer.
+   *
+   * Note: Currently will only affect the Diagram Viewer, and the Grid will have to be manually updated to match.
+   */
+  matchConfidenceLevelColors: [string] = ['#FF5271', '#F2950A', '#49BFA9']
+}

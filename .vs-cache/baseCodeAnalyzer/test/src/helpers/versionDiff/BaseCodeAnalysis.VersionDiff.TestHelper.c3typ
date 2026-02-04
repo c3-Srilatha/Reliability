@@ -1,0 +1,55 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * **TESTING PURPOSES ONLY**
+ *
+ * This Type contains functions to organize the {@link TypeMeta} generated from any test Types
+ * stored in `test/src/helpers/versionDiff/testTypes` into {@link BaseCodeAnalysis.AppInfo}
+ * for testing purposes.
+ *
+ * Most test Types belong to the `baseCodeAnalyzer` package, however some test Types can
+ * belong to `baseCodeAnalyzerTest` or `baseCodeAnalyzerIntegTest` to test things like
+ * remixes and changes across packages.
+ */
+final type BaseCodeAnalysis.VersionDiff.TestHelper mixes BaseCodeAnalysis.TestHelper, Value js-rhino {
+
+  /**
+   * Helper function to "rename" a Type or field by appending "_R" to the name.
+   *
+   * @param name
+   *           The original Type, field, method, or method parameter to rename.
+   * @return The new Type, field, method, or method parameter name, which is `name` with "_R"
+   *         appended to the end.
+   */
+  rename: inline function(name: !string): !string
+
+  /**
+   * Helper function to generate a deterministic schema name for a test Type or field.
+   *
+   * @param name
+   *           The Type or field name the schema name should be based on.
+   * @return The schema name, which is `name` with all lowercase letters removed.
+   */
+  schemaName: inline function(name: !string): !string
+
+  /**
+   * Helper function to generate fake results of {@link BaseCodeAnalyzer#collectAppInfo}
+   * and (potentially) {@link BaseCodeAnalysis.VersionDiff#detectStructuralChanges}.
+   *
+   * @param spec
+   *           Configurations for how to generate the test Types and their corresponding
+   *           changes for a given test case.
+   * @return An object containing the generated `prevAppInfo` and `curAppInfo` along with
+   *         any `typeMetaChanges` between the two mocked versions.
+   */
+  constructResultsSpec: function(
+    spec: !BaseCodeAnalysis.VersionDiff.TestHelper.TestCaseSpec
+  ): !BaseCodeAnalysis.VersionDiff.Metric.CalculateResultsSpec
+}

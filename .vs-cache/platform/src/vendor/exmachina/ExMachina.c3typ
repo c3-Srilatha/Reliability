@@ -1,0 +1,119 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type represents an ExMachina instance
+ *
+ * A user can create and access multiple ExMachina services simultaneously. This functionality is useful for
+ * scheduled executions, where each execution can be configured to run in its own sandboxed service.
+ *
+ * Commonly used ExMachina configurations are the Spark driver and executor memory sizes, and the number of executor
+ * instances. For the full set of configurations, see {@link ExMachina_Config}.
+ *
+ * When starting an ExMachina service, a unique {@link id} is generated to ensure that there are no id collisions when
+ * attempting to start multiple services simultaneously. Specifically, we use sequence generator ExMachina_Seq to
+ * generate {@link CloudId#seq} part of the id.
+ */
+@cloud(cloudFunc='k8sexm', seqLength=5)
+type ExMachina mixes CloudService<ExMachina_Config>, Data.ExecutionEngine {
+
+  /**
+   * If set this URL is used for communicating with service. Used for local development.
+   */
+  apiURL: string serialized Url
+
+  status:       ~
+  config:       ~
+  ensureConfig: ~
+
+  /**
+   * Checks all running ExMachina services to see if it could be shutdown and if so, terminate the service
+   * The criteria is whether {@link ExMachina.Api.Unprotected#idleTime} exceeds {@link ExMachina_Config#idleTimeMinutes}
+   * @return list of ExMachina service ids that were shutdown
+   */
+  checkShutdown: function(): [string]
+
+  /**
+   * Overwrite the {@link CloudService#stop} implementation to fully terminate the ExMachina service instead of just stopping it.
+   * This is only called by the server as part of application hibernation flow.
+   */
+  stop: ~
+
+  /**
+   * Cleanup associated resources, such as OAuthApplication
+   */
+  beforeTerminate: ~
+
+  /**
+   * The url path for the service.
+   * E.g. if {@link apiUrl} is "https://dev.c3.ai/env1/app1/exmac-cs-1", the url path will be "/env1/app1/exmac-cs-1"
+   */
+  apiUrlPath: private member function(): string
+
+  /**
+   * A compact id generated using the service's {@link id}. Embedded within the {@link apiUrl}.
+   */
+  compactId: private member function(): string
+
+  /**
+   * The full url to access the ExMachina service
+   */
+  getApiUrl: member function(): string serialized Url
+
+  /**
+   * The full internal url to access the ExMachina service from nodes in same K8s cluster
+   */
+  getInternalApiUrl: member function(): string serialized Url
+
+  /**
+   * The internal Kubernetes service DNS hostname for this ExMachina service.
+   * Format: {serviceName}.{namespace}.svc.cluster.local
+   * Used for constructing internal URLs (e.g., getInternalApiUrl, Spark Connect URL).
+   */
+  getInternalHost: member function(): string
+
+  /**
+   * All valid api urls to access this ExMachina service
+   */
+  getApiUrls: member function(): [string serialized Url]
+
+  /**
+   * {@link make} a new ExMachina instance with a unique id.
+   * Every invocation reserves the next seq number to guarantee uniqueness across the app.
+   */
+  newInstance: function(): ExMachina
+
+  /**
+   * Start a new ExMachina service with an ad-hoc config.
+   *
+   * @param config
+   *          An optional config to override default values within {@link ExMachina_Config}. Note that certain values
+   *          are ignored and auto-generated at runtime, e.g. id, exmacResourceNamePrefix, c3ServerEndpoint,
+   *          exmacServiceAccountToken, exmacServiceEndpoint, k8sNamespaceName, and authorizedUsers.
+   */
+  startWithConfig: function(config: ExMachina_Config): !ExMachina
+
+  /**
+   * Creates an {@link ExMachina.Api} interface to the ExMachina Spark API server
+   */
+  api: private cached property(): !ExMachina.Api
+
+  /**
+   * Used by the Spark server running in Kubernetes to call back to the C3 server when it receives an incoming
+   * connection with a new c3auth token. Verifies that the {@link User} associated with the token has access to the
+   * {@link ExMachina} instance that received the incoming connection.
+   *
+   * @return a new OAuth token for the current User for the ExMachina instance to use when sending requests to c3server
+   */
+  authenticate: private member function(): OAuthAccessTokenResponse
+
+  /**
+   * Checks if the current user has access to the ExMachina service.
+   */
+  isCurrentUserAuthorized: member function(): boolean
+}

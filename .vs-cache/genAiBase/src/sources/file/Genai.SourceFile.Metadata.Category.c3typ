@@ -1,0 +1,79 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A Genai.SourceFile.Metadata.Category is an arbitrary string label that a user can
+ * set on any {@link Genai.SourceFile.Metadata.Tag}.
+ */
+@db(unique=['label'])
+entity type Genai.SourceFile.Metadata.Category mixes Genai.SourceFile.WithMetadataType, Genai.ProjectAware {
+  /**
+   * The label of the category.
+   */
+  label: !string
+
+  /**
+   * Examples of tags labels that belong to this category. These examples are used to help to the
+   * metadata extraction process.
+   */
+  examples: [string]
+
+  /**
+   * The {@link Genai.SourceFile.Metadata.Tag}s that belong to this category.
+   */
+  tags: [Genai.SourceFile.Metadata.Tag](category)
+
+  /**
+   * The {@link User} that created this category.
+   */
+  createdBy: string calc generateCreatedBy(id, meta.createdBy)
+
+  /**
+   * Number of {@link Genai.SourceFile} documents that have the {@link Genai.SourceFile.Metadata.Tag}s that belong to this category.
+   */
+  documentsCount: int calc getNumberOfDocuments(id)
+
+  /**
+   * Create a new category from a {@link Genai.SourceFile.Metadata.Category.Spec} if the category does not already exist. If the category already exists,
+   * this function is going to update the category with the new information.
+   * @param spec
+   *    {@link Genai.SourceFile.Metadata.Category.Spec}.
+   * @returns
+   *    {@link Genai.SourceFile.Metadata.Category}.
+   */
+  fromSpec: function(spec: !Genai.SourceFile.Metadata.Category.Spec): !Genai.SourceFile.Metadata.Category js-rhino
+
+  afterRemove: ~ js-rhino
+
+  /**
+    * Fetches the {@link Genai.SourceFile.Metadata.Category}s for the active project of a given {@link User}
+    * If the user has no active project, all {@link Genai.SourceFile.Metadata.Category}s are returned.
+    * @param spec
+    *         {@link FetchSpec} for fetching the metadata tag categories.
+    * @param user
+    *         {@link User} to fetch the metadata tag categories for.
+    * @return filtered out {@link Genai.SourceFile.Metadata.Category}s.
+    */
+  @action(group='read')
+  fetchForUser: function(spec: FetchSpec, user: User): FetchResult js-rhino
+
+
+  /**
+    * Fetches the count of {@link Genai.SourceFile.Metadata.Category}s for the active project of a given {@link User}
+    * If the user has no active project, all {@link Genai.SourceFile.Metadata.Category}s are returned.
+    * @param spec
+    *         {@link FetchSpec} for fetching the metadata tag categories.
+    * @param user
+    *         {{@link User} to fetch the metadata tag categories for.
+    * @return count of {@link Genai.SourceFile.Metadata.Category}s.
+    */
+  @action(group='read')
+  fetchCountForUser: function(spec: FetchSpec, user: User): int js-rhino
+
+}

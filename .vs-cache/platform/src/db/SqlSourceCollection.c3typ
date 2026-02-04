@@ -1,0 +1,52 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Collection that represents data in {@SqlSourceSystem}
+ */
+@cache(dependencies=['SourceCollection', 'ExternalSourceCollection'], all=true)
+@db(domain='system')
+type SqlSourceCollection mixes ExternalSourceCollection {
+
+  /**
+   * The explicit schema name (qualified or unqualified) of the external sql table. If not provided, the tableName will
+   * be inferred from {@link #name}. {@link #source} will still take precedence when inferring tableName.
+   * See {@link #tableName} for more details.
+   */
+  declaredSchemaName: string
+
+  /**
+   * Source system for the source collection
+   */
+  sourceSystem: !SqlSourceSystem
+
+  /**
+   * Connects to the database and returns the table information associated with type for the collection.
+   *
+   * @return the table information associated with the type for the collection.
+   */
+  connect: member function(): !SqlTable
+
+  /**
+   * @return the physical table name for this source collection.
+   */
+  tableName: member function(): string
+
+  sourceIdentifier:          ~
+  sourceSystemDataStoreKind: ~
+
+  /**
+   * infer all the value types of columns from a sqlTable
+   */
+  inferValueTypesFromSqlTable: private function(table: !SqlTable, datastore: !string): [ValueType]
+
+  doInferSourceType2: private member function(table: !SqlTable): TypeMeta
+  cdcSources:         ~
+  process:            ~
+  validateSourceData: ~
+}

@@ -1,0 +1,184 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Abstract Type, defining the data interfaces for interpretability techniques that inherently depend on background or
+ * training data.
+ */
+abstract type MlInterpreter.BackgroundDataMixin<DX> {
+
+  /**
+   * Maximum number of samples to use as background data.
+   */
+  MAX_SAMPLES: private const int = 1000
+
+  /**
+   * The background data to be used for the interpretability model. See {@link #needsBackgroundData}
+   * to check if an interpreter has its required background data.
+   */
+  backgroundData: private DX
+
+  /**
+   * A lambda function that samples and returns data. This sampler can be set in one of two ways:
+   * 1. Use {@link #withRandomSampler}
+   * This will set the {@link #sampler} to a lambda function that will randomly sample the specified fraction of the
+   * data.
+   * 2. Use {@link #withCustomSampler}
+   * You can build and use your own sampler by passing in a native Python function or a {@link Lambda}
+   *
+   * The sampler will be assigned to the lambda function corresponding to the API that was **most recently called**.
+   */
+  sampler: private lambda(data: DX): DX
+
+  /**
+   * Method that returns {@link #backgroundData} as {@link Map} of {@link Data}.
+   * key is user-defined name for each {@link Data} in {@link #backgroundData}.
+   * Default implementation ensures `Data` and named `Tuple` of `Data` are handled by platform provided code.
+   *
+   * This method is mandatory to successfully register and load `MlPipeline` that contains interpreter instances
+   * with background data from {@link ModelRegistry}.
+   *
+   * USER NOTE - Users can provide a `lambda` to successfully register and load `MlPipeline` that
+   * contains interpreter instances with background data type (`DX`) different from default types handled by platform code.
+   * See {@link #withCustomBackgroundDataByName}.
+   * DEVELOPER NOTE - Developers can override this method in types that mixin `MlInterpreter.BackgroundDataMixin`
+   * to change default implementation.
+   */
+  backgroundDataByName: member function(): map<string, Data> py
+
+  /**
+   * A lambda function that returns {@link #backgroundData} as {@link Map} of {@link Data}.
+   * This lambda is set with {@link #withCustomBackgroundDataByName}.
+   */
+  backgroundDataByNameLambda: private lambda(data: DX): map<string, Data>
+
+  /**
+   * Configure the {@MlInterpreter.BackgroundDataMixin} to employ a custom function to return {@link #backgroundData}
+   * as {@link Map} of {@link Data}. key is user-defined name for each {@link Data} in {@link #backgroundData}.
+   *
+   * If a user configures this method, it is also required to configure the inverse function {@link #withCustomBackgroundDataFromMap}.
+   * Example Usage:
+   * ```py
+   * def background_data_to_map(data):
+   *    map_of_data = {}
+   *    map_of_data['x1'] = data.x1
+   *    map_of_data['x2'] = data.x2
+   *    return map_of_data
+   *
+   * c3.MlInterpreter().withCustomBackgroundDataByName(background_data_to_map)
+   * ```
+   * @param func
+   *           A function that returns background data as {@link Map}.
+   * @return An instance of {@link MlInterpreter.BackgroundDataMixin}
+   */
+  withCustomBackgroundDataByName: member function(func: !lambda(data: DX): map<string, Data>)
+                                           : !mixing MlInterpreter.BackgroundDataMixin<DX> py
+
+  /**
+   * Method that constructs {@link #backgroundData} as `DX` from {@link Map} of {@link Data}.
+   * Default implementation ensures `Data` and named `Tuple` of `Data` are handled by platform provided code.
+   * @param data
+   *           A {@link Map} whose keys are same as {@link Map} returned by {@link #backgroundDataByName}.
+   *
+   * This method is required to successfully register and load `MlPipeline` that contains interpreter instances
+   * with background data from {@link ModelRegistry}.
+   *
+   * USER NOTE - Users can provide a `lambda` to successfully register and load `MlPipeline` that
+   * contains interpreter instances with background data type (`DX`) different from default types handled by platform code.
+   * See {@link #withCustomBackgroundDataFromMap}.
+   * DEVELOPER NOTE - Developers can override this method in types that mixin `MlInterpreter.BackgroundDataMixin`
+   * to change default implementation.
+   */
+  backgroundDataFromMap: member function(data: map<string, Data>): DX py
+
+  /**
+   * A lambda function that constructs {@link backgroundData} from {@link Map}.
+   * This lambda can be set with {@link #withBackgroundDataFromMap}.
+   */
+  backgroundDataFromMapLambda: private lambda(backgroundType: string serialized ValueType,
+                                              data: map<string, Data>): DX
+
+  /**
+   * Configure the {@MlInterpreter.BackgroundDataMixin} to employ a custom function to construct {@link #backgroundData}
+   * from input {@link Map}. This function serves as inverse of {@link #withCustomBackgroundDataFromMap}.
+   * Example Usage:
+   * ```py
+   * def background_data_from_map(backgroundType, data):
+   *   data_as_dict = dict(data)
+   *   type = c3.ValueType.fromString(backgroundType)
+   *   data_as_dx = type.makeValue(x11=data_as_dict["x1"], x12=data_as_dict["x2"])
+   *   return data_as_dx
+   *
+   * c3.MlInterpreter().withCustomBackgroundDataFromMap(background_data_from_map)
+   * ```
+   * @param func
+   *           A function that constructs background data from {@link Map} of {@link Data}.
+   * @return An instance of {@link MlInterpreter.BackgroundDataMixin}
+   */
+  withCustomBackgroundDataFromMap: member function(func: !lambda(backgroundType: string serialized ValueType,
+                                                                 data: map<string, Data>): DX)
+                                            : !mixing MlInterpreter.BackgroundDataMixin<DX> py
+
+  /**
+   * Sample the input data. If the {@link #sampler} is specified, it will be applied directly onto the input data. If
+   * there is no {@link #sampler} and this interpreter instance needs background data, then this method will use up to
+   * {@link #MAX_SAMPLES} samples for background data. The data will be randomly sampled if the input data size exceeds
+   * {@link #MAX_SAMPLES}.
+   *
+   * @param x
+   *           The training input data for the {@link MlAtomicPipe} that is associated with this interpreter.
+   * @return A new interpreter instance with sampled background data.
+   */
+  sample: member function(x: !DX): !mixing MlInterpreter.BackgroundDataMixin<DX> py
+
+  /**
+   * Configure the {@MlInterpreter.BackgroundDataMixin} to employ a custom function to sample the input data and keep
+   * the result as background data. This custom function's input is of type `DX`, and the expected output type is
+   * `DX`. `DX` output from this custom function is persisted in platform code to enable multi-node execution.
+   * If `DX` is a custom C3 Type and not one of {@link Data}, map or named tuple of {@link Data}, it is
+   * essential that the custom function returns the persisted format of `DX`. See {@link Data.Persisted}.
+   * Example Usage:
+   * ```py
+   * def sample_func(x):
+   *    import numpy as np
+   *    random_idx = np.random.randint(0, len(x), len(x) // 2)
+   *    return x[random_idx]
+   *
+   * c3.MlInterpreter().withCustomSampler(sample_func)
+   * ```
+   * @param func
+   *           A function that returns a sample of the training data to be used for background data.
+   * @return An instance of {@link MlInterpreter.BackgroundDataMixin}
+   */
+  withCustomSampler: member function(func: !lambda(data: DX): DX): !mixing MlInterpreter.BackgroundDataMixin<DX> py
+
+  /**
+   * Configure the {@MlInterpreter.BackgroundDataMixin} to randomly sample the input data to keep as background data/
+   * Example Usage:
+   * ```py
+   * # Sample 32% of the dataset
+   * c3.MlInterpreter().withRandomSampler(frac=0.32)
+   *
+   * # Sample 50 points from the dataset
+   * c3.MlInterpreter().withRandomSampler(numSamples=50)
+   * ```
+   *
+   * @param numSamples
+   *          Number of points (rows) to sample from the input data.
+   * @param frac
+   *          Float representing the amount of input data to be sampled for background data. If both `numSamples` and
+   *          `frac` are specified, `numSamples` will be prioritized.
+   * @return An instance of {@link MlInterpreter.BackgroundDataMixin}
+   */
+  withRandomSampler: member function(numSamples: int, frac: float): !mixing MlInterpreter.BackgroundDataMixin<DX> py
+
+  /**
+   * @return True if this instance of {@MlInterpreter.BackgroundDataMixin} requires data but it is currently missing.
+   */
+  needsBackgroundData: abstract member function(): !boolean
+}

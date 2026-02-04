@@ -1,0 +1,62 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * A grid component for testing {@link UiSdlMetadataBundler} and {@link UiSdlMetadataLoader}.
+ */
+type BundlerTestAppGrid mixes UiSdlComponent<BundlerTestAppGridDataSpec> {
+
+  @uiSdlDataSpec(dataDestinationField='loadedData')
+  dataSpec: ~
+
+  /**
+   * Data for a dynamic title.
+   */
+  loadedData: any
+
+  /**
+   * The title of this component.
+   */
+  title: string
+
+  /**
+   * For testing purposes, a {@link UiSdlDynamicValueSpec} field.
+   */
+  subtitle: string serialized UiSdlDynamicValueSpec
+
+  /**
+   * For testing purposes, an array of {@link UiSdlDynamicValueSpec} field.
+   */
+  placeholders: [UiSdlDynamicValueSpec]
+
+  /**
+   * For testing purposes, a collection of component references
+   */
+  items: [UiSdlComponentRef<UiSdlComponent<UiSdlNoData>>]
+
+  /**
+   * Default effect triggers
+   */
+  effectTriggers: [UiSdlEffectTrigger] = [{"trigger": "SOME_EFFECT_TRIGGER", "effectType": "UiSdlEpicRedirect"}]
+
+  pageSize: int = 10
+
+  dataOffset: int = 0
+
+  expandedItems: json = {}
+
+  /**
+   * For testing purposes, an enum field
+   */
+  alignment: string enum('LEFT', 'CENTER', 'RIGHT') = 'LEFT'
+
+  /**
+   * For testing purposes, an array of reference field
+   */
+  headings: [BundlerTestAppHeading]
+}

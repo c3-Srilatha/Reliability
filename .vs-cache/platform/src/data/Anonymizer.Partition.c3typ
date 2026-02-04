@@ -1,0 +1,93 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Anonymizer.Partition is a inner class of Anonymizer that is use to keep track of the current data's indexes in the
+ * original dataset and minimum and maximum of each dimension
+ */
+type Anonymizer.Partition {
+
+  /**
+   * data to be generalized in the current partition
+   */
+  dataIdx: [int]
+
+  /**
+   * Array of minimum and maximum value pair
+   */
+  dimensions: ArrayBuilder<Pair<any, any>>
+
+  /**
+   * Partitioning Step
+   * Recursive call that choose cutting dimensions and partitioning the data
+   *
+   * @param pr,            contains the entire dataset in the initial call
+   * @param allowDim,      array of boolean denoting which dimension can be partitioned.
+   * @param data,          input array of obj
+   * @param qidExprs,      Expr for reading field value in Obj
+   * @param k,             k anonymity factor
+   * @param qidValueToIdx, mapping of quasi identifier value to index
+   * @return Array of partition that has been generalized
+   */
+  partition: member function(allowDim: ![boolean],
+                             input: ![Obj],
+                             kAnonymityFactor: int32,
+                             qidExprs: ![Expr.Compiled<Obj, any>],
+                             qidValueToIdx: ![map<any, int>]): !ArrayBuilder<Anonymizer.Partition>
+
+  /**
+   * Calculate Information loss metric for anonymized dataset
+   * Reference: Utility-Based Anonymization for Privacy Preservation with Less Information Loss
+   * Jian Xu Wei Wang1 Jian Pei Xiaoyuan Wang Baile Shi Ada Wai-Chee Fu
+   *
+   * @param prs,          All partition of the result of partition method
+   * @param qidSize,      number of quasi identifier
+   * @param qiValueToIdx, Array of mapping of each quasi identifiers value
+   * @param inputSize,    data input size
+   * @return a double that denotes the percentage of information loss
+   */
+  calculateNCP: function(prs: ![Anonymizer.Partition],
+                         qidSize: !int,
+                         qiValueToIdx: ![map<any, int>],
+                         inputSize: !int): double
+
+  /**
+   * Create initial Anonymizer.Partition for the Mondrian Algorithm to partition, Create an array of map for each
+   * quasi identifier's value to index
+   *
+   * @param input,    input data
+   * @param qidExprs, Expr.Compiled for all quasi identifier read
+   * @return fst() return mapping of each quasi identifier value to index, snd() return the initial partition that
+   *    contains all data
+   */
+  initialize: function(input: ![Obj], qidExprs: ![Expr.Compiled]): !Pair<[map<any, int>], Anonymizer.Partition>
+
+  /**
+   * Split the current partition to two partitions using median
+   * All record with quasi Identifier value less than median: lhs
+   * All record with quasi Identifier value greater than median: rhs
+   * All record with quasi Identifier value equal to median: distributed fairly to lhs and rhs
+   *
+   * @param input,   reference of data
+   * @param qIdExp, Array of QuasiId
+   * @param dim,    index of the dimensions
+   * @return pair of partition that has first element as lhs and second element as rhs
+   */
+  split: private member function(input: ![Obj],
+                                 qIdExp: !Expr.Compiled<Obj, any>,
+                                 dim: int32): !Pair<Anonymizer.Partition, Anonymizer.Partition>
+
+  /**
+   * Choose the cutting dimension on current partition based on normalized width
+   *
+   * @param allowDim,     Array of boolean that checks if a dimension can be partitioned
+   * @param qiValueToIdx, Mapping of each quasi identifier's value to index
+   * @return an index denoting which quasi identifier dimension is going to be partitioned
+   */
+  chooseDimension: private member function(allowDim: ![boolean], qiValueToIdx: ![map<any, int>]): !int32
+}

@@ -1,0 +1,50 @@
+/*
+ * Copyright 2009-2024 C3 AI (www.c3.ai). All Rights Reserved.
+ * Confidential and Proprietary C3 Materials.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Defines the Text parser spec for {@link Genai.SourceFile.Chunker.MultimodalPdf}.
+ */
+type Genai.SourceFile.Chunker.MultimodalPdf.TextParserSpec mixes Spec {
+  /**
+   * Defines the text parser spec
+   */
+  textChunkerSpec: Genai.SourceFile.Chunker.MultimodalPdf.TextChunkerSpec
+
+  /**
+   * The text parser spec for pdfplumber.
+   */
+  nougatSpec: Genai.SourceFile.Chunker.MultimodalPdf.NougatSpec
+
+  /**
+   * Keyword arguments for page_to_image method in pdfplumber.
+   * Available arguments:
+   * - resolution: The desired number pixels per inch.
+   * - width: The desired image width in pixels.
+   * - height: The desired image width in pixels. Default is determined by resolution. Type: int.
+   * - antialias: Whether to use antialiasing when creating the image. Setting to true creates images with less-jagged text and graphics, but with larger file sizes.
+   * See {@link https://github.com/jsvine/pdfplumber} for more details.
+   */
+  pageImageKwargs: json = {"antilias": true, "resolution": 100}
+
+  /**
+   * The ratio of overlap when extracting text from crop boxes.
+   */
+  pypdf2OverlapRatio: float = 0.01
+
+  /**
+   * The lower threshold for parser's post processor. This is used when adding neighbor page contents for structure completeness.
+   */
+  postProcessorThresholdLow: float = 0.15
+
+  /**
+   * The higher threshold for parser's post processor. This is used when adding neighbor page contents for structure completeness
+   * when the page does not have an appropriate ending.
+   */
+  postProcessorThresholdHigh: float = 0.3
+}

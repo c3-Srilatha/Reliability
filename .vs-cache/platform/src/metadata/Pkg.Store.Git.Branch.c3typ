@@ -1,0 +1,33 @@
+/*
+ * Copyright 2009-2025 C3 AI (www.c3.ai). All Rights Reserved.
+ * This material, including without limitation any software, is the confidential trade secret and proprietary
+ * information of C3 and its licensors. Reproduction, use and/or distribution of this material in any form is
+ * strictly prohibited except as set forth in a written license agreement with C3 and/or its authorized distributors.
+ * This material may be covered by one or more patents or pending patent applications.
+ */
+
+/**
+ * Type to hold info of Git branch used for synchronizing pkg changes to/from Pkg.Store
+ * @see Pkg.Store#configureWithGit
+ */
+type Pkg.Store.Git.Branch {
+
+  /**
+   * This url should be include path to repo. DO NOT include token/password in url.
+   * Use {@link RestConfig} for Git to set auth token.
+   * e.g. github://github.com/c3-e/c3base
+   * @see GitUrl
+   */
+  repoUrl: !string serialized GitUrl
+
+  /**
+   * Name of branch e.g. topic/newFeature
+   */
+  branch: !string
+
+  /**
+   * path in repo, where pkgs are defined. Will be read/written to this path. If not set, it will be root of repo.
+   * e.g /base/pkgs, if your repo has /base/pkgs/foundation/foundation.c3pkg.json.
+   */
+  pathToPkgs: string
+}
